@@ -1,0 +1,4 @@
+ENC AVX XOP        ; BUILDDIR/xed -e vpshaw xmm7 MEM16:ecx xmm6
+ENC AVX XOP DEC    ; BUILDDIR/xed -de 8f e9 48 99 39
+ENC AVX XOP        ; BUILDDIR/xed -e vpmadcswd xmm7 xmm1 xmm0 xmm3
+ENC AVX XOP DEC    ; BUILDDIR/xed -de 8FE870B6F830

@@ -1,0 +1,5 @@
+F390
+ICLASS: PAUSE   CATEGORY: MISC   EXTENSION: PAUSE  IFORM: PAUSE   ISA_SET: PAUSE
+SHORT: pause 
+Encodable! F390
+Identical re-encoding

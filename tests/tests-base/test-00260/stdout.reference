@@ -1,0 +1,5 @@
+66FFE0
+ICLASS: JMP   CATEGORY: UNCOND_BR   EXTENSION: BASE  IFORM: JMP_GPRv   ISA_SET: I86
+SHORT: jmp ax
+Encodable! 66FFE0
+Identical re-encoding

@@ -1,0 +1,75 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+# FIXME: the rest of this file is common w/KNC. Split it out to avoid
+#  duplication
+
+xed_reg_enum_t MASK1()::
+MASK=0x0  | OUTREG=XED_REG_K0
+MASK=0x1  | OUTREG=XED_REG_K1
+MASK=0x2  | OUTREG=XED_REG_K2
+MASK=0x3  | OUTREG=XED_REG_K3
+MASK=0x4  | OUTREG=XED_REG_K4
+MASK=0x5  | OUTREG=XED_REG_K5
+MASK=0x6  | OUTREG=XED_REG_K6
+MASK=0x7  | OUTREG=XED_REG_K7
+
+xed_reg_enum_t MASKNOT0()::
+MASK=0x0  | OUTREG=XED_REG_ERROR
+MASK=0x1  | OUTREG=XED_REG_K1
+MASK=0x2  | OUTREG=XED_REG_K2
+MASK=0x3  | OUTREG=XED_REG_K3
+MASK=0x4  | OUTREG=XED_REG_K4
+MASK=0x5  | OUTREG=XED_REG_K5
+MASK=0x6  | OUTREG=XED_REG_K6
+MASK=0x7  | OUTREG=XED_REG_K7
+
+# used for compares in EVEX
+xed_reg_enum_t MASK_R()::
+REXRR=0 REXR=0 REG=0x0 | OUTREG=XED_REG_K0
+REXRR=0 REXR=0 REG=0x1 | OUTREG=XED_REG_K1
+REXRR=0 REXR=0 REG=0x2 | OUTREG=XED_REG_K2
+REXRR=0 REXR=0 REG=0x3 | OUTREG=XED_REG_K3
+REXRR=0 REXR=0 REG=0x4 | OUTREG=XED_REG_K4
+REXRR=0 REXR=0 REG=0x5 | OUTREG=XED_REG_K5
+REXRR=0 REXR=0 REG=0x6 | OUTREG=XED_REG_K6
+REXRR=0 REXR=0 REG=0x7 | OUTREG=XED_REG_K7
+
+# only used in VEX space for K-mask ops
+xed_reg_enum_t MASK_B()::
+REXB=0 RM=0x0 | OUTREG=XED_REG_K0
+REXB=0 RM=0x1 | OUTREG=XED_REG_K1
+REXB=0 RM=0x2 | OUTREG=XED_REG_K2
+REXB=0 RM=0x3 | OUTREG=XED_REG_K3
+REXB=0 RM=0x4 | OUTREG=XED_REG_K4
+REXB=0 RM=0x5 | OUTREG=XED_REG_K5
+REXB=0 RM=0x6 | OUTREG=XED_REG_K6
+REXB=0 RM=0x7 | OUTREG=XED_REG_K7
+
+# only used in VEX space for K-mask ops
+# stored inverted
+xed_reg_enum_t MASK_N()::
+VEXDEST3=1 VEXDEST210=0x0 | OUTREG=XED_REG_K7
+VEXDEST3=1 VEXDEST210=0x1 | OUTREG=XED_REG_K6
+VEXDEST3=1 VEXDEST210=0x2 | OUTREG=XED_REG_K5
+VEXDEST3=1 VEXDEST210=0x3 | OUTREG=XED_REG_K4
+VEXDEST3=1 VEXDEST210=0x4 | OUTREG=XED_REG_K3
+VEXDEST3=1 VEXDEST210=0x5 | OUTREG=XED_REG_K2
+VEXDEST3=1 VEXDEST210=0x6 | OUTREG=XED_REG_K1
+VEXDEST3=1 VEXDEST210=0x7 | OUTREG=XED_REG_K0
+

@@ -1,0 +1,5 @@
+Encode request:
+LEA AGEN:ptr [ECX], EASZ:2, MODE:1, REG0:EAX, SMODE:1
+OPERAND ORDER: REG0 AGEN 
+
+Encodable! 8D01

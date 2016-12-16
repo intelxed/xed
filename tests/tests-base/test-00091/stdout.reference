@@ -1,0 +1,5 @@
+F3C3
+ICLASS: RET_NEAR   CATEGORY: RET   EXTENSION: BASE  IFORM: RET_NEAR   ISA_SET: I86
+SHORT: ret 
+Encodable! F3C3
+Identical re-encoding

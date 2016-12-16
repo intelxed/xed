@@ -1,0 +1,1 @@
+ BUILDDIR/xed -chip-check IVYBRIDGE -d f30fbc00

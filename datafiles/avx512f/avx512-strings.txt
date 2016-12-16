@@ -1,0 +1,63 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+ZEROSTR(XED_OPERAND_ZEROING)::
+0 -> ''
+1 -> '{z}'
+
+SAESTR(XED_OPERAND_SAE)::
+0 -> ''
+1 -> '{sae}'
+
+# AVX512 only has rounding with implied SAE
+ROUNDC(XED_OPERAND_ROUNDC)::
+0  -> ''
+1  -> '{rne-sae}'
+2  -> '{rd-sae}'
+3  -> '{ru-sae}'
+4  -> '{rz-sae}'
+
+
+BCASTSTR(XED_OPERAND_BCAST)::
+0 -> ''
+1 -> '{1to16}'
+2 -> '{4to16}' 
+3 -> '{1to8}'
+4 -> '{4to8}'
+5 -> '{1to8}'
+6 -> '{4to8}'
+7 -> '{2to16}'
+8 -> '{2to8}'
+9 -> '{8to16}'
+10 -> '{1to4}'
+11 -> '{1to2}'
+12 -> '{2to4}'
+13 -> '{1to4}'
+14 -> '{1to8}'
+15 -> '{1to16}'
+16 -> '{1to32}'
+17 -> '{1to16}'
+18 -> '{1to32}'
+19 -> '{1to64}'
+20 -> '{2to4}'
+21 -> '{2to8}'
+22 -> '{1to2}'
+23 -> '{1to2}'
+24 -> '{1to4}'
+25 -> '{1to8}'
+26 -> '{1to2}'
+27 -> '{1to4}'

@@ -1,0 +1,102 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+XMM0  xmm  128 ZMM0  0
+XMM1  xmm  128 ZMM1  1
+XMM2  xmm  128 ZMM2  2
+XMM3  xmm  128 ZMM3  3
+XMM4  xmm  128 ZMM4  4
+XMM5  xmm  128 ZMM5  5
+XMM6  xmm  128 ZMM6  6
+XMM7  xmm  128 ZMM7  7
+
+XMM8  xmm  128 ZMM8  8
+XMM9  xmm  128 ZMM9  9
+XMM10 xmm  128 ZMM10 10
+XMM11 xmm  128 ZMM11 11
+XMM12 xmm  128 ZMM12 12
+XMM13 xmm  128 ZMM13 13
+XMM14 xmm  128 ZMM14 14
+XMM15 xmm  128 ZMM15 15
+
+XMM16 xmm 128  ZMM16 16
+XMM17 xmm 128  ZMM17 17
+XMM18 xmm 128  ZMM18 18
+XMM19 xmm 128  ZMM19 19
+XMM20 xmm 128  ZMM20 20
+XMM21 xmm 128  ZMM21 21
+XMM22 xmm 128  ZMM22 22
+XMM23 xmm 128  ZMM23 23
+XMM24 xmm 128  ZMM24 24
+XMM25 xmm 128  ZMM25 25
+XMM26 xmm 128  ZMM26 26
+XMM27 xmm 128  ZMM27 27
+XMM28 xmm 128  ZMM28 28
+XMM29 xmm 128  ZMM29 29
+XMM30 xmm 128  ZMM30 30
+XMM31 xmm 128  ZMM31 31
+
+YMM0 ymm  256   ZMM0   0 
+YMM1 ymm  256   ZMM1   1 
+YMM2 ymm  256   ZMM2   2 
+YMM3 ymm  256   ZMM3   3 
+YMM4 ymm  256   ZMM4   4 
+YMM5 ymm  256   ZMM5   5 
+YMM6 ymm  256   ZMM6   6 
+YMM7 ymm  256   ZMM7   7 
+YMM8 ymm  256   ZMM8   8 
+YMM9 ymm  256   ZMM9   9 
+YMM10 ymm 256   ZMM10 10
+YMM11 ymm 256   ZMM11 11
+YMM12 ymm 256   ZMM12 12
+YMM13 ymm 256   ZMM13 13
+YMM14 ymm 256   ZMM14 14
+YMM15 ymm 256   ZMM15 15
+
+YMM16 ymm 256  ZMM16 16
+YMM17 ymm 256  ZMM17 17
+YMM18 ymm 256  ZMM18 18
+YMM19 ymm 256  ZMM19 19
+YMM20 ymm 256  ZMM20 20
+YMM21 ymm 256  ZMM21 21
+YMM22 ymm 256  ZMM22 22
+YMM23 ymm 256  ZMM23 23
+YMM24 ymm 256  ZMM24 24
+YMM25 ymm 256  ZMM25 25
+YMM26 ymm 256  ZMM26 26
+YMM27 ymm 256  ZMM27 27
+YMM28 ymm 256  ZMM28 28
+YMM29 ymm 256  ZMM29 29
+YMM30 ymm 256  ZMM30 30
+YMM31 ymm 256  ZMM31 31
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

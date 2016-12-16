@@ -1,0 +1,25 @@
+Attempting to decode: 0c e0 00 
+iclass OR	category LOGICAL	ISA-extension BASE	ISA-set I86
+instruction-length 2
+operand-width 8
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name OR_AL_IMMb
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 18
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0               REG0=AL   IMPLICIT  RW         B    8     1     1      8        INT        GPR
+1   IMM0              0xe0(8b)   EXPLICIT   R         B    8     1     1      8       UINT    INVALID
+2   REG1           REG1=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  MemopBytes = 0
+FLAGS:
+  must-write-rflags of-0 sf-mod zf-mod af-u pf-mod cf-0 
+       read:                                mask=0x0
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                            af  mask=0x10
+ATTRIBUTES: BYTEOP 
+ISA SET: [I86]

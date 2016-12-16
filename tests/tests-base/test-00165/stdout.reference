@@ -1,0 +1,5 @@
+2E70FF
+ICLASS: JO   CATEGORY: COND_BR   EXTENSION: BASE  IFORM: JO_RELBRb   ISA_SET: I86
+SHORT: hint-not-taken jo 0x2
+Encodable! 2E70FF
+Identical re-encoding

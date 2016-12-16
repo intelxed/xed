@@ -1,0 +1,34 @@
+Attempting to decode: f3 66 af 
+iclass REPE_SCASW	category STRINGOP	ISA-extension BASE	ISA-set I86
+instruction-length 3
+operand-width 16
+effective-operand-width 16
+effective-address-width 32
+stack-address-width 32
+iform-enum-name REPE_SCASW
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0               REG0=AX SUPPRESSED   R         W   16     2     1     16        INT        GPR
+1   MEM0           (see below) SUPPRESSED  CR         W   16     2     1     16        INT    INVALID
+2  BASE0             BASE0=EDI SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+3   REG1              REG1=ECX SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+4   REG2           REG2=EFLAGS SUPPRESSED RCW         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0    read SEG= ES BASE= EDI/GPR  ASZ0=32
+  MemopBytes = 2
+FLAGS:
+   reads-rflags of-mod df-tst sf-mod zf-mod af-mod pf-mod cf-mod zf-tst 
+       read:                         zf df  mask=0x440
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                                mask=0x0
+READS ZF
+ATTRIBUTES: FIXED_BASE0 REP 
+REAL REP 	corresponding no-rep iclass: SCASW
+F3 PREFIX
+66-OSZ PREFIX
+ANY 66 PREFIX
+Number of legacy prefixes: 2 
+ISA SET: [I86]

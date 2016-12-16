@@ -1,0 +1,143 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#################################################################
+## file: xed-prefixes.txt
+#################################################################
+
+# SYNTAX:
+#    conditions and input bytes |   output-mode-state and captures...
+
+
+# FIXME: make ICLASS a possible field?
+# Remove the segment override if any supplied, from an LEA
+REMOVE_SEGMENT()::
+mode16 | SEG0=XED_REG_INVALID
+mode32 | SEG0=XED_REG_INVALID
+mode64 | SEG0=XED_REG_INVALID
+# FIXME 2007-07-10 full "otherwise" RHS's are not supported yet in decoder.
+#otherwise | SEG0=XED_REG_INVALID
+
+
+
+PREFIXES()::
+
+# The presence of the REX itself and the REXW are state bits because
+# they control decoding downstream.
+
+#
+# 64b mode prefixes
+#
+
+# rex prefixes 
+mode64  0b0100 wrxb  |  XED_RESET REX=1 REXW=w REXR=r REXX=x REXB=b 
+
+# Note that because of the REX rules, if we see a legacy prefix after
+# a rex prefix, we have to ignore the rex prefix and all its captures! 
+# (reset_rex). The new state bits override existing captures and state
+# bits. That explains all the rex stuff.
+
+# other prefixes
+
+# NOTE: double denotation of f2/f3/osz.(eg f2_prefix and
+# f2_refining_prefix). That 2nd allows for table lookups indexing to
+# the 2B table.
+
+mode64  0xf2 MODE_FIRST_PREFIX=0        |  XED_RESET reset_rex f2_prefix refining_f2  
+mode64  0xf3 MODE_FIRST_PREFIX=0        |  XED_RESET reset_rex f3_prefix refining_f3  
+mode64  0xf2 MODE_FIRST_PREFIX=1 REP=0  |  XED_RESET reset_rex f2_prefix refining_f2
+mode64  0xf3 MODE_FIRST_PREFIX=1 REP=0  |  XED_RESET reset_rex f3_prefix refining_f3
+mode64  0xf2 MODE_FIRST_PREFIX=1 REP!=0 |  XED_RESET reset_rex 
+mode64  0xf3 MODE_FIRST_PREFIX=1 REP!=0 |  XED_RESET reset_rex 
+
+
+# 2009-08-17: The 66_prefix (OSZ=1) gets zero'ed by some instructions
+# that use 66 as a refining prefix. To ensure we have a 66 prefix
+# indicator, we also set PREFIX66=1.
+mode64  0x66  |  XED_RESET 66_prefix   PREFIX66=1 reset_rex 
+
+mode64  0x67  |  XED_RESET 67_prefix              reset_rex 
+mode64  0xf0  |  XED_RESET lock_prefix            reset_rex
+
+#  CS and DS prefixes could be branch hints. cs_prefix and ds_prefix
+#    translate to the correct values for the BRANCH_HINT nonterminal.
+mode64  0x2e  |  XED_RESET HINT=1  reset_rex
+mode64  0x3e  |  XED_RESET HINT=2  reset_rex
+
+mode64  0x26  |  XED_RESET                 reset_rex
+mode64  0x64  |  XED_RESET fs_prefix       reset_rex
+mode64  0x65  |  XED_RESET gs_prefix       reset_rex
+mode64  0x36  |  XED_RESET                 reset_rex
+
+# 
+# 32b  mode prefixes
+#
+
+mode32  0xf2 MODE_FIRST_PREFIX=0        |  XED_RESET  f2_prefix refining_f2  
+mode32  0xf3 MODE_FIRST_PREFIX=0        |  XED_RESET  f3_prefix refining_f3  
+mode32  0xf2 MODE_FIRST_PREFIX=1 REP=0  |  XED_RESET  f2_prefix refining_f2
+mode32  0xf3 MODE_FIRST_PREFIX=1 REP=0  |  XED_RESET  f3_prefix refining_f3
+mode32  0xf2 MODE_FIRST_PREFIX=1 REP!=0 |  XED_RESET  
+mode32  0xf3 MODE_FIRST_PREFIX=1 REP!=0 |  XED_RESET 
+
+mode32  0x66  |  XED_RESET 66_prefix PREFIX66=1
+mode32  0x67  |  XED_RESET 67_prefix        
+mode32  0xf0  |  XED_RESET lock_prefix     
+#  CS and DS prefixes could be branch hints. cs_prefix and ds_prefix
+#    translate to the correct values for the BRANCH_HINT nonterminal.
+mode32  0x2e  |  XED_RESET cs_prefix HINT=1
+mode32  0x3e  |  XED_RESET ds_prefix HINT=2
+
+mode32  0x26  |  XED_RESET es_prefix       
+mode32  0x64  |  XED_RESET fs_prefix       
+mode32  0x65  |  XED_RESET gs_prefix       
+mode32  0x36  |  XED_RESET ss_prefix       
+
+# 
+# 16b mode prefixes
+#
+
+
+mode16  0xf2 MODE_FIRST_PREFIX=0        |  XED_RESET  f2_prefix refining_f2  
+mode16  0xf3 MODE_FIRST_PREFIX=0        |  XED_RESET  f3_prefix refining_f3  
+mode16  0xf2 MODE_FIRST_PREFIX=1 REP=0  |  XED_RESET  f2_prefix refining_f2
+mode16  0xf3 MODE_FIRST_PREFIX=1 REP=0  |  XED_RESET  f3_prefix refining_f3
+mode16  0xf2 MODE_FIRST_PREFIX=1 REP!=0 |  XED_RESET  
+mode16  0xf3 MODE_FIRST_PREFIX=1 REP!=0 |  XED_RESET 
+
+mode16  0x66  |  XED_RESET 66_prefix   PREFIX66=1
+mode16  0x67  |  XED_RESET 67_prefix        
+mode16  0xf0  |  XED_RESET lock_prefix     
+#  CS and DS prefixes could be branch hints. cs_prefix and ds_prefix
+#    translate to the correct values for the BRANCH_HINT nonterminal.
+mode16  0x2e  |  XED_RESET cs_prefix HINT=1      
+mode16  0x3e  |  XED_RESET ds_prefix HINT=2
+
+mode16  0x26  |  XED_RESET es_prefix       
+mode16  0x64  |  XED_RESET fs_prefix       
+mode16  0x65  |  XED_RESET gs_prefix       
+mode16  0x36  |  XED_RESET ss_prefix       
+
+# This is the epsilon action indicating that it is okay to 
+# accept nothing at this point in the traversal.
+otherwise   | 
+
+BRANCH_HINT()::
+HINT=0    | 
+HINT=1    | HINT=3
+HINT=2    | HINT=4
+

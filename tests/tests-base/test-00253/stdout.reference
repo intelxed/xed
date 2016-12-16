@@ -1,0 +1,23 @@
+Attempting to decode: 0f 01 c8 
+iclass MONITOR	category MISC	ISA-extension SSE3	ISA-set SSE3
+instruction-length 3
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name MONITOR
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=EAX SUPPRESSED   R         D   32     4     1     32        INT        GPR
+1   REG1              REG1=ECX SUPPRESSED   R         D   32     4     1     32        INT        GPR
+2   REG2              REG2=EDX SUPPRESSED   R         D   32     4     1     32        INT        GPR
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: NOTSX RING0 
+RING0 only
+ISA SET: [SSE3]
+0	CPUID BIT NAME: [SSE3]
+	Leaf 0x00000001, subleaf 0x00000000, ECX[0]

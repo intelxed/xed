@@ -1,0 +1,1 @@
+ BUILDDIR/xed-ex3 mov/16 ax MEM2:fs:bx

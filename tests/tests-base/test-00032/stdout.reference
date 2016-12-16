@@ -1,0 +1,5 @@
+41FF4C5000
+ICLASS: INC   CATEGORY: BINARY   EXTENSION: BASE  IFORM: INC_GPRv_40   ISA_SET: I86
+SHORT: inc ecx
+Encodable! 41
+Identical re-encoding

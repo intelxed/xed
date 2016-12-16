@@ -1,0 +1,61 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+INSTRUCTIONS()::
+
+{
+ICLASS    : ADCX
+CPL       : 3
+CATEGORY  : BDW
+EXTENSION : BDW
+FLAGS     : MUST [ cf-tst cf-mod ]
+# reg:rw rm:r 
+# 32b
+PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix W0  IMMUNE66() 
+OPERANDS  : REG0=GPR32_R():rw:d REG1=GPR32_B():r:d
+PATTERN   : 0x0F 0x38 0xF6   MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() osz_refining_prefix W0  IMMUNE66()
+OPERANDS  : REG0=GPR32_R():rw:d MEM0:r:d  
+
+# 64b
+PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix  W1 IMMUNE66()
+OPERANDS  : REG0=GPR64_R():rw:q  REG1=GPR64_B():r:q 
+PATTERN   : 0x0F 0x38 0xF6  MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() osz_refining_prefix  W1  IMMUNE66()
+OPERANDS  : REG0=GPR64_R():rw:q  MEM0:r:q 
+}
+
+
+
+{
+ICLASS    : ADOX
+CPL       : 3
+CATEGORY  : BDW
+EXTENSION : BDW
+FLAGS     : MUST [ of-tst of-mod ]
+# reg:rw rm:r 
+# 32b
+PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] refining_f3  W0 IMMUNE66()
+OPERANDS  : REG0=GPR32_R():rw:d  REG1=GPR32_B():r:d
+PATTERN   : 0x0F 0x38 0xF6  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() refining_f3 W0 IMMUNE66()   
+OPERANDS  : REG0=GPR32_R():rw:d MEM0:r:d  
+
+# 64b
+PATTERN   : 0x0F 0x38 0xF6 MOD[0b11] MOD=3 REG[rrr] RM[nnn] refining_f3 W1 IMMUNE66()
+OPERANDS  : REG0=GPR64_R():rw:q  REG1=GPR64_B():r:q 
+PATTERN   : 0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() refining_f3 W1   IMMUNE66()
+OPERANDS  : REG0=GPR64_R():rw:q  MEM0:r:q 
+}
+

@@ -1,0 +1,31 @@
+Attempting to decode: f3 6d 
+iclass REP_INSD	category IOSTRINGOP	ISA-extension BASE	ISA-set I386
+instruction-length 2
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name REP_INSD
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below) SUPPRESSED  CW         D   32     4     1     32        INT    INVALID
+1  BASE0             BASE0=EDI SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+2   REG0               REG0=DX SUPPRESSED   R         W   16     2     1     16        INT        GPR
+3   REG1              REG1=ECX SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+4   REG2           REG2=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0 written SEG= ES BASE= EDI/GPR  ASZ0=32
+  MemopBytes = 4
+FLAGS:
+   reads-rflags iopl-tst df-tst 
+       read:                       df iopl  mask=0x3400
+    written:                                mask=0x0
+  undefined:                                mask=0x0
+ATTRIBUTES: FIXED_BASE0 NOTSX REP 
+REAL REP 	corresponding no-rep iclass: INSD
+F3 PREFIX
+Number of legacy prefixes: 1 
+ISA SET: [I386]

@@ -1,0 +1,77 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+XED_ISA_SET_XSAVE:           xsave.1.0.ecx.26          osxsave.1.0.ecx.27       
+XED_ISA_SET_AES:             aes.1.0.ecx.25       
+
+XED_ISA_SET_CLFSH:           clflush.1.0.edx.19       
+
+XED_ISA_SET_CMPXCHG16B:      cmpxchg16b.1.0.ecx.13       
+
+XED_ISA_SET_FXSAVE:          fxsave.1.0.edx.24       
+XED_ISA_SET_FXSAVE64:        fxsave.1.0.edx.24          intel64.80000001.0.edx.29
+XED_ISA_SET_I186:            n/a              
+XED_ISA_SET_I286PROTECTED:   n/a              
+XED_ISA_SET_I286REAL:        n/a              
+XED_ISA_SET_I386:            n/a              
+XED_ISA_SET_I486:            n/a              
+XED_ISA_SET_I486REAL:        n/a              
+XED_ISA_SET_I86:             n/a              
+
+XED_ISA_SET_LAHF:            lahf.80000001.0.ecx.0 
+XED_ISA_SET_LONGMODE:        intel64.80000001.0.edx.29
+XED_ISA_SET_LZCNT:           lzcnt.80000001.0.ecx.5 
+
+XED_ISA_SET_MOVBE:           movebe.1.0.ecx.22       
+XED_ISA_SET_PAUSE:           n/a              
+XED_ISA_SET_PCLMULQDQ:       pclmulqdq.1.0.ecx.1        
+XED_ISA_SET_PENTIUMMMX:      n/a              
+XED_ISA_SET_PENTIUMREAL:     n/a              
+
+XED_ISA_SET_POPCNT:          popcnt.1.0.ecx.23       
+XED_ISA_SET_PPRO:            n/a              
+XED_ISA_SET_PREFETCHW:       prefetchw.80000001.0.ecx.8 
+
+XED_ISA_SET_PREFETCH_NOP:    n/a              
+XED_ISA_SET_PT:              intelpt.7.0.ebx.25       
+XED_ISA_SET_RDPMC:           n/a              
+XED_ISA_SET_RDTSCP:          rdtscp.80000001.0.edx.27
+
+XED_ISA_SET_SMX:             smx.1.0.ecx.6        
+XED_ISA_SET_SSE:             sse.1.0.edx.25       
+XED_ISA_SET_SSE2:            sse2.1.0.edx.26       
+XED_ISA_SET_SSE3:            sse3.1.0.ecx.0        
+XED_ISA_SET_SSE4:            sse4.1.0.ecx.19       
+XED_ISA_SET_SSE42:           sse42.1.0.ecx.20       
+
+XED_ISA_SET_SSEMXCSR:        sse.1.0.edx.25       
+XED_ISA_SET_SSSE3:           ssse3.1.0.ecx.9        
+
+XED_ISA_SET_VMFUNC:          n/a              
+
+XED_ISA_SET_VTX:             vmx.1.0.ecx.5        
+XED_ISA_SET_X87:             n/a              
+
+
+
+XED_ISA_SET_AMD:             n/a              
+XED_ISA_SET_3DNOW:           n/a              
+XED_ISA_SET_SSE4A:           n/a              
+XED_ISA_SET_SVM:             n/a              
+
+
+

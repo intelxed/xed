@@ -1,0 +1,5 @@
+Encode request:
+ADD MODE:1, REG0:EAX, REG1:EBX, SMODE:1
+OPERAND ORDER: REG0 REG1 
+
+Encodable! 01D8

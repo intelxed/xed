@@ -1,0 +1,5 @@
+90
+ICLASS: NOP   CATEGORY: NOP   EXTENSION: BASE  IFORM: NOP_90   ISA_SET: I86
+SHORT: nop 
+Encodable! 90
+Identical re-encoding

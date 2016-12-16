@@ -1,0 +1,5 @@
+70FF
+ICLASS: JO   CATEGORY: COND_BR   EXTENSION: BASE  IFORM: JO_RELBRb   ISA_SET: I86
+SHORT: jo 0x1
+Encodable! 70FF
+Identical re-encoding

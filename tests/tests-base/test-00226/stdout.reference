@@ -1,0 +1,5 @@
+Encode request:
+XOR MODE:2, REG0:AL, REG1:BL, SMODE:2
+OPERAND ORDER: REG0 REG1 
+
+Encodable! 30D8

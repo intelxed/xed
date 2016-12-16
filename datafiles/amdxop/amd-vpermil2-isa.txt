@@ -1,0 +1,97 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+AVX_INSTRUCTIONS()::
+
+
+{
+ICLASS    : VPERMIL2PS
+CPL       : 3
+CATEGORY  : XOP
+EXTENSION : XOP
+ISA_SET   : XOP
+
+# 128b W0 
+PATTERN : VV1 0x48 VL128 V66 V0F3A W0  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 MEM0:r:dq:f32 REG2=XMM_SE():r:dq:f32 IMM0:r:b
+
+PATTERN : VV1 0x48 VL128 V66 V0F3A W0  MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=XMM_B():r:dq:f32 REG3=XMM_SE():r:dq:f32 IMM0:r:b
+
+# 256b W0
+PATTERN : VV1 0x48 VL256 V66 V0F3A W0   MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f32 REG1=YMM_N():r:qq:f32 MEM0:r:qq:f32 REG2=YMM_SE():r:qq:f32 IMM0:r:b
+
+PATTERN : VV1 0x48 VL256 V66 V0F3A W0   MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f32 REG1=YMM_N():r:qq:f32 REG2=YMM_B():r:qq:f32 REG3=YMM_SE():r:qq:f32 IMM0:r:b
+
+# 128b W1
+PATTERN : VV1 0x48 VL128 V66 V0F3A W1  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=XMM_SE():r:dq:f32 MEM0:r:dq:f32  IMM0:r:b
+
+PATTERN : VV1 0x48 VL128 V66 V0F3A W1  MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=XMM_SE():r:dq:f32 REG3=XMM_B():r:dq:f32  IMM0:r:b
+
+# 256b W1
+PATTERN : VV1 0x48 VL256 V66 V0F3A W1   MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f32 REG1=YMM_N():r:qq:f32  REG2=YMM_SE():r:qq:f32  MEM0:r:qq:f32 IMM0:r:b
+
+PATTERN : VV1 0x48 VL256 V66 V0F3A W1   MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f32 REG1=YMM_N():r:qq:f32 REG2=YMM_SE():r:qq:f32 REG3=YMM_B():r:qq:f32  IMM0:r:b
+
+}
+
+
+
+{
+ICLASS    : VPERMIL2PD
+CPL       : 3
+CATEGORY  : XOP
+EXTENSION : XOP
+ISA_SET   : XOP
+
+# 128b W0 
+PATTERN : VV1 0x49 VL128 V66 V0F3A W0  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 MEM0:r:dq:f64 REG2=XMM_SE():r:dq:f64 IMM0:r:b
+
+PATTERN : VV1 0x49 VL128 V66 V0F3A W0  MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=XMM_B():r:dq:f64 REG3=XMM_SE():r:dq:f64 IMM0:r:b
+
+# 256b W0
+PATTERN : VV1 0x49 VL256 V66 V0F3A W0   MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f64 REG1=YMM_N():r:qq:f64 MEM0:r:qq:f64 REG2=YMM_SE():r:qq:f64 IMM0:r:b
+
+PATTERN : VV1 0x49 VL256 V66 V0F3A W0   MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f64 REG1=YMM_N():r:qq:f64 REG2=YMM_B():r:qq:f64 REG3=YMM_SE():r:qq:f64 IMM0:r:b
+
+# 128b W1
+PATTERN : VV1 0x49 VL128 V66 V0F3A W1  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=XMM_SE():r:dq:f64 MEM0:r:dq:f64  IMM0:r:b
+
+PATTERN : VV1 0x49 VL128 V66 V0F3A W1  MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=XMM_SE():r:dq:f64 REG3=XMM_B():r:dq:f64  IMM0:r:b
+
+# 256b W1
+PATTERN : VV1 0x49 VL256 V66 V0F3A W1   MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f64 REG1=YMM_N():r:qq:f64  REG2=YMM_SE():r:qq:f64  MEM0:r:qq:f64 IMM0:r:b
+
+PATTERN : VV1 0x49 VL256 V66 V0F3A W1   MOD[0b11] MOD=3 REG[rrr] RM[nnn] SE_IMM8()
+OPERANDS  : REG0=YMM_R():w:qq:f64 REG1=YMM_N():r:qq:f64 REG2=YMM_SE():r:qq:f64 REG3=YMM_B():r:qq:f64  IMM0:r:b
+
+}
+

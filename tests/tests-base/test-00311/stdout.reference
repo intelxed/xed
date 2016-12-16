@@ -1,0 +1,5 @@
+C4C33979F245
+ICLASS: VFNMADDPD   CATEGORY: FMA4   EXTENSION: FMA4  IFORM: VFNMADDPD_XMMdq_XMMdq_XMMdq_XMMdq   ISA_SET: FMA4
+SHORT: vfnmaddpd xmm6, xmm8, xmm10, xmm4
+Encodable! C4C33979F245
+Identical re-encoding

@@ -1,0 +1,1 @@
+ BUILDDIR/xed -chip-check QUARK -d F3E100

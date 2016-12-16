@@ -1,0 +1,5 @@
+0F1B0C07
+ICLASS: BNDSTX   CATEGORY: MPX   EXTENSION: MPX  IFORM: BNDSTX_MEMbnd64_BND   ISA_SET: MPX
+SHORT: bndstx ptr [rdi], bnd1, rax
+Encodable! 0F1B0C07
+Identical re-encoding

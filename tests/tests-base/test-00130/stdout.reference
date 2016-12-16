@@ -1,0 +1,5 @@
+67D7
+ICLASS: XLAT   CATEGORY: MISC   EXTENSION: BASE  IFORM: XLAT   ISA_SET: I86
+SHORT: addr16 xlat 
+Encodable! 67D7
+Identical re-encoding

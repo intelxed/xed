@@ -1,0 +1,30 @@
+Attempting to decode: 9c 
+iclass PUSHFQ	category PUSH	ISA-extension LONGMODE	ISA-set LONGMODE
+instruction-length 1
+operand-width 64
+effective-operand-width 64
+effective-address-width 64
+stack-address-width 64
+iform-enum-name PUSHFQ
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0        REG0=STACKPUSH SUPPRESSED   W         Q   64     8     1     64        INT     PSEUDO
+1   MEM0           (see below) SUPPRESSED   W         Q   64     8     1     64        INT    INVALID
+2  BASE0             BASE0=RSP SUPPRESSED  RW       SSZ   64     8     1     64        INT        GPR
+3   REG1           REG1=RFLAGS SUPPRESSED   R         Y   64     8     1     64        INT      FLAGS
+Memory Operands
+  0 written BASE= RSP/GPR  ASZ0=64
+  MemopBytes = 8
+FLAGS:
+   reads-rflags id-tst vip-tst vif-tst ac-tst vm-tst rf-tst nt-tst iopl-tst iopl-tst of-tst df-tst if-tst tf-tst sf-tst zf-tst af-tst pf-tst cf-tst 
+       read: of sf zf af pf cf df vif iopl if ac vm rf nt tf id vip  mask=0x3f7fd5
+    written:                                mask=0x0
+  undefined:                                mask=0x0
+READS ZF
+ATTRIBUTES: FIXED_BASE0 STACKPUSH0 
+ISA SET: [LONGMODE]
+0	CPUID BIT NAME: [INTEL64]
+	Leaf 0x80000001, subleaf 0x00000000, EDX[29]

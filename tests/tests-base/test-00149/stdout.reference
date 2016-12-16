@@ -1,0 +1,24 @@
+Attempting to decode: f2 0f 12 c0 
+iclass MOVDDUP	category DATAXFER	ISA-extension SSE3	ISA-set SSE3
+instruction-length 4
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name MOVDDUP_XMMdq_XMMq
+iform-enum-name-dispatch (zero based) 1
+iclass-max-iform-dispatch 2
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0             REG0=XMM0   EXPLICIT   W        DQ  128    16     4     32        INT        XMM
+1   REG1             REG1=XMM0   EXPLICIT   R         Q   64     8     1     64        INT        XMM
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: 
+F2 PREFIX
+EXCEPTION TYPE: SSE_TYPE_5
+Number of legacy prefixes: 1 
+ISA SET: [SSE3]
+0	CPUID BIT NAME: [SSE3]
+	Leaf 0x00000001, subleaf 0x00000000, ECX[0]

@@ -1,0 +1,33 @@
+Attempting to decode: f3 a5 
+iclass REP_MOVSD	category STRINGOP	ISA-extension BASE	ISA-set I386
+instruction-length 2
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name REP_MOVSD
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below) SUPPRESSED  CW         D   32     4     1     32        INT    INVALID
+1  BASE0             BASE0=EDI SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+2   MEM1           (see below) SUPPRESSED  CR         D   32     4     1     32        INT    INVALID
+3  BASE1             BASE1=ESI SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+4   REG0              REG0=ECX SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
+5   REG1           REG1=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0 written SEG= ES BASE= EDI/GPR  ASZ0=32
+  1    read SEG= DS BASE= ESI/GPR  ASZ1=32
+  MemopBytes = 4
+FLAGS:
+   reads-rflags df-tst 
+       read:                            df  mask=0x400
+    written:                                mask=0x0
+  undefined:                                mask=0x0
+ATTRIBUTES: FIXED_BASE0 FIXED_BASE1 REP 
+REAL REP 	corresponding no-rep iclass: MOVSD
+F3 PREFIX
+Number of legacy prefixes: 1 
+ISA SET: [I386]

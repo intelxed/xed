@@ -1,0 +1,119 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+ESIZE_128_BITS()::
+otherwise -> nothing
+ESIZE_64_BITS()::
+otherwise -> nothing
+ESIZE_32_BITS()::
+otherwise -> nothing
+ESIZE_16_BITS()::
+otherwise -> nothing
+ESIZE_8_BITS()::
+otherwise -> nothing
+ESIZE_4_BITS()::
+otherwise -> nothing
+ESIZE_2_BITS()::
+otherwise -> nothing
+ESIZE_1_BITS()::
+otherwise -> nothing
+
+NELEM_MOVDDUP()::
+otherwise -> nothing
+NELEM_FULLMEM()::
+otherwise -> nothing
+
+NELEM_HALFMEM()::
+otherwise -> nothing
+
+NELEM_QUARTERMEM():: 
+otherwise -> nothing
+
+NELEM_EIGHTHMEM():: 
+otherwise -> nothing
+
+NELEM_GPR_READER_BYTE()::
+otherwise -> nothing
+NELEM_GPR_READER_WORD()::
+otherwise -> nothing
+NELEM_GPR_WRITER_LDOP_D()::
+otherwise -> nothing
+NELEM_GPR_WRITER_LDOP_Q()::
+otherwise -> nothing
+NELEM_GPR_WRITER_STORE_BYTE()::
+otherwise -> nothing
+NELEM_GPR_WRITER_STORE_WORD()::
+otherwise -> nothing
+NELEM_TUPLE1_BYTE()::
+otherwise -> nothing
+NELEM_TUPLE1_WORD()::
+otherwise -> nothing
+
+NELEM_SCALAR()::
+otherwise -> nothing
+NELEM_TUPLE1_SUBDWORD()::
+otherwise -> nothing
+NELEM_GPR_READER()::
+otherwise -> nothing
+NELEM_GPR_READER_SUBDWORD()::
+otherwise -> nothing
+NELEM_GPR_WRITER_LDOP()::
+otherwise -> nothing
+NELEM_GPR_WRITER_STORE()::
+otherwise -> nothing
+NELEM_GPR_WRITER_STORE_SUBDWORD()::
+otherwise -> nothing
+
+NELEM_MEM128()::
+BCAST!=0    -> error
+otherwise   -> BCRC=0
+
+# TUPLE1,2,4,8, FULL and HALF
+
+NELEM_TUPLE1()::
+otherwise -> nothing
+
+NELEM_GSCAT()::
+otherwise -> nothing
+
+NELEM_TUPLE2()::
+otherwise -> nothing
+
+NELEM_TUPLE4()::
+otherwise -> nothing
+
+NELEM_TUPLE8()::
+otherwise -> nothing
+
+# these have broadcasting
+
+NELEM_FULL()::
+BCAST!=0    -> BCRC=1
+otherwise   -> BCRC=0
+
+NELEM_HALF():: 
+BCAST!=0    -> BCRC=1
+otherwise   -> BCRC=0
+
+FIX_ROUND_LEN512()::
+otherwise -> nothing
+FIX_ROUND_LEN128()::
+otherwise -> nothing
+
+
+
+

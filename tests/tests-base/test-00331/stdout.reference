@@ -1,0 +1,3 @@
+Request: INSB MODE:1, SMODE:1
+Encodable! 6C
+.byte 0x6c

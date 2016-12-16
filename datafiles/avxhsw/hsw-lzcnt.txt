@@ -1,0 +1,60 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+INSTRUCTIONS():: 
+
+# LZCNT reg16, reg/mem16 F30FBD /r
+# LZCNT reg32, reg/mem32 F30FBD /r
+# LZCNT reg64, reg/mem64 F30FBD /r
+
+{
+ICLASS    : LZCNT
+# This replace the AMD version in LZCNT builds
+VERSION   : 2 
+CPL       : 3
+CATEGORY  : LZCNT
+EXTENSION : LZCNT
+COMMENT:  : These next one WAS introduced first by AMD circa SSE4a.
+FLAGS     : MUST [ cf-mod zf-mod of-u af-u pf-u sf-u ]
+PATTERN   : 0x0F 0xBD f3_refining_prefix LZCNT=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 
+OPERANDS  : REG0=GPRv_R():w:v     MEM0:r:v     
+PATTERN   : 0x0F 0xBD f3_refining_prefix LZCNT=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPRv_R():w:v     REG1=GPRv_B():r:v
+}
+
+
+{
+ICLASS    : BSR
+VERSION   : 2
+COMMENT   : AMD reused 0FBD for LZCNT and made BSR not have a refining prefix.  This version replaces the normal version of BSR
+CPL       : 3
+CATEGORY  : BITBYTE
+EXTENSION : BASE
+ISA_SET   : I386
+FLAGS     : MUST [ of-u sf-u zf-mod af-u pf-u cf-u ]
+PATTERN   : 0x0F 0xBD not_refining_f3 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_R():cw MEM0:r:v
+
+PATTERN   : 0x0F 0xBD not_refining_f3 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
+
+PATTERN   : 0x0F 0xBD  refining_f3 LZCNT=0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_R():cw MEM0:r:v
+
+PATTERN   : 0x0F 0xBD  refining_f3 LZCNT=0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
+}

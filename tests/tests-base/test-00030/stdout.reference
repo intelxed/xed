@@ -1,0 +1,5 @@
+7402
+ICLASS: JZ   CATEGORY: COND_BR   EXTENSION: BASE  IFORM: JZ_RELBRb   ISA_SET: I86
+SHORT: jz 0x4
+Encodable! 7402
+Identical re-encoding

@@ -1,0 +1,5 @@
+Encode request:
+XOR MODE:2, REG0:SIL, REG1:BPL, SMODE:2
+OPERAND ORDER: REG0 REG1 
+
+Encodable! 4030EE

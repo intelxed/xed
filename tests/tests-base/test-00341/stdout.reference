@@ -1,0 +1,3 @@
+Request: PUSHFQ EOSZ:3, MODE:2, SMODE:2
+Encodable! 9C
+.byte 0x9c

@@ -1,0 +1,19 @@
+DEC AVX              ; BUILDDIR/xed -d C5EC58CB
+DEC AVX              ; BUILDDIR/xed -d 66C5EC58CB
+ENC AVX              ; BUILDDIR/xed-ex3 vaddps ymm1 ymm2 ymm3
+ENC AVX              ; BUILDDIR/xed-ex3 -64 vpinsrb xmm1 xmm2 eax IMM:ff
+ENC AVX              ; BUILDDIR/xed-ex3 -64  vpinsrb/64 xmm1 xmm2 eax IMM:ff
+DEC AVX              ; BUILDDIR/xed -64 -d C4E36920C8FF
+DEC AVX              ; BUILDDIR/xed -64 -d C4 E3 E9 20C8FF
+DEC AVX              ; BUILDDIR/xed -d C4 E3 E9 20C8FF
+DEC AVX              ; BUILDDIR/xed -d C4 E3 69 20C8FF
+ENC AVX              ; BUILDDIR/xed-ex3 -64 vpinsrw xmm1 xmm2 eax IMM:ff
+DEC AVX              ; BUILDDIR/xed -64 -d C5E9C4C8FF
+DEC AVX              ; BUILDDIR/xed -64 -d C4 E1 69 C4 C8 FF
+DEC AVX              ; BUILDDIR/xed -64 -d C4 E1 E9 C4 C8 FF
+ENC AVX              ; BUILDDIR/xed-ex3 -64 vbroadcastss/32 xmm1 MEM4:rax
+ENC AVX              ; BUILDDIR/xed-ex3 -64  vbroadcastss/64 xmm1 MEM4:rax
+DEC AVX              ; BUILDDIR/xed -64 -d 67C4226D934CC500
+DEC AVX              ; BUILDDIR/xed -64 -d 67C4E23593AC3ED8B2080A
+DEC AVX              ; BUILDDIR/xed -64 -d C4A23D91043D00000000
+DEC AVX              ; BUILDDIR/xed -64 -d C462159124058076ED5E

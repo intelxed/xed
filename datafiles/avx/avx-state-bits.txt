@@ -1,0 +1,41 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+VL128  VL=0
+VL256  VL=1
+
+VV1    VEXVALID=1
+VV0    VEXVALID=0
+
+VMAP0  MAP=0
+V0F    MAP=1
+V0F38  MAP=2
+V0F3A  MAP=3
+
+VNP    VEX_PREFIX=0
+V66    VEX_PREFIX=1
+VF2    VEX_PREFIX=2
+VF3    VEX_PREFIX=3
+
+# No VEX-SPECIFIED-REGISTER
+NOVSR  VEXDEST3=0b1 VEXDEST210=0b111
+
+EMX_BROADCAST_1TO4_32  BCAST=10   #     128
+EMX_BROADCAST_1TO4_64  BCAST=13   #     256
+EMX_BROADCAST_1TO8_32  BCAST=3    #     256
+EMX_BROADCAST_2TO4_64  BCAST=20   #     256
+

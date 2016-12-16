@@ -1,0 +1,101 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+###########################################################################
+## file: xed-eOSZ.txt
+###########################################################################
+
+OSZ_NONTERM()::
+
+mode16 no66_prefix | EOSZ=1
+mode16   66_prefix | EOSZ=2
+
+mode32   66_prefix | EOSZ=1
+mode32 no66_prefix | EOSZ=2
+
+# NOTE this can get overridden later if a DF64 NT shows up.
+mode64   66_prefix norexw_prefix | EOSZ=1
+mode64 no66_prefix norexw_prefix | EOSZ=2
+mode64   66_prefix rexw_prefix   | EOSZ=3
+mode64 no66_prefix rexw_prefix   | EOSZ=3
+
+
+# Things that default to 64b mode invoke this nonterminal once they
+# are identified to denote that fact. Placement of this nonterminal is
+# critical for those operations and the ones the might collide with
+# during decoding. See PUSHF/PUSHFD/PUSHFQ.
+#
+# Denote the DF64=1 (df64).
+DF64()::
+mode16            |
+mode32            |
+mode64   66_prefix norexw_prefix  | EOSZ=1 df64
+mode64 no66_prefix norexw_prefix  | EOSZ=3 df64
+mode64   66_prefix   rexw_prefix  | EOSZ=3 df64
+mode64 no66_prefix   rexw_prefix  | EOSZ=3 df64
+
+# if we have a refining OSZ 0x66 prefix, then we must undo the effects
+# of the OSZ_NONTERM(). DF64 is not used with anything that has refining 66 prefixes.
+# We turn off the osze prefix because it is really behaving like a refining prefix for these instructions.
+REFINING66()::
+mode16               | EOSZ=1 no66_prefix
+mode32               | EOSZ=2 no66_prefix
+mode64 norexw_prefix | EOSZ=2 no66_prefix
+mode64 rexw_prefix   | EOSZ=3 no66_prefix
+
+IGNORE66()::
+mode16               | EOSZ=1 no66_prefix
+mode32               | EOSZ=2 no66_prefix
+mode64 norexw_prefix | EOSZ=2 no66_prefix
+mode64 rexw_prefix   | EOSZ=3 no66_prefix
+
+
+# IMMUNE66() is used to make 16b mode behave like 32b mode.
+# Used for:
+#   cmpxchg8b / cmpxchg16b,
+#   NHM sttni instr:  pcmpestri, pcmpistrm, pcmpestrm, pcmpistri,
+#   BDW adox, adcx.
+#
+IMMUNE66()::
+mode16               | EOSZ=2 no66_prefix
+mode32               | EOSZ=2 no66_prefix
+mode64 norexw_prefix | EOSZ=2 no66_prefix
+mode64 rexw_prefix   | EOSZ=3 no66_prefix
+
+CR_WIDTH()::
+mode16  | EOSZ=2 DF32=1 no66_prefix
+mode32  | EOSZ=2 DF32=1 no66_prefix
+mode64  | EOSZ=3 DF64=1 no66_prefix
+
+
+IMMUNE66_LOOP64()::
+mode16  | 
+mode32  | 
+mode64  | EOSZ=3 no66_prefix
+
+IMMUNE_REXW()::
+mode16         | 
+mode32         | 
+mode64 no66_prefix             | EOSZ=2 
+mode64 66_prefix rexw_prefix   | EOSZ=2
+mode64 66_prefix norexw_prefix | EOSZ=1
+
+# FORCE64() can only be used with mode64 stuff (else encode does not
+# work).  see IMMUNE66_LOOP64() for something that works in all modes.
+FORCE64()::
+mode64    | EOSZ=3 no66_prefix
+otherwise | 

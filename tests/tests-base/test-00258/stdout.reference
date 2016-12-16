@@ -1,0 +1,5 @@
+FF10
+ICLASS: CALL_NEAR   CATEGORY: CALL   EXTENSION: BASE  IFORM: CALL_NEAR_MEMv   ISA_SET: I86
+SHORT: call dword ptr [eax]
+Encodable! FF10
+Identical re-encoding

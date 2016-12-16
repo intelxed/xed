@@ -1,0 +1,20 @@
+Attempting to decode: 0f 20 c0 
+iclass MOV_CR	category DATAXFER	ISA-extension BASE	ISA-set I86
+instruction-length 3
+operand-width 32
+effective-operand-width 32
+effective-address-width 16
+stack-address-width 16
+iform-enum-name MOV_CR_GPR32_CR
+iform-enum-name-dispatch (zero based) 2
+iclass-max-iform-dispatch 4
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=EAX   EXPLICIT   W         D   32     4     1     32        INT        GPR
+1   REG1              REG1=CR0   EXPLICIT   R         Y   32     4     1     32        INT         CR
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: RING0 
+RING0 only
+ISA SET: [I86]

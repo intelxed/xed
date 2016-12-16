@@ -1,0 +1,22 @@
+Attempting to decode: c9 
+iclass LEAVE	category MISC	ISA-extension BASE	ISA-set I186
+instruction-length 1
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name LEAVE
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below) SUPPRESSED   R         V   32     4     1     32        INT    INVALID
+1  BASE0             BASE0=EBP SUPPRESSED   R       ASZ   32     4     1     32        INT        GPR
+2   REG0              REG0=EBP SUPPRESSED  RW         V   32     4     1     32        INT        GPR
+3   REG1              REG1=ESP SUPPRESSED  RW         V   32     4     1     32        INT        GPR
+Memory Operands
+  0    read SEG= SS BASE= EBP/GPR  ASZ0=32
+  MemopBytes = 4
+ATTRIBUTES: FIXED_BASE0 SCALABLE 
+ISA SET: [I186]

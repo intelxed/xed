@@ -1,0 +1,3 @@
+Request: STOSD MODE:1, SMODE:1
+Encodable! AB
+.byte 0xab

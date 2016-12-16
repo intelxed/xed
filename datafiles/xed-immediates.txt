@@ -1,0 +1,96 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+###########################################################################
+## file: xed-immediates.txt
+###########################################################################
+# Immediates and displacements
+# FIXME: when there are multiple immediates, need separate storage
+# FIXME: record the width of the immediate
+
+# FIXME: for encode we'll sometimes have to choose between SIMMv and
+#        SIMMz to pick a MOV, for 16 and 32b widths.
+##########################################################################################
+## 2-BYTE STORAGE UNITS
+##########################################################################################
+
+ONE()::
+mode16  | IMM_WIDTH=8 UIMM0=1
+mode32  | IMM_WIDTH=8 UIMM0=1
+mode64  | IMM_WIDTH=8 UIMM0=1
+
+
+UIMMv()::
+EOSZ=1 UIMM0[i/16] | IMM_WIDTH=16
+EOSZ=2 UIMM0[i/32] | IMM_WIDTH=32
+EOSZ=3 UIMM0[i/64] | IMM_WIDTH=64
+
+SIMMz()::
+EOSZ=1 UIMM0[i/16] | IMM_WIDTH=16 IMM0SIGNED=1
+EOSZ=2 UIMM0[i/32] | IMM_WIDTH=32 IMM0SIGNED=1
+EOSZ=3 UIMM0[i/32] | IMM_WIDTH=32 IMM0SIGNED=1
+
+SIMM8()::
+ UIMM0[i/8] | IMM_WIDTH=8 IMM0SIGNED=1
+
+UIMM8()::
+ UIMM0[i/8] | IMM_WIDTH=8
+
+# For ENTER. separate storage.
+UIMM8_1()::
+ UIMM1[i/8] | true
+
+UIMM16()::
+ UIMM0[i/16] | IMM_WIDTH=16
+
+UIMM32()::
+ UIMM0[i/32]  | IMM_WIDTH=32
+
+BRDISP8()::
+ DISP[d/8]  |BRDISP_WIDTH=8
+
+BRDISP32()::
+ DISP[d/32] |  BRDISP_WIDTH=32
+
+BRDISPz()::
+EOSZ=1 DISP[d/16]  | BRDISP_WIDTH=16
+EOSZ=2 DISP[d/32]  | BRDISP_WIDTH=32
+EOSZ=3 DISP[d/32]  | BRDISP_WIDTH=32
+
+ 
+MEMDISPv()::
+EASZ=1 DISP[a/16]  | DISP_WIDTH=16 
+EASZ=2 DISP[a/32]  | DISP_WIDTH=32
+EASZ=3 DISP[a/64]  | DISP_WIDTH=64 
+
+
+MEMDISP32()::
+DISP[a/32] | DISP_WIDTH=32
+
+MEMDISP16()::
+DISP[a/16] | DISP_WIDTH=16
+
+MEMDISP8()::
+DISP[a/8]  | DISP_WIDTH=8
+
+
+MEMDISP()::
+NEED_MEMDISP=0               | DISP_WIDTH=0
+NEED_MEMDISP=8   DISP[a/8]   | DISP_WIDTH=8
+NEED_MEMDISP=16  DISP[a/16]  | DISP_WIDTH=16
+NEED_MEMDISP=32  DISP[a/32]  | DISP_WIDTH=32
+

@@ -1,0 +1,3 @@
+Request: MOVSD MODE:1, SMODE:1
+Encodable! A5
+.byte 0xa5

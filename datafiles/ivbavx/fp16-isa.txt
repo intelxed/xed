@@ -1,0 +1,71 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+AVX_INSTRUCTIONS()::
+{
+ICLASS    : VCVTPH2PS
+COMMENT   : UPCONVERT -- NO IMMEDIATE
+CPL       : 3
+CATEGORY  : CONVERT
+EXTENSION : F16C
+ATTRIBUTES : MXCSR
+EXCEPTIONS: avx-type-11
+# 128b form
+
+PATTERN : VV1 0x13 VL128 V66 V0F38 NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  W0
+OPERANDS  : REG0=XMM_R():w:dq:f32 MEM0:r:q:f16
+
+PATTERN : VV1 0x13 VL128 V66 V0F38 NOVSR  MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0
+OPERANDS  : REG0=XMM_R():w:dq:f32  REG1=XMM_B():r:q:f16
+
+
+# 256b form
+
+PATTERN : VV1 0x13 VL256 V66 V0F38 NOVSR  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() W0
+OPERANDS  : REG0=YMM_R():w:qq:f32 MEM0:r:dq:f16
+
+PATTERN : VV1 0x13 VL256 V66 V0F38 NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]  W0
+OPERANDS  : REG0=YMM_R():w:qq:f32  REG1=XMM_B():r:dq:f16
+}
+
+
+{
+ICLASS    : VCVTPS2PH
+COMMENT   : DOWNCONVERT -- HAS IMMEDIATE
+CPL       : 3
+CATEGORY  : CONVERT
+EXTENSION : F16C
+ATTRIBUTES : MXCSR
+EXCEPTIONS: avx-type-11
+# 128b imm8 form
+
+PATTERN : VV1 0x1D VL128 V66 V0F3A NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8() W0
+OPERANDS  : MEM0:w:q:f16 REG0=XMM_R():r:dq:f32  IMM0:r:b
+
+PATTERN : VV1 0x1D VL128 V66 V0F3A NOVSR  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8() W0
+OPERANDS  : REG0=XMM_B():w:q:f16 REG1=XMM_R():r:dq:f32   IMM0:r:b
+
+# 256b imm8 form
+
+PATTERN : VV1 0x1D VL256 V66 V0F3A NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8() W0
+OPERANDS  : MEM0:w:dq:f16 REG0=YMM_R():r:qq:f32  IMM0:r:b
+
+PATTERN : VV1 0x1D VL256 V66 V0F3A NOVSR  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8() W0
+OPERANDS  : REG0=XMM_B():w:dq:f16 REG1=YMM_R():r:qq:f32    IMM0:r:b
+
+}
+

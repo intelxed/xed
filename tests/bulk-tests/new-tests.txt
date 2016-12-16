@@ -1,0 +1,34 @@
+DEC                  ; BUILDDIR/xed  -d 0fbc00
+DEC HSW              ; BUILDDIR/xed  -d f30fbc00
+DEC HSW              ; BUILDDIR/xed -chip-check HASWELL -d f30fbc00
+DEC HSW              ; BUILDDIR/xed -chip-check IVYBRIDGE -d f30fbc00
+DEC HSW              ; BUILDDIR/xed -chip-check HASWELL -d 0fbc00
+DEC                  ; BUILDDIR/xed -chip-check QUARK -d F2E100
+DEC                  ; BUILDDIR/xed -chip-check QUARK -d E100
+DEC                  ; BUILDDIR/xed -chip-check QUARK -d F3E100
+DEC                  ; BUILDDIR/xed -chip-check PENTIUM -d F2E100
+DEC                  ; BUILDDIR/xed -chip-check PENTIUM -d E100
+DEC                  ; BUILDDIR/xed -chip-check PENTIUM -d F3E100
+DEC ENC              ; BUILDDIR/xed   -64 -de  f266440f38f1fa
+DEC ENC              ; BUILDDIR/xed   -64 -de  f2480f38f1fa
+DEC ENC              ; BUILDDIR/xed   -64 -de  f2440f38f1fa
+DEC ENC              ; BUILDDIR/xed   -32 -de  f20f38f1fa
+DEC ENC              ; BUILDDIR/xed   -32 -de  f2660f38f1fa
+DEC ENC              ; BUILDDIR/xed   -16 -de  f20f38f1fa
+DEC ENC              ; BUILDDIR/xed   -16 -de  f2660f38f1fa
+DEC AVX              ; BUILDDIR/xed   -64 -chip-check SANDYBRIDGE -d 0fae30
+DEC ENC              ; BUILDDIR/xed -de f2 f0 01 03
+ENC                  ; BUILDDIR/xed -e movsd_xmm xmm0 MEM4:eax
+DEC END              ; BUILDDIR/xed -de f30f5100
+ENC                  ; BUILDDIR/xed -e sqrtss xmm0 mem4:eax
+DEC AVX              ; BUILDDIR/xed -16 -d 36 C4 E2 68 F3 0C 
+DEC AVX              ; BUILDDIR/xed -32 -d 65  C4 E3 7B  F0 BC 35 79 4A B6 0D 67
+DEC AVX              ; BUILDDIR/xed -32 -d 65  C4 E3 FB  F0 BC 35 79 4A B6 0D 67
+DEC AVX              ; BUILDDIR/xed -64 -d 65  C4 E3 7B  F0 BC 35 79 4A B6 0D 67
+DEC AVX              ; BUILDDIR/xed -64 -d 65  C4 E3 FB  F0 BC 35 79 4A B6 0D 67
+DEC AVX              ; BUILDDIR/xed-ex-cpuid f3 0f bc 00
+DEC AVX              ; BUILDDIR/xed-ex-cpuid -nobmi f3 0f bc 00
+DEC AVX              ; BUILDDIR/xed -d c4 e2 b1 92 12
+ENC                  ; BUILDDIR/xed -64 -e JRCXZ 'BRDISP:1E'
+DEC ENC              ; BUILDDIR/xed -64 -de e31e
+DEC                  ; BUILDDIR/xed -64 -d e31e

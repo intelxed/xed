@@ -1,0 +1,31 @@
+Attempting to decode: f3 f2 67 66 2e 64 65 36 3e 26 d0 00 
+iclass ROL	category ROTATE	ISA-extension BASE	ISA-set I86
+instruction-length 12
+operand-width 8
+effective-operand-width 16
+effective-address-width 32
+stack-address-width 64
+iform-enum-name ROL_MEMb_ONE
+iform-enum-name-dispatch (zero based) 8
+iclass-max-iform-dispatch 12
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below)   EXPLICIT  RW         B    8     1     1      8       UINT    INVALID
+1   IMM0               0x1(8b)   IMPLICIT   R         B    8     1     1      8       UINT    INVALID
+2   REG0           REG0=RFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0    read written SEG= GS BASE= EAX/GPR  ASZ0=32
+  MemopBytes = 1
+FLAGS:
+  must-write-rflags of-mod cf-mod 
+       read:                                mask=0x0
+    written:                         of cf  mask=0x801
+  undefined:                                mask=0x0
+ATTRIBUTES: BYTEOP IMPLICIT_ONE 
+F2 PREFIX
+67 PREFIX
+66-OSZ PREFIX
+ANY 66 PREFIX
+Number of legacy prefixes: 10 
+ISA SET: [I86]

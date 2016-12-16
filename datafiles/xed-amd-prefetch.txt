@@ -1,0 +1,105 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+INSTRUCTIONS()::
+{
+ICLASS    : NOP
+UNAME     : NOP0F0D_reg
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ISA_SET   : PREFETCH_NOP
+COMMENT   : AMD 3DNOW prefetches that do not touch memory. This is the reg/reg form.
+
+PATTERN   : 0x0F 0x0D MOD[0b11] MOD=3 REG[rrr] RM[nnn] 
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F0D
+}
+
+# The rest are all mem forms (MODRM.MOD!=3)
+
+{
+ICLASS    : PREFETCH_EXCLUSIVE
+CPL       : 3
+ATTRIBUTES: PREFETCH
+CATEGORY  : PREFETCH
+EXTENSION : 3DNOW
+ISA_SET   : PREFETCH_NOP
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+}
+{
+ICLASS    : PREFETCHW
+CPL       : 3
+ATTRIBUTES: PREFETCH
+CATEGORY  : PREFETCH
+EXTENSION : 3DNOW
+COMMENT:  : was PREFETCH_MODIFIED, prefetch on >=broadwell and >=silvermont
+ISA_SET   : PREFETCH_NOP
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCHW_0F0Dr1
+}
+{
+ICLASS    : PREFETCH_RESERVED
+CPL       : 3
+ATTRIBUTES: PREFETCH
+CATEGORY  : PREFETCH
+EXTENSION : 3DNOW
+ISA_SET   : PREFETCH_NOP
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCH_RESERVED_0F0Dr2
+UNAME     : PREFETCH_RESERVED_0F0Dr2
+}
+{
+ICLASS    : PREFETCHW
+CPL       : 3
+ATTRIBUTES: PREFETCH
+CATEGORY  : PREFETCH
+EXTENSION : 3DNOW
+COMMENT:  : was PREFETCH_MODIFIED
+ISA_SET   : PREFETCH_NOP
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCHW_0F0Dr3
+}
+{
+ICLASS    : PREFETCH_RESERVED
+CPL       : 3
+ATTRIBUTES: PREFETCH
+CATEGORY  : PREFETCH
+EXTENSION : 3DNOW
+ISA_SET   : PREFETCH_NOP
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCH_RESERVED_0F0Dr4
+
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCH_RESERVED_0F0Dr5
+
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCH_RESERVED_0F0Dr6
+
+PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM()
+OPERANDS  : MEM0:r:mprefetch
+IFORM     : PREFETCH_RESERVED_0F0Dr7
+}
+

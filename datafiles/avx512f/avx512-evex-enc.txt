@@ -1,0 +1,162 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+# These bind the operand deciders that control the encoding
+SEQUENCE ISA_BINDINGS
+   FIXUP_EOSZ_ENC_BIND()
+   FIXUP_EASZ_ENC_BIND()
+   ASZ_NONTERM_BIND()  
+   INSTRUCTIONS_BIND()     # not calling tree splitter! GSSE instructions must set VEXVALID=1
+   OSZ_NONTERM_ENC_BIND()   # OSZ must be after the instructions so that DF64 is bound (and before any prefixes obviously)
+   PREFIX_ENC_BIND() 
+   VEXED_REX_BIND()
+
+# These emit the bits and bytes that make up the encoding
+SEQUENCE ISA_EMIT
+   PREFIX_ENC_EMIT() 
+   VEXED_REX_EMIT()
+   INSTRUCTIONS_EMIT()
+
+VEXED_REX()::
+VEXVALID=2 -> EVEX_ENC() 
+
+
+#################################################
+SEQUENCE EVEX_ENC_BIND
+         # R,X,B R map(mmm) (byte 1)
+         # W, vvvv, U, pp  (byte 2)
+         # z, LL/RC, b   V', aaa ( byte 3)
+         EVEX_62_REXR_ENC_BIND
+         EVEX_REXX_ENC_BIND
+         EVEX_REXB_ENC_BIND
+         EVEX_REXRR_ENC_BIND
+         EVEX_MAP_ENC_BIND
+         EVEX_REXW_VVVV_ENC_BIND
+         EVEX_UPP_ENC_BIND
+         EVEX_LL_ENC_BIND
+         AVX512_EVEX_BYTE3_ENC_BIND
+
+         
+SEQUENCE EVEX_ENC_EMIT
+         EVEX_62_REXR_ENC_EMIT
+         EVEX_REXX_ENC_EMIT
+         EVEX_REXB_ENC_EMIT
+         EVEX_REXRR_ENC_EMIT
+         EVEX_MAP_ENC_EMIT
+         EVEX_REXW_VVVV_ENC_EMIT
+         EVEX_UPP_ENC_EMIT
+         EVEX_LL_ENC_EMIT
+         AVX512_EVEX_BYTE3_ENC_EMIT
+
+
+EVEX_62_REXR_ENC()::
+mode64 REXR=1 -> 0x62 0b0
+mode64 REXR=0 -> 0x62 0b1
+mode32 REXR=1 -> error
+mode32 REXR=0 -> 0x62 0b1
+
+EVEX_REXX_ENC()::
+mode64 REXX=1 -> 0b0
+mode64 REXX=0 -> 0b1
+mode32 REXX=1 -> error
+mode32 REXX=0 -> 0b1
+
+EVEX_REXB_ENC()::
+mode64 REXB=1 -> 0b0
+mode64 REXB=0 -> 0b1
+mode32 REXB=1 -> error
+mode32 REXB=0 -> 0b1
+
+EVEX_REXRR_ENC()::
+mode64 REXRR=1 -> 0b0
+mode64 REXRR=0 -> 0b1
+mode32 REXRR=1 -> error
+mode32 REXRR=0 -> 0b1
+
+EVEX_MAP_ENC()::
+MAP=0  -> 0b0000
+MAP=1  -> 0b0001
+MAP=2  -> 0b0010
+MAP=3  -> 0b0011
+
+EVEX_REXW_VVVV_ENC()::
+true REXW[w] VEXDEST3[u] VEXDEST210[ddd] -> w u_ddd
+
+# emit the EVEX.U=1 with the EVEX.pp field
+EVEX_UPP_ENC()::
+VNP -> 0b100
+V66 -> 0b101
+VF3 -> 0b110
+VF2 -> 0b111
+
+EVEX_LL_ENC()::
+ROUNDC=0 SAE=0 VL128 -> LLRC=0
+ROUNDC=0 SAE=0 VL256 -> LLRC=1
+ROUNDC=0 SAE=0 VL512 -> LLRC=2
+
+# scalars (XED has scalars as VL128)
+ROUNDC=0 SAE=1 VL128 -> LLRC=0 BCRC=1 # sae only, no rounding 
+ROUNDC=1 SAE=1 VL128 -> LLRC=0 BCRC=1 # rounding only supported with sae
+ROUNDC=2 SAE=1 VL128 -> LLRC=1 BCRC=1 # rounding only supported with sae
+ROUNDC=3 SAE=1 VL128 -> LLRC=2 BCRC=1 # rounding only supported with sae
+ROUNDC=4 SAE=1 VL128 -> LLRC=3 BCRC=1 # rounding only supported with sae
+
+# everything else (must be VL512)
+ROUNDC=0 SAE=1 VL512 -> LLRC=0 BCRC=1 # sae only, no rounding 
+ROUNDC=1 SAE=1 VL512 -> LLRC=0 BCRC=1 # rounding only supported with sae
+ROUNDC=2 SAE=1 VL512 -> LLRC=1 BCRC=1 # rounding only supported with sae
+ROUNDC=3 SAE=1 VL512 -> LLRC=2 BCRC=1 # rounding only supported with sae
+ROUNDC=4 SAE=1 VL512 -> LLRC=3 BCRC=1 # rounding only supported with sae
+
+
+AVX512_EVEX_BYTE3_ENC()::
+ZEROING[z] LLRC[nn] BCRC[b] VEXDEST4=0 MASK[aaa] -> z_nn_b 0b1 aaa
+ZEROING[z] LLRC[nn] BCRC[b] VEXDEST4=1 MASK[aaa] -> z_nn_b 0b0 aaa
+
+
+
+#################################################
+SEQUENCE NEWVEX3_ENC_BIND
+    VEX_TYPE_ENC_BIND
+    VEX_REXR_ENC_BIND
+    VEX_REXXB_ENC_BIND
+    VEX_MAP_ENC_BIND
+    VEX_REG_ENC_BIND
+    VEX_ESCVL_ENC_BIND
+
+SEQUENCE  NEWVEX3_ENC_EMIT
+    VEX_TYPE_ENC_EMIT
+    VEX_REXR_ENC_EMIT
+    VEX_REXXB_ENC_EMIT
+    VEX_MAP_ENC_EMIT
+    VEX_REG_ENC_EMIT
+    VEX_ESCVL_ENC_EMIT
+
+
+
+##############################################################################
+
+AVX512_ROUND()::
+ROUNDC=1 -> LLRC=0 BCRC=1
+ROUNDC=2 -> LLRC=1 BCRC=1
+ROUNDC=3 -> LLRC=2 BCRC=1
+ROUNDC=4 -> LLRC=3 BCRC=1
+
+SAE()::
+SAE=1 -> BCRC=1
+SAE=0 -> BCRC=0

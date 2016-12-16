@@ -1,0 +1,27 @@
+Attempting to decode: ad 
+iclass LODSD	category STRINGOP	ISA-extension BASE	ISA-set I386
+instruction-length 1
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name LODSD
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=EAX SUPPRESSED   W         D   32     4     1     32        INT        GPR
+1   MEM0           (see below) SUPPRESSED   R         D   32     4     1     32        INT    INVALID
+2  BASE0             BASE0=ESI SUPPRESSED  RW       ASZ   32     4     1     32        INT        GPR
+3   REG1           REG1=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0    read SEG= DS BASE= ESI/GPR  ASZ0=32
+  MemopBytes = 4
+FLAGS:
+   reads-rflags df-tst 
+       read:                            df  mask=0x400
+    written:                                mask=0x0
+  undefined:                                mask=0x0
+ATTRIBUTES: FIXED_BASE0 
+ISA SET: [I386]

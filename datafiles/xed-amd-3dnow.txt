@@ -1,0 +1,412 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+INSTRUCTIONS()::
+{
+ICLASS    : FEMMS
+CPL       : 3
+CATEGORY  : MMX
+EXTENSION : 3DNOW
+ATTRIBUTES : x87_mmx_state_w
+PATTERN   : 0x0F 0x0E
+OPERANDS  :
+}
+{
+ICLASS    : PI2FW
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x0C
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PI2FW
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x0C
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PI2FD
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x0D
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PI2FD
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x0D
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PF2IW
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x1C
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PF2IW
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x1C
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PF2ID
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x1D
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PF2ID
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x1D
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFNACC
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x8A
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFNACC
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x8A
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFPNACC
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x8E
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFPNACC
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x8E
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFCMPGE
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x90
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFCMPGE
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x90
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFMIN
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x94
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFMIN
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x94
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFRCP
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x96
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFRCP
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x96
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFSQRT
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x97
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFSQRT
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x97
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFSUB
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x9A
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFSUB
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x9A
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFADD
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0x9E
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFADD
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0x9E
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFCMPGT
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xA0
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFCMPGT
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xA0
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFMAX
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xA4
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFMAX
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xA4
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFCPIT1
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xA6
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFCPIT1
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xA6
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFRSQIT1
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xA7
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFRSQIT1
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xA7
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFSUBR
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xAA
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFSUBR
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xAA
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFACC
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xAE
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFACC
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xAE
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFCMPEQ
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xB0
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFCMPEQ
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xB0
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFMUL
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xB4
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFMUL
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xB4
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PFRCPIT2
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xB6
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PFRCPIT2
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xB6
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PMULHRW
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xB7
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PMULHRW
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xB7
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PSWAPD
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xBB
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PSWAPD
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xBB
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}
+{
+ICLASS    : PAVGUSB
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 0xBF
+OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
+}
+{
+ICLASS    : PAVGUSB
+CPL       : 3
+CATEGORY  : 3DNOW
+EXTENSION : 3DNOW
+PATTERN   : 0x0F 0x0F MOD[0b11] MOD=3 REG[rrr] RM[nnn] 0xBF
+OPERANDS  : REG0=MMX_R():rw:q REG1=MMX_B():r:q
+}

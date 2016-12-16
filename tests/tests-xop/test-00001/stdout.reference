@@ -1,0 +1,5 @@
+8FE9489939
+ICLASS: VPSHAW   CATEGORY: XOP   EXTENSION: XOP  IFORM: VPSHAW_XMMdq_MEMdq_XMMdq   ISA_SET: XOP
+SHORT: vpshaw xmm7, xmmword ptr [ecx], xmm6
+Encodable! 8FE9489939
+Identical re-encoding

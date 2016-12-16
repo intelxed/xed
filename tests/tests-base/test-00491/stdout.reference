@@ -1,0 +1,5 @@
+F2F00103
+ICLASS: ADD_LOCK   CATEGORY: BINARY   EXTENSION: BASE  IFORM: ADD_LOCK_MEMv_GPRv   ISA_SET: I86
+SHORT: xacquire lock add dword ptr [ebx], eax
+Encodable! F2F00103
+Identical re-encoding

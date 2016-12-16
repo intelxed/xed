@@ -1,0 +1,27 @@
+Setting chip to PENTIUMPRO
+Attempting to decode: da c0 
+iclass FCMOVB	category FCMOV	ISA-extension X87	ISA-set PPRO
+instruction-length 2
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name FCMOVB_ST0_X87
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0            REG0=st(0)   IMPLICIT  CW       F80   80    10     1     80 LONGDOUBLE        X87
+1   REG1            REG1=st(0)   EXPLICIT   R       F80   80    10     1     80 LONGDOUBLE        X87
+2   REG2        REG2=X87STATUS SUPPRESSED   W    PSEUDO    0     0     1      0        INT  PSEUDOX87
+3   REG3           REG3=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  MemopBytes = 0
+FLAGS:
+   reads-rflags cf-tst fc0-u fc1-mod fc2-u fc3-u 
+       read:                            cf  mask=0x1
+    written:               fc0 fc1 fc2 fc3  mask=0xf0000000
+  undefined:                   fc0 fc2 fc3  mask=0xd0000000
+ATTRIBUTES: NOTSX 
+ISA SET: [PPRO]

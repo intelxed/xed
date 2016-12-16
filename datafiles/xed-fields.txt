@@ -1,0 +1,225 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+# @file xed-fields.txt
+
+
+# visibilities are one of [EXPLICIT|IMPLICIT|SUPPRESSED]
+
+# Major properties of the fields are determined by the columns with
+#  the content {EI,EO} or {DI,DO,DS}. EI is encoder inputs and EO is
+#  for encoder outputs.  DI is decoder inputs, DO is decoder
+#  outputs. And DS means "decoder skip" and is used for fields that
+#  show up in instruction pattern constraints but should be completely
+#  ignored by the decoder.
+
+
+# INTERNAL means that the field is excluded from the instructions'
+#  operands array template.
+
+
+
+# ====  ======   ====   =========     ========== 
+#       scalar                         default
+# name  array    type   bit-width     visibility  
+# ====  ======   ====   =========     ==========  
+SEG_OVD        SCALAR     xed_bits_t 3       SUPPRESSED   NOPRINT INTERNAL DO EO # FIXME: DO_EO? always an output
+
+# HINT: 0=no hint, 
+#       1=CS PREFIX OBSERVED (NOT TAKEN)
+#       2=DS PREFIX OBSERVED (TAKEN) 
+#       3=NOT TAKEN HINT VALIDATED for a BRANCH
+#       4=TAKEN HINT VALIDATED for a BRANCH
+HINT           SCALAR     xed_bits_t 3       SUPPRESSED   NOPRINT PUBLIC   DO EI
+
+LOCK           SCALAR     xed_bits_t 1       SUPPRESSED   PRINT   PUBLIC   DO EO
+
+NEED_MEMDISP   SCALAR     xed_bits_t 6        SUPPRESSED   NOPRINT   INTERNAL DO EO
+
+DISP           SCALAR     xed_int64_t    64   SUPPRESSED   NOPRINT   INTERNAL   DO EI # MEMORY DISPLACEMENT
+
+DISP_WIDTH     SCALAR     xed_uint8_t     8  SUPPRESSED   NOPRINT PUBLIC   DO EI # in bytes FIXME: could use log2
+
+BRDISP_WIDTH   SCALAR     xed_uint8_t     8  SUPPRESSED   NOPRINT   INTERNAL   DO EI # in bytes FIXME: could use log2
+
+# DF32 is for MOV_CR & CR_WIDTH() NTs
+DF32           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+DF64           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+
+# NOREX is an unfortunate thing. It is only required to prevent
+# encoding illegal instructions that have REX prefixes and use the
+# AH/BH/CH/DH registers. It was not used for decoding
+
+NOREX          SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+NEEDREX        SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+
+# 2013-09-25: This one is "DS" which means "decoder skip". It is 
+# ignored during parsing by the decoder.
+#
+SKIP_OSZ       SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DS EO
+
+
+REX            SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXW           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXR           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXX           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXB           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+
+# refining must be used to interpret the REP output of decode
+REP            SCALAR     xed_bits_t 2       SUPPRESSED  PRINT   PUBLIC   DO EO # 0=no-rep, 2=F2, 3=F3
+OSZ            SCALAR     xed_bits_t 1       SUPPRESSED  NOPRINT INTERNAL DO EO 
+PREFIX66       SCALAR     xed_bits_t 1       SUPPRESSED  NOPRINT INTERNAL DO EO 
+ASZ            SCALAR     xed_bits_t 1       SUPPRESSED  NOPRINT INTERNAL DO EO 
+
+# effective operand size and address size 
+EOSZ           SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT PUBLIC DO EI 
+EASZ           SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT PUBLIC DO EI 
+
+
+
+#MODRM fields
+MODRM          SCALAR     xed_bits_t 1             SUPPRESSED  NOPRINT INTERNAL DO EO
+
+MOD            SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT INTERNAL DO EO
+REG            SCALAR     xed_bits_t 3             SUPPRESSED  NOPRINT INTERNAL DO EO
+# SRM is for partial-byte opcodes that capture a RM-like field.
+SRM            SCALAR     xed_bits_t 3             SUPPRESSED  NOPRINT INTERNAL DO EO
+RM             SCALAR     xed_bits_t 3             SUPPRESSED  NOPRINT INTERNAL DO EO
+
+# Machine mode, addressing mode , stack addressing mode
+
+REALMODE       SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EI
+CHIP           SCALAR     xed_chip_enum_t 16        SUPPRESSED  NOPRINT PUBLIC   DI EI
+MODE           SCALAR     xed_bits_t 2              SUPPRESSED  NOPRINT PUBLIC   DI EI
+SMODE          SCALAR     xed_bits_t 2              SUPPRESSED  NOPRINT PUBLIC   DI EI
+MODEP5         SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EI
+# P55C introduced MMX - FIXME: unfinished support for MODEP55C
+MODEP55C       SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EI
+
+# for PAUSE vs F3 NOP
+P4             SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EO
+
+# for LZCNT/F3+BSR and TZCNT/F3+BSF
+LZCNT          SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EO
+TZCNT          SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EO
+
+MODE_FIRST_PREFIX SCALAR  xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EI
+
+IMM0           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI # Indicator
+IMM1           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI # Indicator  ENTER instruction
+IMM0SIGNED     SCALAR     xed_bits_t 1             EXPLICIT    NOPRINT PUBLIC   DO EO # Decode information only
+
+UIMM0          SCALAR     xed_uint64_t 64           SUPPRESSED  NOPRINT   INTERNAL   DO EI
+UIMM1          SCALAR     xed_uint8_t 8             SUPPRESSED  NOPRINT   INTERNAL   DO EI # for ENTER's 2nd immediate, always 8b
+IMM_WIDTH      SCALAR     xed_uint8_t 8             SUPPRESSED  NOPRINT   INTERNAL   DO EI # in bits
+
+
+# These two are decode outputs that tell us when there was an overridden segment 
+# selector that was not the default segment selector.
+
+USING_DEFAULT_SEGMENT0  SCALAR  xed_bits_t    1     SUPPRESSED  NOPRINT INTERNAL DO EO 
+USING_DEFAULT_SEGMENT1  SCALAR  xed_bits_t    1     SUPPRESSED  NOPRINT INTERNAL DO EO 
+
+
+
+#  MODRM/SIB field processing
+DEFAULT_SEG    SCALAR     xed_bits_t      2     SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
+SEG0           SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   INTERNAL   DO EI   
+
+# BASE0 & BASE1 must be PUBLIC because the string ops conditionally update them so users need the rw code
+
+BASE0          SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   PUBLIC   DO EI   
+INDEX          SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   INTERNAL   DO EI   
+SCALE          SCALAR     xed_bits_t 4              EXPLICIT    PRINT   INTERNAL   DO EI #1/2/4/8
+
+#  SCALE is used by the user. SIBSCALE is internal
+
+SIB            SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
+SIBSCALE       SCALAR     xed_bits_t 2              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
+SIBBASE        SCALAR     xed_bits_t 3              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
+SIBINDEX       SCALAR     xed_bits_t 3              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
+
+#  For the string ops:
+SEG1           SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   INTERNAL   DO EI   
+BASE1          SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   PUBLIC   DO EI   
+
+#  Things that tell us to look at other fields
+MEM0           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI   
+MEM1           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI   
+# MEM_WIDTH is not really a decoder-output; it is purely an encoder input. (see also ICLASS)
+MEM_WIDTH      SCALAR     xed_uint16_t 16          SUPPRESSED  NOPRINT PUBLIC   DO EI    # in bytes
+
+AGEN           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI   
+
+# RELBR is used as a decode operand, but it is not required for encode
+RELBR          SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI   
+#  for CALL_FAR & JMP_FAR. Note UIM0 is also set by these
+PTR            SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI
+
+# NOTE: The arrays are experimental
+#
+#REGN           ARRAY     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+#
+REG0           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG1           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG2           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG3           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG4           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG5           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG6           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG7           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG8           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+
+OUTREG         SCALAR     xed_reg_enum_t 16    SUPPRESSED NOPRINT INTERNAL DO EI  #  output for lookup-functions
+ENCODER_PREFERRED SCALAR  xed_bits_t 1         SUPPRESSED NOPRINT INTERNAL DO EI # encoder preference when underdetermined.
+ERROR          SCALAR     xed_error_enum_t 8    SUPPRESSED NOPRINT INTERNAL DO EO # an error occurred
+
+# ICLASS is not really a decoder-output; it is purely an encoder input. (see also MEM_WIDTH)
+ICLASS         SCALAR     xed_iclass_enum_t 16  SUPPRESSED NOPRINT PUBLIC   DO EI # the instruction class
+
+NELEM          SCALAR     xed_bits_t      4     SUPPRESSED NOPRINT INTERNAL DO EO
+ELEMENT_SIZE   SCALAR     xed_bits_t      9     SUPPRESSED NOPRINT INTERNAL DO EO
+TYPE           SCALAR xed_operand_element_type_enum_t  4 SUPPRESSED NOPRINT INTERNAL DO EO
+
+#ILD-spesific operands
+MAP            SCALAR     xed_bits_t      4    SUPPRESSED NOPRINT INTERNAL DO EO
+OUT_OF_BYTES   SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+AMD3DNOW       SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+FIRST_F2F3     SCALAR     xed_bits_t      2    SUPPRESSED NOPRINT INTERNAL DO EI
+LAST_F2F3      SCALAR     xed_bits_t      2    SUPPRESSED NOPRINT INTERNAL DO EI
+ILD_F2         SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+ILD_F3         SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+MAX_BYTES      SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+ILD_SEG        SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+NSEG_PREFIXES  SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+NREXES         SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+NPREFIXES      SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+NOMINAL_OPCODE SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+POS_NOMINAL_OPCODE SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+HAS_MODRM      SCALAR     xed_bits_t      2    SUPPRESSED NOPRINT INTERNAL DO EI
+HAS_SIB        SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+POS_MODRM      SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+POS_SIB        SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+POS_DISP       SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+POS_IMM        SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+POS_IMM1       SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+IMM1_BYTES     SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+MODRM_BYTE     SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
+ESRC           SCALAR     xed_bits_t      4    SUPPRESSED NOPRINT INTERNAL DO EO
+VEXVALID       SCALAR     xed_bits_t      3    SUPPRESSED NOPRINT INTERNAL DO EO
+DUMMY          SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+

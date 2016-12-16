@@ -1,0 +1,5 @@
+65A6
+ICLASS: CMPSB   CATEGORY: STRINGOP   EXTENSION: BASE  IFORM: CMPSB   ISA_SET: I86
+SHORT: cmpsb byte ptr gs:[esi], byte ptr [edi]
+Encodable! 65A6
+Identical re-encoding

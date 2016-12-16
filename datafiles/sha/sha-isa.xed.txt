@@ -1,0 +1,230 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING SHA1MSG1 (SHA1MSG1-N/A-1)
+{
+ICLASS:      SHA1MSG1
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xC9 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32
+IFORM:       SHA1MSG1_XMMi32_XMMi32_SHA
+}
+
+{
+ICLASS:      SHA1MSG1
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x38 0xC9 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32
+IFORM:       SHA1MSG1_XMMi32_MEMi32_SHA
+}
+
+
+# EMITTING SHA1MSG2 (SHA1MSG2-N/A-1)
+{
+ICLASS:      SHA1MSG2
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xCA MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32
+IFORM:       SHA1MSG2_XMMi32_XMMi32_SHA
+}
+
+{
+ICLASS:      SHA1MSG2
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x38 0xCA MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32
+IFORM:       SHA1MSG2_XMMi32_MEMi32_SHA
+}
+
+
+# EMITTING SHA1NEXTE (SHA1NEXTE-N/A-1)
+{
+ICLASS:      SHA1NEXTE
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xC8 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32
+IFORM:       SHA1NEXTE_XMMi32_XMMi32_SHA
+}
+
+{
+ICLASS:      SHA1NEXTE
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x38 0xC8 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32
+IFORM:       SHA1NEXTE_XMMi32_MEMi32_SHA
+}
+
+
+# EMITTING SHA1RNDS4 (SHA1RNDS4-N/A-1)
+{
+ICLASS:      SHA1RNDS4
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x3A 0xCC MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     UIMM8() 
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32 IMM0:r:b
+IFORM:       SHA1RNDS4_XMMi32_XMMi32_IMM8_SHA
+}
+
+{
+ICLASS:      SHA1RNDS4
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x3A 0xCC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     UIMM8() 
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32 IMM0:r:b
+IFORM:       SHA1RNDS4_XMMi32_MEMi32_IMM8_SHA
+}
+
+
+# EMITTING SHA256MSG1 (SHA256MSG1-N/A-1)
+{
+ICLASS:      SHA256MSG1
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xCC MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32
+IFORM:       SHA256MSG1_XMMi32_XMMi32_SHA
+}
+
+{
+ICLASS:      SHA256MSG1
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x38 0xCC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32
+IFORM:       SHA256MSG1_XMMi32_MEMi32_SHA
+}
+
+
+# EMITTING SHA256MSG2 (SHA256MSG2-N/A-1)
+{
+ICLASS:      SHA256MSG2
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xCD MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32
+IFORM:       SHA256MSG2_XMMi32_XMMi32_SHA
+}
+
+{
+ICLASS:      SHA256MSG2
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x38 0xCD MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32
+IFORM:       SHA256MSG2_XMMi32_MEMi32_SHA
+}
+
+
+# EMITTING SHA256RNDS2 (SHA256RNDS2-N/A-1)
+{
+ICLASS:      SHA256RNDS2
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xCB MOD[0b11] MOD=3  REG[rrr] RM[nnn]  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_B():r:dq:i32 REG2=XED_REG_XMM0:r:SUPP:dq:u8
+IFORM:       SHA256RNDS2_XMMi32_XMMi32_SHA
+}
+
+{
+ICLASS:      SHA256RNDS2
+CPL:         3
+CATEGORY:    SHA
+EXTENSION:   SHA
+ISA_SET:     SHA
+EXCEPTIONS:     SSE_TYPE_4
+REAL_OPCODE: Y
+ATTRIBUTES:  REQUIRES_ALIGNMENT 
+PATTERN:     0x0F 0x38 0xCB MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:i32 MEM0:r:dq:i32 REG1=XED_REG_XMM0:r:SUPP:dq:u8
+IFORM:       SHA256RNDS2_XMMi32_MEMi32_SHA
+}
+
+

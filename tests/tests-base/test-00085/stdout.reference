@@ -1,0 +1,5 @@
+Encode request:
+CMPXCHG8B EASZ:2, MEM_WIDTH:8, MEM0:qword ptr [ESI], MODE:1, SMODE:1
+OPERAND ORDER: MEM0 
+
+Encodable! 0FC70E

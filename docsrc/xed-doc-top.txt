@@ -1,0 +1,1207 @@
+#BEGIN_LEGAL
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#END_LEGAL
+
+// This file does not contain any code
+// it just contains additional information for
+// inclusion with doxygen
+
+
+// ===========================================================================  
+/*! 
+@mainpage X86 Encoder Decoder User Guide
+by Mark Charney
+
+2016-02-02
+
+@section INTRO Introduction
+
+
+XED is an acronym for X86 Encoder Decoder. The
+latter part is pronounced like the (British) English "z".
+
+Intel XED is a software library (and associated headers) written in C
+for encoding and decoding X86 (IA-32 instruction set and Intel&reg; 64
+instruction set) instructions. The decoder takes sequences of 1-15
+bytes along with machine mode information and produces a data
+structure describing the opcode and operands, and flags. The encoder
+takes a similar data structure and produces a sequence of 1 to 15
+bytes. Intel XED is multi-thread safe.
+
+Intel XED was designed to be very fast and extensible.
+
+Intel XED compiles with the following compilers:
+    <ul>   
+    <li> GNU Gcc
+    <li> Microsoft Visual Studio
+    <li> Intel ICL/ICC
+    <li> LLVM/Clang 
+    </ul>
+    
+
+Intel XED works with the following operating systems:
+    <ul>
+    <li> Linux
+    <li> Microsoft Windows  (with and without cygwin)
+    <li> Apple Mac OS X*
+    <li> FreeBSD
+    </ul>
+
+The Intel XED examples (@ref EXAMPLES) also include binary image readers for
+Windows PECOFF, ELF and Mac OS X* MACHO binary file formats for 32b and
+64b. These allow Intel XED to be used as a simple (not symbolic)
+disassembler. The Intel XED disassembler supports 3 output formats: Intel,
+ATT SYSV, and a more detailed internal format describing all resources
+read and written.
+
+
+@section TOC Table of Contents
+    - @ref BUILD    "Building"      Building your program with Intel XED
+    - @ref EXTERN   "External"      External Requirements
+    - @ref TERMS    "Terms"         Terminology
+    - @ref OVERVIEW "Overview"      Overview of the Intel XED approach
+    - @ref API_REF  "API reference" Detailed descriptions of the API
+    - @ref EXAMPLES "Examples"      Examples
+    - @ref LEGAL    "Disclaimer and Legal Information"     
+
+
+@section BUILD Building your program using Intel XED.
+
+This section describes the requirements for compiling with Intel XED and
+linking the libxed.a library. It assumes you are building from a
+Intel XED kit, and not directly from the sources. (See the "install"
+option in the Intel XED build manual for information on making kits).
+
+The structure of a Intel XED kit is as follows:
+@code
+
+                              |-bin------
+                              |-doc------|-html-
+                              |-examples-
+               |-xed-kit-name-|-include--
+                              |-lib------
+                              |-misc-----
+@endcode
+
+
+To use Intel XED your sources should include the top-most header file: xed-interface.h. 
+
+Your compilation statement must include:
+@code
+-Ixed-kit-name/include
+@endcode
+where "xed-kit-name" is the place you've unpacked the Intel XED kit.
+
+Your Linux or Mac OS X* link statement must reference the libxed library:
+@code
+-lxed-kit-name/lib/libxed.a
+@endcode
+
+(or link against libxed.lib for Windows).
+
+Intel XED uses base types with the following names: xed_uint8_t,
+xed_uint16_t, xed_uint32_t, xed_uint64_t xed_int8_t, xed_int16_t,
+xed_int32_t, and xed_int64_t. Intel XED also defines a "xed_uint_t" type
+that is shorthand for "unsigned int".
+
+
+Please see the section @ref INIT for more information about using
+Intel XED, and also the examples in @ref EXAMPLES.
+
+@section EXTERN External Requirements
+
+Intel XED was designed to have minimal external requirements. Intel XED makes no
+system calls. Intel XED allocates no memory. (The examples are
+different). The following external functions/symbols are required for
+linking a program with libxed, with one caveat: The functions fprint
+and abort and the data object stderr are optional. If users register
+their own abort handler using #xed_register_abort_function () , then
+fprintf, stderr and abort are not required and can be stubbed out to
+satisfy the linker.
+
+Required:
+<ul>
+<li>memcmp
+<li>memcpy
+<li>memset
+<li>strcmp
+<li>strlen
+<li>strncat
+</ul>
+
+Optional:
+<ul>
+<li>abort
+<li>fprintf
+<li>stderr
+</ul>
+
+@section TERMS Terminology
+
+
+X86 instructions are 1-15 byte values. They consist of several well
+defined components:
+    <ul>
+    <li> Prefix bytes. 
+         <ul>
+            <li> Legacy prefix bytes used for many purposes (described further below).
+            
+            <li> REX prefix byte but only in 64b mode. It has 4 1-bit
+            fields: W, R, X, and B.  The W bit modifies the operation
+            width. The R, X and B fields extend the register
+            encodings. The REX byte must be right before the opcode
+            bytes else it is ignored.
+       
+            <li> VEX prefix byte sequence. The VEX prefix is used
+            mostly for AVX1 and AVX2 instructions as well as BMI1/2
+            instructions and mask operations in Intel&reg; AVX512. The VEX prefix
+            comes in two forms. The 2-byte sequence begins with an
+            0xC5 byte. The 3-byte sequence begins with an 0xC4 byte.
+
+            <li> EVEX prefix. The EVEX 3-byte sequence used for
+            encoding Intel AVX512 instructions and begins with an 0x62 byte.
+            
+         </ul>
+
+         There are somewhat complex rules about which prefixes are
+         allowed, in what order, and in what modes. Intel XED handles that
+         complexity.
+         
+    <li> 1-3 opcode bytes. When more than one opcode byte is required
+    the leading bytes (called escapes) are either 0x0F, 0x0F 0x38 or
+    0x0F 0x3A.  With VEX and EVEX prefixes, the escape bytes are
+    encoded differently.
+    
+    <li> MODRM byte. Used for addressing memory, refining opcodes,
+    specifying registers.  Optional, but common.  It has 3 fields: the
+    2-bit "mod", the 3-bit "reg" and 3-bit "r/m" fields.
+       
+    <li> SIB byte. Used for specifying memory addressing, optional.
+     It has 3 fields: the 2-bit scale, 3-bit index and 3-bit base.
+       
+    <li> Displacement bytes. Used for specifying memory offsets, optional.
+    <li> Immediate bytes.  Optional
+    </ul>
+
+
+Immediates and displacements are usually limited to 4 bytes, but there
+are several variants of the MOV instruction that can take 8B
+values. The AMD 3DNow ISA extension uses the immediate field to
+provide additional opcode information.
+
+The legacy prefix bytes are used for:
+    <ul>
+    <li> operand size overrides (1 prefix), 
+    <li> address size overrides (1 prefix), 
+    <li> atomic locking (1 prefix), 
+    <li> default segment overrides (6 prefixes), 
+    <li> repeating certain instructions (2 prefixes), and
+    <li> opcode refinement. 
+    </ul>
+
+There are 11 distinct legacy prefixes. Three of them (operand size,
+and the two repeat prefixes) have different meanings in different
+contexts; Sometimes they are used for opcode refinement and do not
+have their default meaning. Less frequently. two of the segment
+overrides can be used for conditional branch hints.
+
+There are also multiple ways to encode certain instructions, with the
+same or differing length. 
+
+For additional information on the instruction semantics and encodings:
+<ul>
+<li>  <a href="http://www.intel.com/sdm">http://www.intel.com/sdm</a> The Intel&reg; 64 and IA-32 Architectures Software Developers Manuals
+<li>  <a href="http://www.intel.com/software/isa">http://www.intel.com/software/isa</a> Information on future ISA extensions.
+</ul>
+
+
+
+@section OVERVIEW Overview of XED approach
+
+XED has two fundamental interfaces: encoding and decoding. Supporting
+these interfaces are many data structures, but the two starting points
+are the #xed_encoder_request_t and the #xed_decoded_inst_t .  The
+#xed_decoded_inst_t has more information than the
+#xed_encoder_request_t , but both types are derived from a set of
+common fields called the #xed_operand_values_t. 
+
+The output of the decoder, the #xed_decoded_inst_t , includes additional
+information that is not required for encoding, but provides more
+information about the instruction resources.
+
+The common operand fields, used by both the encoder and decoder, hold
+the operands and the memory addressing information. 
+
+
+The decoder has an operands array that holds order of the decoded
+operands. This array indicates whether or not the operands are read or
+written.
+
+The encoder has an operand array where the encoder user must specify
+the order of the operands used for encoding.
+
+// ===========================================================================  
+@section ICLASS Instruction classes 
+
+The #xed_iclass_enum_t class describes the instruction names. The
+names are (mostly) taken from the Intel manual, with exceptions only
+for certain ambiguities.  This is what is typically thought of as the
+instruction mnemonic. Note, Intel XED does not typically distinguish
+instructions based on width unless the ISA manuals do so as well.  For
+example, #xed_iclass_enum_t's are not suffixed with "w", "l" or "q"
+typically. There are instructions whose #xed_iclass_enum_t ends in a
+"B" or a "Q" (including all byte operations and certain string
+operations) and those names are preserved as described in the Intel
+programmers' reference manuals.
+
+
+
+
+@subsection SPECIAL Special Cases
+
+There are many special cases that must be accounted for in attempting
+to handle all the nuances of the ISA. This is an attempt to explain
+the nonstandard handling of certain instruction names.
+
+The FAR versions of 3 opcodes (really 6 distinct opcodes) are given
+the opcode names CALL_FAR, JMP_FAR and RET_FAR. The AMD documentation
+lists the far return as RETF. I call that RET_FAR to be consistent
+with the other far operations.
+
+To distinguish the SSE2 MOVSD instruction from the base string
+instruction MOVSD, Intel XED calls the SSE version MOVSD_XMM.
+
+In March 2015, a change was made to certain Intel XED iclasses to simplify
+the implementation. The changes are as follows:
+    <ul>
+    <li> XED_ICLASS_JRCXZ was split in to 3 distinct iclasses:
+    XED_ICLASS_JCXZ, XED_ICLASS_JECXZ and XED_ICLASS_JRCXZ.
+    <li> The REP-prefixed (0xF2, 0xF3) string instructions were split
+    in to new iclasses making tqhem distinct from the underlying
+    non-REP-prefixed instructions.  For example XED_ICLASS_REP_STOSW
+    is distinct from XED_ICLASS_STOSW.  And the CMPS{B,W,D,Q} and
+    SCAS{B,W,D,Q} instructions have "REPE_" or "REPNE_" prefixes to
+    correspond to REPE (0xF3) or REPNE (0xF2).
+    <li> LOCK-prefixed (0xF0) atomic read-modify-write memory
+    instructions were split in to separate iclasses that contain the
+    substring "_LOCK".  LOCK-prefixed instructions have an attribute
+    XED_ATTRIBUTE_LOCK. Memory instructions that could have a lock
+    prefix added to them when encoding, have an attribute
+    XED_ATTRIBUTE_LOCKABLE.  For example XED_ICLASS_CMPXCHG16B_LOCK
+    has a lock prefix, but XED_ICLASS_CMPXCHG16B does not have a lock
+    prefix.  As always XCHG is atomic with our without a LOCK prefix
+    as per the rules of the ISA, so XED_ICLASS_XCHG does not have a
+    _LOCK suffix in the xed_iclass_enum_t name.
+    </ul>
+
+@subsection NOPs
+
+NOPs are very special. Intel XED allows for encoding NOPs of 1 to 9 bytes
+through the use of the XED_ICLASS_NOP (the one byte nop), and
+XED_ICLASS_NOP2 ... XED_ICLASS_NOP9. These use the recommended NOP
+sequences from the Intel&reg; 64 and IA-32 Architectures Software Developers Manual.
+
+The instruction 0x90 is very special in the instruction set because it
+gets special treatment in 64b mode. In 64b mode, 32b register writes
+normally zero the upper 32 bits of a 64b register. No so for 0x90. If
+it did zero the upper 32 bits, it would not be a NOP.
+
+There are two important NOP categories. XED_CATEGORY_NOP and
+XED_CATEGORY_WIDENOP. The XED_CATEGORY_NOP applies only to the 0x90
+opcode. The WIDENOP category applies to the NOPs in the two byte table
+row 0F19...0F1F. The WIDENOPs take MODRM bytes, and optional SIB and
+displacements.
+
+// ===========================================================================
+// @section X86-OPERANDS Operands
+
+
+Intel XED uses the operand order documented in the Intel Programmers'
+Reference Manual.  In most cases, the first operand is a source and
+destination (read and written) and the second operand is just a source
+(read).
+
+For decode requests (#xed_decoded_inst_t), the operands array is
+stored in the #xed_inst_t strcture once the instruction is
+decoded. For encode requests, the request's operand order is stored in
+the #xed_encoder_request_t.
+
+There are several types of operands: 
+      <ul>
+      <li> registers (#xed_reg_enum_t)
+      <li> branch displacements  
+      <li> memory operations (which include base, index, segment and memory displacements)
+      <li> immediates
+      <li> pseudo resources (which are listed in the #xed_reg_enum_t)
+      </ul>
+
+Each operand has two associated attributes: the R/W action and a
+visibility. The R/W actions (#xed_operand_action_enum_t) indicate
+whether the operand is read, written or both read-and-written, or
+conditionally read or written.  The visibility attribute
+(#xed_operand_visibility_enum_t) is described in the next subsection.
+
+The memory operation operand is really a pointer to separate fields
+that hold the memory operation information. The memory operation information is comprised of:
+     <ul>
+     <li> a segment register
+     <li> a base register
+     <li> an index register
+     <li> a displacement
+     </ul>
+
+There are several important things to note:
+      <ul>
+      <li> There can only be two memory operations, MEM0 and MEM1.
+      <li> MEM0 could also be an AGEN -- a special operand that uses memory information 
+         but does not actually read memory. This is only used for the LEA instruction.
+      <li> There can only be an index and displacement associated with MEM0.
+      <li> There is just one displacement associated with the common fields. It could 
+         be associated with either the AGEN/MEM0 or with a branch or call instruction.
+      </ul>
+
+@subsection AVX512_OPERANDS Intel&reg; AVX512 Operands
+
+Intel&reg; AVX512 adds write masking, merging and zeroing to the
+instruction set via the EVEX encodings.  Write masking, merging and
+zeroing are properties of the instruction encoding and are not visible
+by looking at individual operands. Write masking with merging makes it
+possible for values of the destination register to live on from prior
+to the execution of the instruction. Write masking with merging
+results in an extra register read of the destination operand. In
+contrast write masking with zeroing always completely overwrites the
+destination operand, either with values computed by the instruction or
+with zeros for elements that are "masked off".
+
+For most operands, to learn if the operand reads or writes its
+associated resource, one can use #xed_operand_rw(const xed_operand_t*
+p). However because masking, merging and zeroing are properties of the
+instruction, and not just the operand, use of a different function is
+required.
+
+To handle this, Intel XED has a new interface function
+#xed_decoded_inst_operand_action() which takes a #xed_decoded_inst_t
+pointer and an operand index and indicates how the read/write behavior
+is modified in the presense of masking with merging or masking with
+zeroing.
+
+The following list attempts to summarize how the value returned from
+xed_operand_rw() is internally modified for the 0th operand, except
+for stores:
+<ul>
+<li> no masking: no change. 
+<li> masking with zeroing: no change. 
+<li> masking with merging : destination register operands 
+     that are nominally "rw" or "w" become "rcw" indicating
+     a read with a conditional write.
+</ul>
+
+
+@subsection OPERAND_VISIBILITY Operand Resource Visibilities
+
+See #xed_operand_visibility_enum_t .
+
+There are 3 basic types of resource visibilites: 
+      <ul>
+      <li> EXPLICIT (EXPL), 
+      <li> IMPLICIT (IMPL), and
+      <li> IMPLICIT SUPPRESSED (SUPP) (usually referred to as just "SUPPRESSED").
+      </ul>
+
+Explicit are what you think they are: resources that
+are required for the encoding and for each explicit resource, there is
+field in the corresponding instruction encoding.  The implicit and
+suppressed resources are a more subtle.
+
+
+SUPP operands are:
+ <ul>
+ <li> not used in picking an encoding, 
+ <li> not printed in disassembly, 
+ <li> not represented using operand bits in the encoding.
+ </ul>
+IMPL operands are:
+ <ul>
+ <li> used in picking an encoding, 
+ <li> expressed in disassembly, and 
+ <li> not represented using operand bits in the encoding (like SUPP).
+ </ul>
+
+The implicit resources are required for selecting an encoding, but do
+not show up as a specific field in the instruction
+representation. Implicit resources do show up in a conventional
+instruction disassembly. In the IA-32 instruction set or Intel64
+instruction set, there are many instructions that use EAX or RAX
+implicitly, for example.  Sometimes the CL or RCX register is
+implicit. Also, some instructions have an implicit 1 immediate. The
+opcode you chose fixes your choice of implicit register or immediate.
+
+The suppressed resources are a form of implicit resource, but they are
+resources not required for encoding. The suppressed operands are not
+normally displayed in a conventional disassembly.  The suppressed
+operands are emitted by the decoder but are not used when
+encoding. They are ignored by the encoder. Examples are the stack
+pointer for PUSH and POP operations. There are many others, like
+pseudo resources. 
+
+
+The explicit and implicit resources are expressed resources -- they show
+up in disassembly and are required for encoding.
+The suppressed resources are considered a kind of implicit 
+resources that are not expressed in ATT System V or Intel disassembly formats.
+
+The suppressed operands are always after the implicit and explicit operands
+in the operand order.  
+
+
+
+@subsection X87_REG_STACK x87 Register stack popping
+
+The Intel&reg; 64 and IA-32 Architectures Software Developers Manual indicates that "FADDP st2",
+reads st0, st2 writes st2 and pops the x87 stack. The result ends up
+in st1 after the instruction executes. That is not how Intel XED represents
+the operation.  Intel XED will say that "FADDP st2" reads st0 and st2 and
+writes st2. The output register that Intel XED provides is essentially "pre
+pop". The pop occurs afterward, conceptually. The actual result ends
+up in the st1 register after the stack pop operation.  Intel XED also lists
+the pseudo resources indicating that a stack pop has occurred. This
+behavior affects the output register of following instructions: FADDP,
+FMULP, FSUBRP, FSUBP, FDIVRP, FDIVP.
+
+@subsection PSEUDO_RESOURCES Pseudo Resources
+
+Some instructions reference machine registers or perform interesting
+operations that we need to represent.  For example, the IDTR and GDTR
+are represented as pseudo resources. Operations that pop the x87
+floating point register stack can have a X87POP or X87POP2 "register"
+to indicate if the x87 register stack is popped once or twice. These
+are part of the #xed_reg_enum_t.
+
+@subsection IMM_DIS Immediates and Displacements
+
+Using the API functions for setting immediates, memory displacements
+and branch displacements.  Immediates and Displacements are stored in
+normal integers internally, but they are stored endian swapped and
+left justified.  The API functions take care of all the endian
+swapping and positioning so you don't have to worry about that detail.
+
+Immediates and displacements are different things in the ISA. They can
+be 1, 2, 4 or 8 bytes.  Branch displacements (1, 2 or 4 bytes) and
+Memory displacements (1, 2, 4 or 8 bytes) refer to the signed
+constants that are used for relative distances or memory "offsets"
+from a base register (including the instruction pointer) or start of a
+memory region.
+
+Immediates are signed or unsigned and are used for numerical
+computations, shift distances, and also hold things like segment
+selectors for far pointers for certain jump or call instructions.
+
+There is also a second 1B immedate used only for the ENTER
+instruction.
+
+Intel XED will try to use the shortest allowed width for a displacement or
+immediate. You can control Intel XED's selection of allowed widths using a
+notion of "legal widths".  A "legal width" is a binary number where
+each bit represents a legal desired width. For example, when you have
+a valid base register in 32 or 64b addressing, and a displacement is
+required, your displacement must be either 1 byte or 4 bytes
+long. This is expressed by OR'ing 1 and 4 together to get 0101 (base
+2) or 5 (base 10).
+
+If a four byte displacement was required, but the value was
+representable in fewer than four bytes, then the legal width should be
+set to 0100 (base 2) or 4 (base 10). 
+
+@section API_REF  API Reference
+
+  - @ref INIT         "INIT"      Initialization
+  - @ref DEC          "DEC"       Decoding instructions
+  - @ref ENC          "ENC"       Encoding instructions
+  - @ref ENCHL        "ENCHL"     High level API for encoding instructions
+  - @ref OPERANDS     "OPERANDS"  Operand storage fields
+  - @ref IFORM        "IFORM"     Iforms
+  - @ref ISASET       "ISASET"    ISA-sets and chips
+  - @ref PRINT        "PRINT"     Printing (disassembling) instructions
+  - @ref REGINTFC     "REGINTFC"  Register interface functions
+  - @ref FLAGS        "FLAGS"     Flags interface functions
+  - @ref AGEN         "AGEN"      Address generation calculation support
+  - @ref ENUM         "ENUM"      Enumerations
+  - @ref EXAMPLES     "Examples"  Examples
+
+
+
+@section LEGAL  Disclaimer and Legal Information
+
+The information in this manual is subject to change without notice and
+Intel Corporation assumes no responsibility or liability for any
+errors or inaccuracies that may appear in this document or any
+software that may be provided in association with this document. This
+document and the software described in it are furnished under license
+and may only be used or copied in accordance with the terms of the
+license. No license, express or implied, by estoppel or otherwise, to
+any intellectual property rights is granted by this document. The
+information in this document is provided in connection with Intel
+products and should not be construed as a commitment by Intel
+Corporation.
+
+EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH
+PRODUCTS, INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS
+ANY EXPRESS OR IMPLIED WARRANTY, RELATING TO SALE AND/OR USE OF INTEL
+PRODUCTS INCLUDING LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A
+PARTICULAR PURPOSE, MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT,
+COPYRIGHT OR OTHER INTELLECTUAL PROPERTY RIGHT. Intel products are not
+intended for use in medical, life saving, life sustaining, critical
+control or safety systems, or in nuclear facility applications.
+
+Designers must not rely on the absence or characteristics of any
+features or instructions marked "reserved" or "undefined." Intel
+reserves these for future definition and shall have no responsibility
+whatsoever for conflicts or incompat- ibilities arising from future
+changes to them.
+
+The software described in this document may contain software defects
+which may cause the product to deviate from published
+specifications. Current characterized software defects are available
+on request.
+
+Intel, the Intel logo, Intel SpeedStep, Intel NetBurst, Intel
+NetStructure, MMX, Intel386, Intel486, Celeron, Intel Centrino, Intel
+Xeon, Intel XScale, Itanium, Pentium, Pentium II Xeon, Pentium III
+Xeon, Pentium M, and VTune are trademarks or registered trademarks of
+Intel Corporation or its subsidiaries in the United States and other
+countries.
+
+Other names and brands may be claimed as the property of others.
+
+Copyright (c) 2002-2016 Intel Corporation. All Rights Reserved.
+
+*/
+
+// =============================================================
+/*! @defgroup DEC Decoding Instructions
+
+    To decode an instruction you are required to provide 
+      <ul>
+      <li> a machine state (operating mode and stack addressing width)
+      <li> a pointer to the instruction text array of bytes
+      <li> a length of the text array
+      </ul>
+ 
+    The machine state is passed in to decoder via the class 
+    #xed_state_t .
+    That
+    state is set via the constructor of each
+    #xed_decoded_inst_t .
+
+    The 
+    #xed_decoded_inst_t 
+     contains the results of decoding after a successful decode.
+
+    The #xed_decoded_inst_t includes an array of #xed_operand_values_t
+    and that is where most of the information about the operands,
+    resources etc. are stored. See the @ref OPERANDS interface. The
+    array is indexed by the #xed_operand_enum_t enumeration. Do not
+    access it directly though; use the interface functions in the @ref
+    OPERANDS interface for portability.
+
+    After decoding the #xed_decoded_inst_t contains a pointer to the
+    #xed_inst_t which acts like a kind of template giving static
+    information about the decoded instruction: what are the types of
+    the operands, the iclass, category extension, etc. The #xed_inst_t
+    is accessed via the #xed_decoded_inst_inst(cont
+    xed_decoded_inst_t* xedd) function.
+
+    Before every decode, you must call one of the initialization
+    functions. The most common case would be to use
+    #xed_decoded_inst_zero_keep_mode() or maybe
+    #xed_decoded_inst_zero_set_mode().
+
+  */
+
+
+/*! @defgroup ENC Encoding Instructions
+
+    When you call xed_encode() to encode instruction you must pass:
+       <ul>
+       <li> an encode structure that includes a machine state ( #xed_state_t )
+       <li> a pointer to the instruction text
+       <li> a length of the text array
+       </ul>
+    The class #xed_encoder_request_t includes a #xed_operand_values_t and
+    that is where most of the information about the operands,
+    resources etc. are stored.
+
+    To add a REP or REPNE prefix to a an encoder request, set it in
+    the encoder request directly by calling
+    #xed_encoder_request_set_rep() or
+    #xed_encoder_request_set_repne().
+
+    To get nondefault width operands, during encoding, you have to
+    call #xed_encoder_request_set_effective_operand_width() .
+
+
+    To set nondefault addressing widths, you must call
+    #xed_encoder_request_set_effective_address_size().
+
+
+       
+    To encode instructions you must set the following 
+in the #xed_encoder_request_t.
+    <ol>
+    <li> the machine mode (machine width, and stack addressing width)
+    <li> the effective operand width
+    <li> the iclass
+    <li> for some instructions you need to specify prefixes (like REP,
+    REPNE or LOCK).
+    <li> the operands:
+           <ol>
+
+           <li>operand kind
+            (XED_OPERAND_{AGEN,MEM0,MEM1,IMM0,IMM1,RELBR,PTR,REG0...REG15}
+
+           <li>operand order <BR>
+       xed_encoder_request_set_operand_order(&req,operand_index, XED_OPERAND_*);
+        where the operand_index is a sequential index starting at zero.
+
+           <li>operand details
+                 <ol>
+                 <li>    FOR MEMOPS: base,segment,index,scale,displacement 
+                 for memops, 
+                 <li>  FOR REGISTERS: register name
+                 <li> FOR IMMEDIATES: immediate values
+                 </ol>
+           </ol>
+    </ol>
+
+    See @ref ENCODE_EXAMPLE for an example of using the encoder.
+ 
+ */
+
+/*! @defgroup ENCHL High Level API for Encoding Instructions
+
+This is a higher level API for encoding instructions.
+
+A full example is present in examples/xed-ex5-enc.c
+
+In the following example we create one instructions template that can
+be passed to the encoder.
+
+    @code
+ xed_encoder_instruction_t x; 
+ xed_encoder_request_t enc_req;
+ xed_state_t dstate;
+
+ dstate.mmode=XED_MACHINE_MODE_LEGACY_32;
+ dstate.stack_addr_width=XED_ADDRESS_WIDTH_32b;
+
+ xed_inst2(&x, dstate, XED_ICLASS_ADD, 0, 
+           xreg(XED_REG_EAX), 
+           xmem_bd(XED_REG_EDX, xdisp(0x11223344, 32), 32));
+  
+ xed_encoder_request_zero_set_mode(&enc_req, &dstate);
+ convert_ok = xed_convert_to_encoder_request(&enc_req, &x);
+ if (!convert_ok) {
+      fprintf(stderr,"conversion to encode request failed\n");
+      continue;
+ }
+ xed_error = xed_encode(&enc_req, itext, ilen, &olen);
+
+    @endcode
+
+
+The high-level encoder interface allows passing the effective operand
+width for the xed_inst*() function as 0 (zero) when the effective
+operand width is the default.
+
+The default width in 16b mode is 16b. The default width in 32b or 64b
+modes is 32b.  So if you do a 16b operation in 32b/64b mode, you must
+set the effective operand width. If you do a 64b operation in 64b
+mode, you must set it (the default is 32). Or if you do a more rare
+32b operation in 16b mode you must also set it.
+
+When all the operands are "suppressed" operands, then the effective
+operand width must be supplied for nondefault operation widths.
+
+*/
+
+/*! @defgroup OPERANDS Operand storage fields
+
+The operand storage fields are an array of values used for decoding
+and for encoding.  This holds derived semantic information from decode
+or required fields used during encoding.  They are accessible from a
+#xed_decoded_inst_t or a #xed_encoder_request_t .  */
+
+
+/*! @defgroup IFORM Iforms
+
+Intel XED classifies instructions as iclasses (ADD, SUB, MUL, etc.) of type
+#xed_iclass_enum_t.  To get more information about instructions and
+their operands, Intel XED creates iforms of type #xed_iform_enum_t. The
+iforms are supposed to aid in creating dispatch tables for
+instructions. You can often use a flat array indexed by iform. The
+maximum iform is #XED_IFORM_LAST.
+
+The iforms some times do not uniquely identify instructions. For
+example, many instructions in the ISA are "scalable" in that their
+operand width depends on the machine mode and the prefixes. The memory
+operation of these scalable opcodes is either 16 bits, 32 bits or 64
+bits. The same opcode can represent several instructions if you factor
+in the machine mode and prefixes. Those instructions often map to a
+single iform and need to be further refined by the
+#xed_operand_values_get_effective_operand_width function.
+
+The names of the iforms are derived from information about the
+#xed_iclass_enum_t and the names of their explicit operands (the name of of
+nonterminals in the Intel XED internal grammar) and the data types of those
+operands. Other information is sometimes included to disambiguate
+similar instructions. For example, there are several opcodes and
+operands for encoding certain a 1-byte register-register ADD
+instruction as well as the 1-byte register-immediate ADD, so to
+differentiate those, Intel XED includes the opcode bytes as suffixes for the
+iform name:
+
+@code
+  ADD_GPR8_GPR8_00      
+  ADD_GPR8_GPR8_02    
+  ADD_GPR8_IMMb_80r0  
+  ADD_GPR8_IMMb_82r0  
+@endcode
+
+The naming scheme for iforms can get rather complex and continues to
+evolve over time as the instruction set architecture grows.  They
+mostly use the lower-case letter codes found in the opcode map found
+in the appendix to the Intel&reg; 64 and IA-32 Architectures Software
+Developers Manual.  For example the scalable instructions
+mentioned above use the "v" code which the manuals describe as
+representing 16, 32 or 64b operands depending on the effective operand
+size.  The code "z" implies either 16 or 32b operation; When the
+effective operand size is 64, the operand is still 32b. Other common
+suffixes one might see are "d" for 32b and "q" for 64b. The codes "ps"
+and "pd" stand for packed scalar (single precision floating point) and
+packed double (double precision floating point). The code "dq" is used
+to describe 128b (16B) quantities typically in memory or an XMM
+register. Similarly "qq" describes a 256b (32B) quantity in memory or
+a YMM register.  In many cases the codes were sufficient to describe
+what is needed; in other cases I had to improvise.
+
+All the iclasses and iforms are listed in the misc/idata.txt file in
+the Intel XED kit.  
+
+The iform enumeration #xed_iform_enum_t is dense and it has some
+built-in structure. All the iforms for a particular iclass are sequential.
+The function #xed_iform_max_per_iclass() indicates the number of iforms
+for a particular iclass. 
+
+To get the first iform of a particular iclass you can use
+#xed_iform_first_per_iclass() at runtime.  There is also the
+#xed_iformfl_enum_t which indicates for every iclass, the first and
+last iform in the #xed_iform_enum_t.
+
+Given an iform, to get #xed_category_enum_t, #xed_extension_enum_t,
+and #xed_iclass_enum_t information, you can use #xed_iform_map(), or
+there are accessors listed below to get the iclass, category or
+extension from that table directly.  */
+
+
+/*! @defgroup ISASET Groupings of features for chips
+
+Every Intel XED iform belongs to one #xed_isa_set_enum_t. Each Intel XED chip of
+type #xed_chip_enum_t represents a collection of xed "isa-sets".  If
+you have a #xed_decoded_inst_t, you can get the isa set via
+the function #xed_decoded_inst_get_isa_set.
+
+*/
+
+/*! @defgroup PRINT Printing (disassembling) Instructions
+
+    There are two primary instruction printing
+    functions: #xed_format_generic() and #xed_format_context() .
+    Both emit disassembly to a user specified buffer.
+    #xed_format_generic() takes all the required information in a
+    pointer to a structure of type #xed_print_info_t.  In contrast,
+    #xed_format_context(), takes its arguments individually. Both
+    versions can take a void* context argument that is passed to
+    an optional symbolic disassembly callback function.  
+
+    The disassembly dialect (order of operands and formatting) is
+    specified by the #xed_syntax_enum_t parameter. For finer control
+    on certain aspects of disassembly, the parameter to
+    #xed_format_generic() has a field specifing lower level formatting
+    options (#xed_format_options_t).
+
+ */
+
+/*! @defgroup REGINTFC Register Interface
+
+    There are several functions that provide more information about
+    the GPRs and the nesting of GPRs.
+
+ */
+
+/*! @defgroup FLAGS Flags Interface
+
+    There are several functions that provide more information about
+    the flags read and written.
+
+    The flags are available from the #xed_decoded_inst_t via the
+    #xed_decoded_inst_get_rflags_info()  function which
+    returns a #xed_simple_flag_t pointer.
+
+    The type #xed_flag_set_t keeps the integer flags in the order
+    specified by the RFLAGS register. The x87 flags are stored in the
+    most signficant 4 bits of the flag set. This should not affect use
+    by the normal integer operations; Those bits are reserved as zero
+    in the RFLAGS.
+
+ */
+
+
+/*! @defgroup AGEN Address generation calculation support
+
+    There are several functions available that help with computation
+    of addresses.  Note the "big real" or "unreal" address calculation
+    is not currently supported.  Two callbacks are defined for
+    providing register values or segment base values.  For real mode,
+    the selector value is usedin the address computation. In protected
+    mode or long mode, the segment descriptor callbacks are used.
+
+ */
+
+
+/*! @defgroup ENUM Intel XED enumerations
+
+Almost all the enumerations in Intel XED are automatically generated and
+have conversion functions to and from strings. There is also a
+function for finding out what the last element of the enumeration is.
+
+ */
+
+
+/*! @defgroup INIT Intel XED initialization
+
+    This section describes the base class used for initializing the
+    encoder / decoder requests and the Intel XED library initialization
+    function.
+
+    To use Intel XED, you must
+    include "xed-interface.h" 
+
+    @code
+    #include "xed-interface.h"
+    @endcode
+
+    If you are calling Intel XED from C++, you must wrap this include:
+
+    @code
+    extern "C" {
+    #include "xed-interface.h"
+    }
+    @endcode
+
+    Once, before using Intel XED, you must call #xed_tables_init() to
+    initialize the tables Intel XED uses for encoding and decoding:
+    @code
+    xed_tables_init();
+    @endcode
+
+    Once initialized, Intel XED is reentrant (multithread safe). All values
+    used for encoding and decoding live on the caller's stack or in
+    the passed-in parameters.
+
+    If your program is multithreaded, initialize Intel XED once (and only
+    once) using the above call before you attempt to decode or encode
+    from any thread. Each thread does NOT need to initialize Intel XED. The
+    idea is to initialize Intel XED before creating your threads. 
+
+   */
+
+/*! @defgroup CMDLINE Intel XED command interface
+
+The command line tool called xed or xed.exe is built when you build
+the examples (@ref EXAMPLES) that come with Intel XED. The xed-ex3 is just
+encode portion of the xed command line tool.
+
+
+This tool is useful for encoding and decoding or even
+decoding-then-re-encoding a single instruction or all the instructions
+in the text segment of an ELF binary (32 or 64b). For decoding, just
+jump to the examples.
+
+
+This section also explains a little language for writing the
+instructions for encode requests (-e option).  I am constantly using
+this tool and updating it. The xed-ex3 (xed-ex3.exe) example is just
+the encoder portion of the xed command line tool.
+
+The SUPPRESSED operands emitted by the decoder are not used when
+encoding. They are ignored. They are not required to select an
+encoding.
+
+The syntax for encodable strings is as follows:
+@code
+             Opcode[/width]   [operand [operand]]
+@endcode
+
+The width is a 8, 16, 32 or 64, indicating the effective operand width
+if it differs from the default. 8b operations generally require
+this. Or since most operations that default to 32b widths in 64b mode,
+it is required for 64b operation widths in 64b mode.
+
+The operand specifier is one of the following.  
+
+- A register name such as EAX or R8B, etc. Case does not matter.
+
+- An immediate specifier such as IMM:12ff 
+
+- A branch displacement specifier such as BRDISP:0000001f
+
+- A memory specifier that indicates the base register, index register,
+scale value, and displacement value. If one of the fields is not
+required, a - is necessary.  The displacement is omittable. For
+example: MEM4:ESI,EAX,8,ff or MEM4:EBX. The first one specifies that
+the memory address 4 bytes and should be ESI + EAX * 8 + 0xff.  The
+second one specifies that EBX should be used to access 4 bytes of
+memory; note the displacement is omitted.  A segment override can be
+specified as follows: MEM4:GS:EAX by using a segment-name followed by
+a ":" before the base register. If there is no base register, you can
+use a "-", for example: MEM4:GS:-,-,11223344.  One also needs to
+specify a memory operation width. This can be accomplished by
+indicating a number of bytes just after the MEM specifier. For
+example: MEM2:EAX indicates a 2 byte memory operation. 
+
+- If the Haswell gather instructions are included in the build, then
+you can also specify a VSIB memop as follows: VSIB4:RAX,YMM2,2,ff.
+This would be a memory operand for a gather with RAX as the base, YMM2
+as the gather index register. The scale is 2 and the displacement is
+0xff. The element size is 4 (dwords, 4 bytes). Use 8 for qwords (8
+bytes).
+
+- An address generation specifer that has the same syntax as the above
+MEM: specifier, but is only used for LEA instructions.  Example:
+AGEN:EAX,EBX,2,-
+
+
+Here is the help message:
+
+@code
+
+% obj/xed -h
+Usage: obj/xed [options]
+One of the following is required:
+  -i input_file             (decode file)
+  -ide input_file           (decode/encode file)
+  -d hex-string             (decode one instruction)
+  -e instruction            (encode, must be last)
+  -de hex-string            (decode-then-encode)
+ 
+Optional arguments:
+  -v verbosity  (0=quiet, 1=errors, 2=useful-info, 3=trace, 5=very verbose)
+  -n number-of-instructions-to-decode (default 10,000, accepts K/M/G qualifiers)
+  -I            (Intel SYSV syntax for disassembly)
+  -A            (ATT SYSV syntax for disassembly)
+  -16           (for LEGACY_16 mode)
+  -32           (for LEGACY_32 mode, default)
+  -64           (for LONG_64 mode w/64b addressing)
+  -s32          (32b stack addressing, default, not in LONG_64 mode)
+  -s16          (16b stack addressing, not in LONG_64 mode)
+@endcode
+
+Here are a couple of examples:
+
+@code
+% xed -d 0000
+ADD INT_ALU BASE  Opcode: 00  MODRM: 00 Bytes: 2
+        Eb/EXPLICIT/RW Gb/EXPLICIT/R 
+        ADD EffWidth: 8b
+        MachineMode: LEGACY_32 AddrWidth: 32b StackAddrWidth: 32b
+        MEM/EXPLICIT/RW REG/AL(REG8)/EXPLICIT/R 
+        Read Write BASE= EAX(REG32) MemopLength = 1
+
+        rFLAGS: of-mod sf-mod zf-mod af-mod pf-mod cf-mod \ 
+            Read:  Written: of sf zf af pf cf             writes
+
+% xed -e ADD EAX EBX
+Encodable! 01d8
+
+xed -e ADD EAX MEM4:ESP,EBX,4
+Encodable! 03049c
+
+% xed -d 6a00
+PUSH INT_ALU BASE  Opcode: 6a  Immed: 00 Bytes: 2
+        Ib/EXPLICIT/R STACKPUSH/SUPPRESSED/R 
+        PUSH EffWidth: 32b
+        MachineMode: LEGACY_32 AddrWidth: 32b StackAddrWidth: 32b
+        MEM/SUPPRESSED/W REG/ESP(REG32)/SUPPRESSED/RW IMM/EXPLICIT/R 
+        Write SEG= SS BASE= ESP(REG32) MemopLength = 4
+        IMMED: 00
+
+        Does not use rFLAGS
+
+% xed -e MOV EAX MEM4:SS:ESP
+Encodable! 8b0424
+@endcode 
+
+Or using the xed-ex3 example tool:
+@code 
+% obj/xed-ex3
+Usage: obj/xed-ex3 [-16|-32|-64] [-s16|-s32] encode-string
+@endcode
+
+The -16, -32 or -64 are for specifying the major mode of the machine.
+The major mode of the machine determines the default data operand
+size and default addressing width.  In 64b mode, the default data
+size is 32b and the default addressing mode is 64b
+addressing.  In 32b mode, the default addressing width is 32b. In 16b
+mode, the default addressing width is 16b. In 32b mode or 16b mode,
+the stack addressing width must also be specified. Usually it matches
+the major mode.  The -s16 option is for specifying 16b stack
+addressing in 32b mode. The -s32 is for specifying 32b stack
+addressing in 16 bit mode.
+
+@code
+% obj/xed-ex3 -64 PUSH/64 RAX
+Encode request:
+PUSH Prefixes:  EffOpWidth: 64b EffAddrWidth: 64b
+	MachineMode: LONG_64 AddrWidth: 64b StackAddrWidth: 32b
+	REG/RAX(REG64)/EXPLICIT/RW 
+	MemopLength = 0
+
+Encodable! 50
+
+% obj/xed-ex3 MOV MEM4:EAX IMM:11223344
+Encode request:
+MOV Prefixes:  EffOpWidth: 32b EffAddrWidth: 32b
+	MachineMode: LEGACY_32 AddrWidth: 32b StackAddrWidth: 32b
+	MEM0/EXPLICIT/RW IMM/EXPLICIT/RW 
+	TmpltIdx=0 BASE= EAX(REG32) MemopLength = 0
+	IMMED: 0x11223344 signed: 1144201745 starts@byte: 1
+
+Encodable! c70011223344
+@endcode
+
+@section ENCODE_EXAMPLE An example of using the encoder
+
+The encoder language file which is part of the xed command line tool
+shows how to build up instructions from scratch.  The example uses a
+string to drive the creation of the instruction, but that is just an
+example. Look at the parse_encode_request function for the required
+pieces.
+
+\include xed-enc-lang.c
+ 
+
+ */
+
+/*! @defgroup EXAMPLES  Examples of using Intel XED
+
+The source code for the examples is in the "examples" subdirectory.
+
+There is a makefile that will build all the examples on linux or
+windows.
+
+There are several examples:
+      <ul>
+      
+      <li> xed-ex1.c: a simple decoder that prints the decode data
+      structure. This is included in the "Small Examples" section
+      below. It is a good example for using the major decoder APIs.
+      
+      <li> xed-ex4.c:a simple decoder with different disassmebly output formats
+      <li> xed-ex5-enc.c: encoder example using the high-level encoding API.
+      <li> xed.c: a decoder, encoder, image file reader, etc.
+      <li> xed-ex3.c: an encoder (subset of the xed command line
+         tool). Documented with "xed" on the @ref CMDLINE page.
+      </ul>
+
+The examples are described in the following subsections:
+    - @ref SMALLEXAMPLES  "Small Examples"  Small Examples
+    - @ref CMDLINE        "Command line"    Intel XED's command line testing tool
+    - @ref ENCODE_EXAMPLE "Encode Example"  An example of using the encoder
+
+*/
+
+/*! @defgroup SMALLEXAMPLES  Small Examples of using Intel XED
+
+Here is a minimal example of using Intel XED from the file examples/xed-min.c.
+
+\include xed-min.c
+
+There is a makefile in the examples directory. Here's how to compile
+it from a kit:
+@code
+% gcc -Ipath-to-xed-kit/include -Ipath-to-xed-kit/examples \
+      -c path-to-xed-kit/examples/xed-min.c
+% gcc -o xed-min xed-min.o path-to-xed-kit/lib/libxed.a
+@endcode
+where path-to-xed-kit is where you have your include, examples and
+lib directories from an installed Intel XED kit.
+
+
+Here is a more detailed example (examples/xed-ex1.c) that walks the
+operands much like the printing routines do for the
+#xed_decoded_inst_t .
+
+\include xed-ex1.c
+
+Here are a few examples of running the program:
+
+@code
+
+% ./xed-ex1 0 0
+iclass ADD	category INT_ALU	ISA-extension BASE
+instruction-length 2
+effective-operand-width 8b
+effective-address-width 32b
+Operands
+  0 MEM0  EXPLICIT / RW
+  1 REG AL EXPLICIT / R
+  2 REG EFLAGS SUPPRESSED / W
+Memory Operands
+  0 read SEG= DS BASE= EAX/REG32 
+  MemopLength = 1
+FLAGS:
+  must-write-rflags of-mod sf-mod zf-mod af-mod pf-mod cf-mod 
+  read: 
+  written: of sf zf af pf cf 
+===============================================================================
+
+% ./xed-ex1 f2 0f 58 9c 24 e0 00 00 00
+iclass ADDSD	category SSE	ISA-extension SSE2
+instruction-length 9
+effective-operand-width 32b
+effective-address-width 32b
+Operands
+  0 REG XMM3 EXPLICIT / RW
+  1 MEM0  EXPLICIT / R
+Memory Operands
+  0 read SEG= SS BASE= ESP/REG32 DISPLACEMENT= DISP32 0x000000e0
+  MemopLength = 8
+===============================================================================
+./xed-ex1 f3 90
+iclass PAUSE	category INT_ALU	ISA-extension BASE
+instruction-length 2
+effective-operand-width 32b
+effective-address-width 32b
+Operands
+Memory Operands
+  MemopLength = 0
+===============================================================================
+
+@endcode
+
+
+
+
+*/

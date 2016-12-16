@@ -1,0 +1,3 @@
+Request: CMPSW EOSZ:1, MODE:1, SMODE:1
+Encodable! 66A7
+.byte 0x66,0xa7

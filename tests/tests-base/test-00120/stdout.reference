@@ -1,0 +1,3 @@
+A4
+ICLASS: MOVSB   CATEGORY: STRINGOP   EXTENSION: BASE  IFORM: MOVSB   ISA_SET: I86
+SHORT: movsb byte ptr [edi], byte ptr [esi]

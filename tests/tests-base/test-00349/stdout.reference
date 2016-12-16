@@ -1,0 +1,3 @@
+Request: CMPSB MODE:1, SMODE:1
+Encodable! A6
+.byte 0xa6

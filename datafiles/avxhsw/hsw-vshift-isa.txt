@@ -1,0 +1,121 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+AVX_INSTRUCTIONS()::
+
+
+
+
+{
+ICLASS    : VPSLLVD
+CPL       : 3
+CATEGORY  : AVX2
+EXTENSION : AVX2
+EXCEPTIONS: avx-type-4
+PATTERN : VV1 0x47  VL128 V0F38 V66  W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq MEM0:r:dq
+
+PATTERN : VV1 0x47  VL128 V0F38 V66 W0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq REG2=XMM_B():r:dq
+
+PATTERN : VV1 0x47  VL256 V0F38 V66  W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq MEM0:r:qq
+
+PATTERN : VV1 0x47  VL256 V0F38 V66 W0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq REG2=YMM_B():r:qq
+
+}
+{
+ICLASS    : VPSLLVQ
+CPL       : 3
+CATEGORY  : AVX2
+EXTENSION : AVX2
+EXCEPTIONS: avx-type-4
+PATTERN : VV1 0x47  VL128 V0F38 V66  W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq MEM0:r:dq
+
+PATTERN : VV1 0x47  VL128 V0F38 V66 W1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq REG2=XMM_B():r:dq
+
+PATTERN : VV1 0x47  VL256 V0F38 V66  W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq MEM0:r:qq
+
+PATTERN : VV1 0x47  VL256 V0F38 V66 W1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq REG2=YMM_B():r:qq
+
+}
+
+{
+ICLASS    : VPSRLVD
+CPL       : 3
+CATEGORY  : AVX2
+EXTENSION : AVX2
+EXCEPTIONS: avx-type-4
+PATTERN : VV1 0x45  VL128 V0F38 V66  W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq MEM0:r:dq
+
+PATTERN : VV1 0x45  VL128 V0F38 V66 W0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq REG2=XMM_B():r:dq
+
+PATTERN : VV1 0x45  VL256 V0F38 V66  W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq MEM0:r:qq
+
+PATTERN : VV1 0x45  VL256 V0F38 V66 W0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq REG2=YMM_B():r:qq
+
+}
+{
+ICLASS    : VPSRLVQ
+CPL       : 3
+CATEGORY  : AVX2
+EXTENSION : AVX2
+EXCEPTIONS: avx-type-4
+PATTERN : VV1 0x45  VL128 V0F38 V66  W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq MEM0:r:dq
+
+PATTERN : VV1 0x45  VL128 V0F38 V66 W1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq REG2=XMM_B():r:dq
+
+PATTERN : VV1 0x45  VL256 V0F38 V66  W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq MEM0:r:qq
+
+PATTERN : VV1 0x45  VL256 V0F38 V66 W1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq REG2=YMM_B():r:qq
+
+}
+
+{
+ICLASS    : VPSRAVD
+CPL       : 3
+CATEGORY  : AVX2
+EXTENSION : AVX2
+EXCEPTIONS: avx-type-4
+PATTERN : VV1 0x46  VL128 V0F38 V66  W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq MEM0:r:dq
+
+PATTERN : VV1 0x46  VL128 V0F38 V66 W0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq REG2=XMM_B():r:dq
+
+PATTERN : VV1 0x46  VL256 V0F38 V66  W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq MEM0:r:qq
+
+PATTERN : VV1 0x46  VL256 V0F38 V66 W0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq REG2=YMM_B():r:qq
+
+}
+
+

@@ -1,0 +1,234 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+# any of the things in {} can trigger the action for these
+# the letters in square brackets are bound to the bits after the arrow.
+# The [] brackets are like an OR-triggering function.
+
+# For encoding, we spell out the order of the legacy prefixes and rex
+# prefixes. On decode, the sequential semantics were used to zero out
+# the effects of rex prefixes but that doesn't work for encode. So we
+# have to make a different table for encoding.
+
+
+SEQUENCE ISA_ENCODE
+   ISA_BINDINGS
+   ISA_EMIT
+
+# These bind the operand deciders that control the encoding
+SEQUENCE ISA_BINDINGS
+   FIXUP_EOSZ_ENC_BIND()
+   FIXUP_EASZ_ENC_BIND()
+   ASZ_NONTERM_BIND()  
+   INSTRUCTIONS_BIND()    
+   OSZ_NONTERM_ENC_BIND()   # OSZ must be after the instructions so that DF64 is bound (and before any prefixes obviously)
+   PREFIX_ENC_BIND() 
+   REX_PREFIX_ENC_BIND() 
+
+# These emit the bits and bytes that make up the encoding
+SEQUENCE ISA_EMIT
+   PREFIX_ENC_EMIT() 
+   REX_PREFIX_ENC_EMIT() 
+   INSTRUCTIONS_EMIT()  # THIS TAKES CARE OF MODRM/SIB/DISP/IMM
+
+
+FIXUP_EOSZ_ENC()::
+mode16 EOSZ=0 -> EOSZ=1
+mode32 EOSZ=0 -> EOSZ=2
+mode64 EOSZ=0 -> EOSZ=2
+otherwise -> nothing
+
+FIXUP_EASZ_ENC()::
+mode16 EASZ=0 -> EASZ=1
+mode32 EASZ=0 -> EASZ=2
+mode64 EASZ=0 -> EASZ=3
+otherwise -> nothing
+
+FIXUP_SMODE_ENC()::
+mode64 SMODE=0 -> SMODE=2
+mode64 SMODE=1 -> error
+otherwise -> nothing
+
+# FIXME: make ICLASS a possible field?
+# Remove the segment override if any supplied, from an LEA
+REMOVE_SEGMENT()::
+AGEN=0  -> nothing
+AGEN=1  -> REMOVE_SEGMENT_AGEN1()
+
+REMOVE_SEGMENT_AGEN1()::
+SEG0=@      -> nothing
+SEG0=SEGe() -> error
+
+
+# need to emit a segment override if the segment is not the default segment for the operation.
+# These are only meant for use with the things that do not use MODRM (like xlat, A0-A3 MOVs, and the string ops).
+# (MODRM encoding handles this stuff much better).
+OVERRIDE_SEG0()::
+SEG0=@            -> SEG_OVD=0
+SEG0=XED_REG_DS   -> SEG_OVD=0
+SEG0=XED_REG_CS   -> SEG_OVD=1 
+SEG0=XED_REG_ES   -> SEG_OVD=3 
+SEG0=XED_REG_FS   -> SEG_OVD=4
+SEG0=XED_REG_GS   -> SEG_OVD=5
+SEG0=XED_REG_SS   -> SEG_OVD=6
+
+OVERRIDE_SEG1()::
+SEG1=@           -> SEG_OVD=0 
+SEG1=XED_REG_DS  -> SEG_OVD=0 
+SEG1=XED_REG_CS  -> SEG_OVD=1 
+SEG1=XED_REG_ES  -> SEG_OVD=3 
+SEG1=XED_REG_FS  -> SEG_OVD=4
+SEG1=XED_REG_GS  -> SEG_OVD=5
+SEG1=XED_REG_SS  -> SEG_OVD=6
+
+
+
+REX_PREFIX_ENC()::
+mode64   NOREX=0  NEEDREX=1 REXW[w] REXB[b] REXX[x] REXR[r] -> 0b0100 wrxb
+mode64   NOREX=0  REX=1     REXW[w] REXB[b] REXX[x] REXR[r] -> 0b0100 wrxb
+mode64   NOREX=0            REXW[w]=1 REXB[b] REXX[x] REXR[r] -> 0b0100 wrxb
+mode64   NOREX=0            REXW[w] REXB[b]=1 REXX[x] REXR[r] -> 0b0100 wrxb
+mode64   NOREX=0            REXW[w] REXB[b] REXX[x]=1 REXR[r] -> 0b0100 wrxb
+mode64   NOREX=0            REXW[w] REXB[b] REXX[x] REXR[r]=1 -> 0b0100 wrxb
+mode64   NOREX=1  NEEDREX=1  -> error
+mode64   NOREX=1  REX=1      -> error
+mode64   NOREX=1  REXW=1     -> error
+mode64   NOREX=1  REXB=1     -> error
+mode64   NOREX=1  REXX=1     -> error
+mode64   NOREX=1  REXR=1     -> error
+mode64            NEEDREX=0 REX=0 REXW=0 REXB=0 REXX=0 REXR=0 -> nothing
+
+# If any REX bit shows up in 32 or 16b mode, we have an error. ensure everything is zero
+mode32          REX=0 REXW=0    REXB=0    REXX=0    REXR=0       -> nothing
+mode16          REX=0 REXW=0    REXB=0    REXX=0    REXR=0       -> nothing
+
+# or die...1
+otherwise                                                        -> error
+
+# This checks that we didn't try to use a byte register that requires
+# we do not have a rex with something else that requires we have a REX
+# prefix.
+
+# FIXME: need to allow repeated prefixes
+
+# FIXME: optionally allow for prefix order to be specified (from decode)
+
+PREFIX_ENC()::
+# create an "OR" of REFINING=2 and REP=2
+REP=2 -> 0xf2 no_return
+REP=3 -> 0xf3 no_return
+#
+66_prefix                  -> 0x66 no_return
+67_prefix                  -> 0x67 no_return
+lock_prefix                -> 0xf0 no_return
+fs_prefix                  -> 0x64 no_return
+gs_prefix                  -> 0x65 no_return
+####################################################
+mode64 HINT=3              -> 0x2e no_return
+mode64 HINT=4              -> 0x3e no_return
+#####################################################
+not64 cs_prefix            -> 0x2e no_return
+not64 HINT=3               -> 0x2e no_return
+not64 ds_prefix            -> 0x3e no_return
+not64 HINT=4               -> 0x3e no_return
+not64 es_prefix            -> 0x26 no_return
+not64 ss_prefix            -> 0x36 no_return
+otherwise                  -> nothing
+
+
+##########################################################################
+#
+#
+# This is the encode version. It just sets DF64 for later use by the
+# OSZ_NONTERM_ENC() nonterminal. 
+#
+DF64()::
+mode16 -> nothing
+mode32 -> nothing
+mode64 -> DF64=1 ### EOSZ=3 -- removed EOSZ=3 because it broke encoding pop 16b dx in 64b mode.
+
+#
+# If an instruction pattern sets W to zero or 1, we make sure it also
+# sets SKIP_OSZ=1 so that we do not do any overwrite of that value for
+# the EOSZ computation.
+#
+OSZ_NONTERM_ENC()::
+mode16 EOSZ=1        -> nothing
+mode16 EOSZ=2 DF32=1 -> nothing
+
+# We don't use SKIP_OSZ=1 with the MOV_CR instructions but this is
+#  here for completeness.
+mode16 EOSZ=2 DF32=0 SKIP_OSZ=1       -> nothing
+mode16 EOSZ=2 DF32=0 SKIP_OSZ=0       -> 66_prefix
+
+mode32 EOSZ=1 SKIP_OSZ=1  -> nothing
+mode32 EOSZ=1 SKIP_OSZ=0  -> 66_prefix
+
+mode32 EOSZ=2        -> nothing
+
+mode64 EOSZ=1 SKIP_OSZ=1   -> nothing
+mode64 EOSZ=1 SKIP_OSZ=0   -> 66_prefix
+
+mode64 EOSZ=2 DF64=1 -> error
+mode64 EOSZ=2 DF64=0 -> nothing 
+mode64 EOSZ=3 DF64=1 -> nothing
+
+mode64 EOSZ=3 DF64=0 SKIP_OSZ=1 -> nothing
+mode64 EOSZ=3 DF64=0 SKIP_OSZ=0 -> REXW=1
+
+
+# The REFINING66() decode version is required for when we have a 66
+# prefix that should not change the EOSZ. The REFINING66() decode
+# nonterminal restores that EOSZ.
+#
+# This one, the REFINING66() encode version is required for
+# compatibility, but it doesn't do anything. The EOSZ is an input to
+# the endoder.
+#
+# Turn off the REP prefix in case we are switching forms.
+REFINING66()::
+otherwise -> nothing # norep works too
+IGNORE66()::
+otherwise -> nothing 
+
+# Same for IMMUNE66() used for sttni/cmpxchg8B/cmpxchg16b. We do not want to emit a 66 prefix in 32b mode
+IMMUNE66()::
+mode16        -> EOSZ=2 DF32=1
+otherwise     -> nothing
+
+
+IMMUNE66_LOOP64()::
+otherwise -> nothing
+
+IMMUNE_REXW()::
+otherwise -> nothing
+
+CR_WIDTH()::
+mode16 -> DF32=1 EOSZ=2
+mode32 -> nothing
+mode64 -> DF64=1 EOSZ=3
+
+FORCE64()::
+otherwise -> DF64=1 EOSZ=3
+
+
+# the prefix encoder does all the required work.
+BRANCH_HINT()::
+otherwise  -> nothing
+
+# end of xed-prefixes-encode.txt
+##########################################################################

@@ -1,0 +1,5 @@
+Encode request:
+MOV_CR MODE:2, REG0:RAX, REG1:CR0, SMODE:2
+OPERAND ORDER: REG0 REG1 
+
+Encodable! 0F2000

@@ -1,0 +1,46 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+AVX512_ROUND()::
+LLRC=0b00 | ROUNDC=1 SAE=1
+LLRC=0b01 | ROUNDC=2 SAE=1
+LLRC=0b10 | ROUNDC=3 SAE=1
+LLRC=0b11 | ROUNDC=4 SAE=1
+
+SAE()::
+BCRC=1 | SAE=1
+BCRC=0 | error
+
+# NEWKEY: VEXPFX_OP == 0x62
+# NEWKEY: MBITS --> REXR, REXX (complemented MBITS)
+# NEWKEY: BRR -> REXB, REXRR (complemented BRR bits)
+# NEWKEY: EVMAP -> V0F, V0F38, V0F3A or error
+# NEWKEY: REXW
+# NEWKEY: VEXDEST3
+# NEWKEY: VEXDEST210
+# NEWKEY: UBIT
+# NEWKEY: VEXPP_OP -> VNP/V66/VF3/VF2 recoding
+# NEWKEY: confirm no refining prefix or rex prefix
+# NEWKEY: set VEXVALID=2
+# NEWKEY: ZEROING[z]  
+# NEWKEY: LLRCDECODE()-> LLRC -> VL128,256,512 or error
+# NEWKEY: BCRC[b] 
+# NEWKEY: VEXDEST4P[p]  
+# NEWKEY: VEXDEST4_INVERT()  <<<< invert VEXDEST4
+# NEWKEY: MASK[aaa]
+

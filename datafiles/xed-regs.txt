@@ -1,0 +1,230 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+############################################################################
+# file: xed-regs.txt
+############################################################################
+
+# h is for the "h" byte regs
+
+#name class width max-enclosing-reg-64b/32b-mode regid [h]
+INVALID INVALID 0
+ERROR   INVALID 0 # used to denote errors in lookup functions 
+
+RAX gpr  64  RAX     0
+EAX gpr  32  RAX/EAX 0
+AX  gpr  16  RAX/EAX 0
+AH  gpr  8   RAX/EAX 4  h
+AL  gpr  8   RAX/EAX 0
+
+RCX gpr  64  RCX     1
+ECX gpr  32  RCX/ECX 1
+CX  gpr  16  RCX/ECX 1
+CH  gpr  8   RCX/ECX 5 h
+CL  gpr  8   RCX/ECX 1
+
+RDX gpr  64  RDX       2
+EDX gpr  32  RDX/EDX   2
+DX  gpr  16  RDX/EDX   2
+DH  gpr  8   RDX/EDX   6 h
+DL  gpr  8   RDX/EDX   2
+
+RBX gpr  64  RBX       3
+EBX gpr  32  RBX/EBX   3
+BX  gpr  16  RBX/EBX   3
+BH  gpr  8   RBX/EBX   7 h
+BL  gpr  8   RBX/EBX   3
+
+RSP gpr  64  RSP       4
+ESP gpr  32  RSP/ESP   4
+SP  gpr  16  RSP/ESP   4
+SPL gpr  8   RSP/ESP   4
+
+RBP gpr  64  RBP       5
+EBP gpr  32  RBP/EBP   5
+BP  gpr  16  RBP/EBP   5 
+BPL gpr  8   RBP/EBP   5
+
+RSI gpr  64  RSI       6 
+ESI gpr  32  RSI/ESI   6
+SI  gpr  16  RSI/ESI   6
+SIL gpr  8   RSI/ESI   6
+
+RDI gpr  64  RDI       7
+EDI gpr  32  RDI/EDI   7
+DI  gpr  16  RDI/EDI   7
+DIL gpr  8   RDI/EDI   7
+
+
+R8  gpr  64  R8        8
+R8D gpr  32  R8/R8D    8
+R8W gpr  16  R8/R8D    8
+R8B gpr  8   R8/R8D    8
+
+R9  gpr  64  R9        9
+R9D gpr  32  R9/R9D    9
+R9W gpr  16  R9/R9D    9
+R9B gpr  8   R9/R9D    9
+
+R10  gpr 64  R10       10
+R10D gpr 32  R10/R10D  10
+R10W gpr 16  R10/R10D  10
+R10B gpr 8   R10/R10D  10
+
+R11  gpr 64  R11       11
+R11D gpr 32  R11/R11D  11
+R11W gpr 16  R11/R11D  11
+R11B gpr 8   R11/R11D  11
+
+R12  gpr 64  R12       12
+R12D gpr 32  R12/R12D  12
+R12W gpr 16  R12/R12D  12
+R12B gpr 8   R12/R12D  12
+
+R13  gpr 64  R13       13
+R13D gpr 32  R13/R13D  13
+R13W gpr 16  R13/R13D  13
+R13B gpr 8   R13/R13D  13
+
+R14  gpr 64  R14       14
+R14D gpr 32  R14/R14D  14
+R14W gpr 16  R14/R14D  14
+R14B gpr 8   R14/R14D  14
+
+R15  gpr 64  R15       15
+R15D gpr 32  R15/R15D  15
+R15W gpr 16  R15/R15D  15
+R15B gpr 8   R15/R15D  15
+
+
+RIP  ip    64  RIP
+EIP  ip    32  RIP/EIP 
+IP   ip    16  RIP/EIP 
+
+FLAGS   flags 16 RFLAGS/EFLAGS
+EFLAGS  flags 32 RFLAGS/EFLAGS
+RFLAGS  flags 64 RFLAGS
+
+CS   sr    16 CS
+DS   sr    16 DS
+ES   sr    16 ES
+SS   sr    16 SS
+FS   sr    16 FS
+GS   sr    16 GS
+
+
+
+
+MMX0  mmx 64  MMX0  0
+MMX1  mmx 64  MMX1  1
+MMX2  mmx 64  MMX2  2
+MMX3  mmx 64  MMX3  3
+
+MMX4  mmx 64  MMX4  4
+MMX5  mmx 64  MMX5  5
+MMX6  mmx 64  MMX6  6
+MMX7  mmx 64  MMX7  7
+
+
+ST0   x87 80  ST0  0 - st(0)
+ST1   x87 80  ST1  1 - st(1)
+ST2   x87 80  ST2  2 - st(2)
+ST3   x87 80  ST3  3 - st(3)
+ST4   x87 80  ST4  4 - st(4)
+ST5   x87 80  ST5  5 - st(5)
+ST6   x87 80  ST6  6 - st(6)
+ST7   x87 80  ST7  7 - st(7)
+
+CR0 cr 32/64  CR0  0
+CR1 cr 32/64  CR1  1
+CR2 cr 32/64  CR2  2
+CR3 cr 32/64  CR3  3
+CR4 cr 32/64  CR4  4
+CR5 cr 32/64  CR5  5
+CR6 cr 32/64  CR6  6
+CR7 cr 32/64  CR7  7
+CR8 cr 32/64  CR8  8 
+CR9 cr 32/64  CR9  9
+CR10 cr 32/64 CR10  10
+CR11 cr 32/64 CR11  11
+CR12 cr 32/64 CR12  12
+CR13 cr 32/64 CR13  13
+CR14 cr 32/64 CR14  14
+CR15 cr 32/64 CR15  15
+
+DR0 dr  32/64  DR0  0  
+DR1 dr  32/64  DR1  1  
+DR2 dr  32/64  DR2  2  
+DR3 dr  32/64  DR3  3  
+DR4 dr  32/64  DR4  4  
+DR5 dr  32/64  DR5  5  
+DR6 dr  32/64  DR6  6  
+DR7 dr  32/64  DR7  7  
+DR8 dr  32/64 DR8   8  
+DR9 dr  32/64 DR9   9  
+DR10 dr 32/64 DR10   10
+DR11 dr 32/64 DR11   11
+DR12 dr 32/64 DR12   12
+DR13 dr 32/64 DR13   13
+DR14 dr 32/64 DR14   14
+DR15 dr 32/64 DR15   15
+
+STACKPUSH   pseudo NA
+STACKPOP    pseudo NA
+GDTR        pseudo 80
+LDTR        pseudo 80
+IDTR        pseudo 80
+TR          pseudo 80
+TSC         pseudo 32
+# TSC_AUX was added in 3.10 version of AMD's manual
+TSCAUX      pseudo 32
+MSRS        pseudo NA
+
+X87CONTROL  pseudox87 16
+X87STATUS   pseudox87 16 # includes TOP field for x87 stack
+X87TAG      pseudox87 16
+X87PUSH     pseudox87 NA
+X87POP      pseudox87 NA
+X87POP2     pseudox87 NA
+
+X87OPCODE   pseudox87 11 # These 5 are not used by XED
+X87LASTCS   pseudox87 16
+X87LASTIP   pseudox87 32/64 # 16b mode is wrong
+X87LASTDS   pseudox87 16
+X87LASTDP   pseudox87 32/64 # 16b mode is wrong
+
+XCR0        xcr    64 # previously known as XFEM
+
+MXCSR       mxcsr  32
+
+# Some dummy registers for someone to play with if they ever want to
+TMP0 tmp  NA  TMP0 0  
+TMP1 tmp  NA  TMP1 1  
+TMP2 tmp  NA  TMP2  2  
+TMP3 tmp  NA  TMP3  3  
+TMP4 tmp  NA  TMP4  4  
+TMP5 tmp  NA  TMP5  5  
+TMP6 tmp  NA  TMP6  6  
+TMP7 tmp  NA  TMP7  7  
+TMP8 tmp  NA  TMP8  8  
+TMP9 tmp  NA  TMP9  9  
+TMP10 tmp NA  TMP10 10
+TMP11 tmp NA  TMP11 11
+TMP12 tmp NA  TMP12 12
+TMP13 tmp NA  TMP13 13
+TMP14 tmp NA  TMP14 14
+TMP15 tmp NA  TMP15 15

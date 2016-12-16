@@ -1,0 +1,5 @@
+4B8D446D00
+ICLASS: LEA   CATEGORY: MISC   EXTENSION: BASE  IFORM: LEA_GPRv_AGEN   ISA_SET: I86
+SHORT: lea rax, ptr [r13+r13*2]
+Encodable! 4B8D446D00
+Identical re-encoding

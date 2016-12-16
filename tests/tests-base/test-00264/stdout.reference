@@ -1,0 +1,20 @@
+Setting chip to SALTWELL
+Attempting to decode: 0f 0d 08 
+iclass PREFETCHW	category PREFETCH	ISA-extension 3DNOW	ISA-set PREFETCH_NOP
+instruction-length 3
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name PREFETCHW_0F0Dr1
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 2
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below)   EXPLICIT   R MPREFETCH  512    64     8     64        INT    INVALID
+Memory Operands
+  0    read SEG= DS BASE= EAX/GPR  ASZ0=32
+  MemopBytes = 64
+ATTRIBUTES: PREFETCH 
+ISA SET: [PREFETCH_NOP]

@@ -1,0 +1,5 @@
+0000
+ICLASS: ADD   CATEGORY: BINARY   EXTENSION: BASE  IFORM: ADD_MEMb_GPR8   ISA_SET: I86
+SHORT: add byte ptr [eax], al
+Encodable! 0000
+Identical re-encoding

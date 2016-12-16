@@ -1,0 +1,1 @@
+ BUILDDIR/xed -chip-check HASWELL -d f30fbc00

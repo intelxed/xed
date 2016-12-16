@@ -1,0 +1,17 @@
+.o
+*.obj
+*.exe
+*.pyc
+*~
+*#
+obj*
+.buildid
+xed2-install*
+xed-install*
+.#*
+TAGS
+/VS10/xed.vcxproj.user
+/VS10/xed.sdf
+kits/*
+logs/*
+.developer

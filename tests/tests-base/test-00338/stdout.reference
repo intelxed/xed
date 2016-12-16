@@ -1,0 +1,3 @@
+Request: OUTSD MODE:1, SMODE:1
+Encodable! 6F
+.byte 0x6f

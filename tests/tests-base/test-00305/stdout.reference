@@ -1,0 +1,5 @@
+0F1AFF
+ICLASS: NOP   CATEGORY: WIDENOP   EXTENSION: BASE  IFORM: NOP_GPRv_GPRv_0F1A   ISA_SET: PPRO
+SHORT: nop edi, edi
+Encodable! 0F1AFF
+Identical re-encoding

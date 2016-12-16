@@ -1,0 +1,33 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+EVV VEXVALID=2
+
+EMX_BROADCAST_1TO16_32 BCAST=1      # 512
+EMX_BROADCAST_4TO16_32 BCAST=2      # 512
+EMX_BROADCAST_1TO8_64  BCAST=5      # 512
+EMX_BROADCAST_4TO8_64  BCAST=6      # 512
+EMX_BROADCAST_2TO16_32 BCAST=7      # 512
+EMX_BROADCAST_2TO8_64  BCAST=8      # 512
+EMX_BROADCAST_8TO16_32 BCAST=9      # 512
+EMX_BROADCAST_1TO32_16  BCAST=16  # 512
+EMX_BROADCAST_1TO64_8   BCAST=19  # 512
+# these do not show up on earlier processors
+EMX_BROADCAST_4TO8_32  BCAST=4      #     256
+EMX_BROADCAST_2TO4_32  BCAST=12   #         128
+EMX_BROADCAST_2TO8_32  BCAST=21   #     256
+EMX_BROADCAST_1TO2_32  BCAST=22   #     128

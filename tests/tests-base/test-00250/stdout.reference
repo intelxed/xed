@@ -1,0 +1,21 @@
+Attempting to decode: 0f b2 00 00 
+iclass LSS	category SEGOP	ISA-extension BASE	ISA-set I386
+instruction-length 3
+operand-width 32
+effective-operand-width 32
+effective-address-width 64
+stack-address-width 64
+iform-enum-name LSS_GPRv_MEMp2
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=EAX   EXPLICIT   W         V   32     4     1     32        INT        GPR
+1   MEM0           (see below)   EXPLICIT   R        P2   48     6     1     48     STRUCT    INVALID
+2   REG1               REG1=SS SUPPRESSED   W         W   16     2     1     16        INT         SR
+Memory Operands
+  0    read BASE= RAX/GPR  ASZ0=64
+  MemopBytes = 6
+ATTRIBUTES: NOTSX SCALABLE 
+ISA SET: [I386]

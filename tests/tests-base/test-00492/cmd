@@ -1,0 +1,1 @@
+ BUILDDIR/xed -e movsd_xmm xmm0 MEM4:eax

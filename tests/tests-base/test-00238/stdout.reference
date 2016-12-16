@@ -1,0 +1,5 @@
+Encode request:
+POP EOSZ:2, REG0:EDX, SMODE:1
+OPERAND ORDER: REG0 
+
+Encodable! 665A

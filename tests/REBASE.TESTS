@@ -1,0 +1,2 @@
+./run-cmd.py --build-dir ../obj/examples   --rebase-tests --tests tests-base --tests tests-avx512  --tests tests-xop --tests test-avx512pf
+./run-cmd.py --build-dir ../obj-knc/examples --rebase-tests --tests tests-knc

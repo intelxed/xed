@@ -1,0 +1,98 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+########################################################################
+## file: xed-reg-tables.txt
+########################################################################
+
+xed_reg_enum_t GPR8_R()::
+
+REXR=0 REG=0x0  | OUTREG=XED_REG_AL
+REXR=0 REG=0x1  | OUTREG=XED_REG_CL
+REXR=0 REG=0x2  | OUTREG=XED_REG_DL
+REXR=0 REG=0x3  | OUTREG=XED_REG_BL
+
+REXR=0 REG=0x4  REX=0   | OUTREG=XED_REG_AH
+REXR=0 REG=0x5  REX=0   | OUTREG=XED_REG_CH
+REXR=0 REG=0x6  REX=0   | OUTREG=XED_REG_DH 
+REXR=0 REG=0x7  REX=0   | OUTREG=XED_REG_BH
+
+REXR=0 REG=0x4  REX=1   | OUTREG=XED_REG_SPL
+REXR=0 REG=0x5  REX=1   | OUTREG=XED_REG_BPL
+REXR=0 REG=0x6  REX=1   | OUTREG=XED_REG_SIL
+REXR=0 REG=0x7  REX=1   | OUTREG=XED_REG_DIL
+
+REXR=1 REG=0x0  | OUTREG=XED_REG_R8B
+REXR=1 REG=0x1  | OUTREG=XED_REG_R9B
+REXR=1 REG=0x2  | OUTREG=XED_REG_R10B
+REXR=1 REG=0x3  | OUTREG=XED_REG_R11B
+REXR=1 REG=0x4  | OUTREG=XED_REG_R12B
+REXR=1 REG=0x5  | OUTREG=XED_REG_R13B
+REXR=1 REG=0x6  | OUTREG=XED_REG_R14B
+REXR=1 REG=0x7  | OUTREG=XED_REG_R15B
+
+xed_reg_enum_t GPR8_B()::
+REXB=0 RM=0x0  | OUTREG=XED_REG_AL 
+REXB=0 RM=0x1  | OUTREG=XED_REG_CL
+REXB=0 RM=0x2  | OUTREG=XED_REG_DL
+REXB=0 RM=0x3  | OUTREG=XED_REG_BL
+
+REXB=0 RM=0x4  REX=0  | OUTREG=XED_REG_AH
+REXB=0 RM=0x5  REX=0  | OUTREG=XED_REG_CH
+REXB=0 RM=0x6  REX=0  | OUTREG=XED_REG_DH
+REXB=0 RM=0x7  REX=0  | OUTREG=XED_REG_BH
+
+REXB=0 RM=0x4  REX=1  | OUTREG=XED_REG_SPL
+REXB=0 RM=0x5  REX=1  | OUTREG=XED_REG_BPL
+REXB=0 RM=0x6  REX=1  | OUTREG=XED_REG_SIL
+REXB=0 RM=0x7  REX=1  | OUTREG=XED_REG_DIL
+
+REXB=1 RM=0x0  | OUTREG=XED_REG_R8B
+REXB=1 RM=0x1  | OUTREG=XED_REG_R9B
+REXB=1 RM=0x2  | OUTREG=XED_REG_R10B
+REXB=1 RM=0x3  | OUTREG=XED_REG_R11B
+REXB=1 RM=0x4  | OUTREG=XED_REG_R12B
+REXB=1 RM=0x5  | OUTREG=XED_REG_R13B
+REXB=1 RM=0x6  | OUTREG=XED_REG_R14B
+REXB=1 RM=0x7  | OUTREG=XED_REG_R15B
+
+
+xed_reg_enum_t GPR8_SB()::
+REXB=0 SRM=0x0  | OUTREG=XED_REG_AL 
+REXB=0 SRM=0x1  | OUTREG=XED_REG_CL
+REXB=0 SRM=0x2  | OUTREG=XED_REG_DL
+REXB=0 SRM=0x3  | OUTREG=XED_REG_BL
+
+REXB=0 SRM=0x4  REX=0  | OUTREG=XED_REG_AH
+REXB=0 SRM=0x5  REX=0  | OUTREG=XED_REG_CH
+REXB=0 SRM=0x6  REX=0  | OUTREG=XED_REG_DH
+REXB=0 SRM=0x7  REX=0  | OUTREG=XED_REG_BH
+
+REXB=0 SRM=0x4  REX=1  | OUTREG=XED_REG_SPL
+REXB=0 SRM=0x5  REX=1  | OUTREG=XED_REG_BPL
+REXB=0 SRM=0x6  REX=1  | OUTREG=XED_REG_SIL
+REXB=0 SRM=0x7  REX=1  | OUTREG=XED_REG_DIL
+
+REXB=1 SRM=0x0  | OUTREG=XED_REG_R8B
+REXB=1 SRM=0x1  | OUTREG=XED_REG_R9B
+REXB=1 SRM=0x2  | OUTREG=XED_REG_R10B
+REXB=1 SRM=0x3  | OUTREG=XED_REG_R11B
+REXB=1 SRM=0x4  | OUTREG=XED_REG_R12B
+REXB=1 SRM=0x5  | OUTREG=XED_REG_R13B
+REXB=1 SRM=0x6  | OUTREG=XED_REG_R14B
+REXB=1 SRM=0x7  | OUTREG=XED_REG_R15B
+

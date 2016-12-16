@@ -1,0 +1,104 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+############################################################################
+#This is an experiment with an encoder table. It does not set fields
+#that are initialized to zero (REXR, REXB). It sets NOREX, NEEDREX to
+#indicated encoding constraints.
+############################################################################
+
+
+
+xed_reg_enum_t GPR8_R()::
+
+OUTREG=XED_REG_AL -> REG=0x0  
+OUTREG=XED_REG_CL -> REG=0x1  
+OUTREG=XED_REG_DL -> REG=0x2  
+OUTREG=XED_REG_BL -> REG=0x3  
+
+OUTREG=XED_REG_AH -> REG=0x4  NOREX=1
+OUTREG=XED_REG_CH -> REG=0x5  NOREX=1   
+OUTREG=XED_REG_DH -> REG=0x6  NOREX=1   
+OUTREG=XED_REG_BH -> REG=0x7  NOREX=1   
+
+OUTREG=XED_REG_SPL ->  REG=0x4  NEEDREX=1   
+OUTREG=XED_REG_BPL ->  REG=0x5  NEEDREX=1   
+OUTREG=XED_REG_SIL ->  REG=0x6  NEEDREX=1   
+OUTREG=XED_REG_DIL ->  REG=0x7  NEEDREX=1   
+
+OUTREG=XED_REG_R8B -> REXR=1 REG=0x0  
+OUTREG=XED_REG_R9B -> REXR=1 REG=0x1  
+OUTREG=XED_REG_R10B -> REXR=1 REG=0x2  
+OUTREG=XED_REG_R11B -> REXR=1 REG=0x3  
+OUTREG=XED_REG_R12B -> REXR=1 REG=0x4  
+OUTREG=XED_REG_R13B -> REXR=1 REG=0x5  
+OUTREG=XED_REG_R14B -> REXR=1 REG=0x6  
+OUTREG=XED_REG_R15B -> REXR=1 REG=0x7  
+
+
+xed_reg_enum_t GPR8_B()::
+OUTREG=XED_REG_AL -> RM=0x0  
+OUTREG=XED_REG_CL -> RM=0x1  
+OUTREG=XED_REG_DL -> RM=0x2  
+OUTREG=XED_REG_BL -> RM=0x3  
+
+OUTREG=XED_REG_AH -> RM=0x4  NOREX=1  
+OUTREG=XED_REG_CH -> RM=0x5  NOREX=1  
+OUTREG=XED_REG_DH -> RM=0x6  NOREX=1  
+OUTREG=XED_REG_BH -> RM=0x7  NOREX=1  
+
+OUTREG=XED_REG_SPL -> RM=0x4  NEEDREX=1  
+OUTREG=XED_REG_BPL -> RM=0x5  NEEDREX=1  
+OUTREG=XED_REG_SIL -> RM=0x6  NEEDREX=1  
+OUTREG=XED_REG_DIL -> RM=0x7  NEEDREX=1  
+
+OUTREG=XED_REG_R8B -> REXB=1 RM=0x0  
+OUTREG=XED_REG_R9B -> REXB=1 RM=0x1  
+OUTREG=XED_REG_R10B -> REXB=1 RM=0x2  
+OUTREG=XED_REG_R11B -> REXB=1 RM=0x3  
+OUTREG=XED_REG_R12B -> REXB=1 RM=0x4  
+OUTREG=XED_REG_R13B -> REXB=1 RM=0x5  
+OUTREG=XED_REG_R14B -> REXB=1 RM=0x6  
+OUTREG=XED_REG_R15B -> REXB=1 RM=0x7  
+
+
+xed_reg_enum_t GPR8_SB()::
+OUTREG=XED_REG_AL -> SRM=0x0  
+OUTREG=XED_REG_CL -> SRM=0x1  
+OUTREG=XED_REG_DL -> SRM=0x2  
+OUTREG=XED_REG_BL -> SRM=0x3  
+
+OUTREG=XED_REG_AH -> SRM=0x4  NOREX=1  
+OUTREG=XED_REG_CH -> SRM=0x5  NOREX=1  
+OUTREG=XED_REG_DH -> SRM=0x6  NOREX=1  
+OUTREG=XED_REG_BH -> SRM=0x7  NOREX=1  
+
+OUTREG=XED_REG_SPL -> SRM=0x4  NEEDREX=1  
+OUTREG=XED_REG_BPL -> SRM=0x5  NEEDREX=1  
+OUTREG=XED_REG_SIL -> SRM=0x6  NEEDREX=1  
+OUTREG=XED_REG_DIL -> SRM=0x7  NEEDREX=1  
+
+OUTREG=XED_REG_R8B -> REXB=1 SRM=0x0  
+OUTREG=XED_REG_R9B -> REXB=1 SRM=0x1  
+OUTREG=XED_REG_R10B -> REXB=1 SRM=0x2  
+OUTREG=XED_REG_R11B -> REXB=1 SRM=0x3  
+OUTREG=XED_REG_R12B -> REXB=1 SRM=0x4  
+OUTREG=XED_REG_R13B -> REXB=1 SRM=0x5  
+OUTREG=XED_REG_R14B -> REXB=1 SRM=0x6  
+OUTREG=XED_REG_R15B -> REXB=1 SRM=0x7  
+

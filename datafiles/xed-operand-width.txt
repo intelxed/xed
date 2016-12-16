@@ -1,0 +1,109 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+# @file xed-operand-width.txt
+
+# the default xtype can be overridden in each operand using a ":" followed by an explicit xtype
+##
+## the width defaults to bytes. But it can be bits if it has a "bits" suffix 
+##
+#
+#            default    
+#oc2-code    XTYPE     width16 width32 width64 (if only one width is shown, it is for all widths)
+#
+INVALID     INVALID   0
+#
+#  3 strange things:
+#
+asz         int       2 4 8  # varies with the effective address width
+ssz         int       2 4 8  # varies with the stack address width
+pseudo      struct    0      # these are for unusual registers
+pseudox87   struct    0      # these are for unusual registers
+#
+#
+#
+#1          i1        1 # FIXME: this is not used...
+a16         i16       4  # bound
+a32         i32       8  # bound 
+b           u8        1
+d           i32       4
+#
+dq          i32      16
+#
+xub        u8        16
+xuw        u16       16
+xud        u32       16
+xuq        u64       16
+x128       u128      16
+#
+xb          i8       16
+xw          i16      16
+xd          i32      16
+xq          i64      16
+#
+#
+mb          i8        8
+mw          i16       8
+md          i32       8
+mq          i64       8
+#
+m64int      i64       8
+m64real     f64       8
+mem108      struct  108
+mem14       struct   14
+mem16       struct    2   
+mem16int    i16       2
+mem28       struct   28
+mem32int    i32       4
+mem32real   f32       4
+mem80dec    b80      10 
+mem80real   f80      10
+f80         f80      10 # for X87 registers:
+mem94       struct   94
+mfpxenv     struct  512
+mxsave      struct  576
+mprefetch   i64      64 # made up width for prefetches
+p           struct    4    6   6
+p2          struct    4    6  10
+pd          f64      16
+ps          f32      16
+pi          i32       8
+q           i64       8
+s           struct    6    6  10
+s64         struct   10
+sd          f64       8
+si          i32       4
+ss          f32       4
+v           int       2    4   8
+y           int       4    4   8
+w           i16       2
+z           int       2    4   4 
+spw8        int      16   32   0  # varies (64b invalid)         STACK POINTER WIDTH
+spw         int       2    4   8  # varies                       STACK POINTER WIDTH
+spw3        int       6   12  24  # varies (IRET approx)         STACK POINTER WIDTH
+spw2        int       4    8  16  # varies (FAR call/ret approx) STACK POINTER WIDTH
+i1          int   1bits
+i2          int   2bits
+i3          int   3bits
+i4          int   4bits
+i5          int   5bits
+i6          int   6bits
+i7          int   7bits
+i8          int   8bits
+var         var      0  # relies on NELEM * ELEMENT_SIZE to get the number of bits.
+bnd32       u32     12  # MPX 32b BNDLDX/BNDSTX memop 3x4B
+bnd64       u64     24  # MPX 32b BNDLDX/BNDSTX memop 3x8B

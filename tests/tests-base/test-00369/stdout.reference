@@ -1,0 +1,3 @@
+Request: STD MODE:1, SMODE:1
+Encodable! FD
+.byte 0xfd

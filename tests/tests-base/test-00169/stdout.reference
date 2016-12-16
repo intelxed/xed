@@ -1,0 +1,5 @@
+0F20C0
+ICLASS: MOV_CR   CATEGORY: DATAXFER   EXTENSION: BASE  IFORM: MOV_CR_GPR64_CR   ISA_SET: I86
+SHORT: mov rax, cr0
+Encodable! 0F20C0
+Identical re-encoding

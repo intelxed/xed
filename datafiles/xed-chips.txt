@@ -1,0 +1,101 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+# This file is for defining sets of extensions implemented by various chips
+#
+# The first column is a chip name. It will become the source for the enum xed_chip_t XED_CHIP_* 
+# The rest of the columns are ISA extensions that that CHIP implements
+# ALL_OF(x) is a macro that refers to the set defined previously for some chip x.
+# NOT(y) is a macro that removes a specific ISA extension (processed last)
+
+I86:       I86 LAHF
+I86FP:     I86 LAHF      X87
+
+I186:      ALL_OF(I86)  I186 
+     # BOUND, ENTER, INS/INSB/INSW, LEAVE, OUTS/OUTSB/OUTSW, POPA, PUSHA
+I186FP:   ALL_OF(I186)   X87
+
+I286REAL:  ALL_OF(I186)     I286REAL X87
+I286:      ALL_OF(I286REAL) I286PROTECTED
+     # ARPL, CLTS, LAR, LGDT, LIDT, LLDT, LMSW,
+     #  LOADALL(undoc), LSL, LTR, SGDT, SIDT,SLDT, SMSW, STR,VERR,VERW
+I2186FP:   ALL_OF(I286) X87
+
+# 386 did not add any instr  to real mode
+I386REAL:  ALL_OF(I286REAL) 
+I386:      ALL_OF(I386REAL)  ALL_OF(I286) I386 
+     # BSF, BSR, BT, BTC, BTR,BTS, CDQ, CMPSD,CWDE, INSD, IRET*, JECXZ,
+     # LFS, LGS,LSS, LOADALL(undoc), LODSD, LOOP, MOVSD
+     # MOVSX, OUTSD, POPAD POPFD, PUSHAD PUSHD PUSHFD, SCASD
+     # SETcc* SHLD, SHRD, STOSD
+I386FP:    ALL_OF(I386)  X87
+
+I486REAL:  ALL_OF(I386REAL)  I486REAL             # BSWAP, CMPXCHG, CPUID, INVD, INVLPG, RSM,WBINVD,XADD 
+I486:      ALL_OF(I486REAL)  ALL_OF(I386) I486     X87         # RSM
+
+PENTIUMREAL:    ALL_OF(I486REAL)     PENTIUMREAL  # CMPXCHG8B, RDMSR, RDTSC, WRMSR
+PENTIUM:        ALL_OF(PENTIUMREAL) ALL_OF(I486)
+# Quark is PENTIUM ISA, but not Pentium implementation. 
+QUARK:          ALL_OF(PENTIUM)
+
+PENTIUMMMXREAL: ALL_OF(PENTIUMREAL)    RDPMC     # P55C++  RDPMC
+PENTIUMMMX:     ALL_OF(PENTIUMMMXREAL) ALL_OF(PENTIUM) PENTIUMMMX   # P55C++
+
+ALLREAL:  ALL_OF(PENTIUMMMXREAL)
+
+# P6, PentiumPro, PPRO:
+# The SSE_PREFETCH were on P6 as fat NOPs, but XED only recognizes them on >=PENTIUM3
+PENTIUMPRO: ALL_OF(PENTIUM) PPRO  RDPMC FAT_NOP PREFETCH_NOP     # NO MMX (Orig P6)
+    # FCMOV*, CMOV*, RDPMC, SYSCALL, SYSENTER, SYSEXIT,SYSRET, UD2, F[U]COMI[P]
+    # note conflict with PENTIUM2 addition of SYSENTER/SYSEXIT
+           
+
+PENTIUM2:   ALL_OF(PENTIUM)  PENTIUMMMX  PPRO FAT_NOP RDPMC PREFETCH_NOP FXSAVE 
+    # FXSAVE/FXRSTOR, SYSENTER,SYSEXIT P6
+
+# we keep SSEMXCSR separate from SSE to accomodate chip-check for KNC
+#  which only implements LDMXCSR/STMXCSR from SSE.
+# The SSE_PREFETCH came in as NOPs on P6/PPRO.  innaccuracy...
+PENTIUM3:   ALL_OF(PENTIUM2)  SSE  SSEMXCSR SSE_PREFETCH   # SSE(incl. ldmxcsr/stmxcsr) (KNI) 
+
+PENTIUM4:     ALL_OF(PENTIUM3) SSE2 CLFSH PAUSE
+P4PRESCOTT:   ALL_OF(PENTIUM4) SSE3 LONGMODE CMPXCHG16B  FXSAVE64
+
+# Made a chip for the P4's that omit LAHF in 64b mode
+P4PRESCOTT_NOLAHF:  ALL_OF(P4PRESCOTT)  NOT(LAHF) 
+
+P4PRESCOTT_VTX:  ALL_OF(P4PRESCOTT)  VTX
+
+CORE2:       ALL_OF(P4PRESCOTT)  VTX SSSE3 SMX
+
+PENRYN:      ALL_OF(CORE2)     SSE4
+PENRYN_E:    ALL_OF(PENRYN)    XSAVE
+NEHALEM:     ALL_OF(PENRYN)    SSE42 POPCNT RDTSCP
+WESTMERE:    ALL_OF(NEHALEM)    AES PCLMULQDQ
+
+# ATOM
+BONNELL:  ALL_OF(CORE2)     MOVBE  NOT(SMX) 
+SALTWELL: ALL_OF(BONNELL)
+
+# PREFETCHW semantics added to PREFETCHW opcode but not subject
+# to chip-check because of prior implemntation as NOP.
+SILVERMONT:    ALL_OF(WESTMERE)  MOVBE RDRAND
+
+
+#  AMD CHIPS???
+AMD: SVM SSE4A 3DNOW  AMD PREFETCH_NOP PREFETCHW XOP TBM FMA4 CLZERO
+

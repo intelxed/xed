@@ -1,0 +1,451 @@
+ENC                  ; BUILDDIR/xed-ex3 MOVLPD XMM1 MEM8:EBX,EAX,4,00
+ENC                  ; BUILDDIR/xed-ex3 ADD EAX EAX
+ENC                  ; BUILDDIR/xed-ex3 ADD EAX EBX
+ENC                  ; BUILDDIR/xed-ex3 ADD EAX MEM4:EBX,EAX,4,00
+ENC                  ; BUILDDIR/xed-ex3 -64 POP/64 RSI
+ENC                  ; BUILDDIR/xed-ex3 -64 MOV/64 R9 RDX
+ENC                  ; BUILDDIR/xed-ex3 -64 AND/64 RSP SIMM:f0
+ENC                  ; BUILDDIR/xed-ex3 JMP_FAR PTR:11223344 IMM:5566
+DEC                  ; BUILDDIR/xed -d EA112233445566
+ENC                  ; BUILDDIR/xed-ex3 JLE BRDISP:11223344
+DEC ENC              ; BUILDDIR/xed -v 4 -64 -de 488B05411D1100
+DEC                  ; BUILDDIR/xed -d 90
+DEC ENC              ; BUILDDIR/xed -de f390
+DEC ENC              ; BUILDDIR/xed -de f391
+DEC ENC              ; BUILDDIR/xed -de f290
+ENC                  ; BUILDDIR/xed-ex3 REPE_CMPSB
+DEC ENC              ; BUILDDIR/xed -de F3A6
+DEC ENC              ; BUILDDIR/xed -de 8d00  
+ENC                  ; BUILDDIR/xed-ex3 LEA EAX AGEN:ECX
+ENC                  ; BUILDDIR/xed-ex3 LEA EAX AGEN:EAX,-,-,00
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:RAX,-,-,00
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:RCX
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:ECX
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/32 EAX AGEN:RAX,-,-,00
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/32 EAX AGEN:EAX,-,-,00
+DEC ENC              ; BUILDDIR/xed -de A230
+DEC ENC              ; BUILDDIR/xed -de A211223344
+DEC ENC              ; BUILDDIR/xed -de 36A011
+DEC ENC              ; BUILDDIR/xed -de 36A011223344
+ENC                  ; BUILDDIR/xed-ex3 PUSH IMM:11223344
+DEC ENC              ; BUILDDIR/xed -de 7402
+DEC ENC AVX          ; BUILDDIR/xed -de 40ff4c5000
+DEC ENC AVX          ; BUILDDIR/xed -de 41ff4c5000
+DEC ENC              ; BUILDDIR/xed -de 90
+DEC ENC              ; BUILDDIR/xed -de 6690
+DEC ENC              ; BUILDDIR/xed -de 87c0
+DEC ENC              ; BUILDDIR/xed -I -64 -de 4b8d446d00
+DEC ENC              ; BUILDDIR/xed -I -64 -de 4b8d447500
+ENC                  ; BUILDDIR/xed-ex3 -64  LEA/64 RAX AGEN:R13,R13,2,00
+ENC                  ; BUILDDIR/xed-ex3 -64  LEA/64 RAX AGEN:R13,R14,2,00
+DEC                  ; BUILDDIR/xed -d 97
+ENC                  ; BUILDDIR/xed-ex3 LEA EAX AGEN:EBP,ESI,2
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:R13,RSI,2
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:RBP,RDI,2
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:RBP
+ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:R13
+DEC                  ; BUILDDIR/xed -d 0f ad c3
+DEC ENC              ; BUILDDIR/xed -de f30f7edf
+DEC ENC              ; BUILDDIR/xed -de 660fd6fb
+DEC ENC              ; BUILDDIR/xed -64 -de 66450f7e07
+DEC ENC              ; BUILDDIR/xed -64 -de 664d0f7e07
+ENC                  ; BUILDDIR/xed-ex3 -64 ADD/64 RAX MEM8:RIP,-,-,11223344
+DEC ENC              ; BUILDDIR/xed -64 -de 48030544332211
+DEC ENC              ; BUILDDIR/xed -64 -de 6748030544332211
+DEC                  ; BUILDDIR/xed -64 -d 4f0f38f000
+DEC                  ; BUILDDIR/xed -64 -d 664f0f38f000
+DEC                  ; BUILDDIR/xed -64 -d 660f38f000
+DEC                  ; BUILDDIR/xed -64 -d 0f38f000
+DEC                  ; BUILDDIR/xed -d 0f38f000
+DEC                  ; BUILDDIR/xed -d 660f38f000
+DEC ENC              ; BUILDDIR/xed -de 678b46ff
+DEC ENC              ; BUILDDIR/xed -de 67648b46ff
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bp,di,1,ff
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bp,di,1
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bp,di,-,ffff
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bp
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:di
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bx,-,-,ffff
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bx,-,-,ff
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:bx
+ENC                  ; BUILDDIR/xed-ex3 mov eax MEM4:fs:bx
+ENC                  ; BUILDDIR/xed-ex3 mov/16 ax MEM2:fs:bx
+DEC                  ; BUILDDIR/xed -d 663e0fc70e
+DEC                  ; BUILDDIR/xed -d 663e0fc70e
+DEC                  ; BUILDDIR/xed -64 -d 3e0fc70e
+DEC                  ; BUILDDIR/xed -64 -d 483e0fc70e
+DEC                  ; BUILDDIR/xed -64 -d 480fc70e
+DEC                  ; BUILDDIR/xed -64 -d 3e480fc70e
+DEC                  ; BUILDDIR/xed -64 -d 66e480fc70e
+DEC                  ; BUILDDIR/xed -64 -d 0fc70e
+DEC                  ; BUILDDIR/xed -64 -d 660fc70e
+DEC                  ; BUILDDIR/xed -16 -d 660fc70e
+DEC                  ; BUILDDIR/xed -16 -d 0fc70e00
+DEC                  ; BUILDDIR/xed -16 -d 0fc70e0000
+DEC                  ; BUILDDIR/xed -16 -d 0fc70e1111
+ENC                  ; BUILDDIR/xed-ex3 cmpxchg8b mem8:esi
+DEC ENC              ; BUILDDIR/xed -de 0fc70e
+DEC ENC              ; BUILDDIR/xed -64 -de 0fc70e
+DEC ENC              ; BUILDDIR/xed -64 -de 480fc70e
+DEC ENC              ; BUILDDIR/xed -16 -de 660fc70e111111
+DEC ENC              ; BUILDDIR/xed -16 -de 0fc70e111111
+DEC ENC              ; BUILDDIR/xed -de f3c3
+DEC ENC              ; BUILDDIR/xed -64 -de 66 E8 11 22 33 44
+DEC ENC              ; BUILDDIR/xed -64 -de E8 11 22 33 44
+DEC ENC              ; BUILDDIR/xed -64 -de 67 E8 11 22 33 44
+DEC ENC              ; BUILDDIR/xed -de  E8 11 22 33 44
+DEC ENC              ; BUILDDIR/xed -de 66 E8 11 22
+DEC ENC              ; BUILDDIR/xed -16 -de 66 E8 11 22 33 44
+DEC ENC              ; BUILDDIR/xed -16 -de E8 11 22
+DEC ENC              ; BUILDDIR/xed -64 -de 0f8411223344
+DEC ENC              ; BUILDDIR/xed -64 -de 660f8411223344
+DEC ENC              ; BUILDDIR/xed -de 9a11223344aabb
+DEC ENC              ; BUILDDIR/xed -16 -de 669a11223344aabb
+DEC ENC              ; BUILDDIR/xed -de 669a1122aabb
+DEC ENC              ; BUILDDIR/xed -de 679a11223344aabb
+DEC ENC              ; BUILDDIR/xed -v 5 -de 0fa0
+DEC ENC              ; BUILDDIR/xed -64 -v 5 -de 0fa0
+DEC                  ; BUILDDIR/xed-ex1 9c
+DEC                  ; BUILDDIR/xed-ex1 9d
+DEC                  ; BUILDDIR/xed-ex1 0c e0 00
+DEC                  ; BUILDDIR/xed-ex1 0c e0 f0
+DEC                  ; BUILDDIR/xed-ex1 0c e0 40
+DEC                  ; BUILDDIR/xed -d 3e 66 d7
+DEC                  ; BUILDDIR/xed -d 3ed7
+DEC                  ; BUILDDIR/xed -d 658a0511223344
+DEC                  ; BUILDDIR/xed -d 65A011223344
+DEC                  ; BUILDDIR/xed -d 65A4
+DEC                  ; BUILDDIR/xed -d 65a6
+DEC                  ; BUILDDIR/xed -d 65d7
+DEC                  ; BUILDDIR/xed -d 65ff30
+DEC                  ; BUILDDIR/xed -d A4
+DEC                  ; BUILDDIR/xed -d a6
+DEC                  ; BUILDDIR/xed -d d7
+DEC                  ; BUILDDIR/xed -d ff30
+DEC ENC              ; BUILDDIR/xed -de 65 a6
+DEC ENC              ; BUILDDIR/xed -de 65 d7
+DEC ENC              ; BUILDDIR/xed -de 65A011223344
+DEC ENC              ; BUILDDIR/xed -de 65A4
+DEC ENC              ; BUILDDIR/xed -de 65a6
+DEC ENC              ; BUILDDIR/xed -de 67d6
+DEC ENC              ; BUILDDIR/xed -de 67d7
+ENC                  ; BUILDDIR/xed-ex3 MOV AL MEM1:-,-,-,11223344
+ENC                  ; BUILDDIR/xed-ex3 MOV AL MEM1:GS:-,-,-,11223344
+ENC                  ; BUILDDIR/xed-ex3 SALC SEG:GS
+ENC                  ; BUILDDIR/xed-ex3 XLAT SEG:GS
+ENC                  ; BUILDDIR/xed-ex3 XLAT SEG0:GS
+ENC                  ; BUILDDIR/xed-ex3 movsb
+ENC                  ; BUILDDIR/xed-ex3 movsb SEG1:DS
+DEC                  ; BUILDDIR/xed-ex1 65 a6
+DEC                  ; BUILDDIR/xed -d f000c0
+DEC                  ; BUILDDIR/xed -d f00000
+DEC                  ; BUILDDIR/xed -d 0fc708
+DEC                  ; BUILDDIR/xed -d f00fc708
+DEC ENC              ; BUILDDIR/xed -de 0000
+DEC                  ; BUILDDIR/xed-ex1 00 00
+ENC                  ; BUILDDIR/xed-ex3 -64 lea r8d AGEN:r8d
+ENC                  ; BUILDDIR/xed-ex3 -64 lea r8d AGEN:r8d,ebx,8
+ENC                  ; BUILDDIR/xed-ex3 lea eax AGEN:r8d,ebx,8
+ENC                  ; BUILDDIR/xed-ex3 lea eax AGEN:eax,ebx,8
+DEC                  ; BUILDDIR/xed-ex1 f2 0f 12 c0
+DEC                  ; BUILDDIR/xed-ex1 0f 12 c0
+DEC                  ; BUILDDIR/xed-ex1 c9
+DEC                  ; BUILDDIR/xed-ex1 -64 c9
+DEC ENC              ; BUILDDIR/xed -de c9
+DEC ENC              ; BUILDDIR/xed -64 -de c9
+DEC                  ; BUILDDIR/xed -64 -d 65c9
+DEC                  ; BUILDDIR/xed -d  65c9
+DEC ENC              ; BUILDDIR/xed -64 -de 6741C745FF44332211
+ENC                  ; BUILDDIR/xed-ex3 -64  MOV MEM4:R13D,-,-,FF IMM:11223344
+DEC                  ; BUILDDIR/xed -64 -d f3f267662e6465363e26c000ff
+DEC                  ; BUILDDIR/xed -64 -d 70ff
+DEC                  ; BUILDDIR/xed -64 -d 3e70ff
+DEC                  ; BUILDDIR/xed -64 -d 2e70ff
+DEC ENC              ; BUILDDIR/xed -64 -de 70ff
+DEC ENC              ; BUILDDIR/xed -64 -de 3e70ff
+DEC ENC              ; BUILDDIR/xed -64 -de 2e70ff
+DEC                  ; BUILDDIR/xed-ex1  66 0f 3a 15 c8 00
+DEC ENC              ; BUILDDIR/xed -16 -de 0f 20 c0
+DEC ENC              ; BUILDDIR/xed -32 -de 0f 20 c0
+DEC ENC              ; BUILDDIR/xed -64 -de 0f 20 c0
+DEC ENC              ; BUILDDIR/xed -16 -de 66 0f 20 c0
+DEC ENC              ; BUILDDIR/xed -32 -de 66 0f 20 c0
+DEC ENC              ; BUILDDIR/xed -64 -de 66 0f 20 c0
+DEC                  ; BUILDDIR/xed-ex1 -16 0f 20 c0
+DEC                  ; BUILDDIR/xed-ex1  0f 20 c0
+DEC                  ; BUILDDIR/xed-ex1 -64 0f 20 c0
+ENC                  ; BUILDDIR/xed-ex3 -16  mov_cr eax cr0
+ENC                  ; BUILDDIR/xed-ex3 -32  mov_cr eax cr0
+ENC                  ; BUILDDIR/xed-ex3 -64  mov_cr rax cr0
+DEC                  ; BUILDDIR/xed-ex1 -64 f2 f3 64 67 3e 66 2e 36 65 26 f3 0f 2c 0f
+DEC                  ; BUILDDIR/xed-ex1 -64 f3 f2 67 66 2e 64 65 36 3e 26 d0 00
+DEC                  ; BUILDDIR/xed-ex1 -chip I286 da c0
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO da c0
+DEC                  ; BUILDDIR/xed-ex1 -chip SALTWELL da c0
+DEC                  ; BUILDDIR/xed-ex4 -xml f0 00 00
+DEC                  ; BUILDDIR/xed-ex4 8B 44 18 00
+DEC                  ; BUILDDIR/xed-ex4 -no-unit-scale 8B 44 18 00
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f3 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f2 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f2 f3 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f3 f2 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f3 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f2 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f2 f3 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f3 f2 a7
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f2 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f3 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f3 f2 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f2 f3 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f2 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f3 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f3 f2 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM    f2 f3 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f2 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f3 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f3 f2 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f2 f3 e0 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f2 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f3 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f3 f2 e1 aa
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUMPRO f2 f3 e1 aa
+ENC                  ; BUILDDIR/xed-ex3 -64  lea r13d agen:r13d,-,-,00000000
+ENC                  ; BUILDDIR/xed-ex3 -64  lea r13d agen:r13d
+DEC AVX              ; BUILDDIR/xed -d c5 1d 0000 0000
+DEC AVX              ; BUILDDIR/xed -d 66 c5 1d 0000 0000
+DEC AVX              ; BUILDDIR/xed -d c4 1d 0000 0000
+DEC AVX              ; BUILDDIR/xed -d 66 c4 1d 0000 0000
+DEC                  ; BUILDDIR/xed -b 0xfffffff0 -16 -d e9 0d00
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   ah bh
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   ah al
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   al bl
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   sil al
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   al sil
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   sil bpl
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   sil ah
+ENC                  ; BUILDDIR/xed-ex3 -64 xor   ah sil
+ENC                  ; BUILDDIR/xed-ex3 -64 pop rdx
+ENC                  ; BUILDDIR/xed-ex3 -64 pop/64 rdx
+ENC                  ; BUILDDIR/xed-ex3 -64 pop edx
+ENC                  ; BUILDDIR/xed-ex3 -64 pop/16 dx
+ENC                  ; BUILDDIR/xed-ex3 -64 pop dx
+ENC                  ; BUILDDIR/xed-ex3 -16 pop    dx
+ENC                  ; BUILDDIR/xed-ex3 -16 pop/32 edx
+ENC                  ; BUILDDIR/xed-ex3 -32 pop/16 dx
+ENC                  ; BUILDDIR/xed-ex3 -32 pop    edx
+ENC                  ; BUILDDIR/xed-ex3 -32 pop    rdx
+DEC                  ; BUILDDIR/xed -32 -d 0f05
+DEC                  ; BUILDDIR/xed -64 -d 0f05
+ENC                  ; BUILDDIR/xed-ex3 -64 sysret
+ENC                  ; BUILDDIR/xed-ex3 -64 sysret/64
+ENC                  ; BUILDDIR/xed-ex3 -32 sysret
+ENC                  ; BUILDDIR/xed-ex3 -32 sysret_amd
+DEC                  ; BUILDDIR/xed -64 -d 66 36 64 2e    f0 67 f2 26     3e f3 65 0f     16 8d 4b
+DEC                  ; BUILDDIR/xed -64 -d 66 36 64 2e    f0 67 f2 26     3e f3 65 0f     16 8d
+DEC                  ; BUILDDIR/xed-ex1 -64 0fb20000
+DEC                  ; BUILDDIR/xed-ex1 -64 ff18
+DEC                  ; BUILDDIR/xed-ex1 -64 48ff18
+DEC                  ; BUILDDIR/xed-ex1 0f01c8
+DEC                  ; BUILDDIR/xed-ex1 0f01c9
+DEC                  ; BUILDDIR/xed-ex1 66 0f 38 10 ff
+DEC                  ; BUILDDIR/xed-ex1 66 0f 38 14 ff
+DEC ENC              ; BUILDDIR/xed -64 -de  ff 10
+DEC ENC              ; BUILDDIR/xed -de  ff 10
+DEC ENC              ; BUILDDIR/xed     -de     ff e0
+DEC ENC              ; BUILDDIR/xed     -de  66 ff e0
+DEC ENC              ; BUILDDIR/xed -64 -de     ff e0
+DEC ENC              ; BUILDDIR/xed -64 -de  66 ff e0
+DEC ENC              ; BUILDDIR/xed-ex6 -64 64 67 f0 48    81 24 e5 1c    68 48 43 5f    a6 b7 cd
+DEC                  ; BUILDDIR/xed-ex1 -chip SALTWELL 0f 0d 08
+DEC                  ; BUILDDIR/xed-ex1 -chip PENRYN_E 0f 01 d0
+DEC                  ; BUILDDIR/xed-ex1 -chip NEHALEM 0f 01 d0
+DEC                  ; BUILDDIR/xed -A -d a1 00 70 70 c1
+DEC                  ; BUILDDIR/xed -A -d 00 80 00 70 70 c1
+DEC AVX              ; BUILDDIR/xed -d c4 e2 f1 92 64 40 11
+DEC ENC AVX          ; BUILDDIR/xed -de c4 e2 f1 92 64 40 11
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPS xmm0  MEM16:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPS ymm0  MEM32:rax,ymm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDD xmm0  MEM16:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDD ymm0  MEM32:rax,xmm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDQ xmm0  MEM16:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDQ ymm0  MEM32:rax,xmm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPD xmm0  MEM16:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPD ymm0  MEM32:rax,xmm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPS xmm0   MEM8:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPS xmm0  MEM16:rax,ymm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPD xmm0  MEM16:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPD ymm0  MEM32:rax,ymm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQD xmm0   MEM8:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQD xmm0  MEM16:rax,ymm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQQ xmm0  MEM16:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQQ ymm0  MEM32:rax,ymm1,1 ymm2
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E269920408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E26D920408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E269900408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E26D900408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2E9900408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2ED900408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2E9920408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2ED920408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E269930408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E26D930408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2E9930408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2ED930408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E26D910408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E269910408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2E9910408
+DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2ED910408
+DEC XOP              ; BUILDDIR/xed-ex-ild2 -64  8f e9 78 81 ca
+DEC XOP              ; BUILDDIR/xed-ex-ild2 -64 -chip WESTMERE  8f e9 78 81 ca
+DEC ENC              ; BUILDDIR/xed -64 -de  0f1aff
+DEC ENC              ; BUILDDIR/xed -64 -de  0f1bff
+DEC ENC              ; BUILDDIR/xed -64 -de  f30f1bff
+DEC AVX              ; BUILDDIR/xed -32 -d c4 c3 bd 79 f2 45
+DEC AVX              ; BUILDDIR/xed -64 -d c4 c3 bd 79 f2 45
+DEC AVX              ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45
+DEC ENC AVX          ; BUILDDIR/xed -64 -de c4 c3 39 79 f2 45
+DEC AVX              ; BUILDDIR/xed -d c5 fd 57 c0
+DEC ENC AVX          ; BUILDDIR/xed -64 -de c5 fd 57 c0
+ENC AVX              ; BUILDDIR/xed-ex3 -64 vxorpd ymm0 ymm0 ymm0
+ENC AVX              ; BUILDDIR/xed-ex3 vxorpd ymm0 ymm0 ymm0
+DEC AVX              ; BUILDDIR/xed -32 -d c4 e3 fd 79 42 45 93
+DEC AVX              ; BUILDDIR/xed -64 -d c4 e3 fd 79 42 45 93
+DEC                  ; BUILDDIR/xed -64 -d 8F 43 24
+DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 f1 49 fe 0f
+DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 71 49 fe 0f
+DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 83 f1 48 fe 0f
+DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 f1 49 7e 0f 00
+DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 71 49 7e 7f ff
+DEC AVX              ; BUILDDIR/xed -64 -d c4 dc 9b c3 72 d7 68 3e
+DEC AVX              ; BUILDDIR/xed -64 -d 4d c4 12 bd 79 f2 45
+DEC                  ; BUILDDIR/xed -64 -d a0 11 22 33 44 55 66 77 88
+DEC                  ; BUILDDIR/xed -64 -d 65 66 41 0F
+DEC AVX              ; BUILDDIR/xed -d c4 e2 f1 92 44 40 11
+DEC AVX              ; BUILDDIR/xed -d c4 e2 f9 92 64 40 11
+DEC AVX              ; BUILDDIR/xed -d c4 e2 d9 92 64 40 11
+ENC             ; BUILDDIR/xed -e INSB
+ENC             ; BUILDDIR/xed -e INSW/16
+ENC             ; BUILDDIR/xed -e INSD
+ENC             ; BUILDDIR/xed -e INSD
+ENC             ; BUILDDIR/xed -e OUTSB
+ENC             ; BUILDDIR/xed -e OUTSW/16
+ENC             ; BUILDDIR/xed -e OUTSD
+ENC             ; BUILDDIR/xed -e OUTSD
+ENC             ; BUILDDIR/xed -e PUSHF/16
+ENC             ; BUILDDIR/xed -e PUSHFD
+ENC             ; BUILDDIR/xed -64 -e PUSHFQ/64
+ENC             ; BUILDDIR/xed -e POPF/16
+ENC             ; BUILDDIR/xed -e POPFD
+ENC             ; BUILDDIR/xed -64 -e POPFQ/64
+ENC             ; BUILDDIR/xed -e MOVSB
+ENC             ; BUILDDIR/xed -e MOVSW/16
+ENC             ; BUILDDIR/xed -e MOVSD
+ENC             ; BUILDDIR/xed -64 -e MOVSQ/64
+ENC             ; BUILDDIR/xed -e CMPSB
+ENC             ; BUILDDIR/xed -e CMPSW/16
+ENC             ; BUILDDIR/xed -e CMPSD
+ENC             ; BUILDDIR/xed -64 -e CMPSQ/64
+ENC             ; BUILDDIR/xed -e STOSB
+ENC             ; BUILDDIR/xed -e STOSW/16
+ENC             ; BUILDDIR/xed -e STOSD
+ENC             ; BUILDDIR/xed -64 -e STOSQ/64
+ENC             ; BUILDDIR/xed -e LODSB
+ENC             ; BUILDDIR/xed -e LODSW/16
+ENC             ; BUILDDIR/xed -e LODSD
+ENC             ; BUILDDIR/xed -64 -e LODSQ/64
+ENC             ; BUILDDIR/xed -e SCASB
+ENC             ; BUILDDIR/xed -e SCASW/16
+ENC             ; BUILDDIR/xed -e SCASD
+ENC             ; BUILDDIR/xed -64 -e SCASQ/64
+ENC             ; BUILDDIR/xed -e IRET/16
+ENC             ; BUILDDIR/xed -e IRETD
+ENC             ; BUILDDIR/xed -64 -e IRETQ/64
+ENC             ; BUILDDIR/xed -e CLD
+ENC             ; BUILDDIR/xed -e STD
+ENC             ; BUILDDIR/xed -64 -e SYSCALL/64
+ENC             ; BUILDDIR/xed -64 -e SYSRET/64
+ENC             ; BUILDDIR/xed -e RSM
+DEC             ; BUILDDIR/xed-ex1  6C
+DEC             ; BUILDDIR/xed-ex1  666D
+DEC             ; BUILDDIR/xed-ex1  6D
+DEC             ; BUILDDIR/xed-ex1  6D
+DEC             ; BUILDDIR/xed-ex1  6E
+DEC             ; BUILDDIR/xed-ex1  666F
+DEC             ; BUILDDIR/xed-ex1  6F
+DEC             ; BUILDDIR/xed-ex1  6F
+DEC             ; BUILDDIR/xed-ex1  669C
+DEC             ; BUILDDIR/xed-ex1  9C
+DEC             ; BUILDDIR/xed-ex1 -64 9C
+DEC             ; BUILDDIR/xed-ex1  669D
+DEC             ; BUILDDIR/xed-ex1  9D
+DEC             ; BUILDDIR/xed-ex1 -64 9D
+DEC             ; BUILDDIR/xed-ex1  A4
+DEC             ; BUILDDIR/xed-ex1  66A5
+DEC             ; BUILDDIR/xed-ex1  A5
+DEC             ; BUILDDIR/xed-ex1 -64 48A5
+DEC             ; BUILDDIR/xed-ex1  A6
+DEC             ; BUILDDIR/xed-ex1  66A7
+DEC             ; BUILDDIR/xed-ex1  A7
+DEC             ; BUILDDIR/xed-ex1 -64 48A7
+DEC             ; BUILDDIR/xed-ex1  AA
+DEC             ; BUILDDIR/xed-ex1  66AB
+DEC             ; BUILDDIR/xed-ex1  AB
+DEC             ; BUILDDIR/xed-ex1 -64 48AB
+DEC             ; BUILDDIR/xed-ex1  AC
+DEC             ; BUILDDIR/xed-ex1  66AD
+DEC             ; BUILDDIR/xed-ex1  AD
+DEC             ; BUILDDIR/xed-ex1 -64 48AD
+DEC             ; BUILDDIR/xed-ex1  AE
+DEC             ; BUILDDIR/xed-ex1  66AF
+DEC             ; BUILDDIR/xed-ex1  AF
+DEC             ; BUILDDIR/xed-ex1 -64 48AF
+DEC             ; BUILDDIR/xed-ex1  66CF
+DEC             ; BUILDDIR/xed-ex1  CF
+DEC             ; BUILDDIR/xed-ex1 -64 48CF
+DEC             ; BUILDDIR/xed-ex1  FC
+DEC             ; BUILDDIR/xed-ex1  FD
+DEC             ; BUILDDIR/xed-ex1 -64 0F05
+DEC             ; BUILDDIR/xed-ex1 -64 480F07
+DEC             ; BUILDDIR/xed-ex1  0FAA
+DEC             ; BUILDDIR/xed-ex1  f3 6C
+DEC             ; BUILDDIR/xed-ex1  f3 666D
+DEC             ; BUILDDIR/xed-ex1  f3 6D
+DEC             ; BUILDDIR/xed-ex1  f3 6D
+DEC             ; BUILDDIR/xed-ex1  f3 6E
+DEC             ; BUILDDIR/xed-ex1  f3 666F
+DEC             ; BUILDDIR/xed-ex1  f3 6F
+DEC             ; BUILDDIR/xed-ex1  f3 6F
+DEC             ; BUILDDIR/xed-ex1  f3 A4
+DEC             ; BUILDDIR/xed-ex1  f3 66A5
+DEC             ; BUILDDIR/xed-ex1  f3 A5
+DEC             ; BUILDDIR/xed-ex1 -64 f3  48A5
+DEC             ; BUILDDIR/xed-ex1  f2 A6
+DEC             ; BUILDDIR/xed-ex1  f2 66A7
+DEC             ; BUILDDIR/xed-ex1  f2 A7
+DEC             ; BUILDDIR/xed-ex1 -64 f2  48A7
+DEC             ; BUILDDIR/xed-ex1  f3 A6
+DEC             ; BUILDDIR/xed-ex1  f3 66A7
+DEC             ; BUILDDIR/xed-ex1  f3 A7
+DEC             ; BUILDDIR/xed-ex1 -64 f3  48A7
+DEC             ; BUILDDIR/xed-ex1  f3 AA
+DEC             ; BUILDDIR/xed-ex1  f3 66AB
+DEC             ; BUILDDIR/xed-ex1  f3 AB
+DEC             ; BUILDDIR/xed-ex1 -64 f3  48AB
+DEC             ; BUILDDIR/xed-ex1  f3 AC
+DEC             ; BUILDDIR/xed-ex1  f3 66AD
+DEC             ; BUILDDIR/xed-ex1  f3 AD
+DEC             ; BUILDDIR/xed-ex1 -64 f3  48AD
+DEC             ; BUILDDIR/xed-ex1  f3 AE
+DEC             ; BUILDDIR/xed-ex1  f3 66AF
+DEC             ; BUILDDIR/xed-ex1  f3 AF
+DEC             ; BUILDDIR/xed-ex1 -64 f3  48AF
+DEC             ; BUILDDIR/xed-ex1  f2 AE
+DEC             ; BUILDDIR/xed-ex1  f2 66AF
+DEC             ; BUILDDIR/xed-ex1  f2 AF
+DEC             ; BUILDDIR/xed-ex1 -64 f2  48AF

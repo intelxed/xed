@@ -1,0 +1,31 @@
+Attempting to decode: 66 9c 
+iclass PUSHF	category PUSH	ISA-extension BASE	ISA-set I86
+instruction-length 2
+operand-width 16
+effective-operand-width 16
+effective-address-width 32
+stack-address-width 32
+iform-enum-name PUSHF
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0        REG0=STACKPUSH SUPPRESSED   W         W   16     2     1     16        INT     PSEUDO
+1   MEM0           (see below) SUPPRESSED   W         W   16     2     1     16        INT    INVALID
+2  BASE0             BASE0=ESP SUPPRESSED  RW       SSZ   32     4     1     32        INT        GPR
+3   REG1           REG1=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0 written SEG= SS BASE= ESP/GPR  ASZ0=32
+  MemopBytes = 2
+FLAGS:
+   reads-rflags id-tst vip-tst vif-tst ac-tst vm-tst rf-tst nt-tst iopl-tst iopl-tst of-tst df-tst if-tst tf-tst sf-tst zf-tst af-tst pf-tst cf-tst 
+       read: of sf zf af pf cf df vif iopl if ac vm rf nt tf id vip  mask=0x3f7fd5
+    written:                                mask=0x0
+  undefined:                                mask=0x0
+READS ZF
+ATTRIBUTES: FIXED_BASE0 STACKPUSH0 
+66-OSZ PREFIX
+ANY 66 PREFIX
+Number of legacy prefixes: 1 
+ISA SET: [I86]

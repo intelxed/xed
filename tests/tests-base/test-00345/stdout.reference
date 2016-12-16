@@ -1,0 +1,3 @@
+Request: MOVSB MODE:1, SMODE:1
+Encodable! A4
+.byte 0xa4

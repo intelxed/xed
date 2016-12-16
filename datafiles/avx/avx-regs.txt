@@ -1,0 +1,59 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+XMM0  xmm  128 YMM0  0
+XMM1  xmm  128 YMM1  1
+XMM2  xmm  128 YMM2  2
+XMM3  xmm  128 YMM3  3
+
+XMM4  xmm  128 YMM4  4
+XMM5  xmm  128 YMM5  5
+XMM6  xmm  128 YMM6  6
+XMM7  xmm  128 YMM7  7
+
+XMM8  xmm  128 YMM8  8
+XMM9  xmm  128 YMM9  9
+XMM10 xmm  128 YMM10 10
+XMM11 xmm  128 YMM11 11
+
+XMM12 xmm  128 YMM12 12
+XMM13 xmm  128 YMM13 13
+XMM14 xmm  128 YMM14 14
+XMM15 xmm  128 YMM15 15
+
+YMM0 ymm  256   YMM0   0 
+YMM1 ymm  256   YMM1   1 
+YMM2 ymm  256   YMM2   2 
+YMM3 ymm  256   YMM3   3 
+YMM4 ymm  256   YMM4   4 
+YMM5 ymm  256   YMM5   5 
+YMM6 ymm  256   YMM6   6 
+YMM7 ymm  256   YMM7   7 
+YMM8 ymm  256   YMM8   8 
+YMM9 ymm  256   YMM9   9 
+YMM10 ymm 256   YMM10 10
+YMM11 ymm 256   YMM11 11
+YMM12 ymm 256   YMM12 12
+YMM13 ymm 256   YMM13 13
+YMM14 ymm 256   YMM14 14
+YMM15 ymm 256   YMM15 15
+
+
+
+
+

@@ -1,0 +1,5 @@
+8D00
+ICLASS: LEA   CATEGORY: MISC   EXTENSION: BASE  IFORM: LEA_GPRv_AGEN   ISA_SET: I86
+SHORT: lea eax, ptr [eax]
+Encodable! 8D00
+Identical re-encoding

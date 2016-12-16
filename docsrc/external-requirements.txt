@@ -1,0 +1,13 @@
+
+On linux:
+
+
+memcmp
+memset
+memcpy
+strcmp
+strncat
+strlen
+stderr  -- variable used by printf during abort
+fprintf -- optional -- only for abort msg
+abort   -- for xed's internal assert

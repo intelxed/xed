@@ -1,0 +1,79 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+AVX_INSTRUCTIONS()::
+
+{
+ICLASS:      JKNZD
+CPL:         3
+CATEGORY:    COND_BR
+EXTENSION:   KNCV
+ISA_SET:     KNCJKBR
+PATTERN:     VV1 0x75 VNP VMAP0   W0 BRDISP8()  
+OPERANDS:    REG0=MASK_N():w:mskw RELBR:r:b
+IFORM:       JKNZD_MASKmskw_RELBRb_KNC
+
+}
+
+{
+ICLASS:      JKNZD
+CPL:         3
+CATEGORY:    COND_BR
+EXTENSION:   KNCV
+ISA_SET:     KNCJKBR
+
+PATTERN:     VV1 0x85 VNP not64 V0F   W0 BRDISPz()  
+OPERANDS:    REG0=MASK_N():w:mskw RELBR:r:z
+
+PATTERN:     VV1 0x85 VNP mode64 V0F   W0 BRDISP32()  
+OPERANDS:    REG0=MASK_N():w:mskw RELBR:r:z
+
+IFORM:       JKNZD_MASKmskw_RELBRz_KNC
+
+}
+
+{
+ICLASS:      JKZD
+CPL:         3
+CATEGORY:    COND_BR
+EXTENSION:   KNCV
+ISA_SET:     KNCJKBR
+PATTERN:     VV1 0x74 VNP VMAP0   W0 BRDISP8()  
+OPERANDS:    REG0=MASK_N():w:mskw RELBR:r:b
+IFORM:       JKZD_MASKmskw_RELBRb_KNC
+
+}
+
+
+{
+ICLASS:      JKZD
+CPL:         3
+CATEGORY:    COND_BR
+EXTENSION:   KNCV
+ISA_SET:     KNCJKBR
+
+PATTERN:     VV1 0x84 not64 VNP V0F   W0 BRDISPz()  
+OPERANDS:    REG0=MASK_N():w:mskw RELBR:r:z
+
+PATTERN:     VV1 0x84 mode64 VNP V0F   W0 BRDISP32()  
+OPERANDS:    REG0=MASK_N():w:mskw RELBR:r:z
+
+IFORM:       JKZD_MASKmskw_RELBRz_KNC
+
+}
+

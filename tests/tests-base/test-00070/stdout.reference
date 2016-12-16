@@ -1,0 +1,5 @@
+Encode request:
+MOV EASZ:1, MEM_WIDTH:4, MEM0:dword ptr FS[BX], MODE:1, REG0:EAX, SMODE:1
+OPERAND ORDER: REG0 MEM0 
+
+Encodable! 67648B07

@@ -1,0 +1,225 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+
+INSTRUCTIONS()::
+
+
+UDELETE: NOP0F1A
+UDELETE: NOP0F1B
+
+
+
+{
+ICLASS: BNDMK
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES: NO_RIP_REL
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix
+OPERANDS: REG0=BND_R():w  AGEN:r
+}
+
+
+
+
+{
+ICLASS: BNDCL
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES: EXCEPTION_BR 
+COMMENT: 67 prefixes will be misinterpreted on MPX NI. XED cannot ignore them.
+PATTERN:  0x0F 0x1A MPXMODE=1  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix 
+OPERANDS: REG0=BND_R():r AGEN:r
+
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f3_refining_prefix  mode64
+OPERANDS: REG0=BND_R():r REG1=GPR64_B():r
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f3_refining_prefix  not64
+OPERANDS: REG0=BND_R():r REG1=GPR32_B():r
+}
+
+{
+ICLASS: BNDCU
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES: EXCEPTION_BR 
+COMMENT: 67 prefixes will be misinterpreted on MPX NI. XED cannot ignore them.
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f2_refining_prefix
+OPERANDS: REG0=BND_R():r AGEN:r
+
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f2_refining_prefix  mode64
+OPERANDS: REG0=BND_R():r REG1=GPR64_B():r
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f2_refining_prefix  not64
+OPERANDS: REG0=BND_R():r REG1=GPR32_B():r
+}
+
+{
+ICLASS: BNDCN
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES:  EXCEPTION_BR 
+COMMENT: 67 prefixes will be misinterpreted on MPX NI. XED cannot ignore them.
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() f2_refining_prefix 
+OPERANDS: REG0=BND_R():r AGEN:r
+
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]  f2_refining_prefix  mode64
+OPERANDS: REG0=BND_R():r REG1=GPR64_B():r
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]  f2_refining_prefix  not64
+OPERANDS: REG0=BND_R():r REG1=GPR32_B():r
+
+}
+
+{
+ICLASS: BNDMOV
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES:
+COMMENT: load form
+
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]  osz_refining_prefix REFINING66() 
+OPERANDS: REG0=BND_R():w REG1=BND_B():r
+
+# 16b refs 64b memop (2x32b) but only if EASZ=32b!
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode16 eamode32
+OPERANDS: REG0=BND_R():w MEM0:r:q:u32
+
+# 32b refs 64b memop (2x32b)
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode32
+OPERANDS: REG0=BND_R():w MEM0:r:q:u32
+
+# 64b refs 128b memop (2x64b)
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode64
+OPERANDS: REG0=BND_R():w MEM0:r:dq:u64
+
+
+
+}
+
+{
+ICLASS: BNDMOV
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES:
+COMMENT: store form
+
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix REFINING66()
+OPERANDS: REG0=BND_B():w   REG1=BND_R():r
+
+# 16b refs 64b memop (2x32b) but only if EASZ=32b!
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix REFINING66() mode16 eamode32
+OPERANDS: MEM0:w:q:u32 REG0=BND_R():r
+
+# 32b refs 64b memop (2x32b)
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode32
+OPERANDS: MEM0:w:q:u32 REG0=BND_R():r
+
+# 64b refs 128b memop (2x64b)
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode64
+OPERANDS: MEM0:w:dq:u64 REG0=BND_R():r
+}
+
+
+{
+ICLASS: BNDLDX
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES:  EXCEPTION_BR SPECIAL_AGEN_REQUIRED INDEX_REG_IS_POINTER NO_RIP_REL
+COMMENT:  RIP (mode64, easz64, MOD=0, RM=5) mode disallowed in 64b And 16/32b is easize32 only
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix not64 eamode32
+OPERANDS: REG0=BND_R():w MEM0:r:bnd32
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=0 REG[rrr] RM[nnn]   MODRM()  no_refining_prefix mode64  # RM!=5
+OPERANDS: REG0=BND_R():w MEM0:r:bnd64
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=1 REG[rrr] RM[nnn]   MODRM()  no_refining_prefix mode64 
+OPERANDS: REG0=BND_R():w MEM0:r:bnd64
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=2 REG[rrr] RM[nnn]   MODRM()  no_refining_prefix mode64 
+OPERANDS: REG0=BND_R():w MEM0:r:bnd64
+}
+
+{
+ICLASS: BNDSTX
+EXTENSION: MPX
+CATEGORY:  MPX
+ISA_SET:   MPX
+ATTRIBUTES:  EXCEPTION_BR SPECIAL_AGEN_REQUIRED INDEX_REG_IS_POINTER NO_RIP_REL
+COMMENT:  RIP (mode64, easz64, MOD=0, RM=5) mode disallowed in 64b And 16/32b is easize32 only
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  no_refining_prefix not64 eamode32
+OPERANDS: MEM0:w:bnd32 REG0=BND_R():r
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=0 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix mode64 # RM!=5
+OPERANDS: MEM0:w:bnd64 REG0=BND_R():r
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=1 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix mode64 
+OPERANDS: MEM0:w:bnd64 REG0=BND_R():r
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=2 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix mode64 
+OPERANDS: MEM0:w:bnd64 REG0=BND_R():r
+}
+
+{
+ICLASS    : NOP
+CPL       : 3
+CATEGORY  : WIDENOP
+ATTRIBUTES: NOP
+EXTENSION : BASE
+ISA_SET   : PPRO
+COMMENT   : MPXMODE=1: some of the reg/reg forms of these NOPs are still NOPs.
+
+PATTERN   : 0x0F 0x1A MPXMODE=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn] no_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1A
+
+PATTERN   : 0x0F 0x1B MPXMODE=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn] no_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1B
+
+PATTERN   : 0x0F 0x1B MPXMODE=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn] f3_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1B
+}
+
+
+{
+ICLASS    : NOP
+CPL       : 3
+CATEGORY  : WIDENOP
+ATTRIBUTES: NOP
+EXTENSION : BASE
+ISA_SET   : PPRO
+COMMENT   : For MPXMODE=0 operation
+
+PATTERN   : 0x0F 0x1A MPXMODE=0 MOD[0b11] MOD=3 REG[rrr] RM[nnn] 
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1A
+
+PATTERN   : 0x0F 0x1B MPXMODE=0 MOD[0b11] MOD=3 REG[rrr] RM[nnn] 
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1B
+
+PATTERN   : 0x0F 0x1A MPXMODE=0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_B():r MEM0:r:v
+IFORM     : NOP_GPRv_MEMv_0F1A
+
+PATTERN   : 0x0F 0x1B MPXMODE=0 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
+OPERANDS  : REG0=GPRv_B():r MEM0:r:v
+IFORM     : NOP_GPRv_MEM_0F1B
+}
+
+

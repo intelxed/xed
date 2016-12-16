@@ -1,0 +1,127 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+###########################################################################
+## file: xed-state-bits.txt
+###########################################################################
+
+# These are just shorthand for some conditions or captures.
+# Simple macro replacement
+#all_modes             ALL_MODES=1
+not64                  MODE!=2 
+mode64                 MODE=2  
+mode32                 MODE=1  
+mode16                 MODE=0  
+
+# effective addressing mode
+eanot16               EASZ!=1
+eamode16              EASZ=1 
+eamode32              EASZ=2 
+eamode64              EASZ=3 
+
+# stack addressing mode
+smode16               SMODE=0 
+smode32               SMODE=1 
+smode64               SMODE=2 
+
+eosz8                 EOSZ=0
+eosz16                EOSZ=1
+not_eosz16            EOSZ!=1
+eosz32                EOSZ=2
+eosz64                EOSZ=3
+eosznot64             EOSZ!=3
+
+
+# for OD expansion in graph partitioning FIXME
+mod0                MOD=0
+mod1                MOD=1
+mod2                MOD=2
+mod3                MOD=3
+
+rex_reqd                REX=1
+no_rex                  REX=0
+reset_rex              REX=0 REXW=0 REXB=0 REXR=0 REXX=0
+
+rexb_prefix             REXB=1
+rexx_prefix             REXX=1
+rexr_prefix             REXR=1
+
+# 2013-09-25 FIXME: we were inconsistent. some things use W0/W1, some
+# use the more verbose form. We should converge on W0/W1.
+#
+rexw_prefix            REXW=1 SKIP_OSZ=1
+norexw_prefix          REXW=0 SKIP_OSZ=1
+W1                     REXW=1 SKIP_OSZ=1
+W0                     REXW=0 SKIP_OSZ=1
+
+norexb_prefix             REXB=0
+norexx_prefix             REXX=0
+norexr_prefix             REXR=0
+############################################################3333
+f2_prefix              REP=2  # REPNZ, REPNE
+f3_prefix              REP=3  # REPZ,  REPNZ
+repne                  REP=2 
+repe                   REP=3 
+norep                  REP=0
+66_prefix              OSZ=1 
+nof3_prefix            REP!=3
+no66_prefix            OSZ=0
+not_refining           REP=0 # dummy setting for state values 2007-08-06 FIXME
+refining_f2            REP=2
+refining_f3            REP=3
+not_refining_f3        REP!=3 # for pause vs xchg
+no_refining_prefix     REP=0 OSZ=0  # critical:REP must  be first for decoding partitioning
+osz_refining_prefix    REP=0 OSZ=1
+f2_refining_prefix     REP=2
+f3_refining_prefix     REP=3
+
+no67_prefix             ASZ=0
+67_prefix               ASZ=1
+
+lock_prefix             LOCK=1
+nolock_prefix           LOCK=0
+
+default_ds              DEFAULT_SEG=0
+default_ss              DEFAULT_SEG=1
+default_es              DEFAULT_SEG=2 # for string ops
+no_seg_prefix           SEG_OVD=0
+some_seg_prefix         SEG_OVD!=0
+cs_prefix               SEG_OVD=1
+ds_prefix               SEG_OVD=2
+es_prefix               SEG_OVD=3
+fs_prefix               SEG_OVD=4
+gs_prefix               SEG_OVD=5
+ss_prefix               SEG_OVD=6
+
+# default (or not) to 64b width in 64b mode
+nrmw                   DF64=0
+df64                   DF64=1
+
+# default choice for encoder when there are multiple choices for a
+# nonterminal. The ISA is not uniquely determined for encoding so we
+# must express preferences for certain forms!
+enc                    ENCODER_PREFERRED=1
+
+# for the legacy prefix encoder, tell it to keep trying rules and not
+# return after successfully finding one that applies
+no_return              NO_RETURN=1
+
+# indicate an encoding or decoding error occurred
+error                  ERROR=XED_ERROR_GENERAL_ERROR
+
+# dummy constraint which always satisfies
+true                   DUMMY=0

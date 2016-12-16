@@ -1,0 +1,5 @@
+F290
+ICLASS: NOP   CATEGORY: NOP   EXTENSION: BASE  IFORM: NOP_90   ISA_SET: I86
+SHORT: nop 
+Encodable! F290
+Identical re-encoding

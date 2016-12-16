@@ -1,0 +1,41 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#XTYPE       TYPE   BITS-PER-ELEM
+#
+var      VARIABLE    0  # instruction must set NELEM and  ELEMENT_SIZE
+struct     STRUCT    0  # many elements of different widths
+int           INT    0  # one element, all the bits, width varies
+uint         UINT    0  # one element, all the bits, width varies
+#
+i1            INT    1
+i8            INT    8
+i16           INT   16
+i32           INT   32
+i64           INT   64
+u8           UINT    8
+u16          UINT   16
+u32          UINT   32
+u64          UINT   64
+u128         UINT  128
+u256         UINT  256
+f32        SINGLE   32
+f64        DOUBLE   64
+f80    LONGDOUBLE   80
+b80       LONGBCD   80

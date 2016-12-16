@@ -1,0 +1,4 @@
+Request: JRCXZ BRDISP_WIDTH:8, MODE:2, RELBR:0x1e, SMODE:2
+OPERAND ORDER: RELBR 
+Encodable! E31E
+.byte 0xe3,0x1e

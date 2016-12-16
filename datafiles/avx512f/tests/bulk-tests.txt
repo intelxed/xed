@@ -1,0 +1,10 @@
+BUILDDIR/xed -64 -e vaddps zmm3 k1 zmm1 zmm2                       
+BUILDDIR/xed -64 -d 62F1744958DA                                   
+BUILDDIR/xed -64 -e VGATHERDPD zmm0 k7 MEM64:rax,ymm1,1            
+BUILDDIR/xed -64 -d 62F2FD4F920408                                 
+BUILDDIR/xed -64 -e VGATHERDPD zmm0 k7 MEM64:rax,ymm1,1            
+BUILDDIR/xed -64 -e VGATHERDPD zmm0 k7 MEM64:rax,ymm1,1,11         
+BUILDDIR/xed -64 -e VGATHERDPD zmm0 k7 MEM64:rax,ymm1,1,11223344   
+BUILDDIR/xed -64 -d 62727D4F924CC500                               
+BUILDDIR/xed -64 -e VGATHERDPS ZMM9 K7 MEM64:RBP,ZMM0,8,0          
+

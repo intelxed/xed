@@ -1,0 +1,5 @@
+F391
+ICLASS: XCHG   CATEGORY: DATAXFER   EXTENSION: BASE  IFORM: XCHG_GPRv_OrAX   ISA_SET: I86
+SHORT: xchg ecx, eax
+Encodable! F391
+Identical re-encoding

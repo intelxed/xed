@@ -1,0 +1,5 @@
+Encode request:
+MOV EOSZ:3, MODE:2, REG0:R9, REG1:RDX, SMODE:2
+OPERAND ORDER: REG0 REG1 
+
+Encodable! 4989D1

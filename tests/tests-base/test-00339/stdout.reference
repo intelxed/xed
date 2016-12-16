@@ -1,0 +1,3 @@
+Request: PUSHF EOSZ:1, MODE:1, SMODE:1
+Encodable! 669C
+.byte 0x66,0x9c

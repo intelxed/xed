@@ -1,0 +1,3 @@
+Request: RSM MODE:1, SMODE:1
+Encodable! 0FAA
+.byte 0x0f,0xaa

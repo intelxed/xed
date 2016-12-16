@@ -1,0 +1,5 @@
+8FE870B6F830
+ICLASS: VPMADCSWD   CATEGORY: XOP   EXTENSION: XOP  IFORM: VPMADCSWD_XMMdq_XMMdq_XMMdq_XMMdq   ISA_SET: XOP
+SHORT: vpmadcswd xmm7, xmm1, xmm0, xmm3
+Encodable! 8FE870B6F830
+Identical re-encoding

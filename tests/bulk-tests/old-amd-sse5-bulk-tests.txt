@@ -1,0 +1,8 @@
+DEC ENC              ; BUILDDIR/xed -16 -de 0F252E3630000005
+DEC ENC              ; BUILDDIR/xed -16 -de 0F2401D310
+ENC                  ; BUILDDIR/xed-ex3  fmaddpd xmm1, xmm1, xmm2, xmm3
+DEC ENC              ; BUILDDIR/xed -16 -de 0F7A12CA
+DEC ENC              ; BUILDDIR/xed -de 0F2401D310
+DEC                  ; BUILDDIR/xed -d 0f240bda45
+DEC                  ; BUILDDIR/xed -64 -d 0f240bda45
+DEC                  ; BUILDDIR/xed -d 0f240bda40

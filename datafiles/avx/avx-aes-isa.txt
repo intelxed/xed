@@ -1,0 +1,86 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+AVX_INSTRUCTIONS()::
+
+{
+ICLASS    : VAESKEYGENASSIST
+EXCEPTIONS: avx-type-4
+CPL       : 3
+CATEGORY  : AES
+EXTENSION : AVXAES
+PATTERN : VV1 0xDF VL128 V66 V0F3A  NOVSR MOD[0b11] MOD=3  REG[rrr] RM[nnn] UIMM8()
+OPERANDS  : REG0=XMM_R():w:dq  REG1=XMM_B():r:dq IMM0:r:b
+PATTERN : VV1 0xDF  VL128 V66 V0F3A NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:dq IMM0:r:b
+}
+{
+ICLASS    : VAESENC
+EXCEPTIONS: avx-type-4
+CPL       : 3
+CATEGORY  : AES
+EXTENSION : AVXAES
+PATTERN : VV1 0xDC V66 V0F38  MOD[0b11] MOD=3  REG[rrr] RM[nnn] VL128 
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  REG2=XMM_B():r:dq
+PATTERN : VV1 0xDC V66 V0F38  MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() VL128 
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  MEM0:r:dq
+}
+{
+ICLASS    : VAESENCLAST
+EXCEPTIONS: avx-type-4
+CPL       : 3
+CATEGORY  : AES
+EXTENSION : AVXAES
+PATTERN : VV1 0xDD V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn] VL128
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  REG2=XMM_B():r:dq
+PATTERN : VV1 0xDD  V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() VL128 
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  MEM0:r:dq
+}
+{
+ICLASS    : VAESDEC
+EXCEPTIONS: avx-type-4
+CPL       : 3
+CATEGORY  : AES
+EXTENSION : AVXAES
+PATTERN : VV1 0xDE V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn] VL128 
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  REG2=XMM_B():r:dq
+PATTERN : VV1 0xDE V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() VL128 
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  MEM0:r:dq
+}
+{
+ICLASS    : VAESDECLAST
+EXCEPTIONS: avx-type-4
+CPL       : 3
+CATEGORY  : AES
+EXTENSION : AVXAES
+PATTERN : VV1 0xDF V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn] VL128
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  REG2=XMM_B():r:dq
+PATTERN : VV1 0xDF V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() VL128 
+OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_N():r:dq  MEM0:r:dq
+}
+{
+ICLASS    : VAESIMC
+EXCEPTIONS: avx-type-4
+CPL       : 3
+CATEGORY  : AES
+EXTENSION : AVXAES
+PATTERN : VV1 0xDB VL128 V66 V0F38 NOVSR MOD[0b11] MOD=3  REG[rrr] RM[nnn] 
+OPERANDS  : REG0=XMM_R():w:dq  REG1=XMM_B():r:dq
+PATTERN : VV1 0xDB VL128 V66 V0F38 NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:dq
+}
+

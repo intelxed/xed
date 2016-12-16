@@ -1,0 +1,65 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+INSTRUCTIONS()::
+
+
+{
+ICLASS    : RDFSBASE
+CPL       : 3
+CATEGORY  : RDWRFSGS
+EXTENSION : RDWRFSGS
+
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b000] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+OPERANDS  : REG0=GPRy_B():w  REG1=XED_REG_FSBASE:r:SUPP:y
+
+}
+{
+ICLASS    : RDGSBASE
+CPL       : 3
+CATEGORY  : RDWRFSGS
+EXTENSION : RDWRFSGS
+
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b001] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+OPERANDS  : REG0=GPRy_B():w  REG1=XED_REG_GSBASE:r:SUPP:y
+
+}
+
+
+
+{
+ICLASS    : WRFSBASE
+CPL       : 3
+CATEGORY  : RDWRFSGS
+EXTENSION : RDWRFSGS
+ATTRIBUTES: NOTSX
+
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b010] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+OPERANDS  :   REG0=GPRy_B():r   REG1=XED_REG_FSBASE:w:SUPP:y
+
+}
+{
+ICLASS    : WRGSBASE
+CPL       : 3
+CATEGORY  : RDWRFSGS
+EXTENSION : RDWRFSGS
+ATTRIBUTES: NOTSX
+
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b011] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+OPERANDS  :   REG0=GPRy_B():r   REG1=XED_REG_GSBASE:w:SUPP:y
+
+}

@@ -1,0 +1,5 @@
+Encode request:
+LEA AGEN:ptr [RBP+RDI*2], EOSZ:3, MODE:2, REG0:RAX, SMODE:2
+OPERAND ORDER: REG0 AGEN 
+
+Encodable! 488D447D00

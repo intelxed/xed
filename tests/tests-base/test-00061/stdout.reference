@@ -1,0 +1,5 @@
+67648B46FF
+ICLASS: MOV   CATEGORY: DATAXFER   EXTENSION: BASE  IFORM: MOV_GPRv_MEMv   ISA_SET: I86
+SHORT: mov eax, dword ptr fs:[bp-0x1]
+Encodable! 67648B46FF
+Identical re-encoding

@@ -1,0 +1,23 @@
+Attempting to decode: fd 
+iclass STD	category FLAGOP	ISA-extension BASE	ISA-set I86
+instruction-length 1
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name STD
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0           REG0=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  MemopBytes = 0
+FLAGS:
+  must-write-rflags df-1 
+       read:                                mask=0x0
+    written:                            df  mask=0x400
+  undefined:                                mask=0x0
+ATTRIBUTES: NOTSX_COND 
+ISA SET: [I86]

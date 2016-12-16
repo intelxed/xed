@@ -1,0 +1,5 @@
+F30F5100
+ICLASS: SQRTSS   CATEGORY: SSE   EXTENSION: SSE  IFORM: SQRTSS_XMMss_MEMss   ISA_SET: SSE
+SHORT: sqrtss xmm0, dword ptr [eax]
+Encodable! F30F5100
+Identical re-encoding

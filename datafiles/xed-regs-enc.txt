@@ -1,0 +1,87 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+xed_reg_enum_t SEGe()::
+OUTREG=XED_REG_DS -> nothing
+OUTREG=XED_REG_CS -> nothing
+OUTREG=XED_REG_ES -> nothing
+OUTREG=XED_REG_FS -> nothing
+OUTREG=XED_REG_GS -> nothing
+OUTREG=XED_REG_SS -> nothing
+
+xed_reg_enum_t GPR16e()::
+OUTREG=XED_REG_AX -> nothing
+OUTREG=XED_REG_BX -> nothing
+OUTREG=XED_REG_CX -> nothing
+OUTREG=XED_REG_DX -> nothing
+OUTREG=XED_REG_SP -> nothing
+OUTREG=XED_REG_BP -> nothing
+OUTREG=XED_REG_SI -> nothing
+OUTREG=XED_REG_DI -> nothing
+
+
+xed_reg_enum_t GPR32e()::
+mode32 OUTREG=GPR32e_m32() -> nothing
+mode64 OUTREG=GPR32e_m64() -> nothing
+
+
+xed_reg_enum_t GPR32e_m32()::
+OUTREG=XED_REG_EAX -> nothing
+OUTREG=XED_REG_EBX -> nothing
+OUTREG=XED_REG_ECX -> nothing
+OUTREG=XED_REG_EDX -> nothing
+OUTREG=XED_REG_ESP -> nothing
+OUTREG=XED_REG_EBP -> nothing
+OUTREG=XED_REG_ESI -> nothing
+OUTREG=XED_REG_EDI -> nothing
+
+xed_reg_enum_t GPR32e_m64()::
+OUTREG=XED_REG_EAX -> nothing
+OUTREG=XED_REG_EBX -> nothing
+OUTREG=XED_REG_ECX -> nothing
+OUTREG=XED_REG_EDX -> nothing
+OUTREG=XED_REG_ESP -> nothing
+OUTREG=XED_REG_EBP -> nothing
+OUTREG=XED_REG_ESI -> nothing
+OUTREG=XED_REG_EDI -> nothing
+OUTREG=XED_REG_R8D -> nothing
+OUTREG=XED_REG_R9D -> nothing
+OUTREG=XED_REG_R10D -> nothing
+OUTREG=XED_REG_R11D -> nothing
+OUTREG=XED_REG_R12D -> nothing
+OUTREG=XED_REG_R13D -> nothing
+OUTREG=XED_REG_R14D -> nothing
+OUTREG=XED_REG_R15D -> nothing
+
+xed_reg_enum_t GPR64e()::
+OUTREG=XED_REG_RAX -> nothing
+OUTREG=XED_REG_RBX -> nothing
+OUTREG=XED_REG_RCX -> nothing
+OUTREG=XED_REG_RDX -> nothing
+OUTREG=XED_REG_RSP -> nothing
+OUTREG=XED_REG_RBP -> nothing
+OUTREG=XED_REG_RSI -> nothing
+OUTREG=XED_REG_RDI -> nothing
+OUTREG=XED_REG_R8 -> nothing
+OUTREG=XED_REG_R9 -> nothing
+OUTREG=XED_REG_R10 -> nothing
+OUTREG=XED_REG_R11 -> nothing
+OUTREG=XED_REG_R12 -> nothing
+OUTREG=XED_REG_R13 -> nothing
+OUTREG=XED_REG_R14 -> nothing
+OUTREG=XED_REG_R15 -> nothing

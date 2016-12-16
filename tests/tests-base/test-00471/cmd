@@ -1,0 +1,1 @@
+ BUILDDIR/xed-ex3 -64 vgatherdps ymm1 MEM32:RBP,YMM2,2  YMM3

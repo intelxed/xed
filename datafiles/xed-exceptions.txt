@@ -1,0 +1,277 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+## comments are double # signs in this file
+## interrupt  symbol name fault/trap/etc
+## FIXME: add error code indicator?
+
+0   #DE "Divide Error Exception"          fault
+1   #DB "Debug Exception"                 trap-or-fault
+2   NMI "NMI interrupt"                   other
+3   #BP "Breakpoint Exception"            trap
+4   #OF "Overflow Exception"              trap
+5   #BR "Bound range exceeded exception"  fault
+6   #UD "Invalid opcode exception"        fault
+7   #NM "Device not available exception"  fault
+8   #DF "Double fault exception"          abort
+9   #9 "Coprocessor Segment Overrun - reserved" other
+10  #TS "Invalid TSS exception"           fault
+11  #NP "Segment not present"             fault
+12  #SS "Stack fault exception"           fault
+13  #GP "General protection exception"    fault
+14  #PF "Page fault exception"            fault
+15  #15 "reserved"                        reserved
+16  #MF "x87 FPU floating point error"    fault
+17  #AC "Alignment check exception"       fault
+18  #MC "Machine-check exception"         abort
+19  #XF "SIMD floating point exception"   fault
+20  #20 "reserved"                        reserved
+21  #21 "reserved"                        reserved
+22  #22 "reserved"                        reserved
+23  #23 "reserved"                        reserved
+24  #24 "reserved"                        reserved
+25  #25 "reserved"                        reserved
+26  #26 "reserved"                        reserved
+27  #27 "reserved"                        reserved
+28  #28 "reserved"                        reserved
+29  #29 "reserved"                        reserved
+30  #30 "reserved"                        reserved
+31  #31 "reserved"                        reserved
+32  #32  "user defined"                   interrupt
+33  #33  "user defined"                   interrupt
+34  #34  "user defined"                   interrupt
+35  #35  "user defined"                   interrupt
+36  #36  "user defined"                   interrupt
+37  #37  "user defined"                   interrupt
+38  #38  "user defined"                   interrupt
+39  #39  "user defined"                   interrupt
+40  #40  "user defined"                   interrupt
+41  #41  "user defined"                   interrupt
+42  #42  "user defined"                   interrupt
+43  #43  "user defined"                   interrupt
+44  #44  "user defined"                   interrupt
+45  #45  "user defined"                   interrupt
+46  #46  "user defined"                   interrupt
+47  #47  "user defined"                   interrupt
+48  #48  "user defined"                   interrupt
+49  #49  "user defined"                   interrupt
+50  #50  "user defined"                   interrupt
+51  #51  "user defined"                   interrupt
+52  #52  "user defined"                   interrupt
+53  #53  "user defined"                   interrupt
+54  #54  "user defined"                   interrupt
+55  #55  "user defined"                   interrupt
+56  #56  "user defined"                   interrupt
+57  #57  "user defined"                   interrupt
+58  #58  "user defined"                   interrupt
+59  #59  "user defined"                   interrupt
+60  #60  "user defined"                   interrupt
+61  #61  "user defined"                   interrupt
+62  #62  "user defined"                   interrupt
+63  #63  "user defined"                   interrupt
+64  #64  "user defined"                   interrupt
+65  #65  "user defined"                   interrupt
+66  #66  "user defined"                   interrupt
+67  #67  "user defined"                   interrupt
+68  #68  "user defined"                   interrupt
+69  #69  "user defined"                   interrupt
+70  #70  "user defined"                   interrupt
+71  #71  "user defined"                   interrupt
+72  #72  "user defined"                   interrupt
+73  #73  "user defined"                   interrupt
+74  #74  "user defined"                   interrupt
+75  #75  "user defined"                   interrupt
+76  #76  "user defined"                   interrupt
+77  #77  "user defined"                   interrupt
+78  #78  "user defined"                   interrupt
+79  #79  "user defined"                   interrupt
+80  #80  "user defined"                   interrupt
+81  #81  "user defined"                   interrupt
+82  #82  "user defined"                   interrupt
+83  #83  "user defined"                   interrupt
+84  #84  "user defined"                   interrupt
+85  #85  "user defined"                   interrupt
+86  #86  "user defined"                   interrupt
+87  #87  "user defined"                   interrupt
+88  #88  "user defined"                   interrupt
+89  #89  "user defined"                   interrupt
+90  #90  "user defined"                   interrupt
+91  #91  "user defined"                   interrupt
+92  #92  "user defined"                   interrupt
+93  #93  "user defined"                   interrupt
+94  #94  "user defined"                   interrupt
+95  #95  "user defined"                   interrupt
+96  #96  "user defined"                   interrupt
+97  #97  "user defined"                   interrupt
+98  #98  "user defined"                   interrupt
+99  #99  "user defined"                   interrupt
+100 #100 "user defined"                   interrupt
+101 #101 "user defined"                   interrupt
+102 #102 "user defined"                   interrupt
+103 #103 "user defined"                   interrupt
+104 #104 "user defined"                   interrupt
+105 #105 "user defined"                   interrupt
+106 #106 "user defined"                   interrupt
+107 #107 "user defined"                   interrupt
+108 #108 "user defined"                   interrupt
+109 #109 "user defined"                   interrupt
+110 #110 "user defined"                   interrupt
+111 #111 "user defined"                   interrupt
+112 #112 "user defined"                   interrupt
+113 #113 "user defined"                   interrupt
+114 #114 "user defined"                   interrupt
+115 #115 "user defined"                   interrupt
+116 #116 "user defined"                   interrupt
+117 #117 "user defined"                   interrupt
+118 #118 "user defined"                   interrupt
+119 #119 "user defined"                   interrupt
+120 #120 "user defined"                   interrupt
+121 #121 "user defined"                   interrupt
+122 #122 "user defined"                   interrupt
+123 #123 "user defined"                   interrupt
+124 #124 "user defined"                   interrupt
+125 #125 "user defined"                   interrupt
+126 #126 "user defined"                   interrupt
+127 #127 "user defined"                   interrupt
+128 #128 "user defined"                   interrupt
+129 #129 "user defined"                   interrupt
+130 #130 "user defined"                   interrupt
+131 #131 "user defined"                   interrupt
+132 #132 "user defined"                   interrupt
+133 #133 "user defined"                   interrupt
+134 #134 "user defined"                   interrupt
+135 #135 "user defined"                   interrupt
+136 #136 "user defined"                   interrupt
+137 #137 "user defined"                   interrupt
+138 #138 "user defined"                   interrupt
+139 #139 "user defined"                   interrupt
+140 #140 "user defined"                   interrupt
+141 #141 "user defined"                   interrupt
+142 #142 "user defined"                   interrupt
+143 #143 "user defined"                   interrupt
+144 #144 "user defined"                   interrupt
+145 #145 "user defined"                   interrupt
+146 #146 "user defined"                   interrupt
+147 #147 "user defined"                   interrupt
+148 #148 "user defined"                   interrupt
+149 #149 "user defined"                   interrupt
+150 #150 "user defined"                   interrupt
+151 #151 "user defined"                   interrupt
+152 #152 "user defined"                   interrupt
+153 #153 "user defined"                   interrupt
+154 #154 "user defined"                   interrupt
+155 #155 "user defined"                   interrupt
+156 #156 "user defined"                   interrupt
+157 #157 "user defined"                   interrupt
+158 #158 "user defined"                   interrupt
+159 #159 "user defined"                   interrupt
+160 #160 "user defined"                   interrupt
+161 #161 "user defined"                   interrupt
+162 #162 "user defined"                   interrupt
+163 #163 "user defined"                   interrupt
+164 #164 "user defined"                   interrupt
+165 #165 "user defined"                   interrupt
+166 #166 "user defined"                   interrupt
+167 #167 "user defined"                   interrupt
+168 #168 "user defined"                   interrupt
+169 #169 "user defined"                   interrupt
+170 #170 "user defined"                   interrupt
+171 #171 "user defined"                   interrupt
+172 #172 "user defined"                   interrupt
+173 #173 "user defined"                   interrupt
+174 #174 "user defined"                   interrupt
+175 #175 "user defined"                   interrupt
+176 #176 "user defined"                   interrupt
+177 #177 "user defined"                   interrupt
+178 #178 "user defined"                   interrupt
+179 #179 "user defined"                   interrupt
+180 #180 "user defined"                   interrupt
+181 #181 "user defined"                   interrupt
+182 #182 "user defined"                   interrupt
+183 #183 "user defined"                   interrupt
+184 #184 "user defined"                   interrupt
+185 #185 "user defined"                   interrupt
+186 #186 "user defined"                   interrupt
+187 #187 "user defined"                   interrupt
+188 #188 "user defined"                   interrupt
+189 #189 "user defined"                   interrupt
+190 #190 "user defined"                   interrupt
+191 #191 "user defined"                   interrupt
+192 #192 "user defined"                   interrupt
+193 #193 "user defined"                   interrupt
+194 #194 "user defined"                   interrupt
+195 #195 "user defined"                   interrupt
+196 #196 "user defined"                   interrupt
+197 #197 "user defined"                   interrupt
+198 #198 "user defined"                   interrupt
+199 #199 "user defined"                   interrupt
+200 #200 "user defined"                   interrupt
+201 #201 "user defined"                   interrupt
+202 #202 "user defined"                   interrupt
+203 #203 "user defined"                   interrupt
+204 #204 "user defined"                   interrupt
+205 #205 "user defined"                   interrupt
+206 #206 "user defined"                   interrupt
+207 #207 "user defined"                   interrupt
+208 #208 "user defined"                   interrupt
+209 #209 "user defined"                   interrupt
+210 #210 "user defined"                   interrupt
+211 #211 "user defined"                   interrupt
+212 #212 "user defined"                   interrupt
+213 #213 "user defined"                   interrupt
+214 #214 "user defined"                   interrupt
+215 #215 "user defined"                   interrupt
+216 #216 "user defined"                   interrupt
+217 #217 "user defined"                   interrupt
+218 #218 "user defined"                   interrupt
+219 #219 "user defined"                   interrupt
+220 #220 "user defined"                   interrupt
+221 #221 "user defined"                   interrupt
+222 #222 "user defined"                   interrupt
+223 #223 "user defined"                   interrupt
+224 #224 "user defined"                   interrupt
+225 #225 "user defined"                   interrupt
+226 #226 "user defined"                   interrupt
+227 #227 "user defined"                   interrupt
+228 #228 "user defined"                   interrupt
+229 #229 "user defined"                   interrupt
+230 #230 "user defined"                   interrupt
+231 #231 "user defined"                   interrupt
+232 #232 "user defined"                   interrupt
+233 #233 "user defined"                   interrupt
+234 #234 "user defined"                   interrupt
+235 #235 "user defined"                   interrupt
+236 #236 "user defined"                   interrupt
+237 #237 "user defined"                   interrupt
+238 #238 "user defined"                   interrupt
+239 #239 "user defined"                   interrupt
+240 #240 "user defined"                   interrupt
+241 #241 "user defined"                   interrupt
+242 #242 "user defined"                   interrupt
+243 #243 "user defined"                   interrupt
+244 #244 "user defined"                   interrupt
+245 #245 "user defined"                   interrupt
+246 #246 "user defined"                   interrupt
+247 #247 "user defined"                   interrupt
+248 #248 "user defined"                   interrupt
+249 #249 "user defined"                   interrupt
+250 #250 "user defined"                   interrupt
+251 #251 "user defined"                   interrupt
+252 #252 "user defined"                   interrupt
+253 #253 "user defined"                   interrupt
+254 #254 "user defined"                   interrupt
+255 #255 "user defined"                   interrupt

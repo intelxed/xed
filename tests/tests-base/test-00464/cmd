@@ -1,0 +1,1 @@
+ BUILDDIR/xed-ex3 -64 vbroadcastss/32 xmm1 MEM4:rax

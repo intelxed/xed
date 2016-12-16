@@ -1,0 +1,117 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+# These bind the operand deciders that control the encoding
+SEQUENCE ISA_BINDINGS
+   FIXUP_EOSZ_ENC_BIND()
+   FIXUP_EASZ_ENC_BIND()
+   ASZ_NONTERM_BIND()  
+   INSTRUCTIONS_BIND()     # not calling tree splitter! AVX instructions must set VEXVALID=1
+   OSZ_NONTERM_ENC_BIND()   # OSZ must be after the instructions so that DF64 is bound (and before any prefixes obviously)
+   PREFIX_ENC_BIND() 
+   VEXED_REX_BIND()
+
+# These emit the bits and bytes that make up the encoding
+SEQUENCE ISA_EMIT
+   PREFIX_ENC_EMIT() 
+   VEXED_REX_EMIT()
+   INSTRUCTIONS_EMIT()
+
+VEXED_REX()::
+VEXVALID=0 -> REX_PREFIX_ENC() 
+VEXVALID=1 -> NEWVEX_ENC() 
+
+
+#################################################
+SEQUENCE NEWVEX_ENC_BIND
+    VEX_TYPE_ENC_BIND
+    VEX_REXR_ENC_BIND
+    VEX_REXXB_ENC_BIND
+    VEX_MAP_ENC_BIND
+    VEX_REG_ENC_BIND
+    VEX_ESCVL_ENC_BIND
+
+SEQUENCE  NEWVEX_ENC_EMIT
+    VEX_TYPE_ENC_EMIT
+    VEX_REXR_ENC_EMIT
+    VEX_REXXB_ENC_EMIT
+    VEX_MAP_ENC_EMIT
+    VEX_REG_ENC_EMIT
+    VEX_ESCVL_ENC_EMIT
+
+##############################################
+VEX_TYPE_ENC()::
+REXX=1      -> 0xC4 VEX_C4=1
+REXB=1      -> 0xC4 VEX_C4=1
+MAP=0       -> 0xC4 VEX_C4=1
+MAP=2       -> 0xC4 VEX_C4=1
+MAP=3       -> 0xC4 VEX_C4=1
+REXW=1      -> 0xC4 VEX_C4=1
+otherwise   -> 0xC5 VEX_C4=0
+
+VEX_REXR_ENC()::
+mode64 REXR=1 -> 0b0
+mode64 REXR=0 -> 0b1
+not64 REXR=1 -> error
+not64 REXR=0 -> 0b1
+
+VEX_REXXB_ENC()::
+mode64 VEX_C4=1  REXX=0 REXB=0  -> 0b11
+mode64 VEX_C4=1  REXX=1 REXB=0  -> 0b01
+mode64 VEX_C4=1  REXX=0 REXB=1  -> 0b10
+mode64 VEX_C4=1  REXX=1 REXB=1  -> 0b00
+not64 VEX_C4=1  REXX=0 REXB=0  -> 0b11
+not64 VEX_C4=1  REXX=1 REXB=0  -> error
+not64 VEX_C4=1  REXX=0 REXB=1  -> error
+not64 VEX_C4=1  REXX=1 REXB=1  -> error
+otherwise                       -> nothing
+
+# also emits W
+
+VEX_MAP_ENC()::
+VEX_C4=1  MAP=0 REXW[w] -> 0b0_0000 w
+VEX_C4=1  MAP=1 REXW[w] -> 0b0_0001 w
+VEX_C4=1  MAP=2 REXW[w] -> 0b0_0010 w
+VEX_C4=1  MAP=3 REXW[w] -> 0b0_0011 w
+otherwise               -> nothing
+
+# for VEX C5, VEXDEST3 MUST be 1 in 32b mode
+VEX_REG_ENC()::
+mode64 VEXDEST3[u]  VEXDEST210[ddd] -> u_ddd
+not64  VEXDEST3[u]  VEXDEST210[ddd] -> 1_ddd
+
+
+# FOR VEX'ed instructions, I need to turn off the normal REX prefix
+# encoder.  Ideally, I could use fields names other than REX{WRXB},
+# but the register lookup functions need those names.  I can get away
+# with using different names for the f2/f3/66 refining legacy prefixes
+# since they are only referenced by the AVX instructions.
+
+VEX_ESCVL_ENC()::
+VL128 VNP -> 0b000
+VL128 V66 -> 0b001
+VL128 VF3 -> 0b010
+VL128 VF2 -> 0b011
+VL256 VNP -> 0b100
+VL256 V66 -> 0b101
+VL256 VF3 -> 0b110
+VL256 VF2 -> 0b111
+
+
+##############################################################################
+

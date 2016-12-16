@@ -1,0 +1,5 @@
+Encode request:
+XOR MODE:2, REG0:AH, REG1:AL, SMODE:2
+OPERAND ORDER: REG0 REG1 
+
+Encodable! 30C4

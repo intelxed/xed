@@ -1,0 +1,45 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+namespace XED
+hfn xed-error-enum.h
+cfn xed-error-enum.c
+prefix XED_ERROR_
+typename xed_error_enum_t
+stream_ifdef XED_PRINT
+proto_prefix XED_DLL_EXPORT
+extra_header xed-common-hdrs.h
+density dense
+NONE             ///< There was no error
+BUFFER_TOO_SHORT ///< There were not enough bytes in the given buffer
+GENERAL_ERROR    ///< XED could not decode the given instruction
+INVALID_FOR_CHIP ///< The instruciton is not valid for the specified chip
+BAD_REGISTER     ///< XED could not decode the given instruction because an invalid register encoding was used.
+BAD_LOCK_PREFIX   ///< A lock prefix was found where none is allowed.
+BAD_REP_PREFIX    ///< An F2 or F3 prefix was found where none is allowed.
+BAD_LEGACY_PREFIX ///< A 66, F2 or F3 prefix was found where none is allowed.
+BAD_REX_PREFIX    ///< A REX prefix was found where none is allowed.
+BAD_EVEX_UBIT    ///< An illegal value for the EVEX.U bit was present in the instruction.
+BAD_MAP          ///< An illegal value for the MAP field was detected in the instruction.
+BAD_EVEX_V_PRIME  ///< EVEX.V'=0  was detected in a non-64b mode instruction.
+NO_OUTPUT_POINTER ///< The output pointer for xed_agen was zero
+NO_AGEN_CALL_BACK_REGISTERED ///< One or both of the callbacks for xed_agen were missing.
+BAD_MEMOP_INDEX   ///< Memop indices must be 0 or 1.
+CALLBACK_PROBLEM  ///< The register or segment callback for xed_agen experienced a problem
+GATHER_REGS       ///< The index, dest and mask regs for AVX2 gathers must be different.
+INSTR_TOO_LONG    ///< Full decode of instruction would exeed 15B.
+INVALID_MODE      ///< The instruction was not valid for the specified mode

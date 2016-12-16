@@ -1,0 +1,5 @@
+65D7
+ICLASS: XLAT   CATEGORY: MISC   EXTENSION: BASE  IFORM: XLAT   ISA_SET: I86
+SHORT: xlat gs
+Encodable! 65D7
+Identical re-encoding

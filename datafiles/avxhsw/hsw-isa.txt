@@ -1,0 +1,68 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2016 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+INSTRUCTIONS()::
+
+{
+ICLASS    : TZCNT  
+CPL       : 3
+CATEGORY  : BMI1
+EXTENSION : BMI1
+FLAGS     : MUST [ of-u sf-u zf-mod af-u pf-u cf-mod ]
+PATTERN   : 0x0F 0xBC refining_f3  TZCNT=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_R():w MEM0:r:v
+
+PATTERN   : 0x0F 0xBC refining_f3 TZCNT=1 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPRv_R():w  REG1=GPRv_B():r
+}
+
+{
+ICLASS    : BSF
+VERSION   : 1
+COMMENT   : AMD reused 0FBC for TZCNT and made BSF not have a refining prefix.  This version replaces the normal version of BSF
+CPL       : 3
+CATEGORY  : BITBYTE
+EXTENSION : BASE
+ISA_SET   : I386
+FLAGS     : MUST [ of-u sf-u zf-mod af-u pf-u cf-u ]
+
+PATTERN   : 0x0F 0xBC not_refining_f3 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_R():cw MEM0:r:v
+
+PATTERN   : 0x0F 0xBC not_refining_f3 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
+
+PATTERN   : 0x0F 0xBC refining_f3 TZCNT=0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_R():cw MEM0:r:v
+
+PATTERN   : 0x0F 0xBC refining_f3 TZCNT=0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
+}
+
+{
+ICLASS    : INVPCID
+CPL       : 0
+CATEGORY  : MISC
+EXTENSION : INVPCID
+ISA_SET   : INVPCID
+ATTRIBUTES : RING0 NOTSX
+PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
+OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
+PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode32 MODRM() CR_WIDTH()
+OPERANDS  : REG0=GPR32_R():r MEM0:r:dq
+COMMENT   : 
+}

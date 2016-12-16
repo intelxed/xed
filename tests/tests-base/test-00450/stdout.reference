@@ -1,0 +1,34 @@
+Attempting to decode: f2 48 af 
+iclass REPNE_SCASQ	category STRINGOP	ISA-extension LONGMODE	ISA-set LONGMODE
+instruction-length 3
+operand-width 64
+effective-operand-width 64
+effective-address-width 64
+stack-address-width 64
+iform-enum-name REPNE_SCASQ
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=RAX SUPPRESSED   R         Q   64     8     1     64        INT        GPR
+1   MEM0           (see below) SUPPRESSED  CR         Q   64     8     1     64        INT    INVALID
+2  BASE0             BASE0=RDI SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
+3   REG1              REG1=RCX SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
+4   REG2           REG2=RFLAGS SUPPRESSED RCW         Y   64     8     1     64        INT      FLAGS
+Memory Operands
+  0    read BASE= RDI/GPR  ASZ0=64
+  MemopBytes = 8
+FLAGS:
+   reads-rflags of-mod df-tst sf-mod zf-mod af-mod pf-mod cf-mod zf-tst 
+       read:                         zf df  mask=0x440
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                                mask=0x0
+READS ZF
+ATTRIBUTES: FIXED_BASE0 REP 
+REAL REP 	corresponding no-rep iclass: SCASQ
+F2 PREFIX
+Number of legacy prefixes: 2 
+ISA SET: [LONGMODE]
+0	CPUID BIT NAME: [INTEL64]
+	Leaf 0x80000001, subleaf 0x00000000, EDX[29]

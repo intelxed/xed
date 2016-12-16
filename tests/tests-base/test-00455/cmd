@@ -1,0 +1,1 @@
+ BUILDDIR/xed-ex3 -64  vpinsrb/64 xmm1 xmm2 eax IMM:ff

@@ -1,0 +1,35 @@
+Attempting to decode: f3 48 a5 
+iclass REP_MOVSQ	category STRINGOP	ISA-extension LONGMODE	ISA-set LONGMODE
+instruction-length 3
+operand-width 64
+effective-operand-width 64
+effective-address-width 64
+stack-address-width 64
+iform-enum-name REP_MOVSQ
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below) SUPPRESSED  CW         Q   64     8     1     64        INT    INVALID
+1  BASE0             BASE0=RDI SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
+2   MEM1           (see below) SUPPRESSED  CR         Q   64     8     1     64        INT    INVALID
+3  BASE1             BASE1=RSI SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
+4   REG0              REG0=RCX SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
+5   REG1           REG1=RFLAGS SUPPRESSED   R         Y   64     8     1     64        INT      FLAGS
+Memory Operands
+  0 written BASE= RDI/GPR  ASZ0=64
+  1    read BASE= RSI/GPR  ASZ1=64
+  MemopBytes = 8
+FLAGS:
+   reads-rflags df-tst 
+       read:                            df  mask=0x400
+    written:                                mask=0x0
+  undefined:                                mask=0x0
+ATTRIBUTES: FIXED_BASE0 FIXED_BASE1 REP 
+REAL REP 	corresponding no-rep iclass: MOVSQ
+F3 PREFIX
+Number of legacy prefixes: 2 
+ISA SET: [LONGMODE]
+0	CPUID BIT NAME: [INTEL64]
+	Leaf 0x80000001, subleaf 0x00000000, EDX[29]
