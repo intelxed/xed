@@ -20,6 +20,6 @@ env:
     - host_cpu=x86-64
 
 script:
-    - git clone https://github.com/intelxed/mbuild.git
+    - pip install --user https://github.com/intelxed/mbuild/zipball/master
     - mkdir build
     - cd build && ../mfile.py host_cpu=$host_cpu test
