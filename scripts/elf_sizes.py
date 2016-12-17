@@ -22,8 +22,11 @@ import os
 import sys
 import subprocess
 import find_dir
-sys.path.append(find_dir.find_dir('mbuild'))
-import mbuild
+try:
+    import mbuild
+except:
+    sys.path.append(find_dir.find_dir('mbuild'))
+    import mbuild
 
 def _warn(s):
     sys.stderr.write("ERROR:" + s + "\n")
