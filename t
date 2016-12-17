@@ -1,9 +1,5 @@
 language: c
 
-os:
-    - linux
-    - osx
-
 # test gcc and clang
 compiler:
     - gcc
