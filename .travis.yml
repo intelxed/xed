@@ -1,0 +1,10 @@
+language: c
+
+compiler:
+    - gcc
+#    - clang
+
+script:
+    - git clone https://github.com/intelxed/mbuild.git
+    - mkdir build
+    - cd build && ../mfile.py
