@@ -1,0 +1,25 @@
+language: c
+
+addons:
+    apt:
+        packages:
+            # 32 bit support
+            - gcc-multilib
+
+os:
+    - linux
+    - osx
+
+# test gcc and clang
+compiler:
+    - gcc
+    - clang
+
+env:
+    - host_cpu=ia32
+    - host_cpu=x86-64
+
+script:
+    - git clone https://github.com/intelxed/mbuild.git
+    - mkdir build
+    - cd build && ../mfile.py host_cpu=$host_cpu test
