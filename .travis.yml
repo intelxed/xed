@@ -4,6 +4,7 @@ compiler:
     - gcc
     - clang
 
+# 32 bit build is broken
 env:
     - host_cpu=ia32
     - host_cpu=ia64
