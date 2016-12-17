@@ -2,9 +2,13 @@ language: c
 
 compiler:
     - gcc
-#    - clang
+    - clang
+
+env:
+    - host_cpu=ia32
+    - host_cpu=ia64
 
 script:
     - git clone https://github.com/intelxed/mbuild.git
     - mkdir build
-    - cd build && ../mfile.py
+    - cd build && ../mfile.py host_cpu=$host_cpu test
