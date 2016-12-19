@@ -1,0 +1,12 @@
+environment:
+    matrix:
+        - host_cpu: ia32
+        - host_cpu: x86-64
+
+build: off
+
+test_script:
+    - git clone https://github.com/intelxed/mbuild.git
+    - mkdir build
+    - cd build
+    - python ../mfile.py test host_cpu=%host_cpu%
