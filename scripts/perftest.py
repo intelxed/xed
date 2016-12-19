@@ -25,8 +25,11 @@ import textwrap
 import find_dir
 import math
 
-sys.path.append(find_dir.find_dir('mbuild'))
-import mbuild
+try:
+    import mbuild
+except:    
+    sys.path.append(find_dir.find_dir('mbuild'))
+    import mbuild
 
 def graph_it(lst):
     import numpy as np
