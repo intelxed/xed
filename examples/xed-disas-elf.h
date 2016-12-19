@@ -19,7 +19,7 @@ END_LEGAL */
 
 #if !defined(_XED_DISAS_ELF_H_)
 # define _XED_DISAS_ELF_H_
-#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 # define XED_ELF_READER
 #endif
 # if defined(XED_ELF_READER)
