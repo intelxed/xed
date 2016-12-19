@@ -29,6 +29,6 @@ DEC AVX              ; BUILDDIR/xed -64 -d 65  C4 E3 FB  F0 BC 35 79 4A B6 0D 67
 DEC AVX              ; BUILDDIR/xed-ex-cpuid f3 0f bc 00
 DEC AVX              ; BUILDDIR/xed-ex-cpuid -nobmi f3 0f bc 00
 DEC AVX              ; BUILDDIR/xed -d c4 e2 b1 92 12
-ENC                  ; BUILDDIR/xed -64 -e JRCXZ 'BRDISP:1E'
+ENC                  ; BUILDDIR/xed -64 -e JRCXZ BRDISP:1E
 DEC ENC              ; BUILDDIR/xed -64 -de e31e
 DEC                  ; BUILDDIR/xed -64 -d e31e
