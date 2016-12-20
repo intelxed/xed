@@ -6,7 +6,11 @@ environment:
 build: off
 
 test_script:
-    - git clone https://github.com/intelxed/mbuild.git
-    - mkdir build
-    - cd build
-    - python ../mfile.py test host_cpu=%host_cpu%
+    - pip install --user https://github.com/intelxed/mbuild/zipball/master
+    - mkdir static-build
+    - cd static-build
+    - python ../mfile.py test host_cpu=%host_cpu% --static
+    - cd ..
+    - mkdir shared-build
+    - cd shared-build
+    - python ../mfile.py test host_cpu=%host_cpu% --shared
