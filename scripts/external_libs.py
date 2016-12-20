@@ -83,7 +83,7 @@ def copy_system_libraries(env, kitdir, files, extra_ld_library_paths=[]):
             osenv['LD_LIBRARY_PATH'] += ":" + s
    
    okay = True
-   if env.on_linux() or env.on_freebsd():
+   if env.on_linux() or env.on_freebsd() or env.on_netbsd():
       system_libraries = set()
       for binary_executable in files:
           if os.path.exists(binary_executable):
@@ -101,7 +101,7 @@ def copy_system_libraries(env, kitdir, files, extra_ld_library_paths=[]):
                           continue
                   mbuild.warn("Could not run ldd on [%s]" % binary_executable)
                   return False
-              if env.on_freebsd():
+              if env.on_freebsd() or env.on_netbsd():
                   lines = lines[1:]
               ldd_okay, files = _grab_ldd_libraries(lines)
               if not ldd_okay:

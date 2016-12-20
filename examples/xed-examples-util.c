@@ -197,7 +197,7 @@ xed_int64_t xed_atoi_general(char* buf, int mul) {
     xed_int64_t b;
 
     char* p = buf;
-    while(*p && isspace(*p))
+    while(*p && isspace((unsigned char)*p))
     {
         p++;
     }
@@ -219,7 +219,7 @@ xed_int64_t xed_atoi_general(char* buf, int mul) {
         {
             p++;
         }
-        while(*p && isdigit(*p))
+        while(*p && isdigit((unsigned char)*p))
         {
             p++;
         }

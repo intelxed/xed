@@ -1574,7 +1574,7 @@ def copy_dynamic_libs_to_kit(env, kitdir):
        kit"""
     import external_libs
     
-    if not env.on_linux() and not env.on_freebsd():
+    if not env.on_linux() and not env.on_freebsd() and not env.on_netbsd():
         return
 
     kit_ext_lib_dir = mbuild.join(kitdir,'extlib')

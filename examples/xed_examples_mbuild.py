@@ -322,7 +322,7 @@ def build_examples(env, work_queue):
     extra_libs = []    
     if env['decoder']:
 
-        if env.on_linux():
+        if env.on_linux() or env.on_freebsd() or env.on_netbsd():
             xed_cmdline_files.append('xed-disas-elf.c')
             
         elif env.on_mac():
