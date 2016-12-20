@@ -39,9 +39,11 @@ void xed3_static_decode(xed_decoded_inst_t* d)
         if (find_f_arr) // very predictable branch, mostly taken
         {
             xed_uint8_t opcode;
+            xed3_find_func_t find_f;
+                        
             opcode = (xed_uint8_t)xed3_operand_get_nominal_opcode(d);
             // we have 0 for undefined map-opcodes as function pointer
-            xed3_find_func_t find_f = find_f_arr[opcode];
+            find_f = find_f_arr[opcode];
             if (find_f)
                 xed3_idx = (*find_f)(d);
         }
