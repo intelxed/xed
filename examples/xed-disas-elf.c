@@ -31,8 +31,7 @@ END_LEGAL */
 #  include <libelf.h>
 #endif
 
-#include "xed-interface.h"
-#include "xed-portability.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include "xed-symbol-table.h"
 #include "avltree.h"

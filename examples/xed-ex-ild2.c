@@ -25,8 +25,8 @@ END_LEGAL */
 
 int main(int argc, char** argv);
 
-#include "xed-interface.h"
-#include "xed-get-time.h"
+#include "xed/xed-interface.h"
+#include "xed/xed-get-time.h"
 
 #define BUFLEN  1024
 #define XDPRINT(x)     printf("%23s = %d\n", #x , i-> x );

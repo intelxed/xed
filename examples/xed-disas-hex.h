@@ -20,7 +20,7 @@ END_LEGAL */
 # define _XED_DISAS_HEX_H_
 
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 
 void

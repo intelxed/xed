@@ -20,7 +20,7 @@ END_LEGAL */
 /// @brief a minimal example of accessing the XED internal tables
 
 #include <stdio.h>
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 
 
 void dump_operand(const xed_operand_t* op) {

@@ -18,11 +18,20 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-import sys, os, math, traceback, types, copy, re, stat
+import sys
+import os
+import math
+import traceback
+import types
+import copy
+import re
+import stat
 import platform
 
-psystem =  platform.system()
-if psystem == 'Microsoft' or psystem == 'Windows' or psystem.find('CYGWIN') != -1 :
+psystem = platform.system()
+if (psystem == 'Microsoft' or
+    psystem == 'Windows' or
+    psystem.find('CYGWIN') != -1) :
     on_windows = True
 else:
     on_windows = False
@@ -69,8 +78,8 @@ def check_python_version(argmaj, argmin):
     tuple = sys.version_info
     major = tuple[0]
     minor = tuple[1]
-    if (major > argmaj ) or \
-           (major == argmaj and minor >= argmin):
+    if ( (major > argmaj ) or 
+         (major == argmaj and minor >= argmin) ):
         return 
     die('Need Python version %d.%d or later.' % (argmaj, argmin))
     
@@ -415,3 +424,4 @@ def uniqueify(values):
    k = s.keys()
    k.sort()
    return k
+

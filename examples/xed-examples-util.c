@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#include "xed-interface.h"
-#include "xed-get-time.h"
+#include "xed/xed-interface.h"
+#include "xed/xed-get-time.h"
 #include "xed-examples-util.h"
 #include <string.h> //strlen, memcmp, memset
 #if defined(XED_MAC) || defined(XED_LINUX) || defined(XED_BSD)
@@ -30,12 +30,10 @@ END_LEGAL */
 #include <ctype.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "xed-portability.h"
-#include "xed-util.h"
 #include "xed-dot-prep.h"
 
 
-#include "xed-ild.h"
+#include "xed/xed-ild.h"
 #if defined(PTI_XED_TEST)
 #include "pti-xed-test.h"
 #endif

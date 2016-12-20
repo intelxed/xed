@@ -22,7 +22,7 @@ END_LEGAL */
 # define _XED_EXAMPLES_UTIL_H_
 
 #include <stdio.h>
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 
 extern xed_syntax_enum_t global_syntax;
 extern int client_verbose;

@@ -247,6 +247,9 @@ def init(env):
     fx = mbuild.join(env['xed_dir'], "include","public") # static headers
     if os.path.exists(fx):
        env.add_include_dir(fx)
+    fx = mbuild.join(env['xed_dir'], "include","public",'xed') 
+    if os.path.exists(fx):
+       env.add_include_dir(fx)
     env.add_include_dir( env['src_dir'] )  # examples dir
     env.add_include_dir( env['xed_inc_dir']) # generated headers
 

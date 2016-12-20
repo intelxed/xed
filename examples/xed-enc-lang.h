@@ -21,7 +21,7 @@ END_LEGAL */
 #if !defined(_XED_ENC_LANG_H_)
 # define _XED_ENC_LANG_H_
 
-#include "xed-interface.h" 
+#include "xed/xed-interface.h" 
 
 typedef  struct 
 {

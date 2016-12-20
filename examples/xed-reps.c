@@ -18,7 +18,7 @@ END_LEGAL */
 /// @file xed-min.c
 /// @brief a minimal toy example of using the decoder. 
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include <stdio.h>
 
 int main(int argc, char** argv);

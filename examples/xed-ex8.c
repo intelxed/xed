@@ -18,7 +18,7 @@ END_LEGAL */
 
 // decoder example - finding mov to cr3
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include <stdio.h>
 #include <stdlib.h>

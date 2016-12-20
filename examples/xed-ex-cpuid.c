@@ -18,7 +18,7 @@ END_LEGAL */
 
 // decoder example - cpuid-based defeaturing
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h" // xed_atoi_hex()
 #include <stdio.h>
 #include <stdlib.h>

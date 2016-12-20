@@ -18,7 +18,7 @@ END_LEGAL */
 
 #if !defined(_XED_DOT_PREP_H_)
 # define _XED_DOT_PREP_H_
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-dot.h"
 
 typedef struct {

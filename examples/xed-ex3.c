@@ -18,7 +18,7 @@ END_LEGAL */
 /// @file xed-ex3.c
 /// Encoder example
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include "xed-enc-lang.h"
 

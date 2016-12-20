@@ -17,10 +17,9 @@ Copyright (c) 2016 Intel Corporation
 END_LEGAL */
 
 // to avoid empty compilation unit on no-decoder compiles
-#include "xed-interface.h" 
+#include "xed/xed-interface.h" 
 
 #if defined(XED_DECODER)
-#include "xed-portability.h"
 #include "xed-examples-util.h"
 #include "xed-disas-hex.h"
 

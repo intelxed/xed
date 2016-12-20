@@ -16,7 +16,7 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include <stdio.h>
 
 int main(int argc, char** argv);
