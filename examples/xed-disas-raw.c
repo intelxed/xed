@@ -17,9 +17,8 @@ Copyright (c) 2016 Intel Corporation
 END_LEGAL */
 /// @file disas-raw.c
 
-#include "xed-interface.h" 
+#include "xed/xed-interface.h" 
 #if defined(XED_DECODER)
-#include "xed-portability.h"
 #include "xed-examples-util.h"
 #include "xed-disas-raw.h"
 

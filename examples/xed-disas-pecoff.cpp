@@ -19,14 +19,14 @@ END_LEGAL */
 
 //// ONLY COMPILES IF -mno-cygwin is thrown on to GCC compilations
 
-#include "xed-build-defines.h"  // for XED_DECODER
+#include "xed/xed-build-defines.h"  // for XED_DECODER
 #if defined(XED_DECODER)
 #include <cassert>
 #include <cstdio>
 
 
 extern "C" {
-#include "xed-portability.h"   // for the XED_ macros used on next line
+#include "xed/xed-portability.h"   // for the XED_ macros used on next line
 }
 #if defined(XED_MSVC8_OR_LATER) && !defined(XED_64B)
     // to enable the wow64 redirection function on MSVC8

@@ -19,7 +19,7 @@ END_LEGAL */
 
 // decoder  example - printing register operands
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include <stdio.h>
 #include <stdlib.h>

@@ -19,7 +19,7 @@ END_LEGAL */
 /// This is the place to start learning about the decoder APIs. It
 /// exercises most of the essential features of the decoder.
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include <stdio.h>
 #include <stdlib.h>

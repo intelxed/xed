@@ -25,7 +25,7 @@ END_LEGAL */
 # if defined(XED_ELF_READER)
 
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 
 void xed_disas_elf(xed_disas_info_t* fi);

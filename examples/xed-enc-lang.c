@@ -22,8 +22,7 @@ END_LEGAL */
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include "xed-interface.h"
-#include "xed-portability.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include "xed-enc-lang.h"
 

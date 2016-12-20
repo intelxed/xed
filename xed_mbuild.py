@@ -34,6 +34,7 @@ import glob
 import types
 import optparse
 import collections
+import stat
 
 def _fatal(m):
     sys.stderr.write("\n\nXED ERROR: %s\n\n" % (m) )
@@ -553,6 +554,8 @@ def mkenv():
                                  fma=True,
                                  dbghelp=False,
                                  install_dir='',
+                                 prefix_dir='',
+                                 prefix_lib_dir='lib',
                                  kit_kind='base',
                                  win=False,
                                  amd_enabled=True,
@@ -752,6 +755,14 @@ def xed_args(env):
                           action="store_true", 
                           dest="dbghelp",
                           help="Use dbghelp.dll on windows.")
+    env.parser.add_option("--prefix", 
+                          dest="prefix_dir",
+                          action="store",
+                          help="XED System install directory.")
+    env.parser.add_option("--prefix-lib-dir", 
+                          dest="prefix_lib_dir",
+                          action="store",
+                          help="library subdirectory name. Default: lib")
     env.parser.add_option("--install-dir", 
                           dest="install_dir",
                           action="store",
@@ -895,6 +906,7 @@ def init(env):
 
     env.add_include_dir(mbuild.join(env['src_dir'],"include","private"))
     env.add_include_dir(mbuild.join(env['src_dir'],"include","public"))
+    env.add_include_dir(mbuild.join(env['src_dir'],"include","public",'xed'))
 
     valid_targets = [ 'clean',       'just-gen',
                       'skip-gen',    'install',
@@ -1642,8 +1654,121 @@ def apply_legal_header2(fn, legal_header):
         apply_legal_header.apply_header_to_source_file(legal_header,fn)
     else:
         apply_legal_header.apply_header_to_data_file(legal_header,fn)
-                                                 
 
+def _gen_lib_names(env):
+    libnames_template = [ 'lib%(base_lib)s.a',
+                          'lib%(base_lib)s.so',
+                          '%(base_lib)s.lib',
+                          '%(base_lib)s.dll',
+                          'lib%(base_lib)s.dylib' ] 
+    libnames = []
+    for base_lib in ['xed', 'xed-ild']:
+        # use base_lib to trigger mbuild expansion
+        env['base_lib']=base_lib  
+        libnames.extend(env.expand(libnames_template))
+
+    libs = map(lambda x: mbuild.join(env['build_dir'], x),
+               libnames)
+    libs = filter(lambda x: os.path.exists(x), libs)
+    return libs
+
+do_system_copy = True
+
+def _copy_generated_headers(env, dest):
+    global do_system_copy
+    gen_inc = mbuild.join(mbuild.join(env['build_dir'],'*.h'))
+    gincs= mbuild.glob(gen_inc)
+    if len(gincs) == 0:
+        xbc.cdie("No generated include headers found for install")
+    for  h in gincs:
+        mbuild.msgb("COPY", "{} <- {}".format(dest,h))
+        if do_system_copy:
+            mbuild.copy_file(h,dest)
+
+def _copy_nongenerated_headers(env, dest):
+    global do_system_copy
+    src_inc = mbuild.join(env['src_dir'],'include',"public",'xed','*.h')
+    incs= mbuild.glob(src_inc)
+    if len(incs) == 0:
+        xbc.cdie("No standard include headers found for install")
+    for  h in incs:
+        mbuild.msgb("COPY", "{} <- {}".format(dest,h))
+        if do_system_copy:
+            mbuild.copy_file(h,dest)
+
+def _get_legal_header(env):
+    if env['legal_header'] == 'default' or env['legal_header'] == None:
+        env['legal_header'] = mbuild.join(env['src_dir'],
+                                          'misc',
+                                          'apache-header.txt')
+    legal_header = file(env['legal_header']).readlines()
+    return legal_header
+
+def _apply_legal_header_to_headers(env,dest):
+    """apply legal header to all installed headers 
+       in the include directory."""
+
+    legal_header = _get_legal_header(env)
+
+    for h in  mbuild.glob(mbuild.join(dest,'*.[Hh]')):
+        if mbuild.verbose(2):
+            mbuild.msgb("HEADER TAG", h)
+        apply_legal_header2(h, legal_header)
+
+                                                 
+def system_install(env, work_queue):
+    """Build install in the prefix_dir. Use prefix_lib_dir as library name
+       since some systems use lib, lib32 or lib64. non-windows only.
+    """
+    global do_system_copy
+    if env.on_windows():
+        return
+
+    if not env['prefix_dir']:
+        return
+
+    include = mbuild.join(env['prefix_dir'], 'include', 'xed')
+    lib     = mbuild.join(env['prefix_dir'], env['prefix_lib_dir'])
+
+    mbuild.msgb("Making install dirs (if they do not exist)")
+
+    def _set_perm(fn):
+        "-rwx-r-xr-x"
+        os.chmod(fn, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH|
+                     stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH|
+                     stat.S_IWUSR)
+
+
+    if not os.path.exists(include):
+        mbuild.cmkdir(include)
+        _set_perm(include)
+    if not os.path.exists(lib):
+        mbuild.cmkdir(lib)
+        _set_perm(include)
+
+
+    # copy the libraries
+    libs = _gen_lib_names(env)
+    if len(libs) == 0:
+        xbc.cdie("No libraries found for install")
+    for f in libs:
+        mbuild.msgb("COPY", "{} <- {}".format(lib,f))
+        if do_system_copy:
+            mbuild.copy_file(f, lib)
+            fn = mbuild.join(lib,os.path.basename(f))
+            if env['shared']:
+                __set_perm(fn)
+            else:
+                mbuild.make_read_only(fn)
+
+
+
+    _copy_generated_headers(env, include)
+    _copy_nongenerated_headers(env, include)
+    _apply_legal_header_to_headers(env, include)
+
+    for fn in glob.glob(mbuild.join(include,'*.h')):
+        mbuild.make_read_only(fn)
 
 def build_kit(env, work_queue):
     "Build the XED kit"
@@ -1652,11 +1777,7 @@ def build_kit(env, work_queue):
 
     # add a default legal header if we are building a kit and none is
     # specified.
-    
-    if env['legal_header'] == 'default' or env['legal_header'] == None:
-        env['legal_header'] = mbuild.join(env['src_dir'],'misc',
-                                          'apache-header.txt')
-    legal_header = file(env['legal_header']).readlines()
+    legal_header = _get_legal_header(env)
 
     if env['install_dir'] == '':
         date = time.strftime("%Y-%m-%d")
@@ -1674,7 +1795,7 @@ def build_kit(env, work_queue):
         
     if mbuild.verbose(2):
         mbuild.msgb("INSTALL DIR", dest)
-    include = mbuild.join(dest,"include")
+    include = mbuild.join(dest,"include",'xed')
     lib = mbuild.join(dest,"lib")
     examples = mbuild.join(dest,"examples")
     bin_dir = mbuild.join(dest,"bin")
@@ -1742,21 +1863,10 @@ def build_kit(env, work_queue):
             
 
     # copy the libraries. (DLL goes in bin)
-    libnames_template = [ 'lib%(base_lib)s.a',
-                          'lib%(base_lib)s.so',
-                          '%(base_lib)s.lib',
-                          '%(base_lib)s.dll',
-                          'lib%(base_lib)s.dylib' ] 
-    libnames = []
-    for base_lib in ['xed', 'xed-ild']:
-        env['base_lib']=base_lib
-        libnames.extend(env.expand(libnames_template))
-
-    libs = map(lambda x: mbuild.join(env['build_dir'], x),
-               libnames)
-    libs = filter(lambda x: os.path.exists(x), libs)
+    libs = _gen_lib_names(env)
     if len(libs) == 0:
         xbc.cdie("No libraries found for install")
+
     for f in libs:
         print f
         if f.find('.dll') != -1:
@@ -1772,13 +1882,6 @@ def build_kit(env, work_queue):
             if os.path.exists(pdb):
                 mbuild.copy_file(pdb,lib)
 
-    # copy non-generated headers
-    src_inc = mbuild.join(env['src_dir'],'include',"public",'*.h')
-    incs= mbuild.glob(src_inc)
-    if len(incs) == 0:
-        xbc.cdie("No standard include headers found for install")
-    for  h in incs:
-       mbuild.copy_file(h,include)
 
     # copy examples source
     for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', 'README.txt']:
@@ -1794,21 +1897,9 @@ def build_kit(env, work_queue):
             if 'LICENSE' not in tgt:
                 apply_legal_header2(tgt, legal_header)
                 
-    # copy the generated headers
-    gen_inc = mbuild.join(mbuild.join(env['build_dir'],'*.[Hh]'))
-    gincs= mbuild.glob(gen_inc)
-    if len(gincs) == 0:
-        xbc.cdie("No generated include headers found for install")
-    for  h in gincs:
-        mbuild.copy_file(h,include)
-
-    # apply legal header to all headers (generanted and nongenerated)
-    # in the include directory.
-    for h in  mbuild.glob(mbuild.join(include,'*.[Hh]')):
-        if mbuild.verbose(2):
-            mbuild.msgb("HEADER TAG", h)
-        apply_legal_header2(h, legal_header)
-
+    _copy_nongenerated_headers(env,include)
+    _copy_generated_headers(env, include)
+    _apply_legal_header_to_headers(env, include)
 
     # After applying the legal header, create the doxygen from the kit
     # files, and place the output right in the kit.
@@ -2124,6 +2215,7 @@ def work(env):
     legal_header_tagging(env)
     build_examples(env)
     build_kit(env,work_queue)
+    system_install(env,work_queue) # like in /usr/local/{lib,include/xed}
     make_doxygen_build(env,work_queue)
     retval = run_tests(env)
 

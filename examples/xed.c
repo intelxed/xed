@@ -20,9 +20,8 @@ END_LEGAL */
 
 ////////////////////////////////////////////////////////////////////////////
 
-#include "xed-interface.h"
-#include "xed-immdis.h"
-#include "xed-portability.h"
+#include "xed/xed-interface.h"
+#include "xed/xed-immdis.h"
 #include "xed-examples-util.h"
 #if defined(XED_ENCODER)
 # include "xed-enc-lang.h"

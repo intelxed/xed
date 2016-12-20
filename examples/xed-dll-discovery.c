@@ -34,7 +34,7 @@ END_LEGAL */
    your client's names.
 **************************************************************************/
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

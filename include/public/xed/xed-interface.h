@@ -30,6 +30,7 @@ END_LEGAL */
 #endif
     
 #include "xed-build-defines.h" /* generated */
+#include "xed-portability.h"
     
 #include "xed-common-hdrs.h"
 #include "xed-types.h"

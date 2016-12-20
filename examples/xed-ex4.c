@@ -18,7 +18,7 @@ END_LEGAL */
 /// @file xed-ex4.c
 // decoder example. This is the "C" version of xed-ex2.cpp (which is C++).
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include <stdio.h>
 #include <stdlib.h>

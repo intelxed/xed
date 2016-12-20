@@ -18,7 +18,7 @@ END_LEGAL */
 /// @file xed-dec-print.c
 // decode and print
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include <stdio.h>
 

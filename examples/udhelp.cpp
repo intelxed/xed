@@ -18,7 +18,7 @@ END_LEGAL */
 #include "udhelp.H"
 #include <stdio.h>
 extern "C" {
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h" // xed_strdup
 }
 #include <process.h>

@@ -19,7 +19,7 @@ END_LEGAL */
 #if !defined(_XED_DISAS_RAW_H_)
 # define _XED_DISAS_RAW_H_
 
-#include "xed-interface.h"
+#include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 
 void xed_disas_raw(xed_disas_info_t* fi);

@@ -17,7 +17,7 @@ Copyright (c) 2016 Intel Corporation
 END_LEGAL */
 /// @file xed-disas-macho.cpp
 
-#include "xed-interface.h" // to get defines
+#include "xed/xed-interface.h" // to get defines
 #if defined(__APPLE__) && defined(XED_DECODER)
 
 // mac specific headers
