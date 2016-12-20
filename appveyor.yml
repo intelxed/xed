@@ -1,16 +1,5 @@
-environment:
-    matrix:
-        - host_cpu: ia32
-        - host_cpu: x86-64
-
 build: off
 
 test_script:
     - pip install --user https://github.com/intelxed/mbuild/zipball/master
-    - mkdir static-build
-    - cd static-build
-    - python ../mfile.py test host_cpu=%host_cpu% --static
-    - cd ..
-    - mkdir shared-build
-    - cd shared-build
-    - python ../mfile.py test host_cpu=%host_cpu% --shared
+    - python ci.py
