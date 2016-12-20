@@ -10,30 +10,9 @@ matrix:
     include:
     - compiler: gcc
       os: linux
-      env: host_cpu=ia32 shared_static=--shared
-    - compiler: gcc
-      os: linux
-      env: host_cpu=ia32 shared_static=--static
-    - compiler: gcc
-      os: linux
-      env: host_cpu=x86-64 shared_static=--shared
-    - compiler: gcc
-      os: linux
-      env: host_cpu=x86-64 shared_static=--static
     - compiler: clang
       os: osx
-      env: host_cpu=ia32 shared_static=--shared
-    #- compiler: clang
-    #  os: osx
-    #  env: host_cpu=ia32 shared_static=--static
-    - compiler: clang
-      os: osx
-      env: host_cpu=x86-64 shared_static=--shared
-    #- compiler: clang
-    #  os: osx
-    #  env: host_cpu=x86-64 shared_static=--static
      
 script:
     - pip install --user https://github.com/intelxed/mbuild/zipball/master
-    - mkdir build
-    - cd build && ../mfile.py host_cpu=$host_cpu $shared_static test
+    - python ci.py
