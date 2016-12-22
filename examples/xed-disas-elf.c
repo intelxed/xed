@@ -211,21 +211,27 @@ static void read_dwarf_line_numbers(void* region,
 
 char* 
 lookup32(Elf32_Word stoffset,
-       void* start,
-       Elf32_Off offset)
+         void* start,
+         unsigned int len,
+         Elf32_Off offset)
 {
     char* p = (char*)start + offset;
     char* q = p + stoffset;
+    if ((unsigned char*)q > (unsigned char*)start+len)
+        return 0;
     return q;
 }
 
 char* 
 lookup64(Elf64_Word stoffset,
 	 void* start,
+         unsigned int len,
 	 Elf64_Off offset)
 {
   char* p = (char*)start + offset;
   char* q = p + stoffset;
+  if ((unsigned char*)q > (unsigned char*)start+len)
+      return 0;
   return q;
 }
 
@@ -237,16 +243,24 @@ void xed_disas_elf_init(void) {
 
 void
 disas_test32(xed_disas_info_t* fi,
-	     void* start, 
+	     void* start,
+             unsigned int length,
 	     Elf32_Off offset,
 	     Elf32_Word size, 
              Elf32_Addr runtime_vaddr,
              xed_symbol_table_t* symbol_table)
 {
+  unsigned char* hard_limit = (unsigned char*)start + length;
 
   fi->s =  (unsigned char*)start;
   fi->a = (unsigned char*)start + offset;
+  if (fi->a >  hard_limit)
+      fi->a = hard_limit;
+
   fi->q = fi->a + size; // end of region
+  if (fi->q > hard_limit)
+      fi->q = hard_limit;
+
   fi->runtime_vaddr = runtime_vaddr + fi->fake_base;
   fi->runtime_vaddr_disas_start = fi->addr_start;
   fi->runtime_vaddr_disas_end = fi->addr_end;
@@ -260,17 +274,26 @@ disas_test32(xed_disas_info_t* fi,
   xed_disas_test(fi);
 }
 
-void
+static void
 disas_test64(xed_disas_info_t* fi,
-	     void* start, 
+	     void* start,
+             unsigned int length,
 	     Elf64_Off offset,
 	     Elf64_Word size,
              Elf64_Addr runtime_vaddr,
              xed_symbol_table_t* symbol_table)
 {
+  unsigned char* hard_limit = (unsigned char*)start + length;
   fi->s =  (unsigned char*)start;
+
   fi->a = (unsigned char*)start + offset;
+  if (fi->a >  hard_limit)
+      fi->a = hard_limit;
+  
   fi->q = fi->a + size; // end of region
+  if (fi->q > hard_limit)
+      fi->q = hard_limit;
+  
   fi->runtime_vaddr = runtime_vaddr + fi->fake_base;
   fi->runtime_vaddr_disas_start = fi->addr_start;
   fi->runtime_vaddr_disas_end = fi->addr_end;
@@ -310,13 +333,21 @@ process_elf32(xed_disas_info_t* fi,
     int sect_strings  = elf_hdr->e_shstrndx;
     int nsect = elf_hdr->e_shnum;
     int i;
+    unsigned char* hard_limit = (unsigned char*)start + length;
+        
     for(i=0;i<nsect;i++) {
-        char* name = lookup32(shp[i].sh_name, start, 
-                              shp[sect_strings].sh_offset);
+        char* name;
         xed_bool_t text = 0;
+        
+        if ((unsigned char*) (shp+i) + sizeof(Elf32_Shdr) > hard_limit)
+            break;
+                
+        name = lookup32(shp[i].sh_name, start,  length,
+                        shp[sect_strings].sh_offset);
+
         if (shp[i].sh_type == SHT_PROGBITS) {
             if (fi->target_section) {
-                if (strcmp(fi->target_section, name)==0) 
+                if (name && strcmp(fi->target_section, name)==0) 
                     text = 1;
             }
             else if (shp[i].sh_flags & SHF_EXECINSTR)
@@ -339,15 +370,13 @@ process_elf32(xed_disas_info_t* fi,
 
             xst_set_current_table(symbol_table,i);
             disas_test32(fi,
-                         start, shp[i].sh_offset, shp[i].sh_size,
+                         start, length,  shp[i].sh_offset, shp[i].sh_size,
                          shp[i].sh_addr,
                          symbol_table);
 
 	}
 
     }
-
-    (void) length;// pacify compiler
 }
 
 /*-----------------------------------------------------------------*/
@@ -383,18 +412,25 @@ process_elf64(xed_disas_info_t* fi,
     Elf64_Shdr* shp = (Elf64_Shdr*) ((char*)start + shoff);
     Elf64_Half sect_strings  = elf_hdr->e_shstrndx;
     Elf64_Half nsect = elf_hdr->e_shnum;
+    unsigned char* hard_limit = (unsigned char*)start + length;
+
     if (CLIENT_VERBOSE1) 
         printf("# sections %d\n" , nsect);
     unsigned int i;
     xed_bool_t text = 0;
     for( i=0;i<nsect;i++)  {
-        char* name = lookup64(shp[i].sh_name, start, 
-                              shp[sect_strings].sh_offset);
+        char* name = 0;
+        
+        if ((unsigned char*) (shp+i) + sizeof(Elf64_Shdr) > hard_limit)
+            break;
+
+        name = lookup64(shp[i].sh_name, start, length,
+                        shp[sect_strings].sh_offset);
         
         text = 0;
         if (shp[i].sh_type == SHT_PROGBITS) {
             if (fi->target_section) {
-                if (strcmp(fi->target_section, name)==0) 
+                if (name && strcmp(fi->target_section, name)==0) 
                     text = 1;
             }
             else if (shp[i].sh_flags & SHF_EXECINSTR)
@@ -414,15 +450,15 @@ process_elf64(xed_disas_info_t* fi,
             }
             xst_set_current_table(symbol_table,i);
             disas_test64(fi, 
-                         start, shp[i].sh_offset, shp[i].sh_size, 
+                         start, length, shp[i].sh_offset, shp[i].sh_size, 
                          shp[i].sh_addr, symbol_table);
         }
     }
-    (void) length;// pacify compiler
 }
 
 
-void read_symbols64(void* start, 
+void read_symbols64(void* start,
+                    unsigned int len,
                     Elf64_Off offset,
                     Elf64_Word size,
                     Elf64_Off string_table_offset,
@@ -431,10 +467,15 @@ void read_symbols64(void* start,
     char* a = XED_STATIC_CAST(char*,start);
     Elf64_Sym* p = XED_STATIC_CAST(Elf64_Sym*,a + offset);
     Elf64_Sym* q = XED_STATIC_CAST(Elf64_Sym*,a + offset + size);
+    unsigned char* hard_limit = (unsigned char*)start + len;
+    if ((unsigned char*) p + sizeof(Elf64_Sym) > hard_limit)
+        p =  (Elf64_Sym*)hard_limit;
+    if ((unsigned char*) q > hard_limit)
+        q =  (Elf64_Sym*)hard_limit;
     while(p<q) {
         if (ELF64_ST_TYPE(p->st_info) == STT_FUNC) {
-            char* name = lookup64(p->st_name, start, string_table_offset);
-            if (xed_strlen(name) > 0) {
+            char* name = lookup64(p->st_name, start, len, string_table_offset);
+            if (name && xed_strlen(name) > 0) {
                 xst_add_local_symbol(
                     symtab,
                     XED_STATIC_CAST(xed_uint64_t,p->st_value), 
@@ -465,9 +506,11 @@ static void print_comment32(unsigned int i, Elf32_Shdr* shp, char const* const s
 
 
 
-void symbols_elf64(xed_disas_info_t* fi, 
-                   void* start,
-                   xed_symbol_table_t* symtab) {
+static void
+symbols_elf64(xed_disas_info_t* fi, 
+              void* start,
+              unsigned int len,
+              xed_symbol_table_t* symtab) {
     Elf64_Ehdr* elf_hdr = (Elf64_Ehdr*) start;
     Elf64_Off shoff = elf_hdr->e_shoff;  // section hdr table offset
     Elf64_Shdr* shp = (Elf64_Shdr*) ((char*)start + shoff);
@@ -478,41 +521,52 @@ void symbols_elf64(xed_disas_info_t* fi,
     Elf64_Half sect_strings  = elf_hdr->e_shstrndx;
     Elf64_Off string_table_offset=0;
     Elf64_Off dynamic_string_table_offset=0;
+    unsigned char* hard_limit = (unsigned char*)start + len;
 
     /* find the string_table_offset and the dynamic_string_table_offset */
+
     for( i=0;i<nsect;i++)  {
+        if ((unsigned char*)(shp+i)+sizeof(Elf64_Shdr) >= hard_limit)
+            break;
+
         if (shp[i].sh_type == SHT_STRTAB) {
-            char* name = lookup32(shp[i].sh_name, start, 
+            char* name = lookup32(shp[i].sh_name, start, len,
                                   shp[sect_strings].sh_offset);
-            if (strcmp(name,".strtab")==0) {
-                if (fi->xml_format == 0) {
-                    print_comment64(i,shp, "strtab");
+            if (name)
+            {
+                if (strcmp(name,".strtab")==0) {
+                    if (fi->xml_format == 0) {
+                        print_comment64(i,shp, "strtab");
+                    }
+                    string_table_offset = shp[i].sh_offset;
                 }
-                string_table_offset = shp[i].sh_offset;
-            }
-            if (strcmp(name,".dynstr")==0) {
-                if (fi->xml_format == 0) {
-                    print_comment64(i,shp, "dynamic strtab");
+                if (strcmp(name,".dynstr")==0) {
+                    if (fi->xml_format == 0) {
+                        print_comment64(i,shp, "dynamic strtab");
+                    }
+                    dynamic_string_table_offset = shp[i].sh_offset;
                 }
-                dynamic_string_table_offset = shp[i].sh_offset;
             }
         }
     }
 
     /* now read the symbols */
     for( i=0;i<nsect;i++)  {
+        if ((unsigned char*)(shp+i)+sizeof(Elf64_Shdr) >= hard_limit)
+            break;
+
         if (shp[i].sh_type == SHT_SYMTAB) {
             if (fi->xml_format == 0) {
                 print_comment64(i,shp, "symtab");
             }
-            read_symbols64(start,shp[i].sh_offset, shp[i].sh_size, 
+            read_symbols64(start, len, shp[i].sh_offset, shp[i].sh_size, 
                            string_table_offset,symtab);
         }
         else if (shp[i].sh_type == SHT_DYNSYM) {
             if (fi->xml_format == 0) {
                 print_comment64(i,shp, "dynamic symtab");
             }
-            read_symbols64(start,shp[i].sh_offset, shp[i].sh_size,
+            read_symbols64(start, len, shp[i].sh_offset, shp[i].sh_size,
                            dynamic_string_table_offset, symtab);
         }
     }
@@ -520,7 +574,9 @@ void symbols_elf64(xed_disas_info_t* fi,
 
 
 
-void read_symbols32(void* start, 
+static void
+read_symbols32(void* start,
+               unsigned int len,
                     Elf32_Off offset,
                     Elf32_Word size,
                     Elf32_Off string_table_offset,
@@ -528,10 +584,17 @@ void read_symbols32(void* start,
     char* a = XED_STATIC_CAST(char*,start);
     Elf32_Sym* p = XED_STATIC_CAST(Elf32_Sym*,a + offset);
     Elf32_Sym* q = XED_STATIC_CAST(Elf32_Sym*,a + offset + size);
+    
+    unsigned char* hard_limit = (unsigned char*)start + len;
+    if ((unsigned char*) p + sizeof(Elf32_Sym) > hard_limit)
+        p =  (Elf32_Sym*)hard_limit;
+    if ((unsigned char*) q > hard_limit)
+        q =  (Elf32_Sym*)hard_limit;
+
     while(p<q) {
         if (ELF32_ST_TYPE(p->st_info) == STT_FUNC) {
-            char* name = lookup32(p->st_name, start, string_table_offset);
-            if (xed_strlen(name) > 0) {
+            char* name = lookup32(p->st_name, start, len, string_table_offset);
+            if (name && xed_strlen(name) > 0) {
                 xst_add_local_symbol(
                     symtab,
                     XED_STATIC_CAST(xed_uint64_t,p->st_value), 
@@ -542,9 +605,11 @@ void read_symbols32(void* start,
     }
 }
 
-void symbols_elf32(xed_disas_info_t* fi, 
-                   void* start, 
-                   xed_symbol_table_t* symtab)
+static void
+symbols_elf32(xed_disas_info_t* fi, 
+              void* start,
+              unsigned int len,
+              xed_symbol_table_t* symtab)
 {
     Elf32_Ehdr* elf_hdr = (Elf32_Ehdr*) start;
     Elf32_Off shoff = elf_hdr->e_shoff;  // section hdr table offset
@@ -556,43 +621,50 @@ void symbols_elf32(xed_disas_info_t* fi,
     Elf32_Off string_table_offset=0;
     Elf32_Off dynamic_string_table_offset=0;
     int sect_strings  = elf_hdr->e_shstrndx;
+    unsigned char* hard_limit = (unsigned char*)start + len;
 
     /* find the string_table_offset and the dynamic_string_table_offset */
     for( i=0;i<nsect;i++)  {
-        
+        if ((unsigned char*)(shp+i)+sizeof(Elf32_Shdr) >= hard_limit)
+            break;
         if (shp[i].sh_type == SHT_STRTAB) {
-            char* name = lookup32(shp[i].sh_name, start, 
+            char* name = lookup32(shp[i].sh_name, start,  len,
                                   shp[sect_strings].sh_offset);
-            if (strcmp(name,".strtab")==0) {
-                if (fi->xml_format == 0) {
-                    print_comment32(i,shp, "strtab");
+            if (name)
+            {
+                if (strcmp(name,".strtab")==0) {
+                    if (fi->xml_format == 0) {
+                        print_comment32(i,shp, "strtab");
+                    }
+                    string_table_offset = shp[i].sh_offset;
                 }
-                string_table_offset = shp[i].sh_offset;
-            }
-            if (strcmp(name,".dynstr")==0) {
-                if (fi->xml_format == 0) {
-                    print_comment32(i,shp, "dynamic strtab");
+                if (strcmp(name,".dynstr")==0) {
+                    if (fi->xml_format == 0) {
+                        print_comment32(i,shp, "dynamic strtab");
+                    }
+                    dynamic_string_table_offset = shp[i].sh_offset;
                 }
-                dynamic_string_table_offset = shp[i].sh_offset;
             }
         }
     }
 
     /* now read the symbols */
     for( i=0;i<nsect;i++)  {
+        if ((unsigned char*)(shp+i)+sizeof(Elf32_Shdr) >= hard_limit)
+            break;
         
         if (shp[i].sh_type == SHT_SYMTAB) {
             if (fi->xml_format == 0) {
                 print_comment32(i,shp, "symtab");
             }
-            read_symbols32(start,shp[i].sh_offset, shp[i].sh_size, 
+            read_symbols32(start, len, shp[i].sh_offset, shp[i].sh_size, 
                            string_table_offset, symtab);
         } 
         else if (shp[i].sh_type == SHT_DYNSYM) {
             if (fi->xml_format == 0) {
                 print_comment32(i,shp, "dynamic symtab");
             }
-            read_symbols32(start,shp[i].sh_offset, shp[i].sh_size,
+            read_symbols32(start, len, shp[i].sh_offset, shp[i].sh_size,
                            dynamic_string_table_offset, symtab);
         }
     }
@@ -622,11 +694,11 @@ xed_disas_elf(xed_disas_info_t* fi)
             fi->dstate.mmode =  XED_MACHINE_MODE_LONG_64;
         }
 
-        symbols_elf64(fi,region, &symbol_table);
+        symbols_elf64(fi,region, len,  &symbol_table);
         process_elf64(fi, region, len, &symbol_table);
     }
     else if (check_binary_32b(region)) {
-        symbols_elf32(fi, region, &symbol_table);
+        symbols_elf32(fi, region, len,  &symbol_table);
         process_elf32(fi, region, len, &symbol_table);
     }
     else {
