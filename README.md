@@ -27,5 +27,24 @@ Add " --shared" if you want a shared object build.
 Add " install" if you want the headers & libraries put in to a kit in the "kits" directory.
 Add "C:/python27/python " before "./mfile.py" if on windows.
 
+## How to build the examples:
+
+There are two options:
+
+1) When building libxed you can also build the examples, from the main directory (above examples):
+
+    ./mfile.py examples
+
+and the compiled examples will be in obj/examples.
+    
+2) Build a compiled "kit" and the build the examples from within the kit:
+
+    ./mfile.py install
+    cd kits
+    cd <whatever the kit is called>
+    cd examples
+    ./mfile.py
+    
+
 See source build documentation for more information.
 
