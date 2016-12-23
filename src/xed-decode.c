@@ -349,13 +349,17 @@ xed_decode_with_features(xed_decoded_inst_t* xedd,
                          xed_chip_features_t* features)
 {
     xed_error_enum_t error;
+    unsigned int tbytes = bytes;
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(xedd);
 
     set_chip_modes(xedd, chip, features);
     xedd->_byte_array._dec = itext;
+    
+    /* max_bytes says ILD how many bytes it can read */    
+    if (tbytes > XED_MAX_INSTRUCTION_BYTES)
+        tbytes = XED_MAX_INSTRUCTION_BYTES;
+    xed3_operand_set_max_bytes(xedd, tbytes);
 
-    /* max_bytes says ILD how many bytes it can read */
-    xed3_operand_set_max_bytes(xedd, bytes);
     
     /* Do the instruction length decode*/
     xed_instruction_length_decode(xedd);
