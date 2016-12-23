@@ -48,3 +48,11 @@ and the compiled examples will be in obj/examples.
 
 See source build documentation for more information.
 
+## Binary size?
+
+Concerned about large libraries or binaries? There are several options:
+ 
+1. Consider building with "--limit-strings"
+2. Strip the binaries
+3. Consider doing an encoder-only or decoder-only build if you only need one or the other.
+
