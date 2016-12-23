@@ -3276,37 +3276,7 @@ def cmp_invalid_vtuple(vt1,vt2):
       return 1
    return -1
 
-splitter_pattern= re.compile(r'(?P<prefix>[A-Za-z]+)(?P<suffix>[0-9]*)')
-def alnum_cmp(a,b):
-   """Compare a and b. Assume the are of the form
-   letters-followed-by-numbers. The number part is optional.
-   """
-   global splitter_pattern
-   
-   ap = splitter_pattern.match(a)
-   bp = splitter_pattern.match(b)
-   (aprefix,asuffix) = ap.group('prefix', 'suffix')
-   (bprefix,bsuffix) = bp.group('prefix', 'suffix')
-   if aprefix<bprefix:
-      return -1
-   if aprefix>bprefix:
-      return 1
-   # aprefix == bprefix
-   if asuffix and bsuffix:
-      iasuffix = int(asuffix)
-      ibsuffix = int(bsuffix)
-      if iasuffix < ibsuffix:
-         return -1
-      if iasuffix > ibsuffix:
-         return 1
-      return 0
-   if asuffix:
-      return 1
-   if bsuffix:
-      return -1
-   return 0
-    
-############################################################################
+
 class rep_obj_t(object):
     def __init__(self, iclass, indx, repkind):
         self.iclass = iclass
@@ -3574,7 +3544,7 @@ def emit_enum_info(agi):
        xed3_nt_enum_val_map[i] = upper_dict[upper_nt]
    agi.xed3_nt_enum_val_map = xed3_nt_enum_val_map
 
-   operand_names.sort(cmp=alnum_cmp)
+   operand_names.sort()
    add_invalid(operand_names)
    on_enum = enum_txt_writer.enum_info_t(operand_names, xeddir, gendir,
                                          'xed-operand', 
