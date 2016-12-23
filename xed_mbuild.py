@@ -176,6 +176,7 @@ class generator_inputs_t(object):
         fnames = []
         for flist in self.files.itervalues():
             fnames.extend(flist)
+        fnames.sort()
         return fnames
     
     def set_intermediate_dir(self, build_dir):
