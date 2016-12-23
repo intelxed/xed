@@ -360,7 +360,7 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
 
     
     nt_arr_list = brdisp_dict.values() + disp_dict.values()
-    #create function that calls all intialization functions
+    #create function that calls all initialization functions
     init_f = ild_nt.gen_init_function(nt_arr_list, 'xed_ild_disp_l3_init')
     
     #dump L3 functions

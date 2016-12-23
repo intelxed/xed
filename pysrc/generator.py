@@ -193,7 +193,7 @@ def setup_arg_parser():
                           action='store', 
                           dest='structured_output_fn', 
                           default='xed-sout.txt',
-                          help='Emit structured ouptut file')
+                          help='Emit structured output file')
     arg_parser.add_option('--patterns',
                           action='store',
                           dest='structured_input_fn', 
@@ -2316,7 +2316,7 @@ def at_end_of_instructions(ilist, bitpos):
    return 0 # not done yet
 
 def no_dont_cares(instructions, bitpos):
-   "Return True if there are no dont cares"
+   "Return True if there are no don't cares"
    for i in instructions:
       if i.ipattern.bits[bitpos].is_dont_care():
          return False
@@ -2417,12 +2417,12 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
 
    # expand_dont_cares is an important control for the graph
    # building. If expand_dont_cares is false, whenever we see a
-   # dont-care in some thing at the next bit position, then we skip
+   # don't-care in some thing at the next bit position, then we skip
    # that bit in the graph formation. This leads to problems when
    # skipped 1s and 0s are required to disambiguate the tree
    # downstream. When expand_dont_cares is true, then whenever we have
-   # some 1s or 0s that happen to collide with a dont-care in some
-   # thing at the next bit positiona, then we copy all the dont-care
+   # some 1s or 0s that happen to collide with a don't-care in some
+   # thing at the next bit positiona, then we copy all the don't-care
    # ("others") on both zero and one successor nodes. Something down
    # stream will disambiguate them necessarily. The nice thing about
    # expand_dont_cares being true is that (a) one does not have the
@@ -2746,7 +2746,7 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
          znode = new_node(graph,'0',bitpos)
          if len(zeros) > 0:
             znode.instructions.extend(zeros)
-         # Add the "dont-care others" to the zeros
+         # Add the "don't-care others" to the zeros
          znode.instructions.extend(others) 
          build_sub_graph(common,znode,bitpos, 0)  # RECUR
 
@@ -2754,7 +2754,7 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
          onode = new_node(graph,'1',bitpos)
          if len(ones) > 0:
             onode.instructions.extend(ones)
-         # Add the "dont-care others" to the ones
+         # Add the "don't-care others" to the ones
          onode.instructions.extend(others) 
          build_sub_graph(common,onode,bitpos, 0)  # RECUR
 
@@ -5148,9 +5148,9 @@ class all_generator_info_t(object):
       self.attr_next_pos  = 0
       self.attributes_ordered  = None
       self.sorted_attributes_dict = {}
-      # a dict of all the enum names to thier values. 
+      # a dict of all the enum names to their values. 
       # passed to operand storage in order to calculate 
-      # the number of requiered bits
+      # the number of required bits
       self.all_enums = {} 
 
       # these are xed_file_emitter_t objects
@@ -5884,7 +5884,7 @@ def emit_regs_enum(options, regs_list):
     
    #FIXME: sort the register names by their type. Collect all the
    #types-and-widths, sort them by their ordinals. Special handling
-   #for the AH/BH/CH/DH registers is requried.
+   #for the AH/BH/CH/DH registers is required.
 
    enumvals = refine_regs.rearrange_regs(regs_list)
 

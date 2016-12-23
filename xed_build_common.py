@@ -101,7 +101,7 @@ def _compile_with_pin_crt_lin_mac_common(env):
     # -lpin3dwarf FIXME
 
     if env['shared']:
-        # when building dynamic libary
+        # when building dynamic library
         env['first_lib'] = '%(pin_crt_dir)s/crtbeginS%(OBJEXT)s'
     env['first_example_lib'] = '%(pin_crt_dir)s/crtbegin%(OBJEXT)s'
 

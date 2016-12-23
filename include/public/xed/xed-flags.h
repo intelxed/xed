@@ -191,7 +191,7 @@ XED_DLL_EXPORT const xed_flag_set_t*
 xed_simple_flag_get_undefined_flag_set(const xed_simple_flag_t* p);
 
 /// @ingroup FLAGS
-/// Indicates the flags are only conditionally written. Usally MAY-writes
+/// Indicates the flags are only conditionally written. Usually MAY-writes
 /// of the flags instructions that are dependent on a REP count.
 XED_DLL_EXPORT xed_bool_t xed_simple_flag_get_may_write(const xed_simple_flag_t* p);
 

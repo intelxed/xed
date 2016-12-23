@@ -67,7 +67,7 @@ PENTIUMPRO: ALL_OF(PENTIUM) PPRO  RDPMC FAT_NOP PREFETCH_NOP     # NO MMX (Orig 
 PENTIUM2:   ALL_OF(PENTIUM)  PENTIUMMMX  PPRO FAT_NOP RDPMC PREFETCH_NOP FXSAVE 
     # FXSAVE/FXRSTOR, SYSENTER,SYSEXIT P6
 
-# we keep SSEMXCSR separate from SSE to accomodate chip-check for KNC
+# we keep SSEMXCSR separate from SSE to accommodate chip-check for KNC
 #  which only implements LDMXCSR/STMXCSR from SSE.
 # The SSE_PREFETCH came in as NOPs on P6/PPRO.  innaccuracy...
 PENTIUM3:   ALL_OF(PENTIUM2)  SSE  SSEMXCSR SSE_PREFETCH   # SSE(incl. ldmxcsr/stmxcsr) (KNI) 
@@ -92,7 +92,7 @@ BONNELL:  ALL_OF(CORE2)     MOVBE  NOT(SMX)
 SALTWELL: ALL_OF(BONNELL)
 
 # PREFETCHW semantics added to PREFETCHW opcode but not subject
-# to chip-check because of prior implemntation as NOP.
+# to chip-check because of prior implementation as NOP.
 SILVERMONT:    ALL_OF(WESTMERE)  MOVBE RDRAND
 
 

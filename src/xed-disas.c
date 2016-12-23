@@ -225,7 +225,7 @@ static xed_format_options_t xed_format_options = {
     0, /* omit scale */
     0, /* no_sign_extend_signed_immediates */
     1, /* writemask with curly brackets, omit k0 */
-    1, /* lowercase hexidecimal */
+    1, /* lowercase hexadecimal */
 };
 
 void xed_format_set_options(xed_format_options_t format_options) {

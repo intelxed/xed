@@ -21,7 +21,7 @@ END_LEGAL */
 /* The code in this file is used to override the corresponding XED library
  * functions in a different file in the main XED sources. This code is for
  * the unusual disp8*N handling that is present in UISA and nothing
- * else. When UISA is public, I can roll this verison of the function in to
+ * else. When UISA is public, I can roll this version of the function in to
  * the baseline of XED. The files.cfg file controls the file replacement.
  */
 

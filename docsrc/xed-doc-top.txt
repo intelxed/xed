@@ -394,7 +394,7 @@ required.
 To handle this, Intel XED has a new interface function
 #xed_decoded_inst_operand_action() which takes a #xed_decoded_inst_t
 pointer and an operand index and indicates how the read/write behavior
-is modified in the presense of masking with merging or masking with
+is modified in the presence of masking with merging or masking with
 zeroing.
 
 The following list attempts to summarize how the value returned from
@@ -508,7 +508,7 @@ Immediates are signed or unsigned and are used for numerical
 computations, shift distances, and also hold things like segment
 selectors for far pointers for certain jump or call instructions.
 
-There is also a second 1B immedate used only for the ENTER
+There is also a second 1B immediate used only for the ENTER
 instruction.
 
 Intel XED will try to use the shortest allowed width for a displacement or
@@ -838,7 +838,7 @@ the function #xed_decoded_inst_get_isa_set.
     The disassembly dialect (order of operands and formatting) is
     specified by the #xed_syntax_enum_t parameter. For finer control
     on certain aspects of disassembly, the parameter to
-    #xed_format_generic() has a field specifing lower level formatting
+    #xed_format_generic() has a field specifying lower level formatting
     options (#xed_format_options_t).
 
  */
@@ -861,7 +861,7 @@ the function #xed_decoded_inst_get_isa_set.
 
     The type #xed_flag_set_t keeps the integer flags in the order
     specified by the RFLAGS register. The x87 flags are stored in the
-    most signficant 4 bits of the flag set. This should not affect use
+    most significant 4 bits of the flag set. This should not affect use
     by the normal integer operations; Those bits are reserved as zero
     in the RFLAGS.
 

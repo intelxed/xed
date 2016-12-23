@@ -77,7 +77,7 @@ xed_decoded_inst_get_iclass( const xed_decoded_inst_t* p){
     return xed_inst_iclass(p->_inst);
 }
 
-/// @name xed_decoded_inst_t Attirbutes and properties
+/// @name xed_decoded_inst_t Attributes and properties
 //@{
 /// @ingroup DEC
 /// Returns 1 if the attribute is defined for this instruction.

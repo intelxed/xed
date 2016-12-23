@@ -128,7 +128,7 @@ static XED_INLINE  xed_encoder_operand_t xed_ptr(xed_int32_t brdisp,
 }
 //@}
 
-/// @name Register and Immmediate Operands
+/// @name Register and Immediate Operands
 //@{
 /// @ingroup ENCHL
 /// a register operand

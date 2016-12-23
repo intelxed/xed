@@ -49,7 +49,7 @@ typedef struct {
     /// write-mask-with-curly-brackets, omit k0
     unsigned int write_mask_curly_k0;
     
-    /// lowercase hexidecimal
+    /// lowercase hexadecimal
     xed_bool_t lowercase_hex;
 
 } xed_format_options_t;

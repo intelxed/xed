@@ -17,6 +17,6 @@
 #END_LEGAL
 
 # PREFETCHW semantics added to PREFETCHW opcode but not subject
-# to chip-check because of prior implemntation as NOP
+# to chip-check because of prior implementation as NOP
 BROADWELL: ALL_OF(HASWELL)  BDW RDSEED SMAP 
 

@@ -84,7 +84,7 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 # endif
 #endif
 
-/* I've had compatibilty problems here so I'm using a trivial indirection */
+/* I've had compatibility problems here so I'm using a trivial indirection */
 #if defined(__GNUC__)
 #  if defined(__CYGWIN__)
       /* cygwin's gcc 3.4.4 on windows  complains */

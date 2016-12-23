@@ -29,7 +29,7 @@ END_LEGAL */
 ///  @param xedd the decoded instruction of type #xed_decoded_inst_t . Mode/state sent in via xedd; See the #xed_state_t
 ///  @param itext the pointer to the array of instruction text bytes
 ///  @param bytes  the length of the itext input array. 1 to 15 bytes, anything more is ignored.
-///  @return #xed_error_enum_t indiciating success (#XED_ERROR_NONE) or failure. Note failure can be due to not
+///  @return #xed_error_enum_t indicating success (#XED_ERROR_NONE) or failure. Note failure can be due to not
 ///  enough bytes in the input array.
 ///
 /// The maximum instruction is 15B and XED will tell you how long the

@@ -112,7 +112,7 @@ xed_encoder_request_set_operand_order(xed_encoder_request_t* p,
                                       xed_operand_enum_t name);
 
 /*! @ingroup ENC
- * Retreive the name of the n'th operand in the operand order. 
+ * Retrieve the name of the n'th operand in the operand order. 
  *
  * @param[in] p                #xed_encoder_request_t
  * @param[in] operand_index    xed_uint_t representing n'th operand position
@@ -124,7 +124,7 @@ xed_encoder_request_get_operand_order(xed_encoder_request_t* p,
                                                                         
 
 /// @ingroup ENC
-/// Retreive the number of entries in the encoder operand order array
+/// Retrieve the number of entries in the encoder operand order array
 /// @return The number of entries in the encoder operand order array
 static XED_INLINE xed_uint_t
 xed_encoder_request_operand_order_entries(xed_encoder_request_t* p)
@@ -253,7 +253,7 @@ XED_DLL_EXPORT void xed_encode_request_print(const xed_encoder_request_t* p,
 /// @name Encoding
 //@{
 ///   This is the main interface to the encoder. The array should be
-///   at most 15 bytes long. The ilen parameter should indiciate
+///   at most 15 bytes long. The ilen parameter should indicate
 ///   this length. If the array is too short, the encoder may fail to
 ///   encode the request.  Failure is indicated by a return value of
 ///   type #xed_error_enum_t that is not equal to

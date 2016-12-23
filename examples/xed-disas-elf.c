@@ -270,7 +270,7 @@ disas_test32(xed_disas_info_t* fi,
 #if defined(XED_DWARF)
   fi->line_number_info_fn = find_line_number_info;
 #endif
-  // pass in a function to retreive valid symbol names
+  // pass in a function to retrieve valid symbol names
   xed_disas_test(fi);
 }
 
@@ -304,7 +304,7 @@ disas_test64(xed_disas_info_t* fi,
 #if defined(XED_DWARF)
   fi->line_number_info_fn = find_line_number_info;
 #endif
-  // pass in a function to retreive valid symbol names
+  // pass in a function to retrieve valid symbol names
   xed_disas_test(fi);
 }
 

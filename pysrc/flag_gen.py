@@ -378,7 +378,7 @@ class flags_info_t(object):
 
     def _compute_assign_flag_action_id(self, fr, fo_flag_actions):
 
-        # compute an identifying string as an identifer of the (flag, action)+ sequence
+        # compute an identifying string as an identifier of the (flag, action)+ sequence
         id = fr.identifier()
 
         try:

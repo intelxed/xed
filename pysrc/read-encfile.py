@@ -938,7 +938,7 @@ class rule_t(object):
         has_otherwise_rule = self.has_otherwise_rule()
         
         #complicated_nt are nonterminals that can not be auto generated using 
-        #hash function and look uptables due to thier complexity
+        #hash function and look uptables due to their complexity
         #so we generete them in the old if statement structure 
         complicated_nt = nt_func_gen.get_complicated_nt()        
         
@@ -2073,7 +2073,7 @@ class encoder_configuration_t(object):
                 continue
 
             if p_short in storage_fields and p == 'BCRC=1':
-                # FIXME: 2016-01-28: MJC: HACK TO ENCODE ROUNDC/SAE CONTRAINTS
+                # FIXME: 2016-01-28: MJC: HACK TO ENCODE ROUNDC/SAE CONSTRAINTS
                 if 'SAE' in pattern_str:
                     modal_patterns.append("SAE!=0")
                 else:
