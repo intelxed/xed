@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_DOT_PREP_H_)
-# define _XED_DOT_PREP_H_
+#if !defined(XED_DOT_PREP_H)
+# define XED_DOT_PREP_H
 #include "xed/xed-interface.h"
 #include "xed-dot.h"
 

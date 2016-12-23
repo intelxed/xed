@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-decoded-inst-api.h
 /// 
 
-#if !defined(_XED_DECODED_INST_API_H_)
-# define _XED_DECODED_INST_API_H_
+#if !defined(XED_DECODED_INST_API_H)
+# define XED_DECODED_INST_API_H
 
 #include "xed-decoded-inst.h"
 #include "xed-operand-accessors.h"

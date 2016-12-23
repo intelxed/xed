@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-operand-values-interface.h
 /// 
 
-#if !defined(_XED_OPERAND_VALUES_INTERFACE_H_)
-# define _XED_OPERAND_VALUES_INTERFACE_H_
+#if !defined(XED_OPERAND_VALUES_INTERFACE_H)
+# define XED_OPERAND_VALUES_INTERFACE_H
 
 #include "xed-common-hdrs.h"
 #include "xed-common-defs.h"

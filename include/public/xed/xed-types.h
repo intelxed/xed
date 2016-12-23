@@ -19,8 +19,8 @@ END_LEGAL */
 /// 
 
 
-#ifndef _XED_TYPES_H_
-# define _XED_TYPES_H_
+#ifndef XED_TYPES_H
+# define XED_TYPES_H
 
 ////////////////////////////////////////////////////////////////////////////
 

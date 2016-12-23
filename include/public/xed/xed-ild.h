@@ -19,8 +19,8 @@ END_LEGAL */
 /// @file xed-ild.h
 /// instruction length decoder
     
-#if !defined(_XED_ILD_H_)
-# define _XED_ILD_H_
+#if !defined(XED_ILD_H)
+# define XED_ILD_H
 #include "xed-common-hdrs.h"
 #include "xed-common-defs.h"
 #include "xed-portability.h"

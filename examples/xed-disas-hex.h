@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_DISAS_HEX_H_)
-# define _XED_DISAS_HEX_H_
+#if !defined(XED_DISAS_HEX_H)
+# define XED_DISAS_HEX_H
 
 
 #include "xed/xed-interface.h"

@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-iform-map.h
 /// 
 
-#if !defined(_XED_IFORM_MAP_H_)
-# define _XED_IFORM_MAP_H_
+#if !defined(XED_IFORM_MAP_H)
+# define XED_IFORM_MAP_H
 
 #include "xed-common-hdrs.h"
 #include "xed-types.h"

@@ -195,7 +195,7 @@ class file_emitter_t(object):
 
    def emit_header_guard_start(self):
       s = file_emitter_t.header_guard_pattern.sub('_',self.file_name)
-      defname = '_%s_' %  s.upper()
+      defname = '%s' %  s.upper()
       self.emit_eol('#if !defined(' + defname + ')')
       self.emit_eol('# define ' + defname )
    def emit_header_guard_end(self):

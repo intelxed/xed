@@ -20,8 +20,8 @@ END_LEGAL */
 
 
 
-#ifndef _XED_IMMDIS_H_
-# define _XED_IMMDIS_H_
+#ifndef XED_IMMDIS_H
+# define XED_IMMDIS_H
 
 #include "xed-types.h"
 #include "xed-common-defs.h"

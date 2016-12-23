@@ -19,8 +19,8 @@ END_LEGAL */
 /// @file xed-ild-private.h
 /// instruction length decoder private header
 
-#if !defined(_XED_ILD_PRIVATE_H_)
-# define _XED_ILD_PRIVATE_H_
+#if !defined(XED_ILD_PRIVATE_H)
+# define XED_ILD_PRIVATE_H
 
 
 

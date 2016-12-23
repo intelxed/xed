@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-reg-class.h
 /// 
 
-#ifndef _XED_REG_CLASS_H_
-# define  _XED_REG_CLASS_H_
+#ifndef XED_REG_CLASS_H
+# define  XED_REG_CLASS_H
 
 #include "xed-types.h"
 #include "xed-reg-enum.h" // a generated file

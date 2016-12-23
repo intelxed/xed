@@ -19,8 +19,8 @@ END_LEGAL */
 /// 
 
 
-#if !defined(_XED_INTERNAL_HEADER2_H_)
-# define _XED_INTERNAL_HEADER2_H_
+#if !defined(XED_INTERNAL_HEADER2_H)
+# define XED_INTERNAL_HEADER2_H
 #include "xed-common-hdrs.h"
 #include "xed-common-defs.h"
 #include "xed-portability.h"

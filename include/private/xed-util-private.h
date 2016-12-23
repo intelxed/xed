@@ -20,8 +20,8 @@ END_LEGAL */
 
 
 
-#ifndef _XED_UTIL_PRIVATE_H_
-# define _XED_UTIL_PRIVATE_H_
+#ifndef XED_UTIL_PRIVATE_H
+# define XED_UTIL_PRIVATE_H
 
 #include "xed-common-hdrs.h"
 #include "xed-types.h"

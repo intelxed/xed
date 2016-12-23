@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_GET_TIME_H_)
-#   define _XED_GET_TIME_H_
+#if !defined(XED_GET_TIME_H)
+#   define XED_GET_TIME_H
 
 #   include "xed-portability.h"
 #   include "xed-types.h"

@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_CHIP_FEATURES_PRIVATE_H_)
-# define _XED_CHIP_FEATURES_PRIVATE_H_
+#if !defined(XED_CHIP_FEATURES_PRIVATE_H)
+# define XED_CHIP_FEATURES_PRIVATE_H
     
 #include "xed-types.h"
 #include "xed-chip-features.h"

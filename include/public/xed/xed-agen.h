@@ -19,8 +19,8 @@ END_LEGAL */
 /// 
 
 
-#ifndef _XED_AGEN_H_
-# define _XED_AGEN_H_
+#ifndef XED_AGEN_H
+# define XED_AGEN_H
 #include "xed-decoded-inst.h"
 #include "xed-error-enum.h"
 

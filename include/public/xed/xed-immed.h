@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-immed.h
 /// 
 
-#ifndef _XED_IMMED_H_
-# define _XED_IMMED_H_
+#ifndef XED_IMMED_H
+# define XED_IMMED_H
 
 #include "xed-types.h"
 #include "xed-common-defs.h"

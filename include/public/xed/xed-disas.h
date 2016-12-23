@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-disas.h
 /// 
 
-#if !defined(_XED_DISAS_H_)
-# define _XED_DISAS_H_
+#if !defined(XED_DISAS_H)
+# define XED_DISAS_H
 
 #include "xed-types.h"
 

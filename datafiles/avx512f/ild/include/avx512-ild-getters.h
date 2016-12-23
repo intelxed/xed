@@ -18,8 +18,8 @@ END_LEGAL */
 
 /// AVX512 ILD getters
 
-#if !defined(_XED_ILD_AVX512_GETTERS_H)
-#define _XED_ILD_AVX512_GETTERS_H
+#if !defined(XED_ILD_AVX512_GETTERS_H)
+#define XED_ILD_AVX512_GETTERS_H
 #include "xed-common-hdrs.h"
 #include "xed-common-defs.h"
 #include "xed-portability.h"

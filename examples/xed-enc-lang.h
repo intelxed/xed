@@ -18,8 +18,8 @@ END_LEGAL */
 
 /// @file xed-enc-lang.h
 
-#if !defined(_XED_ENC_LANG_H_)
-# define _XED_ENC_LANG_H_
+#if !defined(XED_ENC_LANG_H)
+# define XED_ENC_LANG_H
 
 #include "xed/xed-interface.h" 
 

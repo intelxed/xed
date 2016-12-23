@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_ATTRIBUTES_H_)
-# define _XED_ATTRIBUTES_H_
+#if !defined(XED_ATTRIBUTES_H)
+# define XED_ATTRIBUTES_H
 #include "xed-types.h"
 
 typedef struct {

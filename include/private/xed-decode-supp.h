@@ -19,8 +19,8 @@ END_LEGAL */
 /// 
 
 
-#ifndef _XED_DECODE_SUPP_H_
-# define _XED_DECODE_SUPP_H_
+#ifndef XED_DECODE_SUPP_H
+# define XED_DECODE_SUPP_H
 #include "xed-common-hdrs.h"
 #include "xed-types.h"
 #include "xed-error-enum.h"

@@ -20,8 +20,8 @@ END_LEGAL */
 
 
 
-#if !defined(_XED_INTERNAL_HEADER_H_)
-# define _XED_INTERNAL_HEADER_H_
+#if !defined(XED_INTERNAL_HEADER_H)
+# define XED_INTERNAL_HEADER_H
 
 
 #if defined(_WIN32) && defined(_MANAGED)

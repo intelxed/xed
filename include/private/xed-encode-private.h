@@ -19,8 +19,8 @@ END_LEGAL */
 /// 
 
 
-#if !defined(_XED_ENCODE_PRIVATE_H_)
-# define _XED_ENCODE_PRIVATE_H_
+#if !defined(XED_ENCODE_PRIVATE_H)
+# define XED_ENCODE_PRIVATE_H
 
 #include "xed-types.h"
 #include "xed-encode-types.h"

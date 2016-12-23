@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-operand-action.h
 /// 
 
-#if !defined(_XED_OPERAND_ACTION_H_)
-# define _XED_OPERAND_ACTION_H_
+#if !defined(XED_OPERAND_ACTION_H)
+# define XED_OPERAND_ACTION_H
 
 #include "xed-types.h"
 #include "xed-operand-action-enum.h"

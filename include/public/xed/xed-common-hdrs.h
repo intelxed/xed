@@ -20,8 +20,8 @@ END_LEGAL */
 
 
 
-#ifndef _XED_COMMON_HDRS_H_
-# define _XED_COMMON_HDRS_H_
+#ifndef XED_COMMON_HDRS_H
+# define XED_COMMON_HDRS_H
 
 
 

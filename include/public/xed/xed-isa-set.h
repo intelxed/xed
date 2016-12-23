@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-isa-set.h
 
 
-#if !defined(_XED_ISA_SET_H_)
-# define _XED_ISA_SET_H_
+#if !defined(XED_ISA_SET_H)
+# define XED_ISA_SET_H
     
 #include "xed-common-hdrs.h"
 #include "xed-types.h"

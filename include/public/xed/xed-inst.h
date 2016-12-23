@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-inst.h
 
 
-#if !defined(_XED_INST_H_)
-# define _XED_INST_H_
+#if !defined(XED_INST_H)
+# define XED_INST_H
 
 #include "xed-util.h"
 #include "xed-portability.h"

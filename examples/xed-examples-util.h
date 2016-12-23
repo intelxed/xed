@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-examples-util.h
 
 
-#ifndef _XED_EXAMPLES_UTIL_H_
-# define _XED_EXAMPLES_UTIL_H_
+#ifndef XED_EXAMPLES_UTIL_H
+# define XED_EXAMPLES_UTIL_H
 
 #include <stdio.h>
 #include "xed/xed-interface.h"

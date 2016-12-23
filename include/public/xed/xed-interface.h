@@ -22,8 +22,8 @@ END_LEGAL */
 
 
 
-#if !defined(_XED_INTERFACE_H_)
-# define _XED_INTERFACE_H_
+#if !defined(XED_INTERFACE_H)
+# define XED_INTERFACE_H
 
 #if defined(_WIN32) && defined(_MANAGED)
 #pragma unmanaged

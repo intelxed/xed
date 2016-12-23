@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-tables-decl.H
 /// 
 
-#if !defined(_XED_TABLES_DECL_H_)
-# define _XED_TABLES_DECL_H_
+#if !defined(XED_TABLES_DECL_H)
+# define XED_TABLES_DECL_H
 
 #include "xed-gen-table-defs.h"  // a generated file
 #if defined(XED_ENCODER)

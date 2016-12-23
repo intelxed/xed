@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-portability-private.H
 /// 
 
-#if !defined(_XED_DECODE_PORTABILITY_PRIVATE_H_)
-# define _XED_DECODE_PORTABILITY_PRIVATE_H_
+#if !defined(XED_DECODE_PORTABILITY_PRIVATE_H)
+# define XED_DECODE_PORTABILITY_PRIVATE_H
 
 
 

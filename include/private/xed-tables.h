@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-tables.H
 /// 
 
-#if !defined(_XED_TABLES_H_)
-# define _XED_TABLES_H_
+#if !defined(XED_TABLES_H)
+# define XED_TABLES_H
 
 
 #if !defined(XED_MAX_INST_TABLE_NODES)

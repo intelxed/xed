@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-portability.h
 /// 
 
-#ifndef _XED_PORTABILITY_H_
-# define _XED_PORTABILITY_H_
+#ifndef XED_PORTABILITY_H
+# define XED_PORTABILITY_H
 # include "xed-common-hdrs.h"
 # include "xed-types.h"
 
@@ -182,5 +182,5 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 
 
 
-#endif  // _XED_PORTABILITY_H_
+#endif  // XED_PORTABILITY_H
 

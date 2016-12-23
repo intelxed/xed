@@ -19,8 +19,8 @@ END_LEGAL */
 /// @file xed3-static-decode.h
 /// instruction length decoder
     
-#if !defined(_XED3_STATIC_DECODE_H_)
-#define _XED3_STATIC_DECODE_H_
+#if !defined(XED3_STATIC_DECODE_H)
+#define XED3_STATIC_DECODE_H
 
 #include "xed-ild.h"
 

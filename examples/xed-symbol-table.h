@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_SYMBOL_TABLE_H_)
-#define _XED_SYMBOL_TABLE_H_
+#if !defined(XED_SYMBOL_TABLE_H)
+#define XED_SYMBOL_TABLE_H
 
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"

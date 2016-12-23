@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-encode.h
 
 
-#ifndef _XED_ENCODE_H_
-# define _XED_ENCODE_H_
+#ifndef XED_ENCODE_H
+# define XED_ENCODE_H
 #include "xed-common-hdrs.h"
 #include "xed-types.h"
 #include "xed-error-enum.h"
