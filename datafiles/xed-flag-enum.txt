@@ -27,7 +27,7 @@ INVALID
 of ///<< overflow flag
 sf ///< sign flag
 zf ///< zero flag
-af ///< auxilliary flag
+af ///< auxiliary flag
 pf ///< parity flag
 cf ///< carry flag
 df ///< direction flag

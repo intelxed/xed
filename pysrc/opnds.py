@@ -296,7 +296,7 @@ def parse_one_operand(w,
           oc2 can be before EXPL/IMPL/SUPP. oc2 is the width code.
           MEM{0,1}, PTR, RELBR, AGEN, IMM{0,1,2,3}
 
-          xtype descibes the number of data type and width of each element.
+          xtype describes the number of data type and width of each element.
           If the xtype is omitted, xed will attempt to infer it from the oc2 code.
 
           ECOND is for encoder-only conditions. Completely ignored by the decoder.
@@ -435,7 +435,7 @@ def parse_one_operand(w,
       elif az_cap_pattern.search(rhs): 
           genutil.die("THIS SHOULD NOT HAPPEN")
       elif letters_underscore_pattern.match(rhs): 
-          genutil.die("Cannot have a != pattern with dont-care letters")
+          genutil.die("Cannot have a != pattern with don't-care letters")
       else:
           rhs = hex(genutil.make_numeric(rhs))
           optype = 'imm_const'

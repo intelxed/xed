@@ -125,7 +125,7 @@ class enumer_t(object):
         @param stream_guard: #ifdef test for ostream/istream functionality
 
         @type  add_last_element: xed_bool_t
-        @param add_last_element: If  True (defualt), add a _LAST element.
+        @param add_last_element: If  True (default), add a _LAST element.
 
         @type  cplusplus: xed_bool_t
         @param cplusplus:  True=>C++ or False=>C
@@ -137,7 +137,7 @@ class enumer_t(object):
         @param extra_header: another header to include in the .H file. 
 
         @type  density: string
-        @param density: density of enumerated values. Can be sparse (default) or dense. Default is automatic which use the presense or absence of preset values to determine density
+        @param density: density of enumerated values. Can be sparse (default) or dense. Default is automatic which use the presence or absence of preset values to determine density
 
         @type  string_convert: integer
         @param string_convert: 1=default, generate convert routines, 0=empty stubs, -1=no-stubs or prototypes

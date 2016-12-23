@@ -49,7 +49,7 @@ MODRM()::
 # NOTE: I set MODRM=1 so that we can tell if it was one of the
 # instructions that has a memop, but no MODRM byte.
 #
-# NOTE: the RIP handling in 64b mode with effective addessing of 32b
+# NOTE: the RIP handling in 64b mode with effective addressing of 32b
 # is different than the 32b addressing in 32b mode when MODRM.MOD=00_
 # and MODRM.RM=101, where it is just #a base, not RIP relative.
 #
@@ -79,7 +79,7 @@ MODRM64alt32()::
  REXB=0    MOD=0b00 RM=0b100   SIB()  |  
  REXB=1    MOD=0b00 RM=0b100   SIB()  | 
 
-# Ignores rexb -- must duplicate to avoid dont-care problems
+# Ignores rexb -- must duplicate to avoid don't-care problems
  REXB=0    MOD=0b00 RM=0b101   | NEED_MEMDISP=32   BASE0=XED_REG_RIP SEG0=FINAL_DSEG() enc
  REXB=1    MOD=0b00 RM=0b101   | NEED_MEMDISP=32   BASE0=XED_REG_RIP SEG0=FINAL_DSEG()
 

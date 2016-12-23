@@ -320,7 +320,7 @@ def gen_lookup_array(agi, nt_seq, val_dict, opname, argnames,
 #a c array, array init function and array lookup function
 #c_fn: string - name of the c file, where the arrays and function definitions
 #should be dumped
-#header_fn: string - name of the .h file where declarations of fucntions should
+#header_fn: string - name of the .h file where declarations of functions should
 #be dumped
 #Dumps arrays and init and lookup functions if c and h files 
 def dump_lu_arrays(agi, array_list, c_fn, header_fn, init_f=None):
@@ -460,7 +460,7 @@ def combine_mapping_seq(base_mapping, map_list):
     for all_values in map_list:
         #this one overrides values of those entries in base_mapping
         #that match entries in all_values mapping
-        #stores overriden mapping in cur_map
+        #stores overridden mapping in cur_map
         cur_map = override_mapping(cur_map, all_values)
         if not cur_map:
             return None

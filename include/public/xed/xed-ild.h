@@ -37,7 +37,7 @@ END_LEGAL */
 ///  @param itext the pointer to the array of instruction text bytes
 ///  @param bytes the length of the itext input array.
 ///              1 to 15 bytes, anything more is ignored.
-/// @return #xed_error_enum_t indiciating success (#XED_ERROR_NONE) or
+/// @return #xed_error_enum_t indicating success (#XED_ERROR_NONE) or
 ///       failure.
 /// Only two failure codes are valid for this function:
 ///  #XED_ERROR_BUFFER_TOO_SHORT and #XED_ERROR_GENERAL_ERROR.

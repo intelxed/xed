@@ -64,7 +64,7 @@ typedef struct {
     xed_syntax_enum_t syntax; 
 
     /// 1=indicated the format_options field is valid, 0=use default
-    /// formating options from xed_format_set_options().
+    /// formatting options from xed_format_set_options().
     int format_options_valid;  
     xed_format_options_t format_options;
 

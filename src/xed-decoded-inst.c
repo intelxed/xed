@@ -914,7 +914,7 @@ xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
                                 unsigned int operand_index)
 {
 
-    /* For the 0th operand, exept for stores:
+    /* For the 0th operand, except for stores:
                              RW             W   <<< SDM/XED notion
       ===========================================
       aaa=0   merging     r  w            w

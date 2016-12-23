@@ -385,7 +385,7 @@ Options:
   --python=PYTHONARG    Use a specific version of python
                         for subprocesses.
   --elf-dwarf, --dwarf  Use libelf/libdwarf. (Linux only)
-  --dev                 Developer knob. Updates VERISON file
+  --dev                 Developer knob. Updates VERSION file
   --elf-dwarf-precompiled
                         Use precompiled libelf/libdwarf from  the XED source
                         distribution. This is the currently required if you

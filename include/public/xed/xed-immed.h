@@ -32,7 +32,7 @@ XED_DLL_EXPORT xed_int64_t xed_immed_from_bytes(xed_int8_t* bytes, xed_uint_t n)
       stored in memory in little endian format of course. 
 
       Input 11 22 33 44 55 66 77 88, 8
-      Ouptut 0x8877665544332211  (stored in memory as (lsb) 11 22 33 44 55 66 77 88 (msb))
+      Output 0x8877665544332211  (stored in memory as (lsb) 11 22 33 44 55 66 77 88 (msb))
 
       Input f0, 1
       Output 0xffff_ffff_ffff_fff0  (stored in memory as f0 ff ff ff   ff ff ff ff)

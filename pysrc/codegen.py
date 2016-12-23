@@ -557,7 +557,7 @@ class class_generator_t(object):
          die("Unhandled accessor keyword: " +  accessors)
 
    def add_get_ref_fn(self,var,pvar,type):
-      'A get-accessor function for class varable pvar, returns a reference'
+      'A get-accessor function for class variable pvar, returns a reference'
       fname = 'get_' + var
       fo = function_object_t(fname, inline_string + ' ' + type)
       fo.set_ref_return()
@@ -565,7 +565,7 @@ class class_generator_t(object):
       return fo
 
    def add_get_fn(self,var,pvar,type):
-      'A get-accessor function for class varable pvar'
+      'A get-accessor function for class variable pvar'
       fname = 'get_' + var
       fo = function_object_t(fname, inline_string + ' ' + type)
       fo.set_const_member()
@@ -573,7 +573,7 @@ class class_generator_t(object):
       return fo
 
    def add_set_fn(self, var,pvar,type):
-      'A set-accessor function for class varable pvar'
+      'A set-accessor function for class variable pvar'
       fname = 'set_' + var
       fo = function_object_t(fname, inline_string + ' void')
       fo.add_arg(type + ' arg_' + var)
@@ -581,7 +581,7 @@ class class_generator_t(object):
       return fo
 
    def add_get_array_fn(self,var,pvar,type):
-      'A get-accessor function for class varable pvar'
+      'A get-accessor function for class variable pvar'
       fname = 'get_' + var
       fo = function_object_t(fname, inline_string + ' ' + type)
       fo.add_arg("unsigned int idx") #FIXME: parameterize unsigned int
@@ -591,7 +591,7 @@ class class_generator_t(object):
       return fo
 
    def add_set_array_fn(self, var,pvar,type):
-      'A set-accessor function for class varable pvar'
+      'A set-accessor function for class variable pvar'
       fname = 'set_' + var
       fo = function_object_t(fname, inline_string +' void')
       fo.add_arg("unsigned int idx") #FIXME: parameterize unsigned int
@@ -735,7 +735,7 @@ class c_class_generator_t(object):
          die("Unhandled accessor keyword: " +  accessors)
 
    def add_get_ref_fn(self,var,pvar,type):
-      """A get-accessor function for class varable pvar, returns a POINTER"""
+      """A get-accessor function for class variable pvar, returns a POINTER"""
       fname = self.remove_suffix(self.name) + '_get_' + var
       fo = function_object_t(fname, type + "*")
       fo.add_arg("%s* ppp" % self.name)
@@ -743,7 +743,7 @@ class c_class_generator_t(object):
       return fo
 
    def add_get_fn(self,var,pvar,type):
-      'A get-accessor function for class varable pvar'
+      'A get-accessor function for class variable pvar'
       fname = self.remove_suffix(self.name) + '_get_' + var
       fo = function_object_t(fname,  type)
       fo.add_arg("%s* ppp" % self.name)
@@ -751,7 +751,7 @@ class c_class_generator_t(object):
       return fo
 
    def add_set_fn(self, var,pvar,type):
-      'A set-accessor function for class varable pvar'
+      'A set-accessor function for class variable pvar'
       fname = self.remove_suffix(self.name) + '_set_' + var
       fo = function_object_t(fname, 'void')
       fo.add_arg("%s* ppp" % self.name)
@@ -760,7 +760,7 @@ class c_class_generator_t(object):
       return fo
 
    def add_get_array_fn(self,var,pvar,type):
-      'A get-accessor function for class varable pvar'
+      'A get-accessor function for class variable pvar'
       fname = self.remove_suffix(self.name) + '_get_' + var
       fo = function_object_t(fname, type)
       fo.add_arg("%s* ppp" % self.name)
@@ -770,7 +770,7 @@ class c_class_generator_t(object):
       return fo
 
    def add_set_array_fn(self, var,pvar,type):
-      'A set-accessor function for class varable pvar'
+      'A set-accessor function for class variable pvar'
       fname = self.remove_suffix(self.name) + '_set_' + var
       fo = function_object_t(fname, 'void')
       fo.add_arg("%s* ppp" % self.name)
@@ -921,7 +921,7 @@ class array_gen_t(object):
             if check_bounds:
                 # FIXME: if the range type is unsigned, and the lower
                 # bound is zero, then we need not check it. But it is
-                # hard to tell from here with an arbitary type. ICL
+                # hard to tell from here with an arbitrary type. ICL
                 # complains about this, warning/error #186.
                 fo.add_code_eol('xed_assert(arg_'+ argname + '>=' + lower_bound +
                                 ' && arg_' + argname + '<' + upper_bound + ')')

@@ -823,7 +823,7 @@ def xed_args(env):
     env.parser.add_option('--dev', 
                           action='store_true',
                           dest='dev',
-                          help='Developer knob. Updates VERISON file')
+                          help='Developer knob. Updates VERSION file')
     env.parser.add_option("--elf-dwarf-precompiled", 
                           action="store_true",
                           dest="use_elf_dwarf_precompiled",
