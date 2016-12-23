@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-tables-extern.H
 /// 
 
-#if !defined(_XED_TABLES_EXTERN_H_)
-# define _XED_TABLES_EXTERN_H_
+#if !defined(XED_TABLES_EXTERN_H)
+# define XED_TABLES_EXTERN_H
 
 #include "xed-gen-table-defs.h" // a generated file
 #if defined(XED_ENCODER)

@@ -20,8 +20,8 @@ END_LEGAL */
 
 
 
-#ifndef _XED_STATE_H_
-# define _XED_STATE_H_
+#ifndef XED_STATE_H
+# define XED_STATE_H
 #include "xed-types.h"
 #include "xed-portability.h"
 #include "xed-address-width-enum.h" // generated

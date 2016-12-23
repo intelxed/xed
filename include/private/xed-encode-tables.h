@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_ENCODE_TABLES_H_)
-# define _XED_ENCODE_TABLES_H_
+#if !defined(XED_ENCODE_TABLES_H)
+# define XED_ENCODE_TABLES_H
 
 // Some things are "extern const" because they are filled in where they are
 // declared in some generated *.c file.

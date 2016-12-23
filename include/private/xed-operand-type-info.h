@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#if !defined(_XED_OPERAND_TYPE_INFO_H_)
-# define _XED_OPERAND_TYPE_INFO_H_
+#if !defined(XED_OPERAND_TYPE_INFO_H)
+# define XED_OPERAND_TYPE_INFO_H
 
 #include "xed-operand-element-type-enum.h" // generated 
 #include "xed-types.h"

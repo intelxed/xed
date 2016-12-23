@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-flags.h
 /// 
 
-#ifndef _XED_FLAGS_H_
-# define  _XED_FLAGS_H_
+#ifndef XED_FLAGS_H
+# define  XED_FLAGS_H
 
 #include "xed-types.h"
 #include "xed-portability.h"

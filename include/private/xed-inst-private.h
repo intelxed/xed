@@ -19,8 +19,8 @@ END_LEGAL */
 /// 
 
 
-#if !defined(_XED_INST_PRIVATE_H_)
-# define _XED_INST_PRIVATE_H_
+#if !defined(XED_INST_PRIVATE_H)
+# define XED_INST_PRIVATE_H
 
 #include "xed-types.h"
 #include "xed-portability.h"

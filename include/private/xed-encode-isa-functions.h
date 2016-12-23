@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-encode-isa-functions.h
 /// 
 
-#ifndef _XED_ENCODE_ISA_FUNCTIONS_H_
-# define _XED_ENCODE_ISA_FUNCTIONS_H_
+#ifndef XED_ENCODE_ISA_FUNCTIONS_H
+# define XED_ENCODE_ISA_FUNCTIONS_H
 
 #include "xed-encode.h"
 

@@ -21,8 +21,8 @@ END_LEGAL */
 
 
 
-#if !defined(_XED_INIT_H_)
-# define _XED_INIT_H_
+#if !defined(XED_INIT_H)
+# define XED_INIT_H
 
 
 /// @ingroup INIT

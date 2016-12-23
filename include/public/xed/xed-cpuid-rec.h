@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#ifndef _XED_CPUID_REC_H_
-# define _XED_CPUID_REC_H_
+#ifndef XED_CPUID_REC_H
+# define XED_CPUID_REC_H
 #include "xed-types.h"
 #include "xed-portability.h"
 #include "xed-cpuid-bit-enum.h"

@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-decoded-inst.h
 /// 
 
-#if !defined(_XED_DECODER_STATE_H_)
-# define _XED_DECODER_STATE_H_
+#if !defined(XED_DECODER_STATE_H)
+# define XED_DECODER_STATE_H
 #include "xed-common-hdrs.h"
 #include "xed-common-defs.h"
 #include "xed-portability.h"

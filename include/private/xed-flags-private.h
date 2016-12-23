@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-flags-private.H
 /// 
 
-#ifndef _XED_FLAGS_PRIVATE_H_
-# define _XED_FLAGS_PRIVATE_H_
+#ifndef XED_FLAGS_PRIVATE_H
+# define XED_FLAGS_PRIVATE_H
 
 #include "xed-flags.h"
 

@@ -19,8 +19,8 @@ END_LEGAL */
 /// @file xed-ild-scanners.h
 /// instruction length decoder scanners 
     
-#if !defined(_XED_ILD_SCANNERS_BASE_H_)
-# define _XED_ILD_SCANNERS_BASE_H_
+#if !defined(XED_ILD_SCANNERS_BASE_H)
+# define XED_ILD_SCANNERS_BASE_H
 #include "xed-common-hdrs.h"
 #include "xed-common-defs.h"
 #include "xed-portability.h"

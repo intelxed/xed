@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 
-#ifndef _XED_ENCODER_HL_H_
-# define _XED_ENCODER_HL_H_
+#ifndef XED_ENCODER_HL_H
+# define XED_ENCODER_HL_H
 #include "xed-types.h"
 #include "xed-reg-enum.h"
 #include "xed-state.h"

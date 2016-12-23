@@ -20,8 +20,8 @@ END_LEGAL */
 
 
 
-#ifndef _XED_COMMON_DEFS_H_
-# define _XED_COMMON_DEFS_H_
+#ifndef XED_COMMON_DEFS_H
+# define XED_COMMON_DEFS_H
 
  // for most things it is 4, but one 64b mov allows 8
 #define XED_MAX_DISPLACEMENT_BYTES  8

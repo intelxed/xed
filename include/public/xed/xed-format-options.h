@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-format-options.h 
 
 
-#ifndef _XED_FORMAT_OPTIONS_H_
-# define _XED_FORMAT_OPTIONS_H_
+#ifndef XED_FORMAT_OPTIONS_H
+# define XED_FORMAT_OPTIONS_H
 #include "xed-types.h"
 
 

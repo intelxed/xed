@@ -16,8 +16,8 @@ Copyright (c) 2016 Intel Corporation
   
 END_LEGAL */
 /// @file xed-disas-macho.H
-#if !defined(_XED_DISAS_MACHO_H_)
-# define _XED_DISAS_MACHO_H_
+#if !defined(XED_DISAS_MACHO_H)
+# define XED_DISAS_MACHO_H
 
 # if defined(__APPLE__)
 #  include "xed/xed-interface.h" 

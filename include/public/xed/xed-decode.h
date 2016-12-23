@@ -18,8 +18,8 @@ END_LEGAL */
 /// @file xed-decode.h 
 
 
-#ifndef _XED_DECODE_H_
-# define _XED_DECODE_H_
+#ifndef XED_DECODE_H
+# define XED_DECODE_H
 
 #include "xed-decoded-inst.h"
 #include "xed-error-enum.h"

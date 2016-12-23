@@ -1994,8 +1994,8 @@ def emit_defines_header(env):
     output_file_name = "xed-build-defines.h"
 
     klist = []
-    klist.append("#if !defined(_XED_BUILD_DEFINES_H_)")
-    klist.append("#  define _XED_BUILD_DEFINES_H_\n")
+    klist.append("#if !defined(XED_BUILD_DEFINES_H)")
+    klist.append("#  define XED_BUILD_DEFINES_H\n")
 
     kys = env['DEFINES'].keys()
     kys.sort()

@@ -17,8 +17,8 @@ Copyright (c) 2016 Intel Corporation
 END_LEGAL */
 /// @file xed-disas-elf.h
 
-#if !defined(_XED_DISAS_ELF_H_)
-# define _XED_DISAS_ELF_H_
+#if !defined(XED_DISAS_ELF_H)
+# define XED_DISAS_ELF_H
 #if defined(__linux) || defined(__linux__) || defined(__FreeBSD__) || defined(__NetBSD__)
 # define XED_ELF_READER
 #endif
