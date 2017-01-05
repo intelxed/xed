@@ -15,14 +15,12 @@ Copyright (c) 2016 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
-/// @file xed-operand-values-interface-uisa.c
 
 
 /* The code in this file is used to override the corresponding XED library
  * functions in a different file in the main XED sources. This code is for
- * the unusual disp8*N handling that is present in UISA and nothing
- * else. When UISA is public, I can roll this version of the function in to
- * the baseline of XED. The files.cfg file controls the file replacement.
+ * the disp8*N handling used in EVEX encodings.  The files.cfg file
+ * controls the file replacement.
  */
 
 #include "xed-internal-header.h"
