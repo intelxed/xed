@@ -4078,9 +4078,9 @@ EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
-PATTERN : VV1 0x16  VL128 V66 V0F3A rexw_prefix mode64  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN : VV1 0x16  VL128 V66 V0F3A mode64 rexw_prefix  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : MEM0:w:q              REG0=XMM_R():r:dq:u64 IMM0:r:b
-PATTERN : VV1 0x16  VL128 V66 V0F3A rexw_prefix mode64 NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN : VV1 0x16  VL128 V66 V0F3A mode64 rexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=GPR64_B():w:q    REG1=XMM_R():r:dq:u64 IMM0:r:b
 }
 ############################################################################
@@ -4090,10 +4090,20 @@ EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
-PATTERN : VV1 0x16  VL128 V66 V0F3A norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
-OPERANDS  : MEM0:w:d           REG0=XMM_R():r:dq:u32 IMM0:r:b
-PATTERN : VV1 0x16  VL128 V66 V0F3A norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+COMMENT   : SNB had an errata where it would #UD of VEX.W=1 outside of 64b mode.
+
+# 64b mode
+PATTERN   : VV1 0x16 VL128 V66 V0F3A mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : MEM0:w:d REG0=XMM_R():r:dq:u32 IMM0:r:b
+PATTERN   : VV1 0x16 VL128 V66 V0F3A mode64 norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:dq:u32 IMM0:r:b
+
+# not64b mode
+PATTERN   : VV1 0x16 VL128 V66 V0F3A not64  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : MEM0:w:d REG0=XMM_R():r:dq:u32 IMM0:r:b
+PATTERN   : VV1 0x16 VL128 V66 V0F3A not64  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:dq:u32 IMM0:r:b
+
 }
 ############################################################################
 
