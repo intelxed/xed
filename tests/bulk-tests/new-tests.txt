@@ -32,3 +32,5 @@ DEC AVX              ; BUILDDIR/xed -d c4 e2 b1 92 12
 ENC                  ; BUILDDIR/xed -64 -e JRCXZ BRDISP:1E
 DEC ENC              ; BUILDDIR/xed -64 -de e31e
 DEC                  ; BUILDDIR/xed -64 -d e31e
+DEC AVX              ; BUILDDIR/xed -d C4C3F916E0F8
+DEC AVX              ; BUILDDIR/xed -64 -d C4C3F916E0F8
