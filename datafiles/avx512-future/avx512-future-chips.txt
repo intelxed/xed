@@ -17,12 +17,12 @@
 #END_LEGAL
 
 AVX512_FUTURE: ALL_OF(SKYLAKE_SERVER) SHA   \
-            AVX512IFMA_128 \
-            AVX512IFMA_256 \
-            AVX512IFMA_512 \
-            AVX512VBMI_128 \
-            AVX512VBMI_256 \
-            AVX512VBMI_512 
+            AVX512_IFMA_128 \
+            AVX512_IFMA_256 \
+            AVX512_IFMA_512 \
+            AVX512_VBMI_128 \
+            AVX512_VBMI_256 \
+            AVX512_VBMI_512 
 
 
 

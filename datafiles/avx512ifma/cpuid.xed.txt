@@ -15,7 +15,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-  XED_ISA_SET_AVX512IFMA_128:    avx512ifma.7.0.ebx.21  avx512vl.7.0.ebx.31
-  XED_ISA_SET_AVX512IFMA_256:    avx512ifma.7.0.ebx.21  avx512vl.7.0.ebx.31
-  XED_ISA_SET_AVX512IFMA_512:    avx512ifma.7.0.ebx.21
+  XED_ISA_SET_AVX512_IFMA_128:    avx512ifma.7.0.ebx.21  avx512vl.7.0.ebx.31
+  XED_ISA_SET_AVX512_IFMA_256:    avx512ifma.7.0.ebx.21  avx512vl.7.0.ebx.31
+  XED_ISA_SET_AVX512_IFMA_512:    avx512ifma.7.0.ebx.21
   
