@@ -62,7 +62,7 @@ ISA_SET   : INVPCID
 ATTRIBUTES : RING0 NOTSX
 PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
-PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode32 MODRM() CR_WIDTH()
+PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64 MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR32_R():r MEM0:r:dq
 COMMENT   : 
 }
