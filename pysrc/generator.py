@@ -2954,6 +2954,7 @@ def find_all_operands(options, node):
 
 def collect_instruction_types(agi, master_list):
    """Collect the iclass / category /extension"""
+   need_to_die = False
    for generator in agi.generator_list:
       for ii in generator.parser_output.instructions:
          if field_check(ii, 'iclass'):
@@ -2970,14 +2971,19 @@ def collect_instruction_types(agi, master_list):
                  plist, 
                  iclass_string_index)
             if ii.iform_enum  in master_list:
-               # duplicate iform - check ext/category
+               # duplicate iform - check extension and isa-set
                (oldi, olde, oldc, 
                 olds, oldp, oldisi) = master_list[ii.iform_enum]
                if olde != ii.extension:
-                  mbuild.die("EXTENSION ALIASING IN IFORM TABLE", ii.iform_enum)
+                  need_to_die = True
+                  msgb("ERROR:EXTENSION ALIASING IN IFORM TABLE", ii.iform_enum)
+               if olds != ii.isa_set:
+                  msgb("ERROR: ISA_SET ALIASING IN IFORM TABLE", ii.iform_enum)
+                  need_to_die = True
                msgb("DUPLICATE IFORM", ii.iform_enum)
             master_list[ii.iform_enum] = t                  
-
+   if need_to_die:
+      mbuild.die("Dieing due to iform aliasing")
 
 def collect_isa_sets(agi):
    """Collect the isaset info"""
@@ -3735,35 +3741,32 @@ def compute_iform(options,ii, operand_storage_dict):
 def compute_iforms(options, gi, operand_storage_dict):
    """Classify the operand patterns"""
 
-   # look at the first instruction
+   # look at the first parser record to see if it contains actual
+   # instructions.
    ii = gi.parser_output.instructions[0]
    if not field_check(ii,'iclass'):
     return None
 
-   iforms = {} # dictionary operand tuples pointing instructions
-   ii_iforms = {}
+   iforms = {} # dict by iform pointing instructions recs
+   ii_iforms = {} # dict by iclass of iform names
    for ii in gi.parser_output.instructions:
-      #if ii.iclass == 'VMOVUPS':
-      #   msge("II: %s" %( str(ii)))
       iform  = compute_iform(options,ii,operand_storage_dict)
-      #msge("MADE IFORM %s %s" % (ii.iclass, str(iform)))
       if viform():
          msge("IFORM %s %s" % (ii.iclass, str(iform)))
       s = "_".join(iform)
-      if ii.iform_input:
-         #msge("Overriding COMPUTED iform: %s with user-specified iform: %s" % 
-         #     (s,ii.iform_input))
+      if ii.iform_input: # override from grammar input
          s = ii.iform_input
       ii.iform_enum = s
-      
-      try:
-         iforms[s].append(ii)
-      except:
-         iforms[s]=[ii]
-      try:
-         ii_iforms[ii.iclass].append(s)
-      except:
-         ii_iforms[ii.iclass]=[s]
+
+      if viform():
+          try:
+             iforms[s].append(ii)
+          except:
+             iforms[s]=[ii]
+          try:
+             ii_iforms[ii.iclass].append(s)
+          except:
+             ii_iforms[ii.iclass]=[s]
 
    # printing various ways
    if viform():
@@ -4438,7 +4441,7 @@ def generate_iform_first_last_enum(agi,options,values):
 global_max_iforms_per_iclass = 0
 
 def collect_and_emit_iforms(agi,options):
-   iform_dict = {} # build dictionary by iclass of iforms
+   iform_dict = {} # build dictionary by iclass of [iform,...]
    for generator in agi.generator_list:
       ii = generator.parser_output.instructions[0]
       if not field_check(ii,'iclass'):
@@ -4453,9 +4456,7 @@ def collect_and_emit_iforms(agi,options):
    vtuples = [('INVALID', 0, 'INVALID') ]
    imax = {} # maximum number of iforms per iclass
    for ic,ol in iform_dict.iteritems():
-      #msge("XZ BEFORE " + ic + " --- " + str(ol))
       ol = uniqueify(ol)
-      #msge("XZ AFTER  " + ic + " --- " + str(ol))
       sz= len(ol)
       vsub = zip([ic.upper()]*sz,   # the iclass
                  range(0,sz),       # number the iforms
@@ -4547,20 +4548,6 @@ def collect_and_emit_iforms(agi,options):
 
       cfp.write('  /* %25s */  %2d' % (ic,firstiform))
    cfp.write('\n};\n')
-
-   if 0:
-      # this is not required now that we have the xed_iform_info_t
-      cfp.write('const xed_iclass_enum_t ' + 
-                'xed_iform_to_iclass_table[XED_IFORM_LAST] = {\n')
-      first = True
-      niform = 0 # total number of iforms
-      for (iclass, n, iform, k, s)  in ntuples:
-         if first:
-            first = False
-         else:
-            cfp.write(',\n')
-         cfp.write('  /* %25s */  XED_ICLASS_%s' % (iform,iclass))
-      cfp.write('\n};\n')
 
    cfp.close()
    
