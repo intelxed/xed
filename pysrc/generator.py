@@ -3735,7 +3735,7 @@ def compute_iform(options,ii, operand_storage_dict):
 def compute_iforms(options, gi, operand_storage_dict):
    """Classify the operand patterns"""
 
-   # look ath the first instruction
+   # look at the first instruction
    ii = gi.parser_output.instructions[0]
    if not field_check(ii,'iclass'):
     return None
