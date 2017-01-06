@@ -581,7 +581,8 @@ def mkenv():
                                  android=False,
                                  copy_libc=False,
                                  pin_crt='',
-                                 static_stripped=False)
+                                 static_stripped=False,
+                                 set_copyright=False)
 
     env['xed_defaults'] = standard_defaults
     env.set_defaults(env['xed_defaults'])
@@ -861,6 +862,10 @@ def xed_args(env):
                           action="store_true",
                           dest="static_stripped",
                           help="Make a static libxed.a renaming internal symbols")
+    env.parser.add_option("--set-copyright", 
+                          action="store_true",
+                          dest="set_copyright",
+                          help="Set the Intel copyright on Windows XED executable")
 
     env.parse_args(env['xed_defaults'])
     
@@ -1571,7 +1576,11 @@ def build_examples(env):
     env_ex['src_dir'] = mbuild.join(env['src_dir'], 'examples')
     env_ex['xed_lib_dir'] = env['build_dir']
     env_ex['xed_inc_dir'] = env['build_dir']
-    
+
+    env_ex['set_copyright'] = False    
+    if env.on_windows():
+        env_ex['set_copyright'] = env['set_copyright']
+        
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
     except Exception, e:
