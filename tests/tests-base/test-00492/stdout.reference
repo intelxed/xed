@@ -1,4 +1,4 @@
-Request: MOVSD_XMM EASZ:2, MEM_WIDTH:4, MEM0:dword ptr [EAX], MODE:1, REG0:XMM0, SMODE:1
+Request: MOVSD_XMM EASZ:2, MEM0:dword ptr [EAX], MEM_WIDTH:4, MODE:1, REG0:XMM0, SMODE:1
 OPERAND ORDER: REG0 MEM0 
 Could not encode: movsd_xmm xmm0 MEM4:eax 
 Error code was: GENERAL_ERROR
