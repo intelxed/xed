@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2016-2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -276,6 +276,7 @@ static void usage(char* prog) {
 #endif
       "\t-s32          (32b stack addressing, default, not in LONG_64 mode)",
       "\t-s16          (16b stack addressing, not in LONG_64 mode)",
+      "\t-set OP VAL   (Set a XED operand to some integer value)",
 
 #if defined(XED_USING_DEBUG_HELP)
       "",
@@ -344,6 +345,7 @@ static void list_chips(void)
     printf("\n");
 }
 
+
 int
 main(int argc, char** argv)
 {
@@ -377,6 +379,8 @@ main(int argc, char** argv)
     xed_bool_t histo = 0;
     int line_numbers = 0;
     xed_chip_enum_t xed_chip = XED_CHIP_INVALID;
+    xed_operand_enum_t operand = XED_OPERAND_INVALID;
+    xed_uint32_t operand_value = 0;
 
     char* dot_output_file_name = 0;
     xed_bool_t dot = 0;
@@ -625,6 +629,12 @@ main(int argc, char** argv)
             dstate.stack_addr_width = XED_ADDRESS_WIDTH_16b;
             use_binary_mode = 0;
         }
+        else if (strcmp(argv[i],"-set")==0) {
+            test_argc(i+1,argc); // need 2 args
+            operand = str2xed_operand_enum_t(argv[i+1]);
+            operand_value = xed_atoi_general(argv[i+2],1000);
+            i += 2;
+        }
 #if 0
         else if (strcmp(argv[i],"-ti") ==0)        {
             client_verbose = 5;
@@ -667,7 +677,7 @@ main(int argc, char** argv)
 
     if (CLIENT_VERBOSE1) 
         printf("#XED version: [%s]\n", xed_get_version());
-    init_xedd(&xedd, &dstate, xed_chip, mpx_mode);
+
     retval_okay = 1;
     obytes=0;
 
@@ -694,6 +704,9 @@ main(int argc, char** argv)
     decode_info.mpx_mode         = mpx_mode;
     decode_info.emit_isa_set     = emit_isa_set;
     decode_info.format_options   = format_options;
+    decode_info.operand          = operand;
+    decode_info.operand_value    = operand_value;
+    
     
     if (dot)
     {
@@ -703,6 +716,9 @@ main(int argc, char** argv)
             xedex_derror("Dying");
         }
     }
+    
+    init_xedd(&xedd, &decode_info);
+    
 #endif
     
     if (assemble)
@@ -738,7 +754,7 @@ main(int argc, char** argv)
                                            decode_text,
                                            &xedd,
                                            fake_base);
-                init_xedd(&xedd, &dstate, xed_chip, mpx_mode);
+                init_xedd(&xedd, &decode_info);
             }
         }
         else
@@ -752,7 +768,7 @@ main(int argc, char** argv)
                 len = xed_decoded_inst_get_length(&xedd);
                 p+=len*2;
                 remaining -= len;
-                init_xedd(&xedd, &dstate, xed_chip, mpx_mode);
+                init_xedd(&xedd, &decode_info);
             }
             while(retval_okay && remaining > 0);
         }

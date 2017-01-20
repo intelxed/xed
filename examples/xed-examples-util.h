@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2016-2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ typedef struct {
     xed_chip_enum_t chip;
     xed_bool_t emit_isa_set;    
     xed_format_options_t format_options;
+    xed_operand_enum_t operand;
+    xed_uint32_t operand_value;
     
     xed_uint64_t errors;
     xed_uint64_t errors_chip_check;
@@ -152,9 +154,7 @@ char* xed_strdup(char const*  const src);
 void xed_example_utils_init(void);
 
 void init_xedd(xed_decoded_inst_t* xedd,
-               xed_state_t const* const dstate,
-               xed_chip_enum_t chip,
-               int mpx_mode);
+               xed_disas_info_t* di);
 
 char const* xedex_append_string(char const* p, // p is free()'d
                                 char const* x);

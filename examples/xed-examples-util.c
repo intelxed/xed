@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2016-2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -311,20 +311,17 @@ decode_internal(xed_decoded_inst_t* xedd,
 #endif
 
 void init_xedd(xed_decoded_inst_t* xedd,
-               xed_state_t const* const dstate,
-               xed_chip_enum_t chip,
-               int mpx_mode)
+               xed_disas_info_t* di)
 {
 #if defined(XED_DECODER)
-    xed_decoded_inst_zero_set_mode(xedd, dstate);
+    xed_decoded_inst_zero_set_mode(xedd, &(di->dstate));
 #endif
-    xed_decoded_inst_set_input_chip(xedd, chip);
+    xed_decoded_inst_set_input_chip(xedd, di->chip);
 #if defined(XED_MPX)
-    xed3_operand_set_mpxmode(xedd,mpx_mode);
-#else
-    (void)mpx_mode;
+    xed3_operand_set_mpxmode(xedd, di->mpx_mode);
 #endif
-    (void)dstate;
+    if (di->operand != XED_OPERAND_INVALID) 
+        xed3_set_generic_operand(xedd, di->operand, di->operand_value);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -1215,7 +1212,7 @@ void xed_disas_test(xed_disas_info_t* di)
         okay = 0;
         length = 0;
 
-        init_xedd(&xedd, &(di->dstate), di->chip, di->mpx_mode);
+        init_xedd(&xedd, di); // &(di->dstate), di->chip, di->mpx_mode);
         
         if ( di->decode_only )
         {
