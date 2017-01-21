@@ -542,6 +542,7 @@ def mkenv():
                                  ivbint=True,
                                  avxhsw=True,
                                  mpx=True,
+                                 cet=True,
                                  glm=True,
                                  skl=True,
                                  skx=True,
@@ -705,6 +706,10 @@ def xed_args(env):
                           action="store_false", 
                           dest="mpx", 
                           help="Do not include MPX.")
+    env.parser.add_option("--no-cet",
+                          action="store_false", 
+                          dest="cet", 
+                          help="Do not include CET.")
     env.parser.add_option("--no-sha",
                           action="store_false", 
                           dest="sha", 
@@ -1073,6 +1078,8 @@ def build_libxed(env,work_queue):
        env.add_define('XED_SUPPORTS_KNC')
     if env['mpx']:
        env.add_define('XED_MPX')
+    if env['cet']:
+       env.add_define('XED_CET')
     if env['sha']:
         env.add_define('XED_SUPPORTS_SHA')
 
@@ -1123,6 +1130,8 @@ def build_libxed(env,work_queue):
         _add_normal_ext(env,'xsaveopt')
     if env['mpx']:
         _add_normal_ext(env,'mpx')
+    if env['cet']:
+        _add_normal_ext(env,'cet')
     if env['sha']:
         _add_normal_ext(env,'sha')
     if env['ivbint']:
