@@ -2101,6 +2101,8 @@ def _run_canned_tests(env,osenv):
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/examples " 
 
     dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop']
+    if env['cet']:
+        dirs.append('tests-cet')
     for d in dirs:
         x  = env.escape_string(mbuild.join(env['test_dir'],d))
         cmd += " --tests %s " % (x)

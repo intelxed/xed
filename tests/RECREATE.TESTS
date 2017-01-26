@@ -5,5 +5,6 @@
 
 ./run-cmd.py --build-dir ../obj/examples-knc --otests tests-knc  -b bulk-tests/knc-bulk-tests.txt 
 
-./run-cmd.py --build-dir ../obj/examples --otests tests-xop  -b bulk-tests/amd-xop-bulk-tests.txt 
+./run-cmd.py --build-dir ../obj/examples --otests tests-xop  -b bulk-tests/amd-xop-bulk-tests.txt
+./run-cmd.py --build-dir ../obj/examples --otests tests-cet  -b bulk-tests/cet-tests.txt 
 

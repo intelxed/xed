@@ -1,0 +1,9 @@
+DEC                  ; BUILDDIR/xed -set CET 0 -d f3 0f 1e c8
+DEC                  ; BUILDDIR/xed -set CET 1 -d f3 0f 1e c8
+DEC                  ; BUILDDIR/xed -set CET 0 -64 -d f3 48 0f 1e c8
+DEC                  ; BUILDDIR/xed -set CET 1 -64 -d f3 48 0f 1e c8
+DEC                  ; BUILDDIR/xed -set CET 1 -d f3 0f 1e fb
+DEC                  ; BUILDDIR/xed -set CET 1 -d f3 0f 1e fa
+DEC                  ; BUILDDIR/xed -set CET 0 -d f3 0f 1e fb
+DEC                  ; BUILDDIR/xed -set CET 0 -d f3 0f 1e fa
+
