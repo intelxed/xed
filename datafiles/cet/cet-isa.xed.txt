@@ -13,7 +13,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#  
+#
 #END_LEGAL
 #
 #
@@ -32,8 +32,8 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
-PATTERN:     0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]  f3_refining_prefix  MODRM()
+REAL_OPCODE: Y
+PATTERN:     0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]   f3_refining_prefix      MODRM() 
 OPERANDS:    MEM0:w:q:u64
 IFORM:       CLRSSBSY_MEMu64
 }
@@ -46,11 +46,12 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
-PATTERN:     0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b011]  f3_refining_prefix     CET=1
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b011]  f3_refining_prefix      CET=1
 OPERANDS:    
 IFORM:       ENDBR32
 }
+
 
 # EMITTING ENDBR64 (ENDBR64-N/A-1)
 {
@@ -59,30 +60,11 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b010]  f3_refining_prefix     CET=1
 OPERANDS:    
 IFORM:       ENDBR64
 }
-
-{
-ICLASS    : NOP
-#UNAME     : NOP0F1E
-CPL       : 3
-CATEGORY  : WIDENOP
-EXTENSION : BASE
-ATTRIBUTES: NOP
-ISA_SET   : PPRO
-
-PATTERN   :  0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b010]  f3_refining_prefix     CET=0
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
-
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b011]  f3_refining_prefix     CET=0
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
-}
-
 
 
 # EMITTING INCSSPD (INCSSPD-N/A-1)
@@ -92,7 +74,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b001]  f3_refining_prefix    W0 
 OPERANDS:    
 IFORM:       INCSSPD
@@ -106,7 +88,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b001]  f3_refining_prefix    W1  mode64 
 OPERANDS:    
 IFORM:       INCSSPQ
@@ -120,7 +102,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn]  f3_refining_prefix    W0 CET=1
 OPERANDS:    REG0=GPR32_B():w:d:u32
 IFORM:       RDSSPD_GPR32u32
@@ -134,58 +116,24 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
-PATTERN:     0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn]  f3_refining_prefix    W1  mode64  CET=1
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn]  f3_refining_prefix    W1  mode64 CET=1
 OPERANDS:    REG0=GPR64_B():w:q:u64
 IFORM:       RDSSPQ_GPR64u64
 }
 
+
+# EMITTING RSTORSSP (RSTORSSP-N/A-1)
 {
-ICLASS    : NOP
-#UNAME     : NOP0F1E
-CPL       : 3
-CATEGORY  : WIDENOP
-EXTENSION : BASE
-ATTRIBUTES: NOP
-ISA_SET   : PPRO
-
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn]  f3_refining_prefix    W0 CET=0
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
-
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn]  f3_refining_prefix    W1  mode64  CET=0
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
-}
-
-
-
-
-# EMITTING RSTORSSPD (RSTORSSPD-N/A-1)
-{
-ICLASS:      RSTORSSPD
+ICLASS:      RSTORSSP
 CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
-PATTERN:     0x0F 0x01 MOD[mm] MOD!=3 REG[0b101] RM[nnn]  MODRM()  f3_refining_prefix    W0 
-OPERANDS:    MEM0:rw:d:u32
-IFORM:       RSTORSSPD_MEMu32
-}
-
-
-# EMITTING RSTORSSPQ (RSTORSSPQ-N/A-1)
-{
-ICLASS:      RSTORSSPQ
-CPL:         3
-CATEGORY:    AVX512
-EXTENSION:   CET
-ISA_SET:     CET
-REAL_OPCODE: N
-PATTERN:     0x0F 0x01 MOD[mm] MOD!=3 REG[0b101] RM[nnn]  MODRM()  f3_refining_prefix    W1  mode64 
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x01 MOD[mm] MOD!=3 REG[0b101] RM[nnn]  MODRM()  f3_refining_prefix     
 OPERANDS:    MEM0:rw:q:u64
-IFORM:       RSTORSSPQ_MEMu64
+IFORM:       RSTORSSP_MEMu64
 }
 
 
@@ -196,7 +144,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b010]  f3_refining_prefix     
 OPERANDS:    
 IFORM:       SAVESSP
@@ -210,8 +158,8 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
-PATTERN:     0x0F 0xAE MOD[mm] MOD!=3 REG[0b101] RM[nnn]  f3_refining_prefix  MODRM()
+REAL_OPCODE: Y
+PATTERN:     0x0F 0xAE MOD[mm] MOD!=3 REG[0b101] RM[nnn]   f3_refining_prefix     MODRM() 
 OPERANDS:    MEM0:w:q:u64
 IFORM:       SETSSBSY_MEMu64
 }
@@ -224,7 +172,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix    W0 
 OPERANDS:    MEM0:w:d:u32 REG0=GPR32_R():r:d:u32
 IFORM:       WRSSD_MEMu32_GPR32u32
@@ -238,7 +186,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix    W1  mode64 
 OPERANDS:    MEM0:w:q:u64 REG0=GPR64_R():r:q:u64
 IFORM:       WRSSQ_MEMu64_GPR64u64
@@ -252,7 +200,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x38 0xF5 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix    W0 
 OPERANDS:    MEM0:w:d:u32 REG0=GPR32_R():r:d:u32
 IFORM:       WRUSSD_MEMu32_GPR32u32
@@ -266,7 +214,7 @@ CPL:         3
 CATEGORY:    AVX512
 EXTENSION:   CET
 ISA_SET:     CET
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:     0x0F 0x38 0xF5 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix    W1  mode64 
 OPERANDS:    MEM0:w:q:u64 REG0=GPR64_R():r:q:u64
 IFORM:       WRUSSQ_MEMu64_GPR64u64
