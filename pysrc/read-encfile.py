@@ -2208,7 +2208,11 @@ class encoder_configuration_t(object):
         # FIXME do something with the operand/conditions and patterns/actions
         iform = iform_t(iclass, conditions, actions, modal_patterns, uname)
 
-        if 'VEXVALID=2' in ipattern:  # EVEX
+        if uname == 'NOP0F1F':
+            # We have many fat NOPS, 0F1F is the preferred one so we
+            # give it a higher priority in the iform sorting. 
+            iform.priority = 0
+        elif 'VEXVALID=2' in ipattern:  # EVEX
             # FIXME: 2016-01-28: MJC: hack. 1st check patterns w/ ROUNDC/SAE.
             # (See other instance of BCRC=1 in this file)
             if 'BCRC=1' in ipattern:
