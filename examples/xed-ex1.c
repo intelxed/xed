@@ -69,6 +69,8 @@ void print_misc(xed_decoded_inst_t* xedd) {
     if (e != XED_EXCEPTION_INVALID) {
         printf("EXCEPTION TYPE: %s\n", xed_exception_enum_t2str(e));
     }
+    if (xed_decoded_inst_is_broadcast(xedd))
+        printf("BROADCAST\n");
 
     // does not include instructions that have XED_ATTRIBUTE_MASK_AS_CONTROL.
     // does not include vetor instructions that have k0 as a mask register.

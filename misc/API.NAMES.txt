@@ -408,3 +408,6 @@ xed_zero_extend32_64
 xed_zero_extend8_16
 xed_zero_extend8_32
 xed_zero_extend8_64
+xed_decoded_inst_uses_embedded_broadcast
+xed_decoded_inst_is_broadcast_instruction
+xed_decoded_inst_is_broadcast

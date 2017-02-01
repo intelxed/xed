@@ -567,6 +567,25 @@ xed_decoded_inst_get_memop_address_width(const xed_decoded_inst_t* p,
 /// Returns true if the instruction is a prefetch
 XED_DLL_EXPORT xed_bool_t
 xed_decoded_inst_is_prefetch(const xed_decoded_inst_t* p);
+
+/// @ingroup DEC
+/// Return 1 for broadcast instructions or AVX512 load-op instructions using the broadcast feature
+/// 0 otherwise.  Logical OR of
+/// #xed_decoded_inst_is_broadcast_instruction() and
+/// #xed_decoded_inst_uses_embedded_broadcast().
+XED_DLL_EXPORT xed_bool_t
+xed_decoded_inst_is_broadcast(const xed_decoded_inst_t* p);
+/// @ingroup DEC
+/// Return 1 for broadcast instruction. (NOT including AVX512 load-op instructions)
+/// 0 otherwise. Just a category check. 
+XED_DLL_EXPORT xed_bool_t
+xed_decoded_inst_is_broadcast_instruction(const xed_decoded_inst_t* p);
+/// @ingroup DEC
+/// Return 1 for AVX512 load-op instructions using the broadcast feature,
+/// 0 otherwise. 
+XED_DLL_EXPORT xed_bool_t
+xed_decoded_inst_uses_embedded_broadcast(const xed_decoded_inst_t* p);
+
 //@}
 
                   

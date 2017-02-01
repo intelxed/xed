@@ -949,3 +949,34 @@ xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
     return rw;
 }
 
+xed_bool_t
+xed_decoded_inst_uses_embedded_broadcast(const xed_decoded_inst_t* p)
+{
+#if defined(XED_SUPPORTS_AVX512)
+    if (xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_BROADCAST_ENABLED))
+        if (xed3_operand_get_bcast(p))  
+            return 1;
+#endif
+    return 0;
+    (void) p;
+}
+xed_bool_t
+xed_decoded_inst_is_broadcast_instruction(const xed_decoded_inst_t* p)
+{
+#if defined(XED_AVX)  // also reports AVX512 broadcast instr
+    if (xed_decoded_inst_get_category(p) == XED_CATEGORY_BROADCAST)
+        return 1;
+#endif
+    return 0;
+    (void) p;
+}
+xed_bool_t
+xed_decoded_inst_is_broadcast(const xed_decoded_inst_t* p)
+{
+    //FIXME: add an enum for the broadcast values so we can give a better answer here
+    if (xed_decoded_inst_is_broadcast_instruction(p))
+        return 1;
+    if (xed_decoded_inst_uses_embedded_broadcast(p))
+        return 1;
+     return 0;
+}
