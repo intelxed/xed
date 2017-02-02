@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -538,6 +538,17 @@ RM=0x7  | OUTREG=XED_REG_ST7
 xed_reg_enum_t SEG()::
 REG=0x0  | OUTREG=XED_REG_ES
 REG=0x1  | OUTREG=XED_REG_CS
+REG=0x2  | OUTREG=XED_REG_SS
+REG=0x3  | OUTREG=XED_REG_DS
+REG=0x4  | OUTREG=XED_REG_FS
+REG=0x5  | OUTREG=XED_REG_GS
+REG=0x6  | OUTREG=XED_REG_ERROR     enc
+REG=0x7  | OUTREG=XED_REG_ERROR
+
+# MOV to CR cannot load CS 
+xed_reg_enum_t SEG_MOV()::
+REG=0x0  | OUTREG=XED_REG_ES
+REG=0x1  | OUTREG=XED_REG_ERROR
 REG=0x2  | OUTREG=XED_REG_SS
 REG=0x3  | OUTREG=XED_REG_DS
 REG=0x4  | OUTREG=XED_REG_FS

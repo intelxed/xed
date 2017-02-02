@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -6862,9 +6862,10 @@ CATEGORY  : DATAXFER
 EXTENSION : BASE
 ISA_SET   : I86
 ATTRIBUTES: NOTSX
-COMMENT   : MOV to SS Inhibits all interrupts until after next instr
+COMMENT   : MOV to SS Inhibits all interrupts until after next instr. Cannot write to CS
 PATTERN   : 0x8E MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=SEG():w MEM0:r:w
+OPERANDS  : REG0=SEG_MOV():w MEM0:r:w
+IFORM     : MOV_SEG_MEMw
 }
 {
 ICLASS    : MOV
@@ -6873,8 +6874,10 @@ CATEGORY  : DATAXFER
 EXTENSION : BASE
 ISA_SET   : I86
 ATTRIBUTES: NOTSX
+COMMENT   : MOV to SS Inhibits all interrupts until after next instr. Cannot write to CS
 PATTERN   : 0x8E MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=SEG():w REG1=GPR16_B():r
+OPERANDS  : REG0=SEG_MOV():w REG1=GPR16_B():r
+IFORM     : MOV_SEG_GPR16
 }
 
 
