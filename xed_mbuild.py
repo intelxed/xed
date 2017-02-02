@@ -987,7 +987,7 @@ def repack_and_clean(args, env):
     to redefine the internal symbols. The renamed obj file is packed
     in to a static library. The "file" is a list of old new pairs, one
     per line.  The public symbols come from the file
-    misc/API.SYMBOLS.txt every other non-external label is considered
+    misc/API.NAMES.txt every other non-external label is considered
     internal and gets renamed."""
 
     tobj_clean = args[0]
