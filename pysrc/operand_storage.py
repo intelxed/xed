@@ -222,9 +222,10 @@ class operands_storage_t(object):
         ret_arg = 'ret_arg'
         
         fo = codegen.function_object_t(fname,
-                                           return_type='void',
-                                           static=False,
-                                           inline=False)
+                                       return_type='void',
+                                       static=False,
+                                       inline=False,
+                                       dll_export=True)
         fo.add_arg('const xed_decoded_inst_t* %s' % inst)
         fo.add_arg('xed_operand_enum_t operand')
         fo.add_arg('void* %s' % ret_arg)
@@ -250,9 +251,10 @@ class operands_storage_t(object):
         in_value = 'val'
         
         fo = codegen.function_object_t(fname,
-                                           return_type='void',
-                                           static=False,
-                                           inline=False)
+                                       return_type='void',
+                                       static=False,
+                                       inline=False, 
+                                       dll_export=True)
         fo.add_arg('xed_decoded_inst_t* %s' % inst)
         fo.add_arg('xed_operand_enum_t operand')
         fo.add_arg('xed_uint32_t %s' % in_value)
