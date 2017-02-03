@@ -15,21 +15,6 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-# AMD extensions
 
-dec-instructions : xed-amd-3dnow.txt
-enc-instructions : xed-amd-3dnow.txt
-
-dec-instructions : xed-amd-base.txt
-enc-instructions : xed-amd-base.txt
-
-dec-instructions : xed-amd-svm.txt
-enc-instructions : xed-amd-svm.txt
-
-enc-instructions : xed-amd-sse4a.txt
-dec-instructions : xed-amd-sse4a.txt
-
-enc-instructions : xed-amd-clzero.txt
-dec-instructions : xed-amd-clzero.txt
-
-chip-models : xed-amd-chips.txt
+#  AMD CHIPS???
+AMD: SVM SSE4A 3DNOW  AMD PREFETCH_NOP PREFETCHW XOP TBM FMA4 CLZERO
