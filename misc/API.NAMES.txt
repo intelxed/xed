@@ -411,3 +411,5 @@ xed_zero_extend8_64
 xed_decoded_inst_uses_embedded_broadcast
 xed_decoded_inst_is_broadcast_instruction
 xed_decoded_inst_is_broadcast
+xed3_get_generic_operand
+xed3_set_generic_operand
