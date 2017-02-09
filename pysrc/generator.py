@@ -5715,7 +5715,7 @@ def read_cpuid_mappings(fn):
     d = {} # isa-set to list of cpuid records
     for line in lines:
         wrds = line.split(':')
-        isa_set = wrds[0]
+        isa_set = wrds[0].strip()
         #cpuid_bits = re.sub('[.]','_',wrds[1].upper()).split()
         cpuid_bits = wrds[1].upper().split()
         if isa_set in d:
@@ -5784,6 +5784,18 @@ def make_cpuid_mappings(agi,mappings):
         fp.add_code(s)
     fp.add_code('};')
 
+    # check that each isa set in the cpuid files has a corresponding XED_ISA_SET_ value
+    fail = False
+    for cisa in mappings.keys():
+        t = re.sub('XED_ISA_SET_','',cisa)
+        if t not in agi.all_enums['xed_isa_set_enum_t']:
+            fail = True
+            genutil.warn("bad isa_set referenced cpuid file: {}".format(cisa))
+    if fail:
+        die("Found bad isa_sets in cpuid input files.")
+                    
+
+        
     
     # emit initialized structure of isa-set mapping to array of cpuid bit string enum.
     n = 4
