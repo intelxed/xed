@@ -583,7 +583,9 @@ def mkenv():
                                  copy_libc=False,
                                  pin_crt='',
                                  static_stripped=False,
-                                 set_copyright=False)
+                                 set_copyright=False,
+                                 first_lib=None,
+                                 last_lib=None)
 
     env['xed_defaults'] = standard_defaults
     env.set_defaults(env['xed_defaults'])
@@ -1451,11 +1453,11 @@ def build_libxed(env,work_queue):
     lib_objs = []
     # first_lib and last_lib are for supporting compilations using
     # custom C runtimes.
-    if 'first_lib' in env:
+    if env['first_lib']:
         lib_objs.append(env['first_lib'])
     lib_objs += lib_env.compile( lib_dag, generated_library_sources)
     lib_objs += lib_env.compile( lib_dag, nongen_lib_sources)
-    if 'last_lib' in env:
+    if env['last_lib']:
         lib_objs.append(env['last_lib'])
 
     if lib_env['shared']:
