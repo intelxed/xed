@@ -526,11 +526,12 @@ symbols_elf64(xed_disas_info_t* fi,
     /* find the string_table_offset and the dynamic_string_table_offset */
 
     for( i=0;i<nsect;i++)  {
-        if ((unsigned char*)(shp+i)+sizeof(Elf64_Shdr) >= hard_limit)
+        if ((unsigned char*)(shp+i+1) > hard_limit) 
             break;
 
+        
         if (shp[i].sh_type == SHT_STRTAB) {
-            char* name = lookup32(shp[i].sh_name, start, len,
+            char* name = lookup64(shp[i].sh_name, start, len,
                                   shp[sect_strings].sh_offset);
             if (name)
             {
@@ -650,7 +651,7 @@ symbols_elf32(xed_disas_info_t* fi,
 
     /* now read the symbols */
     for( i=0;i<nsect;i++)  {
-        if ((unsigned char*)(shp+i)+sizeof(Elf32_Shdr) >= hard_limit)
+        if ((unsigned char*)(shp+i+1) > hard_limit)
             break;
         
         if (shp[i].sh_type == SHT_SYMTAB) {
