@@ -555,7 +555,7 @@ def mkenv():
                                  bdw=True,
                                  fma=True,
                                  dbghelp=False,
-                                 install_dir='',
+                                 install_dir=None,
                                  prefix_dir='',
                                  prefix_lib_dir='lib',
                                  kit_kind='base',
@@ -1601,7 +1601,6 @@ def build_examples(env):
     _get_xed_min_size(env_ex)
     _test_perf(env_ex)
 
-
 def copy_dynamic_libs_to_kit(env, kitdir):
     """Copy *all* the dynamic libs that ldd finds to the extlib dir in the
        kit"""
@@ -1795,12 +1794,10 @@ def build_kit(env, work_queue):
     "Build the XED kit"
     if not xbc.installing(env):
         return
-
     # add a default legal header if we are building a kit and none is
     # specified.
     legal_header = _get_legal_header(env)
-
-    if env['install_dir'] == '':
+    if not env['install_dir']:
         date = time.strftime("%Y-%m-%d")
         sd = 'xed-install-%s-%s-%s-%s' % ( env['kit_kind'], 
                                            date, 
@@ -1808,12 +1805,9 @@ def build_kit(env, work_queue):
                                            env['host_cpu'] )
         mbuild.cmkdir('kits')
         env['install_dir'] = os.path.join('kits', sd)
-
     dest = env['install_dir']
-    
     if os.path.exists(dest): # start clean
         mbuild.remove_tree(dest)
-        
     if mbuild.verbose(2):
         mbuild.msgb("INSTALL DIR", dest)
     include = mbuild.join(dest,"include",'xed')
