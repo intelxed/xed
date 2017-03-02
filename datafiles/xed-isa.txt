@@ -4126,6 +4126,7 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b110] RM[nnn] osz_refining_prefix REFINING66() MODRM()
 OPERANDS  : MEM0:r:q
 }
@@ -4135,6 +4136,8 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
+
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b110] RM[nnn] no_refining_prefix  MODRM()
 OPERANDS  : MEM0:r:q
 }
@@ -4144,6 +4147,8 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
+
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b111] RM[nnn] no_refining_prefix MODRM()
 OPERANDS  : MEM0:w:q
 }
@@ -4155,6 +4160,8 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: PROTECTED_MODE NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
+
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b110] RM[nnn] f3_refining_prefix IGNORE66() MODRM()
 OPERANDS  : MEM0:r:q
 }
@@ -4713,6 +4720,8 @@ CPL       : 3
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+COMMENT   : on some execution paths loads all flags from VMCS. Always writes CF/PF/AF/ZF/SF/OF.
+FLAGS     : MAY [ id-mod vip-mod vif-mod ac-mod vm-tst rf-mod nt-mod iopl-tst iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b001] no_refining_prefix
 OPERANDS  :
 }
@@ -4722,6 +4731,8 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+COMMENT   : on some execution paths loads all flags from VMCS. Always writes CF/PF/AF/ZF/SF/OF.
+FLAGS     : MAY [ id-mod vip-mod vif-mod ac-mod vm-tst rf-mod nt-mod iopl-tst iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b010] no_refining_prefix
 OPERANDS  :
 }
@@ -4731,6 +4742,8 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+COMMENT   : on some execution paths loads all flags from VMCS. Always writes CF/PF/AF/ZF/SF/OF.
+FLAGS     : MAY [ id-mod vip-mod vif-mod ac-mod vm-tst rf-mod nt-mod iopl-tst iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b011] no_refining_prefix
 OPERANDS  :
 }
@@ -4740,6 +4753,8 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-mod pf-mod ]
+
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b100] no_refining_prefix
 OPERANDS  :
 }
@@ -12032,6 +12047,8 @@ ICLASS    : VMREAD
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
+
 PATTERN   : 0x0F 0x78 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64   MODRM() CR_WIDTH()
 OPERANDS  : MEM0:rw:q REG0=GPR64_R():r
 
@@ -12049,6 +12066,8 @@ ICLASS    : VMWRITE
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
+
 PATTERN   : 0x0F 0x79 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64  MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR64_R():r MEM0:r:q
 
@@ -14723,6 +14742,7 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES : RING0 NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 PATTERN   : 0x0F 0x38 0x80 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
 PATTERN   : 0x0F 0x38 0x80 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode32 MODRM() CR_WIDTH()
@@ -14735,6 +14755,7 @@ CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES : RING0 NOTSX
+FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 PATTERN   : 0x0F 0x38 0x81 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
 PATTERN   : 0x0F 0x38 0x81 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode32 MODRM() CR_WIDTH()
