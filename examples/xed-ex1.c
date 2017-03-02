@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -474,7 +474,7 @@ int main(int argc, char** argv) {
         printf("Must supply even number of nibbles per substring\n");
         exit(1);
     }
-    if (len >= XED_MAX_INSTRUCTION_BYTES*2) {
+    if (len > XED_MAX_INSTRUCTION_BYTES*2) {
         printf("Must supply at most 30 nibbles (15 bytes)\n");
         exit(1);
     }
