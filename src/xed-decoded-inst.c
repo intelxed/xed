@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -594,8 +594,6 @@ xed_decoded_inst_operand_element_size_bits(
     unsigned int element_size = 0;
     const xed_inst_t* inst = p->_inst;
     const xed_operand_t* o = xed_inst_operand(inst,operand_index);
-    //const xed_operand_enum_t op_name = xed_operand_name(o);
-    //const xed_reg_enum_t reg = xed_decoded_inst_get_reg(p, op_name);
     const xed_operand_element_xtype_enum_t xtype = xed_operand_xtype(o);
     const xed_operand_type_info_t* q;
     if ( xtype >= XED_OPERAND_XTYPE_LAST)

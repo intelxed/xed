@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -279,6 +279,16 @@ static void xed_prefixes(xed_print_info_t* pi,
     pi->emitted=1;
 }
 
+static void
+xml_print_end(xed_print_info_t* pi,
+              char const* s)
+{
+    if (pi->format_options.xml_a) {
+        xed_pi_strcat(pi,"</");
+        xed_pi_strcat(pi,s);
+        xed_pi_strcat(pi,">");
+    }
+}
 
 static void
 xed_decoded_inst_dump_common(xed_print_info_t* pi)
@@ -325,8 +335,8 @@ xed_decoded_inst_dump_common(xed_print_info_t* pi)
                 xed_prefixes(pi,"data32");
         }
     }
-    if (pi->emitted  && pi->format_options.xml_a)
-        xed_pi_strcat(pi,"</PREFIXES>");
+    if (pi->emitted)
+        xml_print_end(pi,"PREFIXES");
     if (pi->emitted)
         xed_pi_strcat(pi," ");
     
@@ -421,8 +431,8 @@ static void print_seg_prefix_for_suppressed_operands(
                 pi->blen = xed_strncat_lower(pi->buf,
                                              xed_reg_enum_t2str(seg),
                                              pi->blen); 
-                if (pi->format_options.xml_a)
-                    xed_pi_strcat(pi,"</REG></OPERAND>");
+                xml_print_end(pi,"REG");
+                xml_print_end(pi,"OPERAND");
                 pi->emitted = 1;
             }
         }
@@ -458,13 +468,6 @@ xml_reg_prefix(xed_print_info_t* pi, xed_reg_enum_t reg)
 }
 
 static void
-xml_reg_suffix(xed_print_info_t* pi)
-{
-    if (pi->format_options.xml_a) 
-        pi->blen = xed_strncat(pi->buf,"</REG>",pi->blen);
-}
-
-static void
 print_reg(xed_print_info_t* pi,
           xed_reg_enum_t reg)
 {
@@ -487,7 +490,7 @@ print_reg_xml(xed_print_info_t* pi,
 {
     xml_reg_prefix(pi,reg);
     print_reg(pi,reg);
-    xml_reg_suffix(pi);
+    xml_print_end(pi,"REG");
 }
 
 
@@ -603,7 +606,7 @@ print_reg_writemask(
 #if defined(XED_SUPPORTS_AVX512)
     print_write_mask_generic(pi);
 #endif
-    xml_reg_suffix(pi);
+    xml_print_end(pi,"REG");
 }
 
 #define XED_SYMBOL_LEN 512
@@ -687,15 +690,22 @@ print_rel_sym(xed_print_info_t* pi,
 }
 
 static void
+xml_print_imm(xed_print_info_t* pi,
+              unsigned int bits)
+{
+    if (pi->format_options.xml_a)
+        xml_tag_pi(pi, "IMM", bits);
+}
+
+static void
 print_relbr(xed_print_info_t* pi)
 {
     if (pi->format_options.xml_a)
          xed_pi_strcat(pi,"<RELBR>");
 
     print_rel_sym(pi,print_address, branch_displacement);
-    
-    if (pi->format_options.xml_a)
-        xed_pi_strcat(pi,"</RELBR>");
+
+    xml_print_end(pi,"RELBR");
 }
 
 static void xed_print_operand( xed_print_info_t* pi )
@@ -839,13 +849,10 @@ static void xed_print_operand( xed_print_info_t* pi )
           if (base == XED_REG_RIP && xed_operand_values_has_memory_displacement(ov))
               print_rel_sym(pi,no_print_address, memory_displacement);
 
-          
-          if (pi->format_options.xml_a) {
-              if (xed_operand_name(op) == XED_OPERAND_AGEN)
-                  xed_pi_strcat(pi,"</AGEN>");
-              else
-                  xed_pi_strcat(pi,"</MEM>");
-          }
+          if (xed_operand_name(op) == XED_OPERAND_AGEN)
+              xml_print_end(pi,"AGEN");
+          else
+              xml_print_end(pi,"MEM");
           break;
       }
 
@@ -878,62 +885,58 @@ static void xed_print_operand( xed_print_info_t* pi )
                                            xed_reg_enum_t2str(base),
                                            pi->blen);
           xed_pi_strcat(pi,"]");
-          if (pi->format_options.xml_a)
-              xed_pi_strcat(pi,"</MEM>");
-
+          xml_print_end(pi,"MEM");
           break;
       }
       case XED_OPERAND_IMM0: {
-          unsigned int bits = xed3_operand_get_imm_width(pi->p);
-          if (pi->format_options.xml_a)
-              xml_tag_pi(pi, "IMM", bits);
-
           if ( xed3_operand_get_imm0signed(pi->p) &&
                pi->format_options.no_sign_extend_signed_immediates == 0 )
           {
-              xed_int32_t disp;
-              bits = xed_decoded_inst_get_operand_width(pi->p);
-              disp = XED_STATIC_CAST(xed_int32_t,
+              // sign-extend imm to effective operand width
+              xed_int32_t imm;
+              unsigned int eff_bits = xed_decoded_inst_get_operand_width(pi->p);
+              imm = XED_STATIC_CAST(xed_int32_t,
                                   xed_operand_values_get_immediate_int64(ov));
+              xml_print_imm(pi,eff_bits);
               xed_pi_strcat(pi,"0x");
-
               pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf), 
-                                               disp,
-                                               bits,
+                                               imm,
+                                               eff_bits,
                                                leading_zeros,
                                                pi->blen,
                                                pi->format_options.lowercase_hex);
           }
           else {
-              xed_uint64_t disp =  xed_operand_values_get_immediate_uint64(ov);
+              // how many bits of imm hold imm values. Sometimes we use upper bits
+              // for other things (like register specifiers)
+              unsigned int real_bits = xed_decoded_inst_operand_element_size_bits(
+                                               pi->p,
+                                               pi->operand_indx);
+
+              xed_uint64_t imm = xed_operand_values_get_immediate_uint64(ov);
+              xml_print_imm(pi, real_bits);
               xed_pi_strcat(pi,"0x");
               pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf), 
-                                               disp,
-                                               bits,
-                                               leading_zeros,
-                                               pi->blen,
-                                               pi->format_options.lowercase_hex);
+                                         imm,
+                                         real_bits,
+                                         leading_zeros,
+                                         pi->blen,
+                                         pi->format_options.lowercase_hex);
           }
-          if (pi->format_options.xml_a)
-              xed_pi_strcat(pi,"</IMM>");
+          xml_print_end(pi,"IMM");
           break;
       }
       case XED_OPERAND_IMM1: { // The ENTER instruction
-          xed_uint64_t disp = xed3_operand_get_uimm1(pi->p);
-          if (pi->format_options.xml_a)
-              xed_pi_strcat(pi,"<IMM bytes=\"8\">");
-
+          xed_uint64_t imm = xed3_operand_get_uimm1(pi->p);
+          xml_print_imm(pi, 8);
           xed_pi_strcat(pi,"0x");
           pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),
-                                           disp,
+                                           imm,
                                            8,
                                            leading_zeros,
                                            pi->blen,
                                            pi->format_options.lowercase_hex);
-          
-          if (pi->format_options.xml_a)
-              xed_pi_strcat(pi,"</IMM>");
-
+          xml_print_end(pi,"IMM");
           break;
       }
 
@@ -955,9 +958,7 @@ static void xed_print_operand( xed_print_info_t* pi )
                                            leading_zeros,
                                            pi->blen,
                                            pi->format_options.lowercase_hex);
-          if (pi->format_options.xml_a)
-              xed_pi_strcat(pi,"</PTR>");
-
+          xml_print_end(pi,"PTR");
           break;
 
       }
@@ -1013,9 +1014,7 @@ static void xed_print_operand( xed_print_info_t* pi )
 
 
     xed_print_operand_decorations(pi, op);
-
-    if (pi->format_options.xml_a)
-        xed_pi_strcat(pi,"</OPERAND>");
+    xml_print_end(pi,"OPERAND");
 }
 
 
@@ -1068,9 +1067,7 @@ xed_decoded_inst_dump_intel_format_internal(xed_print_info_t* pi)
     if (pi->format_options.xml_a)
         xed_pi_strcat(pi,"<ICLASS>");
     pi->blen = xed_strncat_lower(pi->buf, instruction_name, pi->blen);
-    if (pi->format_options.xml_a)
-        xed_pi_strcat(pi,"</ICLASS>");
-
+    xml_print_end(pi,"ICLASS");
     xed_pi_strcat(pi," ");
 
     /* print the operands */
@@ -1093,16 +1090,13 @@ xed_decoded_inst_dump_intel_format_internal(xed_print_info_t* pi)
         if (pi->format_options.xml_a)
             xed_pi_strcat(pi,"<OPERAND>");
         print_reg_xml(pi,pi->extra_index_operand);
-        if (pi->format_options.xml_a)
-            xed_pi_strcat(pi,"</OPERAND>");
+        xml_print_end(pi,"OPERAND");
     }
 
 
     if (pi->format_options.xml_f) 
         pi->blen = xml_print_flags(pi->p, pi->buf, pi->blen);
-
-    if (pi->format_options.xml_a)
-        xed_pi_strcat(pi,"</INS>");
+    xml_print_end(pi,"INS");
     return 1;
 }
 
@@ -1340,38 +1334,42 @@ xed_decoded_inst_dump_att_format_internal(
               break;
           }
           case XED_OPERAND_IMM0: {
+              xed_pi_strcat(pi,"$0x");                      
               if ( xed3_operand_get_imm0signed(pi->p) &&
                    pi->format_options.no_sign_extend_signed_immediates == 0 )
               {
-                  unsigned int bits = xed_decoded_inst_get_operand_width(pi->p);
-                  xed_int32_t disp = XED_STATIC_CAST(xed_int32_t,
+                  // sign-extend imm to effective operand width
+                  unsigned int eff_bits = xed_decoded_inst_get_operand_width(pi->p);
+                  xed_int32_t imm = XED_STATIC_CAST(xed_int32_t,
                                    xed_operand_values_get_immediate_int64(ov));
-                  xed_pi_strcat(pi,"$0x");                      
                   pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),
-                                                   disp,
-                                                   bits,
-                                                   leading_zeros,
-                                                   pi->blen,
-                                                   pi->format_options.lowercase_hex);
+                                             imm,
+                                             eff_bits,
+                                             leading_zeros,
+                                             pi->blen,
+                                             pi->format_options.lowercase_hex);
               }
               else {
-                  unsigned int bits = xed3_operand_get_imm_width(pi->p);
-                  xed_uint64_t disp =xed_operand_values_get_immediate_uint64(ov);
-                  xed_pi_strcat(pi,"$0x");                      
+                  // how many bits of imm hold imm values. Sometimes we use upper bits
+                  // for other things (like register specifiers)
+                  unsigned int real_bits = xed_decoded_inst_operand_element_size_bits(
+                                               pi->p,
+                                               pi->operand_indx);
+                  xed_uint64_t imm =xed_operand_values_get_immediate_uint64(ov);
                   pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),
-                                                   disp,
-                                                   bits,
-                                                   leading_zeros,
-                                                   pi->blen,
-                                                   pi->format_options.lowercase_hex);
+                                             imm,
+                                             real_bits,
+                                             leading_zeros,
+                                             pi->blen,
+                                             pi->format_options.lowercase_hex);
               }
               break;
           }
           case XED_OPERAND_IMM1: { // The ENTER instruction
-              xed_uint64_t disp = xed3_operand_get_uimm1(pi->p);
+              xed_uint64_t imm = xed3_operand_get_uimm1(pi->p);
               xed_pi_strcat(pi,"$0x");                      
               pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),
-                                               disp,
+                                               imm,
                                                8,
                                                leading_zeros,
                                                pi->blen,
