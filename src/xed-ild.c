@@ -430,7 +430,10 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
 
       xed3_operand_set_map(d,c4byte1.s.map);
 
-      if (c4byte1.s.map == XED_ILD_MAP3)
+      // FIXME: 2017-03-03 this masking of the VEX map with 0x3 an attempt
+      // at matching an undocumented implementation convention that can and
+      // most likely will change as architectural map usage evolves.
+      if ((c4byte1.s.map & 0x3) == XED_ILD_MAP3)
           xed3_operand_set_imm_width(d, bytes2bits(1));
 
       // this is a success indicator for downstreaam decoding
