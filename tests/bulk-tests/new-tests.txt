@@ -34,3 +34,4 @@ DEC ENC              ; BUILDDIR/xed -64 -de e31e
 DEC                  ; BUILDDIR/xed -64 -d e31e
 DEC AVX              ; BUILDDIR/xed -d C4C3F916E0F8
 DEC AVX              ; BUILDDIR/xed -64 -d C4C3F916E0F8
+DEC AVX              ; BUILDDIR/xed -64 -d 6464262E6426C4EB791D05ED830A00
