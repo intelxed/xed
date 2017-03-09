@@ -1032,7 +1032,7 @@ static void imm_scanner(xed_decoded_inst_t* d)
   const xed_uint8_t* imm_ptr = 0;
 
   set_imm_bytes(d);
-  
+#if defined(XED_AMD_ENABLED)
   if (xed3_operand_get_amd3dnow(d)) {
       if (length < max_bytes) {
          /*opcode is in immediate*/
@@ -1048,6 +1048,7 @@ static void imm_scanner(xed_decoded_inst_t* d)
           return;
       }
   }
+#endif
   
   imm_bytes = bits2bytes(xed3_operand_get_imm_width(d));
   imm1_bytes = xed3_operand_get_imm1_bytes(d);
@@ -1218,7 +1219,8 @@ static void opcode_scanner(xed_decoded_inst_t* d)
              * with INVALID_MAP we will have segv there, need to check
              * for it after ILD phase */
         }
-        else if (m == 0x0F) { /* FIXME: CAREFUL */
+#if defined(XED_AMD_ENABLED)
+        else if (m == 0x0F) { 
             xed3_operand_set_amd3dnow(d, 1);
             /* opcode is in immediate later on */
             length++; /*eat the second 0F */
@@ -1227,6 +1229,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_map(d, XED_ILD_MAPAMD);
             xed_decoded_inst_set_length(d, length);
         }
+#endif
         else {
             length++; /* eat the 2nd  opcode byte */
             xed3_operand_set_nominal_opcode(d, m);
@@ -1435,7 +1438,8 @@ static void evex_imm_scanner(xed_decoded_inst_t* d)
   const xed_uint8_t* imm_ptr = 0;
 
   set_imm_bytes(d);
-  
+
+#if defined(XED_AMD_ENABLED)
   if (xed3_operand_get_amd3dnow(d)) {
       if (length < max_bytes) {
          /*opcode is in immediate*/
@@ -1451,6 +1455,7 @@ static void evex_imm_scanner(xed_decoded_inst_t* d)
           return;
       }
   }
+#endif
   
   imm_bytes = bits2bytes(xed3_operand_get_imm_width(d));
   imm1_bytes = xed3_operand_get_imm1_bytes(d);
