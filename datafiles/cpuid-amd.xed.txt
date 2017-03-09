@@ -15,22 +15,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-# AMD extensions
 
-dec-instructions : xed-amd-3dnow.txt
-enc-instructions : xed-amd-3dnow.txt
+XED_ISA_SET_AMD:             n/a              
+XED_ISA_SET_3DNOW:           n/a              
+XED_ISA_SET_SSE4A:           n/a              
+XED_ISA_SET_SVM:             n/a              
 
-dec-instructions : xed-amd-base.txt
-enc-instructions : xed-amd-base.txt
-
-dec-instructions : xed-amd-svm.txt
-enc-instructions : xed-amd-svm.txt
-
-enc-instructions : xed-amd-sse4a.txt
-dec-instructions : xed-amd-sse4a.txt
-
-enc-instructions : xed-amd-clzero.txt
-dec-instructions : xed-amd-clzero.txt
-
-chip-models : xed-amd-chips.txt
-cpuid       : cpuid-amd.xed.txt

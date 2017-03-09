@@ -65,13 +65,3 @@ XED_ISA_SET_VMFUNC:          n/a
 
 XED_ISA_SET_VTX:             vmx.1.0.ecx.5        
 XED_ISA_SET_X87:             n/a              
-
-
-
-XED_ISA_SET_AMD:             n/a              
-XED_ISA_SET_3DNOW:           n/a              
-XED_ISA_SET_SSE4A:           n/a              
-XED_ISA_SET_SVM:             n/a              
-
-
-
