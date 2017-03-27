@@ -1166,6 +1166,7 @@ def build_libxed(env,work_queue):
         if env['memory_future']:
             _add_normal_ext(env,'memory')
         if env['future']:
+            _add_normal_ext(env,'future')
             _add_normal_ext(env,'pt')
         if env['knl']:
             _add_normal_ext(env,'knl')
@@ -2178,7 +2179,7 @@ def verify_args(env):
        env['fma']=False
 
     if env['knc']: 
-        mbuild.warn("Disabling AVX512, MEMORY-FUTURE for KNC build\n\n\n")
+        mbuild.warn("Disabling AVX512, FUTURE, MEMORY-FUTURE for KNC build\n\n\n")
         env['knl'] = False
         env['knm'] = False
         env['skx'] = False
@@ -2189,6 +2190,7 @@ def verify_args(env):
     if not env['future']:
         env['avx512_future'] = False
         env['memory_future'] = False
+        env['cet'] = False
         
     if not env['skx'] and not env['skl'] and not env['glm']:
         env['mpx'] = False
