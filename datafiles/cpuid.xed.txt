@@ -47,7 +47,6 @@ XED_ISA_SET_PPRO:            n/a
 XED_ISA_SET_PREFETCHW:       prefetchw.80000001.0.ecx.8 
 
 XED_ISA_SET_PREFETCH_NOP:    n/a              
-XED_ISA_SET_PT:              intelpt.7.0.ebx.25       
 XED_ISA_SET_RDPMC:           n/a              
 XED_ISA_SET_RDTSCP:          rdtscp.80000001.0.edx.27
 
