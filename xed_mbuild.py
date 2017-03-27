@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -948,20 +948,22 @@ def _wk_show_errors_only():
 
 def build_xed_ild_library(env, lib_env, lib_dag):
     # compile sources specific to ild
-    xed_ild_sources = ['xed-init-ild.c', 'xed-ild-support.c'] 
+    xed_ild_sources = ['xed-init-ild.c', 'xed-ild-support.c']
     ild_objs  = lib_env.compile( lib_dag, xbc.src_dir_join(lib_env,
-                                                        xed_ild_sources))
+                                                           xed_ild_sources))
     # grab common sources compiled earlier
-    ild_objs += xbc.build_dir_join(lib_env,
-                                lib_env.make_obj(['xed-ild.c',
-                                                  'xed-isa-set.c',
-                                                  'xed-chip-features.c',
-                                                  'xed-chip-features-table.c',
-                                                  'xed-chip-modes.c',
-                                                  'xed-ild-disp-l3.c',
-                                                  'xed-ild-eosz.c',
-                                                  'xed-ild-easz.c',
-                                                  'xed-ild-imm-l3.c']))
+    common_sources = ['xed-ild.c',
+                      'xed-isa-set.c',
+                      'xed-chip-features.c',
+                      'xed-chip-features-table.c',
+                      'xed-chip-modes.c',
+                      'xed-chip-modes-override.c',
+                      'xed-ild-disp-l3.c',
+                      'xed-ild-eosz.c',
+                      'xed-ild-easz.c',
+                      'xed-ild-imm-l3.c']
+    common_objs = lib_env.make_obj(common_sources)
+    ild_objs += xbc.build_dir_join(lib_env, common_objs)
 
     lib,dll = xbc.make_lib_dll(env,'xed-ild')
 
@@ -1412,7 +1414,7 @@ def build_libxed(env,work_queue):
     sources_to_remove.extend(['xed-init-ild.c',
                               'xed-ild-support.c']) # stuff for standalone ild
     sources_to_remove = xbc.src_dir_join(env, sources_to_remove)
-    
+
     generated_sources_to_remove = []
     if not env['decoder']:
         decoder_sources_to_remove = [
@@ -1495,7 +1497,8 @@ def build_libxed(env,work_queue):
 
         if okay and env['shared'] and not env['debug']:
             xbc.strip_file(env,     env['shd_libxed'], '-x')
-            xbc.strip_file(lib_env, env['shd_libild'], '-x')
+            if os.path.exists(env['shd_libild']):
+                xbc.strip_file(lib_env, env['shd_libild'], '-x')
         if not okay:
             xbc.cdie("Library build failed")
         if mbuild.verbose(2):

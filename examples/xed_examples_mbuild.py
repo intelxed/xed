@@ -400,12 +400,13 @@ def build_examples(env, work_queue):
                                                 example,
                                                 cc_shared_objs + [ link_libxed ]))
     # compile & link ild_examples
-    for example in env.src_dir_join(ild_examples):
-        example_exes.append(ex_compile_and_link(env_c,
-                                                examples_dag,
-                                                example,
-                                                [ env['link_libild'] ]))
-        
+    if os.path.exists(env['link_libild']):
+        for example in env.src_dir_join(ild_examples):
+            example_exes.append(ex_compile_and_link(env_c,
+                                                    examples_dag,
+                                                    example,
+                                                    [ env['link_libild'] ]))
+            
     # compile & link small_examples
     for example in env.src_dir_join(small_examples):
         example_exes.append(ex_compile_and_link(env_c,
