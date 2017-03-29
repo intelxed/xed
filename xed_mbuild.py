@@ -946,7 +946,7 @@ def _wk_show_errors_only():
         return False # show output
     return True # show errors only.
 
-def build_xed_ild_library(env, lib_env, lib_dag):
+def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
     # compile sources specific to ild
     xed_ild_sources = ['xed-init-ild.c', 'xed-ild-support.c']
     ild_objs  = lib_env.compile( lib_dag, xbc.src_dir_join(lib_env,
@@ -962,7 +962,14 @@ def build_xed_ild_library(env, lib_env, lib_dag):
                       'xed-ild-eosz.c',
                       'xed-ild-easz.c',
                       'xed-ild-imm-l3.c']
+    
+    # to remove the override sources, we must first fully qualify stuff
+    common_sources = xbc.src_dir_join(lib_env, common_sources)
+    common_sources = _replace_sources(common_sources, sources_to_replace)
+    # then we strip everything down and add the object extensions
+    common_sources = map(lambda x: os.path.basename(x), common_sources)
     common_objs = lib_env.make_obj(common_sources)
+    
     ild_objs += xbc.build_dir_join(lib_env, common_objs)
 
     lib,dll = xbc.make_lib_dll(env,'xed-ild')
@@ -1037,29 +1044,116 @@ def repack_and_clean(args, env):
     mbuild.run_command(ocmd)
     return (0, ["success"])
 
-def build_libxed(env,work_queue):
-    "Run the generator and build libxed"
-    
-    # create object that will assemble our command line.
-    gc = generator_inputs_t(env['build_dir'], 
-                            env['amd_enabled'],
-                            env['limit_strings'])
+def _get_check(wrds,n,default=None):
+    if n < len(wrds):
+        return wrds[n].strip()
+    if default:
+        return default
+    xbc.cdie("Looking for token {} in input line [{}]".format(
+        n, wrds))
 
-    # if we are doing an extended XED then here we'd add more input files
-    # here.
+def _fn_expand(env, edir, fname):
+    if  re.search('%[(].*[)]',fname):
+        fname = env.expand(fname)
+        full_name = os.path.abspath(fname)
+    else:
+        full_name = mbuild.join(edir,fname)
+    if not os.path.exists(full_name):
+        xbc.cdie("Cannot open extension file: %s"  % full_name)
+    return full_name
 
-    # these are individual extension files
-    for ext_files in env['ext']:
-        (ptype, fname) = ext_files.split(':')
-        gc.add_file(ptype,fname)
-
-    # READ EACH EXTENSION FILE-of-FILES
+def _parse_extf_files_new(env, gc):
+    """READ EACH EXTENSION FILE-of-FILES. gc is the generator_inputs_t object"""
+    # local
     comment_pattern = re.compile(r'[#].*$')
+    source_prio = collections.defaultdict(int)
+    sources_dict = {}
+    
+    # returned
     sources_to_remove = []
     sources_to_add = []
-    sources = {}
-    source_prio = collections.defaultdict(int)
+    sources_to_replace = []
 
+    dup_check = {}
+    for ext_file in env['extf']:
+        mbuild.msgb("EXTF PROCESSING", ext_file)
+        if not os.path.exists(ext_file):
+            xbc.cdie("Cannot open extension configuration file: %s" % 
+                       ext_file)
+        if os.path.isdir(ext_file):
+            xbc.cdie("Please specify a file, not a directory " + 
+                       "for --extf option: %s" % ext_file)
+        if ext_file in dup_check:
+            mbuild.warn("Ignoring duplicate extf file in list %s" % ext_file)
+            continue
+        dup_check[ext_file]=True
+        edir = os.path.dirname(ext_file)
+        for line in  file(ext_file).readlines():
+            line = line.strip()
+            line = comment_pattern.sub('',line)
+            if len(line) > 0:
+                wrds = line.split(':')
+                cmd = wrds[0]
+                if cmd == 'clear':
+                    ptype = _get_check(wrds,1)
+                    gc.clear_files(ptype)
+                elif cmd == 'define':
+                    definition = _get_check(wrds,1)
+                    env.add_define(definition)
+                elif cmd == 'remove-source':
+                    ptype = _get_check(wrds,1) # unused
+                    fname = _fn_expand(env, edir, _get_check( wrds,2))
+                    sources_to_remove.append(fname)
+                elif cmd == 'remove':
+                    ptype = _get_check(wrds,1)
+                    fname = _fn_expand(env, edir, _get_check(wrds,2))
+                    gc.remove_file(ptype,full_name)
+                elif cmd == 'add-source':
+                    ptype = _get_check(wrds,1)
+                    fname = _fn_expand(env, edir, _get_check(wrds,2))
+                    priority =  int(_get_check(wrds,3, default=1))
+                    print "CONSIDERING SOURCE", fname, ptype, priority
+                    if source_prio[ptype] < priority:
+                        print "ADDING SOURCE", fname, ptype, priority
+                        source_prio[ptype] = priority
+                        sources_dict[ptype] = fname
+                elif cmd == 'replace-source':
+                    ptype = _get_check(wrds,1)
+                    oldfn = _fn_expand(env, edir, _get_check(wrds,2))
+                    newfn = _fn_expand(env, edir, _get_check(wrds,3))
+                    priority =  int(_get_check(wrds,4, default=1))
+                    sources_to_replace.append((oldfn, newfn, ptype, priority))
+                elif cmd == 'add':
+                    ptype = _get_check(wrds,1)
+                    fname = _fn_expand(env, edir, _get_check(wrds,2))
+                    priority =  int(_get_check(wrds,3, default=1))
+                    gc.add_file(ptype, fname, priority)
+                else: # default is to add "keytype: file" (optional priority)
+                    ptype = _get_check(wrds,0)
+                    fname = _fn_expand(env, edir, _get_check(wrds,1))
+                    priority =  int(_get_check(wrds,2, default=1))
+                    gc.add_file(ptype, fname, priority)
+
+    for v in sources_dict.itervalues():
+        sources_to_add.append(v)
+
+    return (sources_to_remove, sources_to_add, sources_to_replace )
+
+def _replace_sources(srclist, sources_to_replace):
+    prio_d = {}
+    newfn_d = {}
+    for s in srclist:
+        prio_d[s] = 1
+        newfn_d[s] = s
+        for (oldfn,newfn,ptype,prio) in sources_to_replace:
+            if s == oldfn:
+                if prio > prio_d[s]:
+                    mbuild.msgb("REPLACING {} with {}".format(s, newfn))
+                    prio_d[s] = prio
+                    newfn_d[s] = newfn
+    return newfn_d.values()
+        
+def _configure_libxed_extensions(env):
     if env['amd_enabled']:
        env.add_define('XED_AMD_ENABLED')
 
@@ -1190,101 +1284,36 @@ def build_libxed(env,work_queue):
             _add_normal_ext(env,'avx512vbmi')
 
     env['extf'] = newstuff + env['extf']
-    dup_check = {}
-    for ext_file in env['extf']:
-        mbuild.msgb("EXTF PROCESSING", ext_file)
-        if not os.path.exists(ext_file):
-            xbc.cdie("Cannot open extension configuration file: %s" % 
-                       ext_file)
-        if os.path.isdir(ext_file):
-            xbc.cdie("Please specify a file, not a directory " + 
-                       "for --extf option: %s" % ext_file)
+    
+def build_libxed(env,work_queue):
+    "Run the generator and build libxed"
+    
+    # create object that will assemble our command line.
+    gc = generator_inputs_t(env['build_dir'], 
+                            env['amd_enabled'],
+                            env['limit_strings'])
 
-        if ext_file in dup_check:
-            mbuild.warn("Ignoring duplicate extf file in list %s" % ext_file)
-            continue
-        dup_check[ext_file]=True
-           
-        dir = os.path.dirname(ext_file)
-        for line in  file(ext_file).readlines():
-            line = line.strip()
-            line = comment_pattern.sub('',line)
-            if len(line) > 0:
-                try:
-                    wrds = line.split(':')
-                    if len(wrds) == 4:
-                        (cmd, ptype, fname, priority) = wrds
-                    elif len(wrds) == 3:
-                        (cmd, ptype, fname) = wrds
-                        priority='1'
-                    elif len(wrds) == 2:
-                        (ptype, fname) = wrds
-                        priority='1'
-                        if ptype == 'define':
-                            cmd = 'define'
-                            definition = fname.strip()
-                        else:
-                            cmd = 'add'
-                    else:
-                        xbc.cdie("Malformed extension line. " + 
-                                   "Need 2-4 tokens separated by " + 
-                                   " colons: [%s]" % (line))
-                    ptype = ptype.strip()
-                    fname = fname.strip()
-                    cmd   = cmd.strip()
-                    priority = int(priority.strip())
-                except xbc.xed_exception_t as e:
-                    raise  # re-raise exception
-                except:
-                    xbc.cdie("Cannot split this line on a colon: [%s]" % line)
+    # add individual extension files
+    for ext_files in env['ext']:
+        (ptype, fname) = ext_files.split(':')
+        gc.add_file(ptype,fname)
 
-                if cmd == 'clear':
-                    gc.clear_files(ptype)
-                    continue
-                elif cmd == 'define':
-                    env.add_define(definition)
-                    continue
-                elif cmd == 'remove-source':
-                    sources_to_remove.append(fname)
-                    continue
+    _configure_libxed_extensions(env)     
+    (sources_to_remove,
+     sources_to_add,
+     sources_to_replace ) = _parse_extf_files_new(env,gc)
 
-                if  re.search('%[(].*[)]',fname):
-                    fname = env.expand(fname)
-                    full_name = os.path.abspath(fname)
-                else:
-                    full_name = mbuild.join(dir,fname)
+    emit_defines_header(env)
 
-                if not os.path.exists(full_name):
-                    xbc.cdie("Cannot open extension file: %s"  % full_name)
-
-                if cmd == 'add':
-                    gc.add_file(ptype,full_name, priority)
-                elif cmd == 'remove':
-                    gc.remove_file(ptype,full_name)
-                elif cmd == 'add-source':
-                    print "CONSIDERING SOURCE", full_name, ptype, priority
-                    if source_prio[ptype] < priority:
-                        print "ADDING SOURCE", full_name, ptype, priority
-                        source_prio[ptype] = priority
-                        sources[ptype] = full_name
-                else:
-                    xbc.cdie("Invalid extension file cmd (1st token):" +
-                               " [%s]\nMust be 'add' or 'remove'" % line)
-
-    for v in sources.itervalues():
-        sources_to_add.append(v)
-
-    gen_dag = mbuild.dag_t('xedgen', env=env)
-
+    # Basic idea: First, concatenate the input files, then run the
+    # encoder and decoder generators. Then build the libraries (xed
+    # and ild).
+    
     prep_files = env.build_dir_join('prep-inputs') 
     f = open(prep_files,"w")
     f.write( "\n".join(gc.all_input_files()) + "\n")
     f.close()
-
-    # must add all user-relevant defines before emitting defines
-    # header
-    emit_defines_header(env) 
-
+    
     #mbuild.msgb("PREP INPUTS", ", ".join(gc.all_input_files()))
     c0 = mbuild.plan_t(name='decprep',
                        command=run_generator_preparation,
@@ -1292,6 +1321,7 @@ def build_libxed(env,work_queue):
                        env=env,
                        input=gc.all_input_files() + [env['mfile'], prep_files],
                        output= env.build_dir_join('dummy-prep') )
+    gen_dag = mbuild.dag_t('xedgen', env=env)
     prep = gen_dag.add(env,c0)
 
     # Python imports used by the 2 generators.
@@ -1389,7 +1419,7 @@ def build_libxed(env,work_queue):
         xbc.cexit(1)
 
     #########################################################################
-    # build libxed
+    # everything is generated, so now build libxed
 
     libxed_lib, libxed_dll = xbc.make_lib_dll(env,'xed')
     if  env['shared']:
@@ -1399,7 +1429,6 @@ def build_libxed(env,work_queue):
         env['shd_libxed']  = env.build_dir_join(libxed_lib)
         env['link_libxed'] = env['shd_libxed'] # same
 
-    
     # pick up the generated header files in the header scans
     env.add_include_dir(env['build_dir'])
     env['private_generated_header_dir'] = mbuild.join(env['build_dir'],
@@ -1411,26 +1440,24 @@ def build_libxed(env,work_queue):
     nongen_lib_sources = mbuild.glob(mbuild.join(env['src_dir'],'src','*.c'))
 
     # remove the overridden sources and stuff that is not for libxed.*
-    sources_to_remove.extend(['xed-init-ild.c',
-                              'xed-ild-support.c']) # stuff for standalone ild
-    sources_to_remove = xbc.src_dir_join(env, sources_to_remove)
+    sources_to_remove.extend(
+        xbc.src_dir_join(env, ['xed-init-ild.c', 'xed-ild-support.c']))
 
     generated_sources_to_remove = []
     if not env['decoder']:
         decoder_sources_to_remove = [
-           'xed-inst.c',
-           'xed-decode.c,'
-           'xed-chip-features.c',
-           'xed-enc-dec.c',
-           'xed-iform-map.c',
-           'xed-disas.c'
-           'xed-decoded-inst.c',
-           'xed-decoded-init.c',
-           'xed-agen.c',
-           'xed-ild.c',
-           'xed3-dynamic-decode.c',
-           'xed3-static-decode.c',
-           ]
+            'xed-inst.c',
+            'xed-decode.c,'
+            'xed-chip-features.c',
+            'xed-enc-dec.c',
+            'xed-iform-map.c',
+            'xed-disas.c'
+            'xed-decoded-inst.c',
+            'xed-decoded-init.c',
+            'xed-agen.c',
+            'xed-ild.c',
+            'xed3-dynamic-decode.c',
+            'xed3-static-decode.c' ]
         sources_to_remove +=  xbc.src_dir_join(env, decoder_sources_to_remove)
         generated_sources_to_remove += [
            env.build_dir_join('xed-iform-map-init.c')
@@ -1444,10 +1471,11 @@ def build_libxed(env,work_queue):
         sources_to_remove +=  xbc.src_dir_join(env, encoder_sources_to_remove)
 
     nongen_lib_sources = list( set(nongen_lib_sources) - set(sources_to_remove))
+    nongen_lib_sources = _replace_sources(nongen_lib_sources, sources_to_replace)
+    nongen_lib_sources.extend(sources_to_add)
+    
     generated_library_sources = list( set(generated_library_sources) -
                                       set(generated_sources_to_remove) )
-    # add the replacement sources
-    nongen_lib_sources.extend(sources_to_add)
 
     lib_dag = mbuild.dag_t('xedlib', env=env)
     lib_env = copy.deepcopy(env)
@@ -1481,7 +1509,7 @@ def build_libxed(env,work_queue):
 
     # libxed-ild
     if env['decoder'] and not lib_env['static_stripped']:
-        build_xed_ild_library(env, lib_env, lib_dag)
+        build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace)
 
     
     if lib_dag.cycle_check():
