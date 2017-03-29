@@ -4090,7 +4090,7 @@ EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
-COMMENT   : SNB had an errata where it would #UD of VEX.W=1 outside of 64b mode.
+COMMENT   : SNB had an errata where it would #UD of VEX.W=1 outside of 64b mode.  Not modeled.
 
 # 64b mode
 PATTERN   : VV1 0x16 VL128 V66 V0F3A mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
@@ -4145,9 +4145,17 @@ EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
-PATTERN : VV1 0x22  VL128 V66 V0F3A norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+COMMENT   : SNB had an errata where it would #UD of VEX.W=1 outside of 64b mode. Not modeled
+# 64b mode
+PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  MEM0:r:d:u32            IMM0:r:b
-PATTERN : VV1 0x22  VL128 V66 V0F3A norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  REG2=GPR32_B():r:d:u32  IMM0:r:b
+
+# 32b mode
+PATTERN : VV1 0x22  VL128 V66 V0F3A not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  MEM0:r:d:u32            IMM0:r:b
+PATTERN : VV1 0x22  VL128 V66 V0F3A not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  REG2=GPR32_B():r:d:u32  IMM0:r:b
 }
 {
@@ -4156,9 +4164,9 @@ EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
-PATTERN : VV1 0x22  VL128 V66 V0F3A rexw_prefix mode64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u64     REG1=XMM_N():r:dq:u64  MEM0:r:q:u64            IMM0:r:b
-PATTERN : VV1 0x22  VL128 V66 V0F3A rexw_prefix mode64 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u64     REG1=XMM_N():r:dq:u64  REG2=GPR64_B():r:q:u64  IMM0:r:b
 }
 
