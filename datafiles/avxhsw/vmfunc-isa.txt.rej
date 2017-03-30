@@ -1,0 +1,17 @@
+***************
+*** 19,25 ****
+  
+  {
+  ICLASS    : VMFUNC
+- CPL       : 0
+  CATEGORY  : VTX
+  EXTENSION : VMFUNC
+  ISA_SET   : VMFUNC
+--- 19,25 ----
+  
+  {
+  ICLASS    : VMFUNC
++ CPL       : 3
+  CATEGORY  : VTX
+  EXTENSION : VMFUNC
+  ISA_SET   : VMFUNC

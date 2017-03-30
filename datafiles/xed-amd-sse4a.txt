@@ -54,6 +54,7 @@ ICLASS    : MOVNTSD
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : SSE4a
+ATTRIBUTES: NONTEMPORAL
 PATTERN   : 0x0F 0x2B f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 
 OPERANDS  : MEM0:w:q      REG0=XMM_R():r:q    
 }
@@ -62,6 +63,7 @@ ICLASS    : MOVNTSS
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : SSE4a
+ATTRIBUTES: NONTEMPORAL
 PATTERN   : 0x0F 0x2B f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 
 OPERANDS  : MEM0:w:d      REG0=XMM_R():r:d   
 }
