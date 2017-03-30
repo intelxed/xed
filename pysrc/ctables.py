@@ -55,7 +55,7 @@ class constant_table_t(object):
         self.name=None
         self.operand=None
         self.value_string_pairs=[]
-        self.nlines = 0
+        
     def valid(self):
         if self.name != None:
            return True
@@ -82,63 +82,58 @@ class constant_table_t(object):
         return lines
 
         
-    def read(self, lines):
-        """Read lines from lines until a new header or a blank line is reached"""
-        started = False
-        while 1:
-            if not lines:
-                break
-            self.nlines += 1            
-            line = lines[0]
-            line = line.strip()
-            line = re.sub(r'#.*','',line)
-            m= constant_table_t.match_blank.match(line)
-            if m:
-                del lines[0]
-                continue
-
-            m= constant_table_t.match_header.match(line)
-            if m:
-                if started:
-                    return
-                else:
-                    started = True
-                    del lines[0]
-                    self.name = m.group('name')
-                    self.operand = m.group('operand')
-                    continue
-            m = constant_table_t.match_pair.match(line)
-            if m:
-                value = m.group('value')
-                symbol = m.group('symbol')
-                numeric_value = genutil.make_numeric(value)
-                #print "INPUT: [%s] [%s]" % (value,symbol)
-                self.value_string_pairs.append((numeric_value,symbol))
-                del lines[0]
-                continue
-            m = constant_table_t.match_pair_error.match(line)
-            if m:
-                value = m.group('value')
-                numeric_value = genutil.make_numeric(value)
-                self.value_string_pairs.append((numeric_value,None))
-                del lines[0]
-                continue
-            else:
-                genutil.die("Could not parse line %d: [%s]\n\n" % (self.nlines,line))
+def _read_constant_tables(lines, tables):
+    """Read lines from lines until a new header or a blank line is reached"""
+    nlines = 0
+    y = None
+    for line in lines:
+        nlines += 1            
+        line = line.strip()
+        line = re.sub(r'#.*','',line)
+        m = constant_table_t.match_blank.match(line)
+        if m:
+            continue
+        m = constant_table_t.match_header.match(line)
+        if m: # found next header
+            name = m.group('name')
+            y = None
+            for t in tables:
+                if t.name == name:
+                    y = t
+            if not y:
+                y = constant_table_t()
+                tables.append(y)
+                y.name = name
+                y.operand = m.group('operand')
+            continue
+        m = constant_table_t.match_pair.match(line)
+        if m:
+            value = m.group('value')
+            symbol = m.group('symbol')
+            numeric_value = genutil.make_numeric(value)
+            #print "INPUT: [%s] [%s]" % (value,symbol)
+            if not y:
+                genutil.die("Malformed constant table line {}: [{}]\n\n".format(nlines,line))
+            y.value_string_pairs.append((numeric_value,symbol))
+            continue
+        m = constant_table_t.match_pair_error.match(line)
+        if m:
+            value = m.group('value')
+            numeric_value = genutil.make_numeric(value)
+            if not y:
+                genutil.die("Malformed constant table line {}: [{}]\n\n".format(nlines,line))
+            y.value_string_pairs.append((numeric_value,None))
+            continue
+        else:
+            genutil.die("Could not parse line {}: [{}]\n\n".format(nlines,line))
                 
         
     
     
 def work(lines,   xeddir = '.',   gendir = 'obj'):
    tables = []
-   while lines:
-       y = constant_table_t()
-       y.read(lines)
-       #y.dump()
-       olines = y.emit_init()
-       #for l in olines:
-       #    print l
-       tables.append(y)
+   _read_constant_tables(lines,tables)
+
        
    tables=filter(lambda(x): x.valid() , tables)
    names=map(lambda(x): x.name , tables)
