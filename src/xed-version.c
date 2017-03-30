@@ -19,7 +19,7 @@ END_LEGAL */
 #include "xed-version.h"
 
 char const* const xed_copyright =
-  "Copyright (C) 2003-2015, Intel Corporation. All rights reserved.";
+  "Copyright (C) 2017, Intel Corporation. All rights reserved.";
 
 /* need two levels of macros to expand and stringify the CPP macro arg. */
 #define XED_STR1(x) #x
