@@ -948,26 +948,23 @@ def _wk_show_errors_only():
 
 def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
     # compile sources specific to ild
-    xed_ild_sources = ['xed-init-ild.c', 'xed-ild-support.c']
-    ild_objs  = lib_env.compile( lib_dag, xbc.src_dir_join(lib_env,
-                                                           xed_ild_sources))
-    # grab common sources compiled earlier
-    common_sources = ['xed-ild.c',
-                      'xed-isa-set.c',
-                      'xed-chip-features.c',
-                      'xed-chip-features-table.c',
-                      'xed-chip-modes.c',
-                      'xed-chip-modes-override.c',
-                      'xed-ild-disp-l3.c',
-                      'xed-ild-eosz.c',
-                      'xed-ild-easz.c',
-                      'xed-ild-imm-l3.c']
+    xed_ild_sources = _get_src(env,'ild')
+    ild_objs  = lib_env.compile( lib_dag, xed_ild_sources)
     
-    # to remove the override sources, we must first fully qualify stuff
-    common_sources = xbc.src_dir_join(lib_env, common_sources)
+    # grab common sources compiled earlier
+    common_sources = ['xed-ild.c',                 # dec
+                      'xed-chip-features.c',       # dec
+                      'xed-isa-set.c',             # common
+                      'xed-chip-modes.c',          # common
+                      'xed-chip-modes-override.c'] # common  (overrideable)
     common_sources = _replace_sources(common_sources, sources_to_replace)
-    # then we strip everything down and add the object extensions
+    # strip paths coming from the replaced sources.
     common_sources = map(lambda x: os.path.basename(x), common_sources)
+    common_sources += ['xed-chip-features-table.c', # generated
+                       'xed-ild-disp-l3.c',         # generated
+                       'xed-ild-eosz.c',            # generated
+                       'xed-ild-easz.c',            # generated
+                       'xed-ild-imm-l3.c']          # generated
     common_objs = lib_env.make_obj(common_sources)
     
     ild_objs += xbc.build_dir_join(lib_env, common_objs)
@@ -1102,12 +1099,12 @@ def _parse_extf_files_new(env, gc):
                     env.add_define(definition)
                 elif cmd == 'remove-source':
                     ptype = _get_check(wrds,1) # unused
-                    fname = _fn_expand(env, edir, _get_check( wrds,2))
+                    fname = _get_check( wrds,2)
                     sources_to_remove.append(fname)
-                elif cmd == 'remove':
-                    ptype = _get_check(wrds,1)
-                    fname = _fn_expand(env, edir, _get_check(wrds,2))
-                    gc.remove_file(ptype,full_name)
+                #elif cmd == 'remove':
+                #    ptype = _get_check(wrds,1)
+                #    fname = _fn_expand(env, edir, _get_check(wrds,2))
+                #    gc.remove_file(ptype,full_name)
                 elif cmd == 'add-source':
                     ptype = _get_check(wrds,1)
                     fname = _fn_expand(env, edir, _get_check(wrds,2))
@@ -1119,7 +1116,7 @@ def _parse_extf_files_new(env, gc):
                         sources_dict[ptype] = fname
                 elif cmd == 'replace-source':
                     ptype = _get_check(wrds,1)
-                    oldfn = _fn_expand(env, edir, _get_check(wrds,2))
+                    oldfn = _get_check(wrds,2)
                     newfn = _fn_expand(env, edir, _get_check(wrds,3))
                     priority =  int(_get_check(wrds,4, default=1))
                     sources_to_replace.append((oldfn, newfn, ptype, priority))
@@ -1129,6 +1126,8 @@ def _parse_extf_files_new(env, gc):
                     priority =  int(_get_check(wrds,3, default=1))
                     gc.add_file(ptype, fname, priority)
                 else: # default is to add "keytype: file" (optional priority)
+                    if len(wrds) not in [2,3]:
+                        xbc.die('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
                     ptype = _get_check(wrds,0)
                     fname = _fn_expand(env, edir, _get_check(wrds,1))
                     priority =  int(_get_check(wrds,2, default=1))
@@ -1146,7 +1145,8 @@ def _replace_sources(srclist, sources_to_replace):
         prio_d[s] = 1
         newfn_d[s] = s
         for (oldfn,newfn,ptype,prio) in sources_to_replace:
-            if s == oldfn:
+            # substring search to avoid absolute vs relative path issues
+            if oldfn in s: 
                 if prio > prio_d[s]:
                     mbuild.msgb("REPLACING {} with {}".format(s, newfn))
                     prio_d[s] = prio
@@ -1284,7 +1284,32 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'avx512vbmi')
 
     env['extf'] = newstuff + env['extf']
-    
+
+def _get_src(env,subdir):
+    return mbuild.glob(mbuild.join(env['src_dir'],'src',subdir,'*.c'))
+
+def _abspath(lst):
+  return map(lambda x: os.path.abspath(x), lst)
+
+def _remove_src(lst, fn_to_remove):
+    """Remove based on substring to avoid relative vs absolute path issues"""
+    nlist = []
+    for lfn in lst:
+        if fn_to_remove not in lfn: # substring search
+            nlist.append(lfn)
+    return nlist
+def _remove_src_list(lst, list_to_remove):
+    nlist = []
+    for lfn in lst:
+        keep = True
+        for rfn in list_to_remove:
+            if rfn in lfn:
+                keep = False
+                break
+        if keep:
+            nlist.append(lfn)
+    return nlist
+
 def build_libxed(env,work_queue):
     "Run the generator and build libxed"
     
@@ -1435,47 +1460,22 @@ def build_libxed(env,work_queue):
                                                       'include-private')
     env.add_include_dir(env['private_generated_header_dir'])
 
-    # collect up all the generated sources
     generated_library_sources = mbuild.glob(mbuild.join(env['build_dir'],'*.c'))
-    nongen_lib_sources = mbuild.glob(mbuild.join(env['src_dir'],'src','*.c'))
-
-    # remove the overridden sources and stuff that is not for libxed.*
-    sources_to_remove.extend(
-        xbc.src_dir_join(env, ['xed-init-ild.c', 'xed-ild-support.c']))
-
-    generated_sources_to_remove = []
-    if not env['decoder']:
-        decoder_sources_to_remove = [
-            'xed-inst.c',
-            'xed-decode.c,'
-            'xed-chip-features.c',
-            'xed-enc-dec.c',
-            'xed-iform-map.c',
-            'xed-disas.c'
-            'xed-decoded-inst.c',
-            'xed-decoded-init.c',
-            'xed-agen.c',
-            'xed-ild.c',
-            'xed3-dynamic-decode.c',
-            'xed3-static-decode.c' ]
-        sources_to_remove +=  xbc.src_dir_join(env, decoder_sources_to_remove)
-        generated_sources_to_remove += [
-           env.build_dir_join('xed-iform-map-init.c')
-           ]
-    if not env['encoder']:
-        encoder_sources_to_remove = [
-            'xed-encode.c',
-            'xed-enc-dec.c',
-            'xed-encode-isa-functions.c',
-            'xed-encoder-hl.c']
-        sources_to_remove +=  xbc.src_dir_join(env, encoder_sources_to_remove)
-
-    nongen_lib_sources = list( set(nongen_lib_sources) - set(sources_to_remove))
-    nongen_lib_sources = _replace_sources(nongen_lib_sources, sources_to_replace)
-    nongen_lib_sources.extend(sources_to_add)
     
-    generated_library_sources = list( set(generated_library_sources) -
-                                      set(generated_sources_to_remove) )
+    nongen_lib_sources = _get_src(env,'common') 
+    if env['decoder']:
+        nongen_lib_sources.extend(_get_src(env,'dec'))
+    else:
+        generated_library_sources = _remove_src(generated_library_sources,
+                                                'xed-iform-map-init.c')
+    if env['encoder']:
+         nongen_lib_sources.extend(_get_src(env,'enc'))
+    if ['encoder'] and env['decoder']:
+         nongen_lib_sources.extend(_get_src(env,'encdec'))
+
+    nongen_lib_sources = _remove_src_list(nongen_lib_sources, sources_to_remove)
+    nongen_lib_sources.extend(sources_to_add)
+    nongen_lib_sources = _replace_sources(nongen_lib_sources, sources_to_replace)
 
     lib_dag = mbuild.dag_t('xedlib', env=env)
     lib_env = copy.deepcopy(env)
@@ -1511,7 +1511,6 @@ def build_libxed(env,work_queue):
     if env['decoder'] and not lib_env['static_stripped']:
         build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace)
 
-    
     if lib_dag.cycle_check():
         xbc.cdie("Circularities in dag...")
     if 'skip-lib' in env['targets']:
