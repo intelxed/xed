@@ -327,6 +327,7 @@ def build_examples(env, work_queue):
                           'avltree.c',
                           'xed-disas-hex.c',
 			  'xed-disas-filter.c',
+			  'xed-nm-symtab.c',
                           'xed-symbol-table.c']
     if env.on_windows() and env['set_copyright']:
         xed_cmdline_files.append("xed.rc")
