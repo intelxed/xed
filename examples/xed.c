@@ -31,6 +31,7 @@ END_LEGAL */
 #include "xed-disas-raw.h"
 #include "xed-disas-hex.h"
 #include "xed-disas-pecoff.h"
+#include "xed-disas-filter.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -217,6 +218,8 @@ static void usage(char* prog) {
       "\t-ir raw_input_file        (decode a raw unformatted binary file)",
       "\t-ih hex_input_file        (decode a raw unformatted ASCII hex file)",
       "\t-d hex-string             (decode one instruction, must be last)",
+      "\t-F prefix		  (decode ascii hex bytes after prefix)",
+      "\t			  (running in filter mode from stdin)",
 #if defined(XED_ENCODER)
       "\t-ide input_file           (decode/encode file)",
       "\t-e instruction            (encode, must be last)",
@@ -381,6 +384,10 @@ main(int argc, char** argv)
     xed_chip_enum_t xed_chip = XED_CHIP_INVALID;
     xed_operand_enum_t operand = XED_OPERAND_INVALID;
     xed_uint32_t operand_value = 0;
+    xed_bool_t filter = 0;
+#if defined(XED_LINUX)
+    char *prefix = NULL;
+#endif
 
     char* dot_output_file_name = 0;
     xed_bool_t dot = 0;
@@ -416,6 +423,14 @@ main(int argc, char** argv)
     client_verbose = 3;
     xed_set_verbosity( client_verbose );
     for( i=1; i < argc ; i++ )    {
+#if defined(XED_LINUX)
+	if (strcmp(argv[i], "-F") == 0) {
+	    test_argc(i, argc);
+	    filter = 1;
+	    prefix = argv[++i];
+	    continue;
+	}
+#endif
         if (strcmp(argv[i], "-no-resync") ==0)   {
             resync = 0;
 	    continue;
@@ -654,7 +669,7 @@ main(int argc, char** argv)
     if (!encode)     {
         if (input_file_name == 0 &&
             (decode_text == 0 ||
-             strlen(decode_text) == 0))
+	     strlen(decode_text) == 0) && !filter)
         {
             printf("ERROR: required argument(s) were missing\n");
             usage(argv[0]);
@@ -720,7 +735,16 @@ main(int argc, char** argv)
     init_xedd(&xedd, &decode_info);
     
 #endif
-    
+
+#if defined(XED_LINUX)
+    if (filter)
+    {
+#if defined(XED_DECODER)
+	retval_okay = disas_filter (&xedd, prefix, &decode_info);
+#endif
+    } else
+#endif
+
     if (assemble)
     {
 #if defined(XED_ENCODER)
