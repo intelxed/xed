@@ -162,6 +162,7 @@ XED_OBJ += xed-disas-macho.${OBJEXT}
 XED_OBJ += xed-disas-pecoff.${OBJEXT}
 XED_OBJ += xed-disas-raw.${OBJEXT}
 XED_OBJ += xed-disas-elf.${OBJEXT}
+XED_OBJ += xed-disas-filter.${OBJEXT}
 XED_OBJ += xed-symbol-table.${OBJEXT}
 XED_OBJ += avltree.${OBJEXT} 
 XED_OBJ += ${XED_CC_COMMON_OBJ} 
