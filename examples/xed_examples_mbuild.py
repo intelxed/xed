@@ -335,6 +335,7 @@ def build_examples(env, work_queue):
         if env.on_linux() or env.on_freebsd() or env.on_netbsd():
             xed_cmdline_files.append('xed-disas-elf.c')
             xed_cmdline_files.append('xed-disas-filter.c')
+            xed_cmdline_files.append('xed-nm-symtab.c')
             
         elif env.on_mac():
             xed_cmdline_files.append('xed-disas-macho.c')
