@@ -24,6 +24,8 @@ END_LEGAL */
 #include <xed/xed-interface.h>
 #include "xed-examples-util.h"
 #include "xed-disas-filter.h"
+#include "xed-symbol-table.h"
+#include "xed-nm-symtab.h"
 
 #define IMAX 32
 #define LINELEN 1024
@@ -62,6 +64,8 @@ int disas_filter(xed_decoded_inst_t *inst, char *prefix, xed_disas_info_t *di)
 {
     char line[LINELEN];
 
+    di->symfn = get_symbol;
+    xed_register_disassembly_callback(xed_disassembly_callback_function);
     while (fgets(line, LINELEN, stdin)) {
 	xed_error_enum_t err;
 	char *insn = strstr(line, prefix), *ip;
@@ -92,7 +96,8 @@ int disas_filter(xed_decoded_inst_t *inst, char *prefix, xed_disas_info_t *di)
 	if ((err = xed_decode(inst, insnbuf, ilen)) != XED_ERROR_NONE) {
 	    snprintf(out, sizeof out, "%s" , xed_error_enum_t2str(err));
 	} else {
-	    disassemble(di, out, sizeof out, inst, get_ip(line), NULL);
+	    disassemble(di, out, sizeof out, inst, get_ip(line),
+			    nm_symtab_init ? &nm_symtab : NULL);
 	}
 	printf("%.*s\t\t%s%s", (int)(insn - line), line, out, endp);
     }

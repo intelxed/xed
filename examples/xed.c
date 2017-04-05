@@ -32,6 +32,8 @@ END_LEGAL */
 #include "xed-disas-hex.h"
 #include "xed-disas-pecoff.h"
 #include "xed-disas-filter.h"
+#include "xed-symbol-table.h"
+#include "xed-nm-symtab.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -260,6 +262,7 @@ static void usage(char* prog) {
       "\t-uc           (upper case hex formatting)",
       "\t-nwm          (Format AVX512 without curly braces for writemasks, include k0)",
       "\t-emit         (Output __emit statements for the Intel compiler)",
+      "\t-S file       Read symbol table in \"nm\" format from file",
 #if defined(XED_DWARF) 
       "\t-line         (Emit line number information, if present)",
 #endif
@@ -395,6 +398,7 @@ main(int argc, char** argv)
 #if defined(XED_DECODER)
     xed_disas_info_t decode_info;
 #endif
+    char *nm_symtab = NULL;
     
     /* I have this here to test the functionality, if you are happy with
      * the XED formatting options, then you do not need to set this or call
@@ -425,6 +429,10 @@ main(int argc, char** argv)
 	    test_argc(i, argc);
 	    filter = 1;
 	    prefix = argv[++i];
+	    continue;
+	} else if (strcmp(argv[i], "-S") == 0) {
+	    test_argc(i, argc);
+	    nm_symtab = argv[++i];
 	    continue;
 	}
         if (strcmp(argv[i], "-no-resync") ==0)   {
@@ -672,6 +680,15 @@ main(int argc, char** argv)
             exit(1);
         }
     }
+
+    if (nm_symtab) {
+	if (!filter) {
+	    printf("ERROR: -S only support with -F for now\n");
+	    exit(1);
+	}
+	xed_read_nm_symtab(nm_symtab);
+    }
+
     if (CLIENT_VERBOSE2)
         printf("Initializing XED tables...\n");
 
