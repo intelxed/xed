@@ -88,6 +88,8 @@ def expand_macro_not(d):
         d[chip]  = uniquify_list(positive_exts)
 
 def  parse_lines(input_file_name, lines): # returns a dictionary
+    """Return a list of chips and a dictionary indexed by chip containing
+    lists of isa-sets    """
     d = {}
     chips = []
     for line in lines:
@@ -127,11 +129,33 @@ def read_database(filename):
     expand_macro(chip_features_dict,expand_all_of_once)
     expand_macro_not(chip_features_dict)
 
-    return (chips,chip_features_dict) 
+    return (chips,chip_features_dict)
 
+
+def _format_names(lst):
+    cols = 4
+    lines = ('\t'.join(lst[i:i+cols]) for i in xrange(0,len(lst),cols))
+    return '\n\t'.join(lines)
+            
+def dump_chip_hierarchy(arg, chips, chip_features_dict):
+    fe = codegen.xed_file_emitter_t(arg.xeddir, 
+                                     arg.gendir, 
+                                     'cdata.txt', 
+                                     shell_file=True)
+    fe.start(full_header=False)
+    for c in chips:
+        fl = chip_features_dict[c]
+        fl.sort()
+        s = "{} :\n".format(c)
+        s = s + '\t' + _format_names(fl)  + '\n'
+        fe.write(s)
+    fe.close()
+    return fe.full_file_name
+    
 def work(arg):
     (chips,chip_features_dict) = read_database(arg.input_file_name) 
 
+    isa_set_per_chip_fn = dump_chip_hierarchy(arg, chips, chip_features_dict)
     # the XED_CHIP_ enum
     chips.append("ALL")
     chip_enum =  enum_txt_writer.enum_info_t(['INVALID'] + chips,
@@ -226,12 +250,14 @@ def work(arg):
     hfe.write(fo.emit_header())
     hfe.close()
 
-    return ( [chip_enum.hdr_full_file_name,
-              chip_enum.src_full_file_name,
-              isa_set_enum.hdr_full_file_name,
-              isa_set_enum.src_full_file_name,
-              hfe.full_file_name, 
-              cfe.full_file_name], chips, isa_set)
+    return ( [ isa_set_per_chip_fn,
+               chip_enum.hdr_full_file_name,
+               chip_enum.src_full_file_name,
+               isa_set_enum.hdr_full_file_name,
+               isa_set_enum.src_full_file_name,
+               hfe.full_file_name, 
+               cfe.full_file_name],
+             chips, isa_set)
     
 
 class args_t(object):
