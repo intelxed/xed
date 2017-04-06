@@ -31,6 +31,9 @@ END_LEGAL */
 #include "xed-disas-raw.h"
 #include "xed-disas-hex.h"
 #include "xed-disas-pecoff.h"
+#include "xed-disas-filter.h"
+#include "xed-symbol-table.h"
+#include "xed-nm-symtab.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -217,6 +220,8 @@ static void usage(char* prog) {
       "\t-ir raw_input_file        (decode a raw unformatted binary file)",
       "\t-ih hex_input_file        (decode a raw unformatted ASCII hex file)",
       "\t-d hex-string             (decode one instruction, must be last)",
+      "\t-F prefix		  (decode ascii hex bytes after prefix)",
+      "\t			  (running in filter mode from stdin)",
 #if defined(XED_ENCODER)
       "\t-ide input_file           (decode/encode file)",
       "\t-e instruction            (encode, must be last)",
@@ -257,6 +262,7 @@ static void usage(char* prog) {
       "\t-uc           (upper case hex formatting)",
       "\t-nwm          (Format AVX512 without curly braces for writemasks, include k0)",
       "\t-emit         (Output __emit statements for the Intel compiler)",
+      "\t-S file       Read symbol table in \"nm\" format from file",
 #if defined(XED_DWARF) 
       "\t-line         (Emit line number information, if present)",
 #endif
@@ -381,6 +387,8 @@ main(int argc, char** argv)
     xed_chip_enum_t xed_chip = XED_CHIP_INVALID;
     xed_operand_enum_t operand = XED_OPERAND_INVALID;
     xed_uint32_t operand_value = 0;
+    xed_bool_t filter = 0;
+    char *prefix = NULL;
 
     char* dot_output_file_name = 0;
     xed_bool_t dot = 0;
@@ -390,6 +398,7 @@ main(int argc, char** argv)
 #if defined(XED_DECODER)
     xed_disas_info_t decode_info;
 #endif
+    char *nm_symtab = NULL;
     
     /* I have this here to test the functionality, if you are happy with
      * the XED formatting options, then you do not need to set this or call
@@ -416,6 +425,16 @@ main(int argc, char** argv)
     client_verbose = 3;
     xed_set_verbosity( client_verbose );
     for( i=1; i < argc ; i++ )    {
+	if (strcmp(argv[i], "-F") == 0) {
+	    test_argc(i, argc);
+	    filter = 1;
+	    prefix = argv[++i];
+	    continue;
+	} else if (strcmp(argv[i], "-S") == 0) {
+	    test_argc(i, argc);
+	    nm_symtab = argv[++i];
+	    continue;
+	}
         if (strcmp(argv[i], "-no-resync") ==0)   {
             resync = 0;
 	    continue;
@@ -654,13 +673,22 @@ main(int argc, char** argv)
     if (!encode)     {
         if (input_file_name == 0 &&
             (decode_text == 0 ||
-             strlen(decode_text) == 0))
+	     strlen(decode_text) == 0) && !filter)
         {
             printf("ERROR: required argument(s) were missing\n");
             usage(argv[0]);
             exit(1);
         }
     }
+
+    if (nm_symtab) {
+	if (!filter) {
+	    printf("ERROR: -S only support with -F for now\n");
+	    exit(1);
+	}
+	xed_read_nm_symtab(nm_symtab);
+    }
+
     if (CLIENT_VERBOSE2)
         printf("Initializing XED tables...\n");
 
@@ -720,8 +748,14 @@ main(int argc, char** argv)
     init_xedd(&xedd, &decode_info);
     
 #endif
-    
-    if (assemble)
+
+    if (filter)
+    {
+#if defined(XED_DECODER)
+	retval_okay = disas_filter (&xedd, prefix, &decode_info);
+#endif
+    }
+    else if (assemble)
     {
 #if defined(XED_ENCODER)
         xed_assemble(&dstate, input_file_name);

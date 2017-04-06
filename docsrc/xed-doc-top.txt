@@ -1005,6 +1005,7 @@ One of the following is required:
   -d hex-string             (decode one instruction)
   -e instruction            (encode, must be last)
   -de hex-string            (decode-then-encode)
+  -F prefix		    (filter input with prefix)
  
 Optional arguments:
   -v verbosity  (0=quiet, 1=errors, 2=useful-info, 3=trace, 5=very verbose)
@@ -1051,6 +1052,10 @@ PUSH INT_ALU BASE  Opcode: 6a  Immed: 00 Bytes: 2
 
 % xed -e MOV EAX MEM4:SS:ESP
 Encodable! 8b0424
+
+% echo '7f550c23efa1 __clone+0x31 insn: 48 85 c0' | xed -F insn: -A
+7f550c23efa1 __clone+0x31       test %rax, %rax
+
 @endcode 
 
 Or using the xed-ex3 example tool:
