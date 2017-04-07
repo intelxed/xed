@@ -863,6 +863,7 @@ main(int argc, char** argv)
     (void) encode_text;
 #if !defined(XED_DECODER)
     // pacify the compiler for encoder-only builds:
+    (void) xedd;
     (void) sixty_four_bit;
     (void) decode_only;
     (void) symbol_search_path;
