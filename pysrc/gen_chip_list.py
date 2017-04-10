@@ -53,7 +53,9 @@ def work(args):  # main function
     (chips, chip_db) = chipmodel.read_database(args.chip_filename)
 
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
-                                     args.instructions_filename)
+                                     args.instructions_filename,
+                                     args.widths_filename,
+                                     args.element_types_filename)
 
     isasets = set()
     for r in xeddb.recs:
@@ -119,6 +121,10 @@ def setup():
     parser.add_argument('instructions_filename', 
                         help='Input instructions file')
     parser.add_argument('chip_filename', 
+                        help='Input chip file')
+    parser.add_argument('widths_filename', 
+                        help='Input chip file')
+    parser.add_argument('element_types_filename', 
                         help='Input chip file')
     args = parser.parse_args()
     return args
