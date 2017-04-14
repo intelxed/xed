@@ -1862,9 +1862,10 @@ def build_kit(env, work_queue):
             mbuild.warn("Could not find %s" % (f))
 
     # copy the miscellaneous files to the misc directory
-    idata =mbuild.join(env['build_dir'],'idata.txt')
-    mbuild.copy_file(idata, misc)
-    apply_legal_header2(mbuild.join(misc,'idata.txt'), legal_header)
+    for gfn in ['idata.txt', 'cdata.txt']:
+        full_gfn =mbuild.join(env['build_dir'], gfn)
+        mbuild.copy_file(full_gfn, misc)
+        apply_legal_header2(mbuild.join(misc,gfn), legal_header)
 
     # copy mbuild to kit
     msrc = mbuild.join(env['src_dir'], '..', 'mbuild')
