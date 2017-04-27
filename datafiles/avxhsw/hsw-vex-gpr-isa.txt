@@ -23,7 +23,6 @@ ICLASS    : PDEP
 CPL       : 3
 CATEGORY  : BMI2
 EXTENSION : BMI2
-FLAGS     : MUST [ of-u sf-u zf-mod af-u pf-u cf-mod ]
 
 #32b
 PATTERN   : VV1 0xF5 V0F38 VF2 not64 VL128 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
@@ -51,7 +50,6 @@ ICLASS    : PEXT
 CPL       : 3
 CATEGORY  : BMI2
 EXTENSION : BMI2
-FLAGS     : MUST [ of-u sf-u zf-mod af-u pf-u cf-mod ]
 
 
 #32b
