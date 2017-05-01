@@ -1,0 +1,193 @@
+# BEGIN_LEGAL
+# 
+# Copyright (c) 2017 Intel Corporation
+# 
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+# 
+#       http://www.apache.org/licenses/LICENSE-2.0
+# 
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+#   
+# END_LEGAL
+
+2017-05-01 Engineering Notes for XED
+
+The files.cfg files specify which files get collected in to the
+"obj/dgen" directory and then used for the subsequent build.  Each
+files.cfg file has lines in token:value format specifying the tokens
+below. The values are generally file names. Some of the tokens also
+have priority values used for replacing earlier files.
+
+dec-spine:
+
+   the top level sequence of actions for decoding. This is the ISA()
+   nonterminal.
+
+dec-instructions:
+
+   instruction patterns used to create the decoder. Each instruction
+   is defined in in a sequence of token:value lines between a pair of
+   lines containing curly braces { ... }.  Some of the tokens are
+   repeatable, some are not. The most common tokens are:
+
+
+   These tokens are not repeatable:
+   
+     ICLASS      : instruction name
+     
+     DISASM      : (optional) substituted name when a simple conversion
+                   from iclass is inappropriate
+     
+     ATTRIBUTES  : (optional) names for bits in the binary attributes field
+     
+     UNAME       : (optional) unique name used for deleting / replacing
+                   instructions.
+                   
+     CPL         : current privilege level. Valid values: 0, 3.
+     
+     CATEGORY    : ad-hoc categorization of instructions
+     
+     EXTENSION   : ad-hoc grouping of instructions.  If no ISA_SET is
+                   specified, this is used instead.
+                   
+     ISA_SET     : (optional) name for the group of instructions that
+                   introduced this feature. On the older stuff we used the
+                   EXTENSION field but that got too complicated.
+                   
+     FLAGS       : (optional) read/written flag bit values.
+     
+     COMMENT     : (optional) a hopefully useful comment
+
+   These are repeatable:
+     
+     PATTERN     : the sequence of bits and nonterminals used to
+                   decode/encode an instruction.
+                   
+     OPERANDS    : the operands, typicall registers,  memory operands
+                   and pseudo-resources.
+                   
+     IFORM       : (optional) a name for the pattern that starts with the
+                   iclass and bakes in the operands. If omitted, xed
+                   tries to generate one. We often add custom suffixes
+                   to these to disambiguate certain combinations.
+
+   The PATTERN and OPERANDS lines come in pairs. Each pair can have
+   its own IFORM line.
+   
+   The PATTERN and OPERANDS tokens require further description due to
+   their complexity and importance.
+
+    
+enc-instructions:
+
+   instruction patterns used to create the encoder. Same forat as
+   dec-instructions. We an include extra instructions for encoding
+   standardized wide nops for example.
+   
+dec-patterns:
+
+   non-instruction patterns and tables used to create the decoder
+
+enc-patterns:
+
+   non-instruction patterns and tables used to create the encoder.
+   
+enc-dec-patterns:
+
+   decode patterns used for encode
+   
+fields:
+
+   names and properties of storage variables. This is where the
+   decoder and the encoder store all dynamicly collected and derived
+   information about instructions.
+
+state:
+
+   This rathr poorly named file contains simple macro definitions to
+   abstract and name some of the details of the conventions.  Example:
+   (1) Rather than say "MODE=2" we can say "mode64". (2) Rather than
+   say "MODE!=2" we can say "not64".
+
+registers:
+
+   Register name definition. Includes type, width, nesting
+   information, and ordinal name.
+
+widths:
+
+   The operands have types and widths. The width system gives names to
+   these features. Operand widths often vary with the x86 effective
+   operand size calculation; This is where those widths are specified.
+   A width is called and "oc2-code" and maps to a lower level type called
+   an "xtype" and a set of one or more widths. The name "oc2-code" comes
+   from the old Intel SDM opcode maps that tried to use two letters to
+   specify operand widths but that system was incomplete.
+
+element-types:
+
+   This maps xtypes to base-types (UINT, INT, SINGLE, DOUBLE, etc.)
+   and bit widths.
+        
+element-type-base:
+
+    Enumeration definition file for the
+    xed_operand_element_type_enum_t base type enumeration.
+
+extra-widths:
+
+   In the early XED instruction descriptions, we omitted the oc2-code
+   for the nonterminals for register values. This table supplies
+   default oc2-values (widths, see above) for the older undecorated
+   register nonterminals.
+
+pointer-names:
+
+   For printing memory operations in disassembly, we are required to
+   map memory reference widths to terms like "WORD" or "DWORD"
+   etc. This file establishes that mapping.
+ 
+    
+chip-models:
+
+   XED defines a xed_chip_enum_t as a collection of xed_isa_set_enum_t
+   values. This file defines that mapping. Most xed chips are based on
+   earlier chips and include all their features by specifying
+   ALL_OF(x) where x is some earlier chip.  It is also possible to
+   remove features with NOT(y) but that is not used very frequently.
+
+
+conversion-table:
+
+   string tables for converting field values to ASCII strings during
+   disassembly.
+  
+ild-scanners:
+
+   Since XED supports variance in what features are enabled, the
+   instruction-length-decoder (ILD) allows overriding what scanners
+   are baked in ot the build. This file supplies the C code function
+   xed_ild_scanners_init() which is responsible for wiring up the ILD
+   scanners in the correct order.
+   
+ild-getters:
+
+   Not currently used.  Allows extending the list of
+   xed3_operand_get_*() functions with functions that are used during
+   decoding for creating hash values.  These functions are generally
+   only used in prototyping and internal early enabling before the
+   features or the code supporting those features are made exposed
+   publicly. Once the features defined here become pulic, the code can
+   be moved to the static part of the code.
+
+   
+cpuid:
+
+   Maps xed_isa_set_enum_t values to a set of CPUID bits. Each
+   instruction pattern belongs to one xd_isa_set_enum_t value.
