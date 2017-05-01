@@ -155,6 +155,19 @@ xed3_operand_get_vexdest210_7(const xed_decoded_inst_t* ild) {
 }
 #endif
 
+#if defined(XED_SUPPORTS_AVX512)
+static XED_INLINE
+xed_uint32_t xed3_operand_get_mask_not0(const xed_decoded_inst_t *d) {
+    /* aaa != 0  */
+    return xed3_operand_get_mask(d) != 0;
+}
+static XED_INLINE
+xed_uint32_t xed3_operand_get_mask_zero(const xed_decoded_inst_t *d) {
+    /* aaa == 0  */
+    return xed3_operand_get_mask(d) == 0;
+}
+#endif
+
 void
 xed_instruction_length_decode(xed_decoded_inst_t* d);
 
