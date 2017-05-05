@@ -1470,7 +1470,7 @@ def build_libxed(env,work_queue):
                                                 'xed-iform-map-init.c')
     if env['encoder']:
          nongen_lib_sources.extend(_get_src(env,'enc'))
-    if ['encoder'] and env['decoder']:
+    if env['encoder'] and env['decoder']:
          nongen_lib_sources.extend(_get_src(env,'encdec'))
 
     nongen_lib_sources = _remove_src_list(nongen_lib_sources, sources_to_remove)
