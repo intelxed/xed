@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 #  
 #END_LEGAL
 
-KNM: ALL_OF(KNL)   \
+# VMFUNC was partially implmented on KNL but VMX was disabled.
+KNM: ALL_OF(KNL)   VMFUNC \
         AVX512_4VNNIW_512 \
         AVX512_4FMAPS_512 \
         AVX512_4FMAPS_SCALAR \
