@@ -62,10 +62,31 @@ def work(args):  # main function
     ilist.sort()
     ulist = list(set(map(lambda x: x.iclass, undoc)))
     ulist.sort()
-    for i in ilist:
-        print i
-    for i in ulist:
-        print i, "UNDOC"
+    if args.otherchip:
+        (insts2,undoc2) = check(args.otherchip, xeddb, chip_db)
+        ilist2 = list(set(map(lambda x: x.iclass, insts2)))
+        ulist2 = list(set(map(lambda x: x.iclass, undoc2)))
+        s1 = set(ilist + ulist)
+        s2 = set(ilist2 + ulist2)
+        d12 = list(s1-s2)
+        d21 = list(s2-s1)
+        d12.sort()
+        d21.sort()
+        both = list(s1&s2)
+        both.sort()
+
+        for i in d12:
+            print "{:20s} IN: {}   NOT IN: {}".format(i, args.chip, args.otherchip)
+        for i in d21:
+            print "{:20s} IN: {}   NOT IN: {}".format(i, args.otherchip, args.chip)
+        for i in both:
+            print "{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip)
+        
+    else:
+        for i in ilist:
+            print i
+        for i in ulist:
+            print i, "UNDOC"
     return 0
 
 
@@ -84,7 +105,11 @@ def setup():
                         help='Input chip file')
     parser.add_argument('element_types_filename', 
                         help='Input chip file')
+    parser.add_argument('--otherchip',
+                        help='Other chip name, for computing differences')
+
     args = parser.parse_args()
+
     return args
 
 if __name__ == "__main__":
