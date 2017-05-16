@@ -15,17 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-xed_reg_enum_t GPRy_N()::
-EASZ=3 | OUTREG=VGPR64_N() 
-EASZ=2 | OUTREG=VGPR32_N()
-EASZ=1 | OUTREG=VGPR32_N() 
 
+# VGPRy_N is used by AMD XOP only but the lower level stuff is used by HSW NI
 
-xed_reg_enum_t VGPRv_N()::
-EOSZ=1 | OUTREG=VGPR32_N()
+xed_reg_enum_t VGPRy_N()::   
+EOSZ=1 | OUTREG=VGPR32_N() 
 EOSZ=2 | OUTREG=VGPR32_N()
-EOSZ=3 | OUTREG=VGPR64_N()
-
+EOSZ=3 | OUTREG=VGPR64_N() 
 
 xed_reg_enum_t VGPR32_N()::
 mode16 | OUTREG=VGPR32_N_32()
