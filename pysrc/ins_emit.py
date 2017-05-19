@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -467,7 +467,12 @@ class instruction_codegen_t():
             #this action represents the opcode
             iform.nominal_opcode = first.int_value
             iform.nom_opcode_bits = first.nbits
-            iform.map = legacy_maps['map0']
+            # FIXME: mjc: 2017-05-19: this ultimately gets dumped in
+            # to the xed-encoder-iforms-init.c file and all the
+            # VEX/EVEX/XOP encoded stuff are listed as XED_ILD_MAP0
+            # which is wrong.  This is only used for encoding the legacy maps.
+            # The actual map comes from the field-bindings collected later
+            iform.map = legacy_maps['map0'] # legacy only, Not all vexvalid instr are map0.
             #replacing with place holder
             iform.rule.actions[i] = actions.dummy_emit(first,'NOM_OPCODE')
         
