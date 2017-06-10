@@ -176,7 +176,7 @@ class generator_inputs_t(object):
         """Return a list of all the input file names so we can hook up
         the dependences"""
         fnames = []
-        for flist in self.files.itervalues():
+        for flist in iter(self.files.values()):
             fnames.extend(flist)
         fnames.sort()
         return fnames
@@ -1135,7 +1135,7 @@ def _parse_extf_files_new(env, gc):
                     priority =  int(_get_check(wrds,2, default=1))
                     gc.add_file(ptype, fname, priority)
 
-    for v in sources_dict.itervalues():
+    for v in iter(sources_dict.values()):
         sources_to_add.append(v)
 
     return (sources_to_remove, sources_to_add, sources_to_replace )
@@ -2045,7 +2045,7 @@ def emit_defines_header(env):
     klist.append("#if !defined(XED_BUILD_DEFINES_H)")
     klist.append("#  define XED_BUILD_DEFINES_H\n")
 
-    kys = env['DEFINES'].keys()
+    kys = list(env['DEFINES'].keys())
     kys.sort()
     for d in kys:
         if re.match(r'^XED_',d):
