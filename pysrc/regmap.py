@@ -16,8 +16,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-import re,sys
+from __future__ import print_function
+import re
+import sys
 
 def die(s):
     sys.stderr.write(s+"\n")
@@ -40,8 +41,8 @@ class regmap_t(object):
         self.emit_decoder_code()
         self.emit_encoder_code()
     def dump(self):
-        print " DECODER OUTPUT: ", self.decode_output
-        print " ENCODER OUTPUT: ", self.encode_output
+        print(" DECODER OUTPUT: ", self.decode_output)
+        print(" ENCODER OUTPUT: ", self.encode_output)
         
     def emit_decoder_code(self):
         self.decode_preamble()
@@ -111,9 +112,9 @@ class parse_regmap_t(object):
                 
     def dump(self):
         for g,v in self.regmaps.iteritems():
-            print g, ":  "
+            print(g, ":  ")
             v.dump()
-            print "\n\n"
+            print("\n\n")
 
 if __name__ == "__main__":
     o = regmap_t('OUTREG', 'XMM_1','XED_REG_XMM0','REGIDX1')

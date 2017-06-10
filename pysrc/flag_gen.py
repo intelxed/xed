@@ -20,7 +20,7 @@
 
 # FIXME: could cut table sizes by rusing identical entries in the
 # simple flags table. 2007-05-02
-
+from __future__ import print_function
 import re
 import os
 import sys
@@ -570,8 +570,8 @@ def _testflags():
     a.set('cf')
     a.set('zf')
     a.set('of')
-    print a.as_integer()
-    print a.as_hex()
+    print(a.as_integer())
+    print(a.as_hex())
 
 if __name__ == '__main__':
     _testflags()

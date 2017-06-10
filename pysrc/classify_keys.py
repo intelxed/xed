@@ -16,7 +16,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import os
 import sys
 import re
@@ -94,24 +94,24 @@ def classify(kys,env):
 def dump_classifications(env):
     for k in env.lengths.keys():
         v = env.lengths[k]
-        print "LENGTH {} COUNT {}".format(k,v)
+        print("LENGTH {} COUNT {}".format(k,v))
 
     for lst in env.funky:
-        print str(lst)
+        print(str(lst))
 
     u = len(env.unique_sequences.keys())
-    print "TOTAL KEY SEQUENCES {}".format(env.all_keys)
-    print "UNIQUE KEY SEQUENCES {}".format(u)
-    print ""
-    print "SEQUENTIAL (Zero Based) {}".format(env.sequential_zero_base)
-    print "SEQUENTIAL (NonZero Based) {}".format(env.sequential_nonzero_base)
-    print "MILDLY SPARSE 20% {}".format(env.mildly_sparse)
-    print "SPARSE and SMALL (<=32 values and values <= 32) {}".format(env.sparse_and_small)
-    print "TWO VALUES {}".format(env.twofer)
-    print "THREE VALUES {}".format(env.threefer)
+    print("TOTAL KEY SEQUENCES {}".format(env.all_keys))
+    print("UNIQUE KEY SEQUENCES {}".format(u))
+    print("")
+    print("SEQUENTIAL (Zero Based) {}".format(env.sequential_zero_base))
+    print("SEQUENTIAL (NonZero Based) {}".format(env.sequential_nonzero_base))
+    print("MILDLY SPARSE 20% {}".format(env.mildly_sparse))
+    print("SPARSE and SMALL (<=32 values and values <= 32) {}".format(env.sparse_and_small))
+    print("TWO VALUES {}".format(env.twofer))
+    print("THREE VALUES {}".format(env.threefer))
     r = (u - env.sequential_nonzero_base - env.sequential_zero_base  - 
          env.mildly_sparse - env.twofer - env.threefer - env.sparse_and_small)
-    print "OTHER {}".format(r)
+    print("OTHER {}".format(r))
 
 
 def main(env):

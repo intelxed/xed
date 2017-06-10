@@ -16,7 +16,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 class hnode_t:
     def __init__(self, lst=None, id=None):
         self.lst = lst
@@ -78,15 +78,15 @@ def test_hash():
     d = [1,2,5]
     e = [1,2]
     v = h.insert(a)
-    print "A's UID: %d" % ( v ) 
+    print("A's UID: %d" % ( v )) 
     v = h.insert(b)
-    print "B's UID: %d" % ( v ) 
+    print("B's UID: %d" % ( v )) 
     v = h.insert(c)
-    print "C's UID: %d" % ( v ) 
+    print("C's UID: %d" % ( v )) 
     v = h.insert(d)
-    print "D's UID: %d" % ( v ) 
+    print("D's UID: %d" % ( v )) 
     v = h.insert(e)
-    print "E's UID: %d" % ( v ) 
+    print("E's UID: %d" % ( v )) 
 
 if __name__ == "__main__":
     test_hash()

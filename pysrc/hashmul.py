@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import sys
 import os
 import math
@@ -135,28 +135,28 @@ def test1():
     
     for k in range(0,128):
         v = f.apply(k)
-        print "{} -> {}".format(k,v)
+        print("{} -> {}".format(k,v))
     
     if f.is_perfect(range(0,128)):
-        print "Hash function is perfect"
+        print("Hash function is perfect")
     else:
-        print "Hash function has collisions"
+        print("Hash function has collisions")
 
-    print f.emit_cexpr()
+    print(f.emit_cexpr())
     return 0
 def test2():
     f = hashmul_t(9)
     inputs = [225,2273,737,2785,241,2289,753,2801]
     for k in inputs:
         v = f.apply(k)
-        print "{} -> {}".format(k,v)
+        print("{} -> {}".format(k,v))
     
     if f.is_perfect(inputs):
-        print "Hash function is perfect"
+        print("Hash function is perfect")
     else:
-        print "Hash function has collisions"
+        print("Hash function has collisions")
 
-    print f.emit_cexpr()
+    print(f.emit_cexpr())
     return 0
 def test3():
     f = hashmul_t(16)
@@ -165,16 +165,16 @@ def test3():
         v1 = f.apply(k)
         v2 = f.apply_pow2(k)
         if v1 != v2:
-            print "ERROR {} -> {} {}".format(k,v1,v2)
+            print("ERROR {} -> {} {}".format(k,v1,v2))
         else:
-            print "OK    {} -> {} {}".format(k,v1,v2)
+            print("OK    {} -> {} {}".format(k,v1,v2))
     
     if f.is_perfect(inputs):
-        print "Hash function is perfect"
+        print("Hash function is perfect")
     else:
-        print "Hash function has collisions"
+        print("Hash function has collisions")
 
-    print f.emit_cexpr()
+    print(f.emit_cexpr())
     return 0
 
 def test4():
@@ -184,25 +184,25 @@ def test4():
         v1 = f.apply(k)
         v2 = f.apply_pow2(k)
         if v1 != v2:
-            print "ERROR {} -> {} {}".format(k,v1,v2)
+            print("ERROR {} -> {} {}".format(k,v1,v2))
         else:
-            print "OK    {} -> {} {}".format(k,v1,v2)
+            print("OK    {} -> {} {}".format(k,v1,v2))
     
     if f.is_perfect(inputs):
-        print "Hash function is perfect"
+        print("Hash function is perfect")
     else:
-        print "Hash function has collisions"
+        print("Hash function has collisions")
 
-    print f.emit_cexpr()
+    print(f.emit_cexpr())
     return 0
 
 def test():
     for f in [test1, test2, test3, test4]:
         r = f()
         if r:
-            print "FAIL: {}".format(f.__name__)
+            print("FAIL: {}".format(f.__name__))
         else:
-            print "PASS: {}".format(f.__name__)
+            print("PASS: {}".format(f.__name__))
 
 if __name__ == "__main__":
     r = test()

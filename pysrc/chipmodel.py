@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import sys
 import os
 import re
@@ -272,6 +272,6 @@ if __name__ == '__main__':
     arg.xeddir = '.'
     arg.gendir = 'obj'
     files_created,chips,isa_set = work(arg)
-    print "Created files: %s" % (" ".join(files_created))
+    print("Created files: %s" % (" ".join(files_created)))
     sys.exit(0)
 

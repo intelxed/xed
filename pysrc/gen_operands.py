@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import os
 import sys
 import argparse
@@ -57,8 +57,8 @@ def work(args):  # main function
 
 
     for k,v in sorted( histo.items(), key=lambda t: t[1] ):
-        print "{0:4d} {1}".format(v,k)
-    print "TOTAL: ", len(histo)
+        print("{0:4d} {1}".format(v,k))
+    print("TOTAL: ", len(histo))
 
     return 0
 

@@ -57,7 +57,7 @@
 ## class reg_info_t(object):
 ## class width_info_t(object):
 ############################################################################
-
+from __future__ import print_function
 import os
 import sys
 import copy
@@ -1326,9 +1326,9 @@ class instruction_info_t(partitionable_info_t):
                setattr(self,token,rest.strip())
                # die("Unhandled token in line: " + line)
          else:
-            print "NEXT FEW LINES: "
+            print("NEXT FEW LINES: ")
             for x in lines[0:20]:
-               print "INPUT LINE: %s" % (x.strip())
+               print("INPUT LINE: %s" % (x.strip()))
             die("Missing colon in line: " + line)
 
       if reached_closing_bracket:
@@ -4336,12 +4336,12 @@ def compress_iform_strings(values):
         # store the base,operand_sig pair 
         h[int(index)] = (b,o)
         
-    print "XZ: NTUPLES {} BASES {}  OPERAND_SIGS {}".format(len(values),
+    print("XZ: NTUPLES {} BASES {}  OPERAND_SIGS {}".format(len(values),
                                                             len(bases),
-                                                            len(operand_sigs))
+                                                            len(operand_sigs)))
 
     if len(h) != (max(map(lambda x: int(x), h.keys()))+1):
-        print "PROBLEM IN h LENGTH"
+        print("PROBLEM IN h LENGTH")
     # make an numerically indexed version of the bases table
     bi = {}
     for k,v in bases.iteritems():
@@ -4776,8 +4776,8 @@ def code_gen_extract_sub_runs_old(sub_runs, vname, start_clean = True):
    s = ''
    
    for (bit,count,position_str, nonterminal_addr) in sub_runs:
-      print "PROCESSING SUBRUN (%s, %d, %s, %s)" % (
-          bit, count ,position_str, nonterminal_addr)
+      print("PROCESSING SUBRUN (%s, %d, %s, %s)" % (
+          bit, count ,position_str, nonterminal_addr))
       # control whether or not we do an assignment or and |= in to our
       # dest var c.
       if first:
@@ -4788,7 +4788,7 @@ def code_gen_extract_sub_runs_old(sub_runs, vname, start_clean = True):
          # must shift last "c" by the amount we are or-ing in on this iteration
          t += "%s=%s<<%s%s" % (vname, vname, str(count), eol)
          s += t
-         print "ADDING SHIFT OF PREV STUFF: %s" % t
+         print("ADDING SHIFT OF PREV STUFF: %s" % t)
          
       sindex =  str(position_str)
       if nonterminal_addr != '':
@@ -5693,7 +5693,7 @@ def call_chipmodel(agi):
     files_created,chips,isaset = chipmodel.work(args)
     agi.all_enums['xed_chip_enum_t'] = chips
     agi.all_enums['xed_isa_set_enum_t'] = isaset
-    print "Created files: %s" % (" ".join(files_created))
+    print("Created files: %s" % (" ".join(files_created)))
     for f in files_created:
         agi.add_file_name(f,is_header(f))
 
@@ -5802,7 +5802,7 @@ def make_cpuid_mappings(agi,mappings):
     fp.add_code('const xed_cpuid_bit_enum_t xed_isa_set_to_cpuid_mapping[][XED_MAX_CPUID_BITS_PER_ISA_SET] = {')
 
     for isaset in agi.all_enums['xed_isa_set_enum_t']:
-        print "ISASET: ", isaset
+        print("ISASET: ", isaset)
         x = 'XED_ISA_SET_' + isaset
         raw = n*['XED_CPUID_BIT_INVALID']
         if x in mappings:

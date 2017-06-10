@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import os
 import sys
 import argparse
@@ -91,7 +91,7 @@ def work(args):  # main function
 
     for inst in xeddb.recs:
         if classes[inst.isa_set] == 'general' and inst.scalar:
-            print "GPR SCALAR", inst.iclass
+            print("GPR SCALAR", inst.iclass)
 
     tlist = []
     for s in all:
@@ -108,7 +108,7 @@ def work(args):  # main function
     tlist.sort(key=keyfn)
 
     for x,y in tlist:
-        print y
+        print(y)
 
     return 0
 

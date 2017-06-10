@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import os
 import sys
 import argparse
@@ -76,17 +76,17 @@ def work(args):  # main function
         both.sort()
 
         for i in d12:
-            print "{:20s} IN: {}   NOT IN: {}".format(i, args.chip, args.otherchip)
+            print("{:20s} IN: {}   NOT IN: {}".format(i, args.chip, args.otherchip))
         for i in d21:
-            print "{:20s} IN: {}   NOT IN: {}".format(i, args.otherchip, args.chip)
+            print("{:20s} IN: {}   NOT IN: {}".format(i, args.otherchip, args.chip))
         for i in both:
-            print "{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip)
+            print("{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip))
         
     else:
         for i in ilist:
-            print i
+            print(i)
         for i in ulist:
-            print i, "UNDOC"
+            print(i, "UNDOC")
     return 0
 
 

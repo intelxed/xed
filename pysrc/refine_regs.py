@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import re
 from patterns import *
 from genutil import *
@@ -136,12 +136,12 @@ def refine_regs_input(lines):
           old_enclosing = regs_dict[ri.name].max_enclosing_reg
           a = reg_width_dict[old_enclosing]
           b = reg_width_dict[ri.max_enclosing_reg]
-          print  "LER: Comparing {} and {} for {}".format(old_enclosing,
+          print("LER: Comparing {} and {} for {}".format(old_enclosing,
                                                           ri.max_enclosing_reg,
-                                                          ri.name)
+                                                          ri.name))
           if a < b:
               # take the wider enclosing registers
-              print "\ttaking new wider version"
+              print("\ttaking new wider version")
               regs_dict[ri.name] = ri
 
    # return a list resembling the original order

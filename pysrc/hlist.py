@@ -16,7 +16,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 class hlist_t(object):
     """A hashable integer list"""
 
@@ -43,9 +43,9 @@ def test_hlist():
     c = hlist_t([1,3])
     
     if a == b:
-        print 'a==b'
+        print('a==b')
     if a == c:
-        print 'a==c'
+        print('a==c')
         
     d = {}
 
@@ -53,7 +53,7 @@ def test_hlist():
     d[b] = 2
     d[c] = 3
     for k in d.keys():
-        print str(k)
+        print(str(k))
 
 if __name__ == '__main__':
     test_hlist()

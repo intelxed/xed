@@ -16,7 +16,11 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-import re,types,sys,os
+from __future__ import print_function
+import re
+import types
+import sys
+import os
 import genutil
 import codegen
 import enum_txt_writer
@@ -61,12 +65,12 @@ class constant_table_t(object):
            return True
         return False
     def dump(self):
-        print "%s(%s)::" % (self.name, self.operand)
+        print("%s(%s)::" % (self.name, self.operand))
         for (v,p) in self.value_string_pairs:
             if isinstance(p, types.StringType):
-                print "%s '%s'" % (hex(v),p)
+                print("%s '%s'" % (hex(v),p))
             else:
-                print "%s  error" %(hex(v))
+                print("%s  error" %(hex(v)))
 
     def emit_init(self):
         lines = []
@@ -194,4 +198,4 @@ if __name__ == '__main__':
    import sys
    lines = file(sys.argv[1]).readlines()
    srcs = work(lines,xeddir='.',gendir='obj')
-   print "WROTE: ", "\n\t".join(srcs)
+   print("WROTE: ", "\n\t".join(srcs))
