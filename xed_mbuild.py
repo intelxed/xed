@@ -24,6 +24,7 @@
 ############################################################################
 
 ## START OF IMPORTS SETUP
+from __future__ import print_function
 import sys
 import os
 import re
@@ -45,6 +46,7 @@ try:
 except:
     _fatal("xed_mbuild.py could not find/import mbuild."  +
            " Should be a sibling of the xed directory.")
+import xed_build_common as xbc
 try:
    import xed_build_common as xbc
 except:
@@ -60,10 +62,10 @@ def aq(s):
 
 def check_mbuild_file(mbuild_file, sig_file):
     if os.path.exists(sig_file):
-        old_hash = file(sig_file).readline().strip()
+        old_hash = open(sig_file,"r").readline().strip()
     else:
         old_hash = ''
-    hash = mbuild.hash_list(file(sys.argv[0]).readlines())
+    hash = mbuild.hash_list(open(sys.argv[0],'r').readlines())
     f = open(sig_file, 'w')
     f.write(hash)
     f.close()
@@ -265,7 +267,7 @@ class generator_inputs_t(object):
             for f in inputs:
                 if os.path.exists(f):
                     output.write("\n\n###FILE: %s\n\n" % (f))
-                    for line in file(f).readlines():
+                    for line in open(f,'r').readlines():
                         line = line.rstrip()
                         #replace the possible symbolic path %(cur_dir)s
                         #FIXME: could have used env's expand_string method,
@@ -297,7 +299,7 @@ def run_generator_preparation(gc, env):
 
 def read_file_list(fn):
     a  = []
-    for f in file(fn).readlines():
+    for f in open(fn,'r').readlines():
         a.append(f.rstrip())
     return a
 
@@ -419,8 +421,8 @@ def legal_header_tagging(env):
         xbc.cdie("ERROR","TAGGING THE IN-USE PYTHON FILES DOES " +
                    "NOT WORK ON WINDOWS.")
 
-    legal_header = file(mbuild.join(env['src_dir'],'misc',
-                                    'apache-header.txt')).readlines()
+    legal_header = open(mbuild.join(env['src_dir'],'misc',
+                                    'apache-header.txt'), 'r').readlines()
     header_tag_files(env,public_source_files, legal_header,
                      script_files=False)
     header_tag_files(env,private_source_files, legal_header,
@@ -438,9 +440,9 @@ def header_tag_files(env, files, legal_header, script_files=False):
        xbc.cdie("XED ERROR: mfile.py could not find scripts directory")
 
     for g in files:
-       print "G: ", g
+       print("G: ", g)
        for f in glob.glob(g):
-          print "F: ", f
+          print("F: ", f)
           if script_files:
              apply_legal_header.apply_header_to_data_file(legal_header, f)
           else:
@@ -959,7 +961,7 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
                       'xed-chip-modes-override.c'] # common  (overrideable)
     common_sources = _replace_sources(common_sources, sources_to_replace)
     # strip paths coming from the replaced sources.
-    common_sources = map(lambda x: os.path.basename(x), common_sources)
+    common_sources = [ os.path.basename(x) for x in  common_sources]
     common_sources += ['xed-chip-features-table.c', # generated
                        'xed-ild-disp-l3.c',         # generated
                        'xed-ild-eosz.c',            # generated
@@ -1016,14 +1018,14 @@ def repack_and_clean(args, env):
     mbuild.run_command_output_file(nm, output_file_name=all_syms_fn)
 
     # step 3: parse the all_syms_fn.
-    all_syms = file(all_syms_fn).readlines()
-    all_syms = map(lambda x: x.strip(), all_syms)
-    all_syms = set(map(lambda x: x.split(' ',2)[2], all_syms))
+    all_syms = open(all_syms_fn, 'r').readlines()
+    all_syms = [x.strip() for x in  all_syms]
+    all_syms = set([x.split(' ',2)[2] for x in all_syms])
 
     # step 4: subtract the public symbols
     api_names_fn = env.src_dir_join(mbuild.join('misc','API.NAMES.txt'))
-    api_names = file(api_names_fn).readlines()
-    api_names = set(map(lambda x: x.strip(), api_names))
+    api_names = open(api_names_fn,'r').readlines()
+    api_names = set([x.strip() for x in  api_names])
 
     private_syms = all_syms - api_names
 
@@ -1085,7 +1087,7 @@ def _parse_extf_files_new(env, gc):
             continue
         dup_check[ext_file]=True
         edir = os.path.dirname(ext_file)
-        for line in  file(ext_file).readlines():
+        for line in  open(ext_file,'r').readlines():
             line = line.strip()
             line = comment_pattern.sub('',line)
             if len(line) > 0:
@@ -1109,9 +1111,9 @@ def _parse_extf_files_new(env, gc):
                     ptype = _get_check(wrds,1)
                     fname = _fn_expand(env, edir, _get_check(wrds,2))
                     priority =  int(_get_check(wrds,3, default=1))
-                    print "CONSIDERING SOURCE", fname, ptype, priority
+                    print("CONSIDERING SOURCE", fname, ptype, priority)
                     if source_prio[ptype] < priority:
-                        print "ADDING SOURCE", fname, ptype, priority
+                        print("ADDING SOURCE", fname, ptype, priority)
                         source_prio[ptype] = priority
                         sources_dict[ptype] = fname
                 elif cmd == 'replace-source':
@@ -1289,7 +1291,7 @@ def _get_src(env,subdir):
     return mbuild.glob(mbuild.join(env['src_dir'],'src',subdir,'*.c'))
 
 def _abspath(lst):
-  return map(lambda x: os.path.abspath(x), lst)
+  return [ os.path.abspath(x) for x in  lst]
 
 def _remove_src(lst, fn_to_remove):
     """Remove based on substring to avoid relative vs absolute path issues"""
@@ -1625,7 +1627,7 @@ def build_examples(env):
         
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
-    except Exception, e:
+    except Exception as e:
         xbc.handle_exception_and_die(e)
     if 'example_exes' in env_ex:
         env['example_exes'] = env_ex['example_exes']
@@ -1718,9 +1720,8 @@ def _gen_lib_names(env):
         env['base_lib']=base_lib  
         libnames.extend(env.expand(libnames_template))
 
-    libs = map(lambda x: mbuild.join(env['build_dir'], x),
-               libnames)
-    libs = filter(lambda x: os.path.exists(x), libs)
+    libs = [ mbuild.join(env['build_dir'], x) for x in libnames]
+    libs = list(filter(lambda x: os.path.exists(x), libs))
     return libs
 
 do_system_copy = True
@@ -1752,7 +1753,7 @@ def _get_legal_header(env):
         env['legal_header'] = mbuild.join(env['src_dir'],
                                           'misc',
                                           'apache-header.txt')
-    legal_header = file(env['legal_header']).readlines()
+    legal_header = open(env['legal_header'],'r').readlines()
     return legal_header
 
 def _apply_legal_header_to_headers(env,dest):
@@ -1915,7 +1916,7 @@ def build_kit(env, work_queue):
         xbc.cdie("No libraries found for install")
 
     for f in libs:
-        print f
+        print(f)
         if f.find('.dll') != -1:
             mbuild.copy_file(f, bin_dir)
         else:
@@ -1962,7 +1963,7 @@ def build_kit(env, work_queue):
         wfiles = os.walk( env['install_dir'])
         zip_files = []
         for (path,dirs,files) in wfiles:
-            zip_files.extend( map(lambda x: mbuild.join(path,x), files) )
+            zip_files.extend( [ mbuild.join(path,x) for x in  files] )
         import zipfile
         archive = env['install_dir'] + '.zip'
         z = zipfile.ZipFile(archive,'w')
@@ -2012,7 +2013,7 @@ def get_git_version(env):
 
    # not a git repo or git failed or was not found.
    try:
-      lines = file(fn).readlines()
+      lines = open(fn,'r').readlines()
       line = lines[0].strip()
       return line
    except:
@@ -2052,7 +2053,7 @@ def emit_defines_header(env):
             klist.extend(_emit_define(define))
     klist.append("#endif")
     
-    klist = map(lambda x: x+'\n', klist)
+    klist = [ x+'\n' for x in klist ]
     
     fn = env.build_dir_join(output_file_name)
     if mbuild.hash_list(klist) != mbuild.hash_file(fn):
@@ -2165,7 +2166,7 @@ def _run_canned_tests(env,osenv):
                                                                osenv=osenv)
     if retcode == 1:
        for l in stdout:
-          print l.rstrip()
+          print(l.rstrip())
 
     for l in stdout:
         l = l.rstrip()
