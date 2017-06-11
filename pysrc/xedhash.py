@@ -51,7 +51,7 @@ def _measure_bucket_max(table, maxbin):
     okay = True
     max_bucket = 0
     bad_buckets = 0
-    for k, vl in table.iteritems():
+    for k, vl in table.items():
         lvl = len(vl)
         if lvl >= maxbin:
             if lvl > max_bucket:
@@ -63,7 +63,7 @@ def _measure_bucket_max(table, maxbin):
 def is_well_distributed(keylist, hash_f, maxbin):
     """populate the buckets and see if any are too big"""
     table = collections.defaultdict(list) 
-    for t,x in keylist.iteritems():
+    for t,x in keylist.items():
         hash_val = hash_f.apply(x)
         table[hash_val].append(t) 
 

@@ -883,7 +883,7 @@ class array_gen_t(object):
         number of elements."""
         expected_len = len(self.ranges)
         for idict,value in self.values:
-            if len(idict.keys()) != expected_len:
+            if len(list(idict.keys())) != expected_len:
                 return False
         return True
 
@@ -968,7 +968,7 @@ class array_gen_t(object):
         for indices_dict,value in self.values:
             if key in indices_dict:
                 present_values[indices_dict[key]] = True
-        return present_values.keys()
+        return list(present_values.keys())
 
 
     def make_initialization_function(self, init_function_name,verbose=False):

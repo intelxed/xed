@@ -185,7 +185,7 @@ def flatten_dict(dict_with_lists):
     """Take a dict with some possible sublists, and return a list of
     dicts where no rhs is a list. All possible combinations"""
     retval = []
-    kys = dict_with_lists.keys()
+    kys = list(dict_with_lists.keys())
     flatten_dict_sub(retval, {}, dict_with_lists,kys)
     return retval
 
@@ -421,7 +421,7 @@ def uniqueify(values):
    s = {}
    for a in values:
       s[a] = True
-   k = s.keys()
+   k = list(s.keys())
    k.sort()
    return k
 

@@ -111,7 +111,7 @@ class parse_regmap_t(object):
                 self.read_line(line)
                 
     def dump(self):
-        for g,v in self.regmaps.iteritems():
+        for g,v in self.regmaps.items():
             print(g, ":  ")
             v.dump()
             print("\n\n")

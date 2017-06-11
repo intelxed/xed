@@ -177,14 +177,14 @@ class actions_codegen_t(object):
         captured '''
         tuple2actions = {}
          
-        rules = tuple2rule.values()
+        rules = list(tuple2rule.values())
         self.rules = rules
         self.all_fbs, self.common_fbs = self._gather_all_fb(rules)
         self.max_nt_number, self.max_ntluf_number = self._get_max_nt_number(rules)
         self.ret_action = False
         self.has_emit = self._has_emit(rules)
         
-        for tuple, rule in tuple2rule.iteritems():
+        for tuple, rule in tuple2rule.items():
             actions = self._create_fb_actions(self.all_fbs, self.common_fbs, rule)
             nts = self._create_nt_actions(rule.actions)
             ntlufs = self._create_ntluf_actions(rule.actions)
@@ -273,7 +273,7 @@ class actions_codegen_t(object):
             f_call = "res=(*%s)(%s)" % (hash_val, self.strings_dict['obj_str'])
             actions_list.append(validation + f_call)
             
-            nt = self.tuple2rule.values()[0].nt
+            nt = list(self.tuple2rule.values())[0].nt
             obj_str = self.strings_dict['obj_str']
             emit_call = "xed_encoder_request_iforms(%s)->x_%s=hidx+1"
             actions_list.append(emit_call % (obj_str,nt))
@@ -294,7 +294,7 @@ class actions_codegen_t(object):
         
         #dump the emit action
         if self.has_emit:
-            nt = self.tuple2rule.values()[0].nt
+            nt = list(self.tuple2rule.values())[0].nt
             obj_str = self.strings_dict['obj_str']
             emit_call = "xed_encoder_request_iforms(%s)->x_%s=%s"
             hash_entry =  "%s[%s].emit" % (self.strings_dict['table_name'],

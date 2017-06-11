@@ -326,11 +326,11 @@ def work(agi, united_lookup, imm_nts, ild_gendir, eosz_dict,
         nt_dict[nt_name] = array
 
     #create function that calls all initialization functions for L3
-    init_f = ild_nt.gen_init_function(nt_dict.values(),
+    init_f = ild_nt.gen_init_function(list(nt_dict.values()),
                                       'xed_ild_imm_l3_init')
     
     #dump L3 functions
-    ild_nt.dump_lu_arrays(agi, nt_dict.values(), _l3_c_fn,
+    ild_nt.dump_lu_arrays(agi, list(nt_dict.values()), _l3_c_fn,
                           mbuild.join('include-private',_l3_header_fn),
                           init_f)
     

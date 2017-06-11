@@ -250,7 +250,7 @@ class phash_t(object):
         lines.append('m=%d' % self.hash_f.get_table_size())
         lines.append('%s' % self.hash_f)
         lines.append('tuple x -> value')
-        for tuple_val in self.tuple_dict.keys():
+        for tuple_val in list(self.tuple_dict.keys()):
             x = self.t2x[tuple_val]
             value = self.tuple_dict[tuple_val]
             line = '%s %s -> %s' % (tuple_val,x, str(value))
@@ -278,9 +278,9 @@ class phash_t(object):
 class l1_phash_t(phash_t):
     def __init__(self, cdict, hash_f):
         phash_t.__init__(self, cdict, hash_f)
-        for t,x in cdict.tuple2int.iteritems():
+        for t,x in cdict.tuple2int.items():
             hash_val = self.hash_f.apply(x)
-            if hash_val in self.x2hx.values():
+            if hash_val in list(self.x2hx.values()):
                 msg = "l1_phash_t: %s\n function is not perfect!\n"
                 msg += 'hashval=%d , x2hx: %s' % (hash_val, self.x2hx)
                 ildutil.ild_err(msg)
@@ -319,7 +319,7 @@ class l2_phash_t(phash_t):
         phash_t.__init__(self, cdict, hash_f)
 
         hx2tuples = collections.defaultdict(list)
-        for t,x in self.cdict.tuple2int.iteritems():
+        for t,x in self.cdict.tuple2int.items():
             hx = self.hash_f.apply(x)
             if len(hx2tuples[hx]) >= _l1_bucket_max: 
                 msg = "l2_phash_t: function does not distribute well!\n"
@@ -330,13 +330,13 @@ class l2_phash_t(phash_t):
             self.hx2x[hx] = x
 
         self.hx2phash = {}
-        for hx,tuples in hx2tuples.iteritems():
+        for hx,tuples in hx2tuples.items():
             new_cdict = self.cdict.filter_tuples(tuples)
             
             # try (1)linear, then (2)hashmul then (3) fks for the 2nd
             # level of hash function.
             phash = None
-            if _is_linear(new_cdict.int2tuple.keys()):
+            if _is_linear(list(new_cdict.int2tuple.keys())):
                 phash = _get_linear_hash_function(new_cdict)
             if not phash:
                 phash = _find_l1_phash_mul(new_cdict)
@@ -347,7 +347,7 @@ class l2_phash_t(phash_t):
                 self.hx2phash[hx] = phash
             else:
                 lines = []
-                for k,v in new_cdict.tuple2rule.items():
+                for k,v in list(new_cdict.tuple2rule.items()):
                     lines.append('%s -> %s'% ((k,), v))
                 str = '\n'.join(lines)
                 ildutil.ild_err("Failed to find l1 phash for dict %s" %
@@ -379,7 +379,7 @@ class l2_phash_t(phash_t):
 
         elems = []
         #invert the x2hx mapping
-        hx2x = dict((hx,x) for x,hx in self.x2hx.iteritems())
+        hx2x = dict((hx,x) for x,hx in self.x2hx.items())
 
         for hx in range(0, self.hash_f.get_table_size()):
             if hx in hx2fo:
@@ -412,7 +412,7 @@ class l2_phash_t(phash_t):
         obj_type = self.cdict.strings_dict['obj_type']
         const = self.cdict.strings_dict['obj_const']
         hx2fo = {}
-        for hx,phash in self.hx2phash.items():
+        for hx,phash in list(self.hx2phash.items()):
             fid = '%s_%d_l1' % (fname, hx)
             (hx2fo_list,operand_lu_fo) = phash.gen_find_fos(fid)
             hx2fo[hx] = hx2fo_list[0]
@@ -435,14 +435,14 @@ class l2_phash_t(phash_t):
         lu_fname = operand_lu_fo.function_name
         self.add_op_lu_function(fo, lu_fname)
         self.add_find_lines(fo)
-        fos = hx2fo.values()
+        fos = list(hx2fo.values())
         fos.append(fo)
         #all the operand_lu_fo going to be the same so we just take the last one
         return fos,operand_lu_fo
 
     def get_size(self):
         size = self.hash_f.get_table_size()
-        for phash in self.hx2phash.values():
+        for phash in list(self.hx2phash.values()):
             size += phash.get_size()
         return size
 
@@ -450,7 +450,7 @@ class l2_phash_t(phash_t):
         lines = ['-----------2-LEVEL-PHASH-------------']
         lines.append('m=%d' % self.hash_f.get_table_size())
         lines.append('%s' % self.hash_f)
-        for tuple_val in self.cdict.tuple2rule.keys():
+        for tuple_val in list(self.cdict.tuple2rule.keys()):
             lines.append('-------------------------------------')
             lines.append('tuple x h(x) ->  l1_phash')
             x = self.cdict.tuple2int[tuple_val]
@@ -475,14 +475,14 @@ def _is_linear(keys):
 
 def _get_linear_hash_function(cdict):
     ''' returns phash_t object with a linear_funct_t as the hash function'''
-    keylist = cdict.int2tuple.keys()
+    keylist = list(cdict.int2tuple.keys())
     hash_f = hashlin.get_linear_hash_function(keylist)
     return l1_phash_t(cdict, hash_f)    
     
 
 
 def _find_l1_phash_fks(cdict):
-    hashfn =  hashfks.find_fks_perfect(cdict.tuple2int.values())
+    hashfn =  hashfks.find_fks_perfect(list(cdict.tuple2int.values()))
     if hashfn:
         return l1_phash_t(cdict, hashfn)
     return None
@@ -506,7 +506,7 @@ def _find_l1_phash_mul(cdict):
     candidate_lengths = _find_candidate_lengths_mul(cdict.tuple2int)
     for p in candidate_lengths:
         hash_f = hashmul.hashmul_t(p)
-        if hash_f.is_perfect(cdict.tuple2int.itervalues()):
+        if hash_f.is_perfect(iter(cdict.tuple2int.values())):
             return l1_phash_t(cdict, hash_f)
         del hash_f
     return None
@@ -549,7 +549,7 @@ def _gen_hash_one_level(cdict):
     """Generate a 1 level hash function or give up"""
 
     # linear means all keys are sequential. not required to be zero-based. 
-    if _is_linear(cdict.int2tuple.keys()):
+    if _is_linear(list(cdict.int2tuple.keys())):
         return _get_linear_hash_function(cdict)
 
     phash = _find_l1_phash_mul(cdict)

@@ -30,7 +30,7 @@ def _get_modules(fn):
     finder = modulefinder.ModuleFinder()
     finder.run_script(fn)
     all = []
-    for m in finder.modules.itervalues():
+    for m in finder.modules.values():
         if not isinstance(m, modulefinder.Module):
             continue
         if not m.__file__:

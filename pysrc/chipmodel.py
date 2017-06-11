@@ -44,11 +44,11 @@ def uniquify_list(l):
     d = {}
     for a in l:
         d[a]=True
-    return d.keys()
+    return list(d.keys())
 
 def expand_all_of_once(d):
     found = False
-    for chip,ext_list in d.iteritems():
+    for chip,ext_list in d.items():
         newexts = []
         for ext in ext_list:
             m = all_of_pattern.match(ext)
@@ -68,7 +68,7 @@ def expand_macro(d,expander):
         found = expander(d)
 
 def expand_macro_not(d):
-    for chip,ext_list in d.iteritems():
+    for chip,ext_list in d.items():
         to_remove = []
         positive_exts = []
         for ext in ext_list:
@@ -172,7 +172,7 @@ def work(arg):
     
     # the XED_ISA_SET_ enum
     isa_set = set()
-    for vl in chip_features_dict.values():
+    for vl in list(chip_features_dict.values()):
         for v in vl:
             isa_set.add(v.upper())
     isa_set = list(isa_set)

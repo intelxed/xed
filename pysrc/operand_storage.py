@@ -231,7 +231,7 @@ class operands_storage_t(object):
         fo.add_arg('void* %s' % ret_arg)
         
         switch_gen = codegen.c_switch_generator_t('operand',fo)
-        op_names = self.operand_fields.keys()
+        op_names = list(self.operand_fields.keys())
         op_names.sort()
         for op in op_names:
             switch_key = "XED_OPERAND_%s" % op
@@ -260,7 +260,7 @@ class operands_storage_t(object):
         fo.add_arg('xed_uint32_t %s' % in_value)
         
         switch_gen = codegen.c_switch_generator_t('operand',fo)
-        op_names = self.operand_fields.keys()
+        op_names = list(self.operand_fields.keys())
         op_names.sort()
         for op in op_names:
             switch_key = "XED_OPERAND_%s" % op
@@ -280,7 +280,7 @@ class operands_storage_t(object):
         h_fname = get_operand_accessors_fn()
         c_fname = h_fname.replace('.h', '.c') 
         
-        for opname in self.operand_fields.keys():
+        for opname in list(self.operand_fields.keys()):
             getter_fo = self._gen_op_getter_fo(opname)
             setter_fo = self._gen_op_setter_fo(opname)
             fo_list.append(getter_fo)
@@ -329,7 +329,7 @@ class operands_storage_t(object):
         # mx_bits is a mapping from enum name to the minimal number 
         # of bits required to represent it 
         max_bits_for_enum = self._gen_max_bits_per_enum(agi.all_enums)
-        for op in self.operand_fields.values():
+        for op in list(self.operand_fields.values()):
             if op.ctype in max_bits_for_enum:
                 needed_bits = max_bits_for_enum[op.ctype]
                 if op.bitwidth < needed_bits:
@@ -347,7 +347,7 @@ class operands_storage_t(object):
            the accessors will cast the operand to its C type according to the 
            data files'''
        
-       for op in self.operand_fields.values():
+       for op in list(self.operand_fields.values()):
            width = op.bitwidth
            if width <= 8:
                op.storage_type = 'xed_uint8_t'
@@ -387,7 +387,7 @@ class operands_storage_t(object):
         if self.compressed:
             self.bins = self._compress_operands()
             
-            operands = self.operand_fields.values()
+            operands = list(self.operand_fields.values())
             un_compressed = list(filter(lambda x: x.compressed == False, operands ))
             un_compressed.sort(cmp=cmp_operands)
             
@@ -403,7 +403,7 @@ class operands_storage_t(object):
                                  bit_width=op.bitwidth, accessors='none')
         
         else:
-            operands_sorted = self.operand_fields.values()
+            operands_sorted = list(self.operand_fields.values())
             operands_sorted.sort(cmp=cmp_operands)
             for op in operands_sorted:
                 cgen.add_var(op.name.lower(), op.storage_type, 
@@ -430,7 +430,7 @@ class operands_storage_t(object):
         ''' calculate the number of bits required to capture the each enum.
             returning a dict of enum name to the number of required bits '''
         widths = {}
-        for (enum_name, values_list) in all_enums.items():
+        for (enum_name, values_list) in list(all_enums.items()):
             num_values = self._get_num_elements_in_enum(values_list)
             log2 = math.log(num_values,2)
             needed_bits = int(math.ceil(log2))
@@ -447,7 +447,7 @@ class operands_storage_t(object):
             their ctype can hold. '''
         
         candiadtes = []
-        for op in self.operand_fields.values():
+        for op in list(self.operand_fields.values()):
             # for optimization those operands are not using bit with
             # FIXME: add field to the operands for excluding hot fields 
             # form being compressed

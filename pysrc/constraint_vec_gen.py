@@ -154,7 +154,7 @@ class constraint_vec_gen_t(object):
         
         
         new_cdict.int2tuple = dict((i,t) for t,i in 
-                                   new_cdict.tuple2int.iteritems())
+                                   new_cdict.tuple2int.items())
         
         return new_cdict
     

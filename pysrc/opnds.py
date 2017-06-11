@@ -383,7 +383,7 @@ def parse_one_operand(w,
             xtype = default_xtypes[oc2.upper()]
          except:
             s = ''
-            for i,v in default_xtypes.iteritems():
+            for i,v in default_xtypes.items():
                s += "\t%10s -> %10s\n" % (i,v)
             genutil.die("Parsing operand [%s]. Could not find default type for %s. xtypes=%s\nTypes=%s" % (w, oc2, str(xtypes), s))
       else:

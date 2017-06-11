@@ -54,7 +54,7 @@ def write_table(agi,ots):
                                    'xed-init-operand-type-mappings.c')
    fp.start()
    fp.add_code("const xed_operand_type_info_t xed_operand_xtype_info[] = {")
-   names = ots.keys()
+   names = list(ots.keys())
    names.sort()
    names = ['INVALID'] + names
    ots['INVALID'] = operand_type_t('INVALID','INVALID','0')
@@ -68,7 +68,7 @@ def write_table(agi,ots):
 
 def write_enum(agi,ots):
    """Emit the xtypes enum"""
-   names = ots.keys()
+   names = list(ots.keys())
    names.sort()
    names = ['INVALID'] + names
    width_enum =  enum_txt_writer.enum_info_t(names,

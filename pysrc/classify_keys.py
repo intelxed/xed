@@ -92,14 +92,14 @@ def classify(kys,env):
         env.funky.append(kys)
     
 def dump_classifications(env):
-    for k in env.lengths.keys():
+    for k in list(env.lengths.keys()):
         v = env.lengths[k]
         print("LENGTH {} COUNT {}".format(k,v))
 
     for lst in env.funky:
         print(str(lst))
 
-    u = len(env.unique_sequences.keys())
+    u = len(list(env.unique_sequences.keys()))
     print("TOTAL KEY SEQUENCES {}".format(env.all_keys))
     print("UNIQUE KEY SEQUENCES {}".format(u))
     print("")
@@ -130,7 +130,7 @@ def main(env):
     u = {}
     for k in kys_lst:
         u[str(k)]=k
-    unique_keys = u.values()
+    unique_keys = list(u.values())
 
     for k in unique_keys:
         classify(k,env)

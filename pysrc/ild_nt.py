@@ -48,7 +48,7 @@ def get_setting_nts(agi, opname):
     """
     state_dict = agi.common.state_bits
     nt_set = set()
-    for nt_name in agi.nonterminal_dict.keys():
+    for nt_name in list(agi.nonterminal_dict.keys()):
         gi = agi.generator_dict[nt_name]
         parser = gi.parser_output
         for rule in parser.instructions:
@@ -290,8 +290,8 @@ def gen_lookup_array(agi, nt_seq, val_dict, opname, argnames,
         (_first_indices, value) = val_dict[0]
         val_dict = [([{}], value)]
     
-    for od in  argnames.keys():
-        values = argnames[od].keys()
+    for od in  list(argnames.keys()):
+        values = list(argnames[od].keys())
         array.add_dimension(operand_storage.get_ctype(od),
                             min(values),
                             max(values) + 1,
@@ -404,7 +404,7 @@ def gen_nt_lookup(agi, nt_name, target_op, target_type=None, level=''):
 #e.g for EOSZ base_row dict must have OSZ,MOD,REXW operands as keys
 def row_match(base_row, row):
     #ildutil.ild_err("ILD_DEBUG BASE ROW %s" % (base_row,))
-    for (op, val) in row.items():
+    for (op, val) in list(row.items()):
         if op in base_row:
             if  base_row[op] != val:
                 return False
@@ -521,9 +521,9 @@ def _generate_lookup_function_indices(ii,state_space,argnames):
    #know which value to choose.
    #of course there are other ways to solve this problem, but this seems to be
    #the easiest.
-   for bt_token in argnames.keys():
+   for bt_token in list(argnames.keys()):
        if not (bt_token  in indices):
-           indices[bt_token] = argnames[bt_token].keys()
+           indices[bt_token] = list(argnames[bt_token].keys())
 
 
    ### NOW, we must flatten any list-valued RHS's & return a list of

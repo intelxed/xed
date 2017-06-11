@@ -257,7 +257,7 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
     #FIXME: the bucketed function name is not self descriptive
     bucket_name = 'xed_lookup_function_DISP_BUCKET_%s_l1'
     cur_bucket = 0
-    for res_fun_list in l1_bucket_dict.values():
+    for res_fun_list in list(l1_bucket_dict.values()):
         if len(res_fun_list) == 1:
             #only one such function - we should define it as is
             l1_resolution_fos.append(res_fun_list[0])
@@ -272,8 +272,8 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
             
             #fix references in the lookup table
             for res_fun in res_fun_list:
-                for insn_map in l1_lookup.keys():
-                    for opcode in l1_lookup[insn_map].keys():
+                for insn_map in list(l1_lookup.keys()):
+                    for opcode in list(l1_lookup[insn_map].keys()):
                         cur_fn = l1_lookup[insn_map][opcode]
                         if cur_fn == res_fun.function_name:
                             l1_lookup[insn_map][opcode] = cur_buck_name
@@ -359,7 +359,7 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
     disp_dict = _gen_l3_array_dict(agi, disp_nts, _disp_token)
 
     
-    nt_arr_list = brdisp_dict.values() + disp_dict.values()
+    nt_arr_list = list(brdisp_dict.values()) + list(disp_dict.values())
     #create function that calls all initialization functions
     init_f = ild_nt.gen_init_function(nt_arr_list, 'xed_ild_disp_l3_init')
     
@@ -376,7 +376,7 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
     l2_functions = []
     eosz_op = ild_eosz.get_target_opname()
     easz_op = ild_easz.get_target_opname()
-    for nt_name,array in disp_dict.items() + brdisp_dict.items():
+    for nt_name,array in list(disp_dict.items()) + list(brdisp_dict.items()):
         #Some DISP NTs depend on EOSZ, others on EASZ, we need to know
         #that when we generate L2 functions
         if eosz_op in array.get_arg_names():

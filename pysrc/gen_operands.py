@@ -56,7 +56,7 @@ def work(args):  # main function
         
 
 
-    for k,v in sorted( histo.items(), key=lambda t: t[1] ):
+    for k,v in sorted( list(histo.items()), key=lambda t: t[1] ):
         print("{0:4d} {1}".format(v,k))
     print("TOTAL: ", len(histo))
 

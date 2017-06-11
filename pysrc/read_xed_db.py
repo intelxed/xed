@@ -370,7 +370,7 @@ class xed_reader_t(object):
         res = []
         for i in range(0,x):
             d = inst_t()
-            for k,v in in_rec.iteritems():
+            for k,v in in_rec.items():
                 if len(v) == 1:
                     setattr(d,k.lower(),v[0])
                 else:
@@ -385,7 +385,7 @@ class xed_reader_t(object):
         """The valies in the record are lists. Remove the lists since they are
         all now singletons        """
         n  = inst_t()
-        for k,v in in_rec.iteritems():
+        for k,v in in_rec.items():
             setattr(n,k.lower(),v[0])
         return n
 

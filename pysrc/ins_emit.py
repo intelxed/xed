@@ -142,7 +142,7 @@ class instructions_group_t(object):
         
         groups = []
         #1. generate the groups
-        for iclass,iforms in iarray.items():
+        for iclass,iforms in list(iarray.items()):
             iforms.sort(cmp=cmp_iforms_by_bind_ptrn)
             self._put_iclass_in_group(groups,iclass,iforms)
         
@@ -213,7 +213,7 @@ class ins_group_t(object):
         
     def get_iclasses(self):
         ''' return a list of iclasses in the group'''
-        return self.iclass2iforms.keys()     
+        return list(self.iclass2iforms.keys())     
     
     def get_iform_ids_table(self):
         ''' generate C style table of iform Id's.

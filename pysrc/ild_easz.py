@@ -43,7 +43,7 @@ _easz_defines = {
 _easz_defines[_easz_lookup_def_str] = len(_easz_defines)
 
 #reverted _eosz_defines
-_easz_defines_reverse = dict((v,k) for k, v in _easz_defines.iteritems())
+_easz_defines_reverse = dict((v,k) for k, v in _easz_defines.items())
 
 _easz_c_fn = 'xed-ild-easz.c'
 _easz_header_fn = 'xed-ild-easz.h'
@@ -164,13 +164,13 @@ def work(agi, united_lookup, easz_nts, ild_gendir, debug):
             return
         nt_seq_arrays[tuple(nt_seq)] = array
     #init function calls all single init functions for the created tables
-    init_f = ild_nt.gen_init_function(nt_seq_arrays.values(),
+    init_f = ild_nt.gen_init_function(list(nt_seq_arrays.values()),
                                        'xed_ild_easz_init')
-    ild_nt.dump_lu_arrays(agi, nt_seq_arrays.values(), _easz_c_fn, 
+    ild_nt.dump_lu_arrays(agi, list(nt_seq_arrays.values()), _easz_c_fn, 
                           mbuild.join('include-private', _easz_header_fn),
                           init_f)
     getter_fos = []
-    for names in nt_seq_arrays.keys():
+    for names in list(nt_seq_arrays.keys()):
         arr = nt_seq_arrays[names]
         getter_fo = ild_codegen.gen_derived_operand_getter(agi, _easz_token,
                                                            arr, list(names))

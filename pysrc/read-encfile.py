@@ -664,7 +664,7 @@ class iform_builder_t(object):
             self.iforms[ntname] = True
     def _build(self):
         self.cgen = c_class_generator_t("xed_encoder_iforms_t", var_prefix="x_")
-        for v in self.iforms.iterkeys():
+        for v in self.iforms.keys():
                 self.cgen.add_var(v, 'xed_uint32_t', accessors='none')
     def emit_header(self):
         self._build()
@@ -1867,7 +1867,7 @@ class encoder_configuration_t(object):
     def reorder_encoder_rules(self,nts):
         """reorder rules so that any rules with ENCODER_PREFERRED is first
         """
-        for nt in nts.itervalues():
+        for nt in nts.values():
             first_rules = []
             rest_of_the_rules = []
             for r in nt.rules:
@@ -2327,9 +2327,9 @@ class encoder_configuration_t(object):
             
             
     def remove_deleted(self):
-        bad =  self.deleted_unames.keys()
+        bad =  list(self.deleted_unames.keys())
         _vmsgb("BAD UNAMES", str(bad))
-        for ic,v in self.iarray.iteritems():
+        for ic,v in self.iarray.items():
             x1 = len(v)
             l = []
             for i in v:
@@ -2342,7 +2342,7 @@ class encoder_configuration_t(object):
                 _vmsgb("DELETING IFORMS", "%s %d -> %d" % (ic,x1,x2))
             self.iarray[ic]=l
     
-        for k in self.deleted_instructions.keys():
+        for k in list(self.deleted_instructions.keys()):
             if k in self.iarray:
                 _vmsgb("DELETING", k)
                 del self.iarray[k] 
@@ -2353,7 +2353,7 @@ class encoder_configuration_t(object):
         
         all_iforms_list = []
         i = 0
-        for iforms in self.iarray.itervalues():
+        for iforms in self.iarray.values():
             for iform in iforms:
                 iform.rule.iform_id = i
                 all_iforms_list.append(iform)
@@ -2386,10 +2386,10 @@ class encoder_configuration_t(object):
         self.reorder_encoder_rules(ntlufs)
         if vread():
             msgb("NONTERMINALS")
-            for nt in nts.itervalues():
+            for nt in nts.values():
                 msg( str(nt))
             msgb("NTLUFS")
-            for ntluf in ntlufs.itervalues():
+            for ntluf in ntlufs.values():
                 msg( str(ntluf))
         _vmsgb("DONE","\n\n")
         
@@ -2531,13 +2531,13 @@ class encoder_configuration_t(object):
         template = "    xed_enc_iclass2group[XED_ICLASS_%s] = %d;"
         
         iclass2group = self.ins_groups.get_iclass2group()
-        for iclass,group_index in iclass2group.items():
+        for iclass,group_index in list(iclass2group.items()):
             code = template % (iclass.upper(),group_index) 
             init_table.append(code)
         
         template = "    xed_enc_iclass2index_in_group[XED_ICLASS_%s] = %d;"
         iclass2index_in_group = self.ins_groups.get_iclass2index_in_group()
-        for iclass,index in iclass2index_in_group.items():
+        for iclass,index in list(iclass2index_in_group.items()):
             code = template % (iclass.upper(),index) 
             init_table.append(code)
         fo.add_lines(init_table)
@@ -2752,7 +2752,7 @@ class encoder_configuration_t(object):
     def look_for_encoder_inputs(self): 
         encoder_inputs_by_iclass = {}  # dictionary mapping iclass -> set of field names
         encoder_nts_by_iclass = {}  # dictionary mapping iclass -> set of nt names
-        for iclass,iform_list in self.iarray.iteritems():
+        for iclass,iform_list in self.iarray.items():
             encoder_field_inputs = set()
             encoder_nts = set()
             for iform  in iform_list:
@@ -2766,7 +2766,7 @@ class encoder_configuration_t(object):
             encoder_inputs_by_iclass[iclass] = encoder_field_inputs
             encoder_nts_by_iclass[iclass] = encoder_nts
 
-        for iclass in encoder_inputs_by_iclass.keys():
+        for iclass in list(encoder_inputs_by_iclass.keys()):
             fld_set = encoder_inputs_by_iclass[iclass]
             nt_set  = encoder_nts_by_iclass[iclass]
             if vinputs():
@@ -2817,7 +2817,7 @@ class encoder_configuration_t(object):
         this dictionary in each iform as iform.operand_order"""
 
         all_operand_name_list_dict = {}
-        for iclass,iform_list in self.iarray.iteritems():
+        for iclass,iform_list in self.iarray.items():
             for niform,iform  in enumerate(iform_list):
                 ordered_operand_name_list =  iform.make_operand_name_list()
                 key = "-".join(ordered_operand_name_list)
@@ -2832,7 +2832,7 @@ class encoder_configuration_t(object):
         _vmsgb("TOTAL ENCODE OPERAND SEQUENCES: %d" % (len(all_operand_name_list_dict)))
 
         if vopseq():
-            for iclass,iform_list in self.iarray.iteritems():
+            for iclass,iform_list in self.iarray.items():
                 for niform,iform  in enumerate(iform_list):
                         msg("OPSEQ: %20s-%03d: %s" % 
                             (iclass, niform+1,
@@ -2845,7 +2845,7 @@ class encoder_configuration_t(object):
         fo = function_object_t(fname, 'void')
         operands = 0 # columns
         entries = 0 # rows
-        for oo in all_operand_name_list_dict.itervalues(): # stringkeys -> operand_order_t's
+        for oo in all_operand_name_list_dict.values(): # stringkeys -> operand_order_t's
             for j,o in enumerate(oo.lst):
                 fo.add_code_eol("xed_encode_order[%d][%d]=XED_OPERAND_%s" % (oo.n,j,o))
             t = len(oo.lst)
@@ -2859,17 +2859,17 @@ class encoder_configuration_t(object):
 
     def dump(self):
         msgb("NONTERMINALS")
-        for nt in self.nonterminals.itervalues():
+        for nt in self.nonterminals.values():
             msg(str(nt))
         msgb("SEQUENCERS")
-        for s in self.sequences.itervalues():
+        for s in self.sequences.values():
             msg(str(s))
 
     def make_sequence_functions(self):
         # we pass in the list of known sequences so that we know to
         # call the right kind of function from the sequence function
         # we are creating.
-        for s in self.sequences.itervalues():
+        for s in self.sequences.values():
             fo = s.create_function(self.sequences)
             self.functions.append(fo)
 
@@ -2878,7 +2878,7 @@ class encoder_configuration_t(object):
         NTLUF. One version does the required bindings. The other
         version emits the required bytes"""
         
-        for nt in nts.itervalues():
+        for nt in nts.values():
             _vmsgb("SORTING FOR SIZE", nt.name)
             nt.sort_for_size()
             if nt.is_ntluf():

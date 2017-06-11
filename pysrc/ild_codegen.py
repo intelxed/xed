@@ -190,14 +190,14 @@ def gen_l2_func_list(agi, target_nt_dict, arg_nt_dict,
                      ild_t_member):
     """generate L2 functions"""
     l2_func_list = []
-    for (nt_name,array) in target_nt_dict.iteritems():
+    for (nt_name,array) in target_nt_dict.items():
         target_opname = array.get_target_opname()
         if array.is_const_lookup_fun():
             fo = gen_const_l2_function(agi, nt_name,
                                 target_opname, ild_t_member)
             l2_func_list.append(fo)
         else:
-            for arg_nt_seq,arg_arr in arg_nt_dict.iteritems():
+            for arg_nt_seq,arg_arr in arg_nt_dict.items():
                 fo = gen_scalable_l2_function(agi, nt_name,
                      target_opname, ild_t_member, arg_arr, list(arg_nt_seq))
                 l2_func_list.append(fo)
@@ -231,7 +231,7 @@ _ordered_maps = ['']
 def _test_map_all_zero(vv,phash_map_lu):
     """phash_map_lu is a dict[maps][0...255] pointing to a 2nd level lookup  """
     all_zero_map = {}
-    for xmap in  phash_map_lu.keys():
+    for xmap in  list(phash_map_lu.keys()):
         omap = phash_map_lu[xmap]
         all_zero=True
         for i in range(0,256):
@@ -324,7 +324,7 @@ def dump_vv_map_lookup(agi,
 
     maps = ild_info.get_maps(is_3dnow)
 
-    vv_num = [ int(x) for x in vv_lu.keys()]
+    vv_num = [ int(x) for x in list(vv_lu.keys())]
     vv_index = max(vv_num) + 1
     map_num = len(maps)
     arr_name = 'xed3_phash_lu'
@@ -490,7 +490,7 @@ def gen_l1_byreg_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
     #if not all modrm.reg values have legal instructions defined, we don't
     #have full 0-7 dict for modrm.reg here, and we can't generate the interval
     #dict
-    if len(fun_dict.keys()) == 8:
+    if len(list(fun_dict.keys())) == 8:
         int_dict = _gen_intervals_dict(fun_dict)
     else:
         int_dict = None
@@ -529,7 +529,7 @@ def gen_l1_byreg_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
 
 def _add_int_dict_dispatching(fo, int_dict, dispatch_var, data_name):
     cond_starter = 'if'
-    for interval in int_dict.keys():
+    for interval in list(int_dict.keys()):
         min = interval[0]
         max = interval[-1]
         #avoid comparing unsigned int to 0, this leads to build errors
@@ -549,7 +549,7 @@ def _add_int_dict_dispatching(fo, int_dict, dispatch_var, data_name):
 
 def _add_switch_dispatching(fo, fun_dict, dispatch_var, data_name):
     fo.add_code("switch(%s) {" % dispatch_var)
-    for key in fun_dict.keys():
+    for key in list(fun_dict.keys()):
         fo.add_code('case %s:' % key)
         call_stmt = '%s(%s)' % (fun_dict[key], data_name)
         fo.add_code_eol(call_stmt)
@@ -584,7 +584,7 @@ def gen_l1_bymode_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
     #if not all modrm.reg values have legal instructions defined, we don't
     #have full 0-7 dict for modrm.reg here, and we can't generate the interval
     #dict
-    if len(fun_dict.keys()) == len(ildutil.mode_space):
+    if len(list(fun_dict.keys())) == len(ildutil.mode_space):
         int_dict = _gen_intervals_dict(fun_dict)
     else:
         int_dict = None

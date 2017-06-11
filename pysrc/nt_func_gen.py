@@ -240,9 +240,9 @@ class nt_function_gen_t(object):
                 nt.default_action = actions.gen_return_action('')
 
     def gen_nt_functions(self):
-        nonterminals = (self.nonterminals.values() + 
-                       self.decoder_nonterminals.values() +  
-                       self.decoder_ntlufs.values())
+        nonterminals = (list(self.nonterminals.values()) + 
+                       list(self.decoder_nonterminals.values()) +  
+                       list(self.decoder_ntlufs.values()))
         
         for nt in nonterminals:
             if nt.name in _complicated_nt:

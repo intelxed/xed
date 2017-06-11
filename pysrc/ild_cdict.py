@@ -63,7 +63,7 @@ def _set_state_space_from_ii(agi, ii, state_space):
     #look at prebindings too
     #for things like ZEROING that don't have all possible
     #values mentioned in patterns
-    for (name, binding) in ii.prebindings.items():
+    for (name, binding) in list(ii.prebindings.items()):
 
         bitnum = len(binding.bit_info_list)
         #dirty hack: we don't want big prebidnings to explode
@@ -152,7 +152,7 @@ def get_state_op_widths(agi, state_space):
     Returns a dictionary from operand name to operands bit width
     """
     widths_dict = {}
-    for opname,val_dict in state_space.items():
+    for opname,val_dict in list(state_space.items()):
         if opname in agi.operand_storage.get_operands():
             opnd = agi.operand_storage.get_operand(opname)
             widths_dict[opname] = int(opnd.bitwidth)
@@ -387,14 +387,14 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
     #take only requested space patterns
     ptrns = []
     for ptrn in ptrn_list:
-        if vexvalid in ptrn.constraints['VEXVALID'].keys():
+        if vexvalid in list(ptrn.constraints['VEXVALID'].keys()):
             ptrns.append(ptrn)
 
     if len(ptrns) == 0:
         return None
 
     for ptrn in ptrns:
-        cnames.extend(ptrn.constraints.keys())
+        cnames.extend(list(ptrn.constraints.keys()))
     cnames = set(cnames)
 
     cdicts = []
@@ -515,7 +515,7 @@ class constraint_dict_t(object):
             return dict_list[0]
         res = constraint_dict_t(cnames=cnstr_names)
         for cdict in dict_list:
-            for key in cdict.tuple2rule.keys():
+            for key in list(cdict.tuple2rule.keys()):
                 if key in res.tuple2rule:
                     msg = []
                     msg.append("key: %s" % (key,))
@@ -545,20 +545,20 @@ class constraint_dict_t(object):
             return self.make_cdict(cnames[1:], tuple2rule)
         else:
             new_tuple2rule = {}
-            for key_tuple in tuple2rule.keys():
+            for key_tuple in list(tuple2rule.keys()):
                 for val in vals:
                     new_key = key_tuple + (val,)
                     new_tuple2rule[new_key] = self.rule
             return self.make_cdict(cnames[1:], new_tuple2rule)
 
     def get_all_keys_by_val(self, val):
-        return [k for k,v in self.tuple2rule.iteritems() if v == val]
+        return [k for k,v in self.tuple2rule.items() if v == val]
     
     def create_tuple2int(self, all_ops_widths):
         ''' create the mapping of tuple to its int value '''
         tuple2int = {}
         int2tuple = {}
-        for t in self.tuple2rule.iterkeys():
+        for t in self.tuple2rule.keys():
             res = tup2int.tuple2int(t, self.cnames, all_ops_widths)
             if res in int2tuple:
                 err = "the tuple % and the tuple %s generate the same value:%d"
@@ -590,7 +590,7 @@ class constraint_dict_t(object):
             
         
         new_cdict.int2tuple = dict((i,t) for t,i in 
-                                   new_cdict.tuple2int.iteritems())
+                                   new_cdict.tuple2int.items())
         
         return new_cdict
           
@@ -598,8 +598,8 @@ class constraint_dict_t(object):
         ''' return a tuple of the operand accessor function and the constraint 
         names that it represents '''
         
-        ptrn_list = self.tuple2rule.values()
-        if cname in _token_2_module.keys():
+        ptrn_list = list(self.tuple2rule.values())
+        if cname in list(_token_2_module.keys()):
             nt_module = _token_2_module[cname]
             getter_fn = nt_module.get_getter_fn(ptrn_list)
             if not getter_fn:
@@ -734,5 +734,5 @@ def gen_ph_fos(agi, cdict_by_map_opcode, is_amd, log_fn,
     for key in sorted(stats.keys()):
         _log(log_f,"%s %s\n" % (key,stats[key]))
     log_f.close()
-    return phash_lu,lu_fo_list,op_lu_map.values()
+    return phash_lu,lu_fo_list,list(op_lu_map.values())
 

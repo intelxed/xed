@@ -184,7 +184,7 @@ class parse_opmap_t(object):
                 self.read_line(line)
                 
     def dump(self):
-        for g,v in self.groups.iteritems():
+        for g,v in self.groups.items():
             print(g, ":  ")
             v.dump()
             print("\n\n")
