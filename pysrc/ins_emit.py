@@ -155,7 +155,7 @@ class instructions_group_t(object):
         groups = []
         #1. generate the groups
         for iclass,iforms in list(iarray.items()):
-            iforms.sort(key=key_iforms_by_bind_ptrn)
+            iforms.sort(key=key_iform_by_bind_ptrn)
             self._put_iclass_in_group(groups,iclass,iforms)
         
         # 2. generate the iclass to group Id mapping
