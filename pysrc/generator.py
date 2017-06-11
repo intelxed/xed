@@ -5198,7 +5198,7 @@ class all_generator_info_t(object):
 
       
    def add_file_name(self,fn,header=False):
-      if type(fn) == bytes:
+      if type(fn) == bytes or type(fn) == str:
           fns = [fn]
       elif type(fn) == list:
           fns = fn
