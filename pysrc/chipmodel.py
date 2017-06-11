@@ -120,7 +120,7 @@ def _feature_index(all_features, f):
 
 
 def read_database(filename):
-    lines = file(filename).readlines()
+    lines = open(filename,'r').readlines()
     lines = filter_comments(lines)
     lines = genutil.process_continuations(lines)
     # returns a list and a dictionary

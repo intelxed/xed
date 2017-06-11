@@ -120,7 +120,7 @@ def get_memory_usage():
     """Return a tuple of (vmsize, vmrss, vmdata) on linux systems with
     /proc filesystems."""
     try:
-        lines = file('/proc/%s/status' % os.getpid()).readlines()
+        lines = open('/proc/%s/status' % os.getpid(),'r').readlines()
         pairs = [ x.split(':') for x in lines]
         dct = dict(pairs)
         return (dct['VmSize'].strip(), dct['VmRSS'].strip(),  dct['VmData'].strip())

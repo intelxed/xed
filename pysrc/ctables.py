@@ -196,6 +196,6 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
 
 if __name__ == '__main__':
    import sys
-   lines = file(sys.argv[1]).readlines()
+   lines = open(sys.argv[1],'r').readlines()
    srcs = work(lines,xeddir='.',gendir='obj')
    print("WROTE: ", "\n\t".join(srcs))

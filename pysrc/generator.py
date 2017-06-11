@@ -5696,7 +5696,7 @@ def emit_operand_storage(agi):
 
 def call_ctables(agi):
     """Conversion tables for operands"""
-    lines = file(agi.common.options.ctables_input_fn).readlines()
+    lines = open(agi.common.options.ctables_input_fn,'r').readlines()
     srcs = ctables.work(lines,
                         xeddir=agi.common.options.xeddir,
                         gendir=agi.common.options.gendir)

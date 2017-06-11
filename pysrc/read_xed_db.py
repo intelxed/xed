@@ -117,7 +117,7 @@ class xed_reader_t(object):
        return widths_list
         
     def _gen_widths(self, fn):
-        lines = file(fn).readlines()
+        lines = open(fn,'r').readlines()
         widths_list = self._refine_widths_input(lines)
 
         # sets the default data type for each width
@@ -127,7 +127,7 @@ class xed_reader_t(object):
         return widths_dict
 
     def _gen_xtypes(self, fn):
-        lines = file(fn).readlines()
+        lines = open(fn,'r').readlines()
         xtypes_dict = opnd_types.read_operand_types(lines)
         return set(xtypes_dict.keys())
             
@@ -332,7 +332,7 @@ class xed_reader_t(object):
 
 
     def _parse_state_bits(self,f):
-        lines = file(f).readlines()
+        lines = open(f,'r').readlines()
         d = []
         state_input_pattern = re.compile(r'(?P<key>[^\s]+)\s+(?P<value>.*)')
         while len(lines) > 0:
