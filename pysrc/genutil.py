@@ -425,3 +425,11 @@ def uniqueify(values):
    k.sort()
    return k
 
+
+def is_stringish(x):
+   return isinstance(x,bytes) or isinstance(x,str) 
+def make_list_of_str(lst):
+   return [ str(x) for x in lst]
+def open_readlines(fn):
+   return open(f,'r').readlines()
+           
