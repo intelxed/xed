@@ -67,7 +67,7 @@ class constant_table_t(object):
     def dump(self):
         print("%s(%s)::" % (self.name, self.operand))
         for (v,p) in self.value_string_pairs:
-            if isinstance(p, types.StringType):
+            if isinstance(p, bytes):
                 print("%s '%s'" % (hex(v),p))
             else:
                 print("%s  error" %(hex(v)))
@@ -78,7 +78,7 @@ class constant_table_t(object):
         lines.append('static const char* %s[] = {' % (self.string_table_name))
 
         for (v,p) in self.value_string_pairs:
-            if isinstance(p, types.StringType):
+            if isinstance(p, bytes):
                 lines.append( '/*%s*/ "%s",' % (hex(v),p))
             else:
                 lines.append( '/*%s*/ 0, /* error */' % (hex(v)))

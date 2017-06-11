@@ -144,11 +144,11 @@ class operand_info_t(object):
       
    def non_binary_fixed_number(self):
       "Returns True if this operand is a decimal number"
-      if type(self.bits) == types.ListType:
+      if type(self.bits) == list:
          if ( len(self.bits) == 1 and
               operand_info_t.decimal_number_pattern.match(self.bits[0]) ):
                return True
-      elif type(self.bits) == types.StringType:
+      elif type(self.bits) == bytes:
          if operand_info_t.decimal_number_pattern.match(self.bits):
             return True
       return False
@@ -179,7 +179,7 @@ class operand_info_t(object):
       s.append("{:6}".format(self.name))
       s.append("{:9}".format(self.type))
       if self.bits:
-         if type(self.bits) == types.ListType:
+         if type(self.bits) == list:
             s.append(''.join(self.bits) + " (L)")
          else:
             s.append('[' + self.bits + ']')

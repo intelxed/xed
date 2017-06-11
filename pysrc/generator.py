@@ -847,7 +847,7 @@ def parse_opcode_spec(agi, line, state_dict):
 
 def add_str(s, name, value):
    t =  s + '%-15s' % (name) + ': '
-   if type(value) == types.ListType:
+   if type(value) == list:
       for q in value:
          t += q + ' ' 
    else:
@@ -2290,7 +2290,7 @@ def at_end_of_instructions(ilist, bitpos):
    done = False
    notdone = False
    for ii in ilist:
-      if isinstance(ii,types.TupleType):
+      if isinstance(ii,tuple):
          die("Bad tuple where instruction expected: "+ str(ii))
       if bitpos >= len(ii.ipattern.bits):
          done = True
@@ -2578,7 +2578,7 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
          for k,partition in node_partition.items():
             if vpart():
                msge("SPATTER SCAN: Operand decider partition key= " + str(k))
-            if isinstance(partition[0],types.TupleType):
+            if isinstance(partition[0],tuple):
                for trimmed_values, ii in  partition:
                   s = set(trimmed_values)
                   if previous_trimmed_values == None:
@@ -2609,7 +2609,7 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
             msge("Splattering because of conflicting 'other' conditions")
             new_node_partition = {}
             for k,partition in node_partition.items():
-               if isinstance(partition[0],types.TupleType):
+               if isinstance(partition[0],tuple):
                   for trimmed_values, ii in  partition:
                      for tv in trimmed_values:
                         try:
@@ -2632,7 +2632,7 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
                msge("PARTITIION: Operand decider partition key= " + str(k))
             next_node = new_node(graph,k,bitpos)
 
-            if isinstance(partition[0],types.TupleType):
+            if isinstance(partition[0],tuple):
                # store the key choices in the node for later graph building
                for trimmed_values, ii in  partition:
                   next_node.trimmed_values = trimmed_values
@@ -3075,7 +3075,7 @@ def collect_attributes(options, node,  master_list):
    for ii in node.instructions:
          if field_check(ii, 'attributes'):
             s = getattr(ii,'attributes')
-            if isinstance(s, types.ListType):
+            if isinstance(s, list):
                for x in s:
                   if x not in master_list:
                      master_list.append(x)
@@ -5179,9 +5179,9 @@ class all_generator_info_t(object):
 
       
    def add_file_name(self,fn,header=False):
-      if type(fn) == types.StringType:
+      if type(fn) == bytes:
           fns = [fn]
-      elif type(fn) == types.ListType:
+      elif type(fn) == list:
           fns = fn
       else:
           die("Need string or list")

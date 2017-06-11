@@ -144,7 +144,7 @@ def flatten_sub(all,cur_list,rest):
         return
         
     r0 = rest[0]
-    if type(r0) == types.ListType:
+    if type(r0) == list:
         for v in r0:
             tlist = copy.copy(cur_list)
             tlist.append(v)
@@ -170,7 +170,7 @@ def flatten_dict_sub(all,cur_dict,main_dict_with_lists,rest_keys):
     # pick off the first key and see what it gives us from the dict
     r0 = rest_keys[0]
     rhs = main_dict_with_lists[r0]
-    if type(rhs) == types.ListType:
+    if type(rhs) == list:
         for v in rhs:
             tdict = copy.copy(cur_dict)
             # change the list-valued entry to a scalar-valued entry
@@ -286,7 +286,7 @@ def make_numeric(s, restriction_pattern=None):
    global make_numeric_binary_pattern
    global make_numeric_old_binary_pattern
    
-   if type(s) == types.IntType:
+   if type(s) == int:
        die("Converting integer to integer")
    elif make_numeric_hex_pattern.match(s):
        out = int(s,16)

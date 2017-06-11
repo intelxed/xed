@@ -215,7 +215,7 @@ class enumer_t(object):
         full_header_file_name = mbuild.join(gendir,self.hfn)
         self.hf = codegen.file_emitter_t(gendir, self.hfn,
                                          namespace=namespace)
-        if type(self.extra_header) == types.ListType:
+        if type(self.extra_header) == list:
             for hdr in self.extra_header:
                 self.hf.add_header(hdr)
         elif self.extra_header:
