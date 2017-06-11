@@ -579,7 +579,7 @@ class conditions_t(object):
         generation (emit actions), by searching the conditions to see
         which ones are captures"""
         if vcapture():
-            msgb("CAPTURE COLLECTION USING:\n\t%s\n" % "\n\t".join(map(str,clist)))
+            msgb("CAPTURE COLLECTION USING:\n\t%s\n" % "\n\t".join( [ str(x) for x in clist] ))
         full_captures = list(filter(lambda x: x.is_bit_capture(), clist))
         captures = [  x.capture_info() for x in full_captures]
         return captures
@@ -1009,7 +1009,7 @@ class rule_t(object):
                     list_of_tuples = self.compute_field_capture_list()
 
                 if vtuples():
-                    msgb("TUPLES", (" ,".join(map(str, list_of_tuples))))
+                    msgb("TUPLES", (" ,".join( [str(x) for x in list_of_tuples] )))
                 if len(list_of_tuples) == 0 or a.emit_type == 'numeric':
                     # no substitutions required
                     (length, s) = self.prepare_value_for_emit(a)
@@ -2179,7 +2179,7 @@ class encoder_configuration_t(object):
         #            decode-patterns are encode-actions [blot_t],
         #              modal-patterns that become encode-conditions [string])
 
-        #msgerr("OPERANDS %s" % ' '.join(map(str,operands)))
+        #msgerr("OPERANDS %s" % ' '.join( [str(x) for x in operands]))
         return (operands, patterns, modal_patterns)
 
     def print_iclass_info(self,iclass, operands, ipattern, conditions, 

@@ -292,8 +292,6 @@ class l1_phash_t(phash_t):
             # legal ordinal starts at 1 
             self.cdict.tuple2rule[t].index = hash_val + 1 
             
-        #for key sequence postprocessing analysis
-        #sys.stderr.write("KEYS:" + " ".join(map(str,sorted(self.x2hx.keys()))) + '\n')
 
     def __str__(self):
         lines = ['-----------1-LEVEL-PHASH-------------']

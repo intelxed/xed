@@ -197,7 +197,7 @@ class operand_info_t(object):
           s.append("MULTIREG{}".format(self.multireg))
           
       if self.bit_positions:
-          s.append(' bitpos:  ' + ', '.join(map(str,self.bit_positions)))
+          s.append(' bitpos:  ' + ', '.join( [str(x) for x in self.bit_positions] ))
       
       if self.invert:
          s.append('invert')

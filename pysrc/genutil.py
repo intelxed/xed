@@ -230,7 +230,7 @@ def hex_to_binary(x):
    return decimal_to_binary(i)
 
 def stringify_list(lst):
-    return ' '.join(map(str,lst))
+    return ' '.join([ str(x) for x in lst])
 
 def round_up_power_of_two(x):
    lg = math.ceil(math.log(x,2))

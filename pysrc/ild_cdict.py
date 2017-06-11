@@ -259,7 +259,7 @@ def _replace_RM_with_RM4(cnames, ptrn_list):
     cnames.add(_rm_token_4)
     for ptrn in ptrn_list:
         found = False
-        #print "PATTERN BITS", "\t\n".join(map(str,ptrn.ii.ipattern.bits))
+        #print "PATTERN BITS", "\t\n".join( [str(x) for x in ptrn.ii.ipattern.bits])
         for bt in ptrn.ii.ipattern.bits:
             if bt.token == _rm_token:
                 if bt.test == 'eq':
@@ -268,7 +268,7 @@ def _replace_RM_with_RM4(cnames, ptrn_list):
                     break
         if not found:
             #print "X", str(cnames)
-            #print "\t\n".join(map(str,ptrn_list))
+            #print "\t\n".join( [ str(x) for x in ptrn_list] )
             ptrn.constraints[_rm_token_4] = {0:True, 1:True}
 
 #FIXME: probably should move this one to layers

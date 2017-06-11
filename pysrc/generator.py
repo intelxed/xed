@@ -708,7 +708,7 @@ class prebinding_t(object):
    def __str__(self):
       s = []
       s.append(self.field_name)
-      s.extend(map(str,self.bit_info_list))
+      s.extend( [str(x) for x in self.bit_info_list ] )
       return ', '.join(s)
 
 def get_btype(b):
@@ -1418,7 +1418,7 @@ class instruction_info_t(partitionable_info_t):
           return ''.join(s)
       if self.prebindings:
          s.append('prebindings: \n\t' + 
-                  '\n\t'.join(map(str,list(self.prebindings.values()))) + '\n')
+                  '\n\t'.join( [str(x) for x in list(self.prebindings.values())]) + '\n')
       for op in self.operands:
          s.append(pad)
          s.append("   ")
@@ -2034,19 +2034,19 @@ def partition_by_required_values(options, instructions, bitpos, token,
                osf = operand_storage_dict[operand_decider.token]
                if osf.ctype.find('enum') == -1:
                   nvalues = 1 << int(osf.bitwidth)
-                  #all_values_for_this_od = map(str,range(0,nvalues))
+                  #all_values_for_this_od = [ str(x) for x in range(0,nvalues) ]
                   all_values_for_this_od = range(0,nvalues)
                   if vod():
                      msge("Synthesized values for %s: %s" % 
                           ( operand_decider.token,
-                            ", ".join(map(str,all_values_for_this_od))))
+                            ", ".join( [ str(x) for x in all_values_for_this_od])))
             except:
                die("could not find %s in state space dictionary" %  
                    (operand_decider.token))
 
          if vod():
             msge("All values for OD: %s" % 
-                 ", ".join(map(str,all_values_for_this_od)))
+                 ", ".join( [ str(x) for x in all_values_for_this_od] ))
          for a in all_values_for_this_od:
             all_values[a]=True
          trimmed_vals = list(filter(lambda x: x != operand_decider.requirement, 

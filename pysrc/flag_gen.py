@@ -224,7 +224,7 @@ class flags_rec_t(object):
          s.append(self.qualifier)
       s.append(self.may_must)
       s.append('[')
-      s.extend(map(str,self.flag_actions))
+      s.extend([str(x) for x in self.flag_actions])
       s.append(']')
       return ' '.join(s)
 
@@ -302,7 +302,7 @@ class flags_info_t(object):
        return self.complex_id
         
     def __str__(self):
-       s = ', '.join(map(str,self.flags_recs))
+       s = ', '.join( [str(x) for x in self.flags_recs] )
        return s
 
     def x87_flags(self):
