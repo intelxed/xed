@@ -151,7 +151,10 @@ def refine_regs_input(lines):
                                   
    return regs_list
 
-def _reg_cmp(a,b):
+def _key_reg_ordinal(x):
+    return x.ordinal
+
+def _reg_cmp(a,b):  # FIXME:2017-06-10: PY3 port, no longer used
     if a.ordinal < b.ordinal:
         return -1
     elif a.ordinal > b.ordinal:
@@ -166,7 +169,7 @@ def rearrange_regs(regs_list):
     enumvals = []
     for g in groups:
         k = list(filter(lambda x: x.rtype == g, regs_list))
-        k.sort(cmp=_reg_cmp)
+        k.sort(key=_key_reg_ordinal)
         first = '%s_FIRST' % (g)
         last = '%s_LAST' % (g)
 

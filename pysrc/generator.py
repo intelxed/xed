@@ -3122,8 +3122,11 @@ def write_instruction_data(odir,idata_dict):
                                                   attributes)
       f.write(s)
    f.close()
+   
+def attr_dict_keyfn(a):
+    return a[0]
 
-def attr_dict_cmp(a,b):
+def attr_dict_cmp(a,b): # FIXME:2017-06-10:PY3 port, now unused
     av = a[0]
     bv = b[0]
     if av == bv:
@@ -3148,7 +3151,7 @@ def write_attributes_table(agi, odir):
    t = []
    for s,v in agi.attributes_dict.items():
        t.append((v,s))
-   t.sort(cmp=attr_dict_cmp)
+   t.sort(key=attr_dict_keyfn)
    if vattr():
        msgb("Sorted Unique attributes", len(t))
    agi.attributes_ordered =  t
@@ -3239,8 +3242,15 @@ def add_invalid(lst):
       lst[0:0] = ['INVALID']
 
 ############################################################################
-   
-def cmp_invalid(t1,t2):
+def key_invalid_first(x):
+    # make 'INVALID' sort to be first.
+    if x == 'INVALID':
+        # space is first printable character in ascii table and should
+        # not show up in our usage.
+        return ' ' 
+    return x
+
+def cmp_invalid(t1,t2): # FIXME:2017-06-10:PY3 port, no longer used
    """Special sort-comparison function that makes sure the INVALID
    entry is first"""
    if t1 == t2:
@@ -3254,7 +3264,12 @@ def cmp_invalid(t1,t2):
    return -1
 
 
-def cmp_invalid_vtuple(vt1,vt2):
+def key_invalid_tuple_element_0(x):
+    return key_invalid_first(x[0])
+def key_tuple_element_1(x):
+    return x[1]
+
+def cmp_invalid_vtuple(vt1,vt2):  #FIXME:2017-06-10:PY3 port. No longer used
    """Special sort-comparison function that makes sure the INVALID
    entry is first"""
    t1 =  vt1[0]
@@ -3445,7 +3460,7 @@ def emit_iclass_enum_info(agi):
 
    iclasses = uniqueify(iclasses)
    # sort each to make sure INVALID is first
-   iclasses.sort(cmp=cmp_invalid)
+   iclasses.sort(key=key_invalid_first)
    gendir = agi.common.options.gendir
    xeddir = agi.common.options.xeddir
    agi.iclasses_enum_order = iclasses
@@ -3523,7 +3538,7 @@ def emit_enum_info(agi):
    xeddir = agi.common.options.xeddir
 
 
-   nonterminals.sort(cmp=cmp_invalid)
+   nonterminals.sort(key=key_invalid_first)
    nt_enum =  enum_txt_writer.enum_info_t(nonterminals, xeddir, gendir,
                                           'xed-nonterminal', 
                                           'xed_nonterminal_enum_t',
@@ -3556,14 +3571,14 @@ def emit_enum_info(agi):
    #operand_enum order
    agi.xed3_operand_names = operand_names
    
-   operand_types.sort(cmp=cmp_invalid)
+   operand_types.sort(key=key_invalid_first)
    ot_enum = enum_txt_writer.enum_info_t(operand_types, xeddir, gendir,
                                          'xed-operand-type', 
                                          'xed_operand_type_enum_t',
                                          'XED_OPERAND_TYPE_',
                                          cplusplus=False)
    
-   attributes.sort(cmp=cmp_invalid)
+   attributes.sort(key=key_invalid_first)
    lena = len(attributes)
    attributes_list = ['INVALID']
    if lena > 0:
@@ -3587,14 +3602,14 @@ def emit_enum_info(agi):
                                          cplusplus=False)
    
 
-   categories.sort(cmp=cmp_invalid)
+   categories.sort(key=key_invalid_first)
    c_enum = enum_txt_writer.enum_info_t(categories, xeddir, gendir,
                                         'xed-category',
                                         'xed_category_enum_t', 
                                         'XED_CATEGORY_',
                                         cplusplus=False)
    
-   extensions.sort(cmp=cmp_invalid)
+   extensions.sort(key=key_invalid_first)
    e_enum = enum_txt_writer.enum_info_t(extensions, xeddir, gendir,
                                         'xed-extension',
                                         'xed_extension_enum_t', 
@@ -4435,7 +4450,11 @@ def collect_and_emit_iforms(agi,options):
       vtuples.extend(vsub)
 
    #msge("VTUPLES %s" % (str(vtuples)))
-   vtuples.sort(cmp=cmp_invalid_vtuple)
+   # Relying on stable sorting. sort first by 2nd field (#1), then
+   # sort by iclass, making sure "INVALID" is first.
+   vtuples.sort(key=key_tuple_element_1)
+   vtuples.sort(key=key_invalid_tuple_element_0)
+
 
    agi.iform_tuples = vtuples
    
@@ -6229,7 +6248,7 @@ def emit_exception_enum(agi):
     if 'INVALID' not in agi.exception_types:
         agi.exception_types.append('INVALID')
     agi.exception_types = uniqueify(agi.exception_types)
-    agi.exception_types.sort(cmp=cmp_invalid)
+    agi.exception_types.sort(key=key_invalid_first)
     enum = enum_txt_writer.enum_info_t( agi.exception_types,
                                         agi.common.options.xeddir,
                                         agi.common.options.gendir,
@@ -6269,7 +6288,7 @@ def decorate_instructions_with_exception_types(agi):
 def emit_ctypes_enum(options, ctypes_dict):
    ctypes_dict['INVALID']=True
    type_names = list(ctypes_dict.keys())
-   type_names.sort(cmp=cmp_invalid)
+   type_names.sort(key=key_invalid_first)
    ctypes_enum =  enum_txt_writer.enum_info_t(type_names,
                                               options.xeddir, options.gendir,
                                               'xed-operand-ctype',

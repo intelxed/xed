@@ -34,6 +34,10 @@ legacy_maps = {'map0':'XED_ILD_MAP0',
                'map3':'XED_ILD_MAP3',
                '3dnow':'XED_ILD_MAPAMD' } 
 
+
+def key_field_binding_lower(x):
+    return x.field_name.lower()
+    
 def sort_field_bindings(a,b):
     ''' sort action_t of type emit '''
     
@@ -43,14 +47,22 @@ def sort_field_bindings(a,b):
         return -1
     return 0
 
-def cmp_iforms_by_bind_ptrn(a,b):
+def key_iform_by_bind_ptrn(x):
+    return x.bind_ptrn
+
+def cmp_iforms_by_bind_ptrn(a,b):  # FIXME:2017-06-10: PY3 port, no longer used
     if a.bind_ptrn > b.bind_ptrn:
         return 1
     elif a.bind_ptrn < b.bind_ptrn:
         return -1
     return 0
 
-def cmp_iform_len(a,b):
+def key_priority(x):
+    return x.priority
+def key_rule_length(x):
+    return len(x.rule.get_all_emits() + x.rule.get_all_nts())
+
+def cmp_iform_len(a,b): # FIXME:2017-06-10: PY3 port, no longer used
     if a.priority >  b.priority:
         return 1
     elif a.priority <  b.priority:
@@ -143,7 +155,7 @@ class instructions_group_t(object):
         groups = []
         #1. generate the groups
         for iclass,iforms in list(iarray.items()):
-            iforms.sort(cmp=cmp_iforms_by_bind_ptrn)
+            iforms.sort(key=key_iforms_by_bind_ptrn)
             self._put_iclass_in_group(groups,iclass,iforms)
         
         # 2. generate the iclass to group Id mapping
@@ -225,7 +237,11 @@ class ins_group_t(object):
         for iclass in iclasses:
             values = ''
             iforms_sorted_by_length = self.iclass2iforms[iclass]
-            iforms_sorted_by_length.sort(cmp=cmp_iform_len)
+
+            iforms_sorted_by_length.sort(key=key_iform_by_bind_ptrn)
+            iforms_sorted_by_length.sort(key=key_rule_length)
+            iforms_sorted_by_length.sort(key=key_priority)
+            
             for iform in iforms_sorted_by_length:
                 values += '%4d,' % iform.rule.iform_id
             line = "/*%10s*/    {%s}," % (iclass,values)
@@ -605,7 +621,7 @@ class instruction_codegen_t():
         for iform in self.iform_list:
             # collect all the actions that set fields
             iform.fbs = iform.rule.get_all_fbs() 
-            iform.fbs.sort(cmp=sort_field_bindings) 
+            iform.fbs.sort(key=key_field_binding_lower) 
             
             # create a list of int values
             fbs_values = [ x.int_value for x in iform.fbs]

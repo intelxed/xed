@@ -1248,7 +1248,11 @@ class iform_t(object):
             s.append("\t%s" % str(a))
         return '\n'.join(s)
 
-def rule_tuple_sort(a,b):
+def key_rule_tuple(x):
+    (a1,a2) = x
+    return a1
+
+def rule_tuple_sort(a,b): # FIXME:2017-06-10:PY3 port, no longer used
     (a1,a2) = a
     (b1,b2) = b
     if a1 > b1:
@@ -1332,7 +1336,7 @@ class nonterminal_t(object):
                 weight = len(rule.actions) # try to get shortest form first...
                 _vmsgb("RULE WEIGHT %d" % (weight), str(rule))
             tups.append((weight,rule))
-        tups.sort(cmp=rule_tuple_sort)
+        tups.sort(key=key_rule_tuple)
         newrules = []
         for (x,y) in tups:
             newrules.append(y)
@@ -2429,7 +2433,10 @@ class encoder_configuration_t(object):
         fo.add_code_eol(code)
         # FIXME: 2014-04-17: copy to sorted_iforms still sorts ins_group.iforms
         sorted_iforms = ins_group.iforms
-        sorted_iforms.sort(cmp=ins_emit.cmp_iform_len)
+        sorted_iforms.sort(key=ins_emit.key_iform_by_bind_ptrn)
+        sorted_iforms.sort(key=ins_emit.key_rule_length)
+        sorted_iforms.sort(key=ins_emit.key_priority)
+        
         for i,iform in enumerate(sorted_iforms):
             # FIXME:2007-07-05 emit the iform.operand_order check of
             # the xed_encode_order[][] array

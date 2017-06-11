@@ -86,14 +86,19 @@ class operand_field_t(object):
          return True
       return False
 
-def cmp_operands_name(a,b):
+def key_operand_name(a):
+    return a.name
+def key_bitwidth(a):
+    return a.bitwidth
+
+def cmp_operands_name(a,b): # FIXME:2017-06-10:PY3 port, no longer used
     if a.name > b.name:
         return 1
     if a.name < b.name:
         return -1
     return 0
 
-def cmp_operands(a,b):
+def cmp_operands(a,b): # FIXME:2017-06-10:PY3 port, no longer used
     ''' comparing the operands on based on their bit width
         larger width first.
         if width are the same compare the names, lower name first '''   
@@ -105,7 +110,11 @@ def cmp_operands(a,b):
     if w1 < w2:
         return 1
     return cmp_operands_name(a,b)
-    
+
+def sort_cmp_operands(a):
+    b = sorted(a, key=key_operand_name)
+    c = sorted(b, key=key_bitwidth)
+    return c
  
 class operands_storage_t(object):
     """This is where we build up the storage for the fields that hold
@@ -389,7 +398,7 @@ class operands_storage_t(object):
             
             operands = list(self.operand_fields.values())
             un_compressed = list(filter(lambda x: x.compressed == False, operands ))
-            un_compressed.sort(cmp=cmp_operands)
+            un_compressed = sort_cmp_operands(un_compressed)
             
             # first emit all the operands that does not use bit fields 
             for op in un_compressed:
@@ -404,7 +413,7 @@ class operands_storage_t(object):
         
         else:
             operands_sorted = list(self.operand_fields.values())
-            operands_sorted.sort(cmp=cmp_operands)
+            operands_sorted = sort_cmp_operands(operands_sorted)
             for op in operands_sorted:
                 cgen.add_var(op.name.lower(), op.storage_type, 
                              accessors='none')
@@ -485,7 +494,7 @@ class operands_storage_t(object):
         using First Fit Decreasing(FFD) strategy '''
         
         operands = self._get_candidates_for_compression()
-        operands.sort(cmp=cmp_operands)
+        operands = sort_cmp_operands(operands)
         bins = self._partition_to_bins(operands)
         return bins
     
