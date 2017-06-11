@@ -134,7 +134,7 @@ def read_database(filename):
 
 def _format_names(lst):
     cols = 4
-    lines = ('\t'.join(lst[i:i+cols]) for i in xrange(0,len(lst),cols))
+    lines = ('\t'.join(lst[i:i+cols]) for i in range(0,len(lst),cols))
     return '\n\t'.join(lines)
             
 def dump_chip_hierarchy(arg, chips, chip_features_dict):
