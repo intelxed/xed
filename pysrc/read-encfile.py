@@ -1540,7 +1540,7 @@ class encoder_configuration_t(object):
         
         
         global storage_fields
-        lines = file(self.files.storage_fields_file)
+        lines = open(self.files.storage_fields_file,'r')
         operands_storage = operand_storage.operands_storage_t(lines) 
         storage_fields = operands_storage.get_operands()
 
@@ -1861,7 +1861,7 @@ class encoder_configuration_t(object):
     def read_encoder_files(self):
         
         for f in self.files.encoder_input_files:
-            lines = file(f).readlines()
+            lines = open(f,'r').readlines()
             lines = self.expand_state_bits(lines)
             (seqs,nts,ntlufs) = self.parse_encode_lines(lines)
             del lines
@@ -2241,7 +2241,7 @@ class encoder_configuration_t(object):
         I need. """
         continuation_pattern = re.compile(r'\\$')
         _vmsgb("READING",self.files.instructions_file)
-        lines = file(self.files.instructions_file).readlines()
+        lines = open(self.files.instructions_file,'r').readlines()
         lines = process_continuations(lines)
         nts = {}
         nt = None
@@ -2378,7 +2378,7 @@ class encoder_configuration_t(object):
         nts = {}
         ntlufs = {}
         for f in self.files.decoder_input_files:
-            lines = file(f).readlines()
+            lines = open(f,'r').readlines()
             lines = self.expand_state_bits(lines)
             (some_nts, some_ntlufs) = self.parse_decode_lines(lines) # read_flat_
             nts.update(some_nts)
@@ -2713,7 +2713,7 @@ class encoder_configuration_t(object):
 
         # read the state bits 
         f = self.files.state_bits_file
-        lines = file(f).readlines()
+        lines = open(f,'r').readlines()
         self.state_bits = self.parse_state_bits(lines)
         del lines
 
