@@ -133,7 +133,7 @@ class nt_function_gen_t(object):
                     #the the unwanted value.
                     #need to deep copy since we modify the list, and we want 
                     #to preserve the original 
-                    all_vals = copy.deepcopy(self.state_space[key])
+                    all_vals = list(copy.deepcopy(self.state_space[key]))
                     val = genutil.make_numeric(cond.rvalue.value)
                     all_vals.remove(val)
                     constraints[key] = all_vals
