@@ -213,7 +213,7 @@ def work(agi):
         _msg(nt_name)
 
     nested_nts = _get_nested_nts(agi)
-    _msg("\NESTED NTS:")
+    _msg("\nNESTED NTS:")
     for nt_name in nested_nts:
         _msg(nt_name)
 
