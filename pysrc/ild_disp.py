@@ -347,8 +347,8 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
         all_nts.append(ntseq[0])
     
     #get only those NTs that actually appear in PATTERNs
-    disp_nts = filter(lambda(nt): nt in all_nts, disp_nts)
-    brdisp_nts = filter(lambda(nt): nt in all_nts, brdisp_nts)
+    disp_nts = list(filter(lambda nt: nt in all_nts, disp_nts))
+    brdisp_nts = list(filter(lambda nt: nt in all_nts, brdisp_nts))
 
     
     debug.write('DISP SEQS: %s\n' % all_disp_seq)

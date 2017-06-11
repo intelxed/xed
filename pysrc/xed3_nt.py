@@ -722,7 +722,7 @@ def _gen_dynamic_part1_fo(agi):
     nt_names = _get_nt_names_from_ii(rule)
     
     #filter NTs that we want to skip
-    nt_names = filter(lambda(x): not _skip_nt(x), nt_names)
+    nt_names = list(filter(lambda x: not _skip_nt(x), nt_names))
     fo = _gen_capture_chain_fo(nt_names, fname=_dynamic_part1_fn)
     return fo
     

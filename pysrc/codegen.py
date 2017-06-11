@@ -981,7 +981,7 @@ class array_gen_t(object):
     def emit_initialization(self,verbose=False): # private
         """Return a list of strings containing array initialization lines"""
         lines = []
-        indices = map(lambda(x): x[3], self.ranges) # get the argnames
+        indices = [ x[3] for x in self.ranges] # get the argnames
 
         missing_key = None
         missed_one = True

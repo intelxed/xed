@@ -121,7 +121,7 @@ def get_memory_usage():
     /proc filesystems."""
     try:
         lines = file('/proc/%s/status' % os.getpid()).readlines()
-        pairs = map(lambda(x): x.split(':'), lines)
+        pairs = [ x.split(':') for x in lines]
         dct = dict(pairs)
         return (dct['VmSize'].strip(), dct['VmRSS'].strip(),  dct['VmData'].strip())
     except:
@@ -405,8 +405,8 @@ def generate_lookup_function_basis(gi,state_space):
                argnames[bt.token][bt.requirement]=True
             elif bt.test == 'ne':
                all_values_for_this_od = state_space[bt.token]
-               trimmed_vals = filter(lambda (x): x != bt.requirement,
-                                     all_values_for_this_od)
+               trimmed_vals = list(filter(lambda x: x != bt.requirement,
+                                     all_values_for_this_od))
                for tv in trimmed_vals:
                   argnames[bt.token][tv]=True
             else:

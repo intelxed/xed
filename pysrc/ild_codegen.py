@@ -324,7 +324,7 @@ def dump_vv_map_lookup(agi,
 
     maps = ild_info.get_maps(is_3dnow)
 
-    vv_num = map(lambda x: int(x),vv_lu.keys())
+    vv_num = [ int(x) for x in vv_lu.keys()]
     vv_index = max(vv_num) + 1
     map_num = len(maps)
     arr_name = 'xed3_phash_lu'
@@ -395,7 +395,7 @@ def _gen_bymode_fun_dict(info_list, nt_dict, is_conflict_fun,
     opcode = info_list[0].opcode
     for mode in ildutil.mode_space:
         #get info objects with the same modrm.reg bits
-        infos = filter(lambda(info): mode in info.mode, info_list)
+        infos = list(filter(lambda info: mode in info.mode, info_list))
         if len(infos) == 0:
             ildutil.ild_warn('BY MODE resolving: No infos for mode' +
                              '%s opcode %s map %s' % (mode, opcode, insn_map))
@@ -424,7 +424,7 @@ def _gen_byreg_fun_dict(info_list, nt_dict, is_conflict_fun,
     opcode = info_list[0].opcode
     for reg in range(0,8):
         #get info objects with the same modrm.reg bits
-        infos = filter(lambda(info): info.ext_opcode==reg, info_list)
+        infos = list(filter(lambda info: info.ext_opcode==reg, info_list))
         if len(infos) == 0:
             ildutil.ild_warn('BYREG resolving: No infos for reg' +
                              '%s opcode %s map %s' % (reg, opcode, insn_map))

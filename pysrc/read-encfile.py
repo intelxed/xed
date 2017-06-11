@@ -580,8 +580,8 @@ class conditions_t(object):
         which ones are captures"""
         if vcapture():
             msgb("CAPTURE COLLECTION USING:\n\t%s\n" % "\n\t".join(map(str,clist)))
-        full_captures = filter(lambda(x): x.is_bit_capture(), clist)
-        captures = map(lambda(x): x.capture_info(), full_captures)
+        full_captures = list(filter(lambda x: x.is_bit_capture(), clist))
+        captures = [  x.capture_info() for x in full_captures]
         return captures
     
     def compute_field_capture_list(self):
@@ -1216,8 +1216,8 @@ class iform_t(object):
             modifying to input action_list
         '''
         
-        emit_actions = filter(lambda x: x.type == 'emit', action_list)
-        fb_actions = filter(lambda x: x.type == 'FB', action_list)
+        emit_actions = list(filter(lambda x: x.type == 'emit', action_list))
+        fb_actions = list(filter(lambda x: x.type == 'FB', action_list))
         
         #iterate to find overlapping actions
         action_to_remove = []
@@ -1799,8 +1799,7 @@ class encoder_configuration_t(object):
                         elif rule.actions[0].is_error():
                             nt.otherwise = [actions.gen_return_action('0')]
                         else:
-                            nt.otherwise = map(lambda(x): actions.action_t(x), 
-                                               actns)
+                            nt.otherwise = [ actions.action_t(x) for x in actns]
                             # in case we have valid action for the otherwise
                             # rule we should finish it with returnning 1
                             # which is "not an error"
@@ -2973,12 +2972,12 @@ class encoder_configuration_t(object):
         fe.add_header(headers)
         fe.start()
         
-        f_names = map(lambda x: x.function_name,  self.fb_ptrs_fo_list)
+        f_names = [ x.function_name for x in self.fb_ptrs_fo_list]
         self._emit_functions_lu_table(fe, 'xed_ptrn_func_ptr_t', 
                                       f_names, 'xed_encode_fb_lu_table', 
                                       'XED_ENCODE_MAX_FB_PATTERNS')
         fe.write('\n\n\n')
-        f_names = map(lambda x: x.function_name,  self.emit_ptrs_fo_list)
+        f_names = [ x.function_name for x in  self.emit_ptrs_fo_list]
         self._emit_functions_lu_table(fe, 'xed_ptrn_func_ptr_t',
                                       f_names, 'xed_encode_emit_lu_table',
                                       'XED_ENCODE_MAX_EMIT_PATTERNS')
@@ -2990,7 +2989,7 @@ class encoder_configuration_t(object):
                                       'XED_ENCODE_FB_VALUES_TABLE_SIZE',20)
         
         fe.write('\n\n\n')
-        f_names = map(lambda x: x.function_name,  self.group_fos)
+        f_names = [  x.function_name for x in  self.group_fos]
         self._emit_functions_lu_table(fe,'xed_encode_function_pointer_t', 
                                       f_names, 'xed_encode_groups',
                                       'XED_ENC_GROUPS')

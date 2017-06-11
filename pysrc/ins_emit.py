@@ -608,13 +608,13 @@ class instruction_codegen_t():
             iform.fbs.sort(cmp=sort_field_bindings) 
             
             # create a list of int values
-            fbs_values = map(lambda x: x.int_value, iform.fbs)
+            fbs_values = [ x.int_value for x in iform.fbs]
             
             #find the start index of this list of values in the general list
             #and update the general list as needed  
             iform.fb_index = self._find_fb_occurrence(fbs_list, fbs_values)
                 
-        fbs_list = map(lambda x: str(x), fbs_list)
+        fbs_list = [ str(x) for x in fbs_list]
         return fbs_list
             
             
@@ -692,7 +692,7 @@ class instruction_codegen_t():
             
             print("NOM_OPCODE: %d" % iform.nominal_opcode)
             print("MAP: %s" % iform.map)
-            fbs_values = map(lambda x: x.int_value, iform.fbs)
+            fbs_values = [ x.int_value for x in iform.fbs]
             print("FB values: %s" % fbs_values)
             print("\n\n")
             print("-"*20) 

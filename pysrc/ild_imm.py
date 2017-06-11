@@ -106,7 +106,7 @@ def get_imm_binding_nts(agi):
     nt_names = ild_nt.get_setting_nts(agi, _imm_token)
     #filter ONE nt
     #FIXME: remove ONE nt from  grammar
-    return filter(lambda(x): x!='ONE', nt_names)
+    return list(filter(lambda x: x!='ONE', nt_names))
 
 
 def get_target_opname():
@@ -299,7 +299,7 @@ def gen_l1_functions_and_lookup(agi, united_lookup, imm_dict):
 
 def _filter_uimm1_nt(imm_nt_names):
     """Filter UIMM8_1 NT from list"""
-    return filter(lambda(x): x!=_uimm1_nt, imm_nt_names)
+    return list(filter(lambda x: x!=_uimm1_nt, imm_nt_names))
 
        
 def work(agi, united_lookup, imm_nts, ild_gendir, eosz_dict, 

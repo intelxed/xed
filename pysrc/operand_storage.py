@@ -388,7 +388,7 @@ class operands_storage_t(object):
             self.bins = self._compress_operands()
             
             operands = self.operand_fields.values()
-            un_compressed = filter(lambda x: x.compressed == False, operands )
+            un_compressed = list(filter(lambda x: x.compressed == False, operands ))
             un_compressed.sort(cmp=cmp_operands)
             
             # first emit all the operands that does not use bit fields 

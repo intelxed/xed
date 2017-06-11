@@ -292,7 +292,7 @@ class enumer_t(object):
           # but we must not put this value in the value-2-string
           # table. It must be in a separate string2value table.
           #print "\t\t [%s]" % ( str(vals[0:n]))
-          previous_values = map(lambda(x): x.name, vals[0:n])
+          previous_values = [ x.name for x in  vals[0:n] ] 
           if self.debug:
              print("\t\t [%s]" % ( str(previous_values)))
           if v.value in previous_values:

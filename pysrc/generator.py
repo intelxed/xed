@@ -532,7 +532,7 @@ class bits_list_t(object):
 
    def just_bits(self):
       """ return a string of just the bits"""
-      s = map(lambda(x): x.just_bits(), self.bits)
+      s = [ x.just_bits() for x in self.bits]
       o  = []
       i = 0
       for b in s:
@@ -591,7 +591,7 @@ def read_dict_spec(fn):
       die("Could not read file: " + fn)
     lines = open(fn,'r').readlines()
     lines = map(no_comments, lines)
-    lines = filter(blank_line, lines)
+    lines = list(filter(blank_line, lines))
     for line in lines:
         wrds = line.split()
         key = wrds[0]
@@ -615,7 +615,7 @@ def read_state_spec(fn):
       die("Could not read file: " + fn)
    lines = open(fn,'r').readlines()
    lines = map(no_comments, lines)
-   lines = filter(blank_line, lines)
+   lines = list(filter(blank_line, lines))
    for line in lines:
       ## remove comment lines
       #line = no_comments(line)
@@ -2050,8 +2050,8 @@ def partition_by_required_values(options, instructions, bitpos, token,
                  ", ".join(map(str,all_values_for_this_od)))
          for a in all_values_for_this_od:
             all_values[a]=True
-         trimmed_vals = filter(lambda (x): x != operand_decider.requirement, 
-                               all_values_for_this_od)
+         trimmed_vals = list(filter(lambda x: x != operand_decider.requirement, 
+                               all_values_for_this_od))
          if len(trimmed_vals) == 0:
             die("We had a not-equals requirement but did" +
                 " not have any other values to bin against.")
@@ -2896,8 +2896,8 @@ def decorate_operand(options,opnd,ii):
       pass
    elif opnd.type == 'imm':
       if ii.prebindings and opnd.name in ii.prebindings:
-         opnd.bit_positions = \
-             map(lambda(x): x.pbit, ii.prebindings[opnd.name].bit_info_list)
+         opnd.bit_positions = [ x.pbit for x in
+                                ii.prebindings[opnd.name].bit_info_list ]
       else:
          collect_immediate_operand_bit_positions(options,opnd, ii)
       opnd.rightmost_bitpos = max(opnd.bit_positions)
@@ -3380,7 +3380,7 @@ def emit_iclass_rep_ops(agi):
         o.no_rep_indx  = agi.iclasses_enum_order.index(o.no_rep_iclass)
 
     # make a list of keys for the norep-to-whatever hash functions
-    no_rep_keys = uniqueify(map(lambda x:x.no_rep_indx, repobjs))
+    no_rep_keys = uniqueify( [x.no_rep_indx for x in repobjs])
     no_rep_keys.sort()
         
     msge("NOREP KEYS: {}".format(str(no_rep_keys)))
@@ -3437,11 +3437,11 @@ def emit_iclass_enum_info(agi):
    """Emit major enumerations based on stuff we collected from the
    graph."""
    msge('emit_iclass_enum_info')
-   iclasses = map(lambda (s): s.upper(),agi.iclasses)
+   iclasses = [s.upper() for s in agi.iclasses]
    add_invalid(iclasses)
 
    # 2...9  # omitting NOP1
-   iclasses.extend(map(lambda(x): "NOP%s" % (str(x)), range(2,10))) 
+   iclasses.extend( [ "NOP%s" % (str(x)) for x in  range(2,10)]) 
 
    iclasses = uniqueify(iclasses)
    # sort each to make sure INVALID is first
@@ -3495,20 +3495,20 @@ def emit_enum_info(agi):
    graph."""
    msge('emit_enum_info')
    # make everything uppercase
-   nonterminals = map(lambda (s): s.upper(), agi.nonterminal_dict.keys())
-   operand_types = map(lambda (s): s.upper(),agi.operand_types.keys())
-   operand_widths = map(lambda (s): s.upper(),agi.operand_widths.keys())
+   nonterminals = [  s.upper() for s in agi.nonterminal_dict.keys()]
+   operand_types = [ s.upper() for s in agi.operand_types.keys()]
+   operand_widths = [ s.upper() for s in agi.operand_widths.keys()]
 
-   operand_names = map(lambda (s): s.upper(), 
-                       agi.operand_storage.get_operands().keys())
+   operand_names = [ s.upper() for s in 
+                     agi.operand_storage.get_operands().keys() ]
    msge("OPERAND-NAMES " + " ".join(operand_names))
 
    
-   extensions = map(lambda (s): s.upper(),agi.extensions)
-   categories = map(lambda (s): s.upper(),agi.categories)
-   attributes = map(lambda (s): s.upper(),agi.attributes)
+   extensions = [ s.upper() for s in agi.extensions]
+   categories = [ s.upper() for s in agi.categories]
+   attributes = [ s.upper() for s in agi.attributes]
    # remove the things with equals signs
-   attributes = filter(lambda (s): s.find('=') == -1 ,attributes)
+   attributes = list(filter(lambda s: s.find('=') == -1 ,attributes))
    
 
    # add an invalid entry to each in the first spot if it is not
@@ -3742,7 +3742,7 @@ def compute_iforms(options, gi, operand_storage_dict):
    if viform():
       for iform,iilist in iforms.iteritems():
          msge("IFORM %s: %s" % (iform,
-                                " ".join(map(lambda(x): x.iclass, iilist))))
+                                " ".join([x.iclass for x in iilist] )))
 
       for iclass,iformlist in ii_iforms.iteritems():
          str_iforms = {}
@@ -3924,7 +3924,7 @@ def make_attributes_equation(agi,ii):
    if field_check(ii,'attributes'):
       if ii.attributes:
          trimmed_attributes = \
-             filter(lambda (s): s.find('=') == -1 ,ii.attributes)
+             list(filter(lambda s: s.find('=') == -1 ,ii.attributes))
 
          if len(trimmed_attributes) > 0:
              trimmed_attributes.sort()
@@ -4112,7 +4112,7 @@ def code_gen_instruction(agi, options, ii, state_dict, fo,
    # emit attributes
    attributes_index = make_attributes_equation(agi,ii)
 
-   operand_names = map(lambda(x): x.name.upper(), ii.operands)
+   operand_names = [ x.name.upper() for x in ii.operands]
 
    # THE NEW WAY - DATA INITIALIZATION -- see include/private/xed-inst-defs.h
    cpl = '3'
@@ -4340,7 +4340,7 @@ def compress_iform_strings(values):
                                                             len(bases),
                                                             len(operand_sigs)))
 
-    if len(h) != (max(map(lambda x: int(x), h.keys()))+1):
+    if len(h) != (max( [ int(x) for x in h.keys()] )+1):
         print("PROBLEM IN h LENGTH")
     # make an numerically indexed version of the bases table
     bi = {}
@@ -4468,7 +4468,7 @@ def collect_and_emit_iforms(agi,options):
 
    #msge("NTUPLES %s" % (str(ntuples)))
    # rip off first two fields of vtuples
-   vtuples = map(lambda(x): x[2:], ntuples)
+   vtuples = [  x[2:] for x in ntuples]
 
    #for t in vtuples:
    #   msge("TUPLE " + str(t))
@@ -4476,7 +4476,7 @@ def collect_and_emit_iforms(agi,options):
    # compress_iform_strings(vtuples)
 
    # rip off first two fields of vtuples
-   first_last_tuples = map(lambda(x): x[2:], first_last_tuples)
+   first_last_tuples = [ x[2:] for x in  first_last_tuples]
    generate_iform_first_last_enum(agi,options,first_last_tuples)   
 
    #emit  imax in global iclass order for data-initialization!
@@ -4609,8 +4609,8 @@ def merge_nodes(options,node):
       merging = True
       while merging:
          all_match = True
-         decider_bits = map(lambda(k): node.next[k].decider_bits , 
-                            node.next.keys())
+         decider_bits = [ node.next[k].decider_bits for k in 
+                          node.next.keys() ]
          if not all_the_same(decider_bits):
             if vmerge():
                msge("Not merging because unequal numbers of decider" +
@@ -5309,7 +5309,7 @@ class all_generator_info_t(object):
       # remember the c & h file names
       self.add_file_name(m.src_full_file_name)
       self.add_file_name(m.hdr_full_file_name,header=True)
-      all_values = map(lambda x: x.name ,m.tuples)
+      all_values = [  x.name for x in m.tuples ]
       return all_values
       
       
@@ -5711,7 +5711,7 @@ def call_chipmodel(agi):
 def read_cpuid_mappings(fn):
     lines = open(fn,'r').readlines()
     lines = map(no_comments, lines)
-    lines = filter(blank_line, lines)
+    lines = list(filter(blank_line, lines))
     d = {} # isa-set to list of cpuid records
     for line in lines:
         wrds = line.split(':')
@@ -5960,7 +5960,7 @@ def gen_regs(options,agi):
    # remove comments and blank lines
    # regs_list is a list of reg_info_t's
    regs_list = refine_regs.refine_regs_input(lines)
-   regs = map(lambda x: x.name, regs_list)
+   regs = [  x.name for x in  regs_list]
    agi.all_enums['xed_reg_enum_t'] = regs
 
    (cfn, hfn) = emit_regs_enum(options, regs_list)
@@ -6031,7 +6031,7 @@ def refine_widths_input(lines):
    return widths_list
 
 def emit_widths_enum(options, widths_list):
-   just_width_names = map(lambda(x) : x.name, widths_list)
+   just_width_names = [ x.name for x in  widths_list]
    width_enum =  enum_txt_writer.enum_info_t(just_width_names,
                                              options.xeddir, options.gendir,
                                              'xed-operand-width',

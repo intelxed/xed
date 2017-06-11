@@ -161,11 +161,11 @@ def _reg_cmp(a,b):
 def rearrange_regs(regs_list):
     """Return a list of enumer.enumer_values_t objects to be passed to
        enum_txt_writer"""
-    groups = uniqueify(map(lambda(x) : x.rtype, regs_list))
+    groups = uniqueify( [ x.rtype for x in  regs_list])
     msgb("RGROUPS", str(groups))
     enumvals = []
     for g in groups:
-        k = filter(lambda(x): x.rtype == g, regs_list)
+        k = list(filter(lambda x: x.rtype == g, regs_list))
         k.sort(cmp=_reg_cmp)
         first = '%s_FIRST' % (g)
         last = '%s_LAST' % (g)
@@ -180,8 +180,8 @@ def rearrange_regs(regs_list):
         # everything in the middle
         if len(k) > 1:
             enumvals.extend(
-                map(lambda(x) : enumer.enumer_value_t(x.name,
-                                                      display_str=x.display_str), k[1:]))
+                [  enumer.enumer_value_t(x.name,
+                                         display_str=x.display_str) for x in k[1:] ] )  
         #last
         enumvals.append(enumer.enumer_value_t(last,
                                               value=k[-1].name,

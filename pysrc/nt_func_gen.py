@@ -282,8 +282,8 @@ class nt_function_gen_t(object):
         
         #we do not need to the PSEUDO regs since 
         #they are not in use by the encoder
-        tmp = filter(lambda x: not x.in_comment('PSEUDO'), reg_list_enumer_vals)
-        regs = map(lambda x: x.name, tmp)
+        tmp = list(filter(lambda x: not x.in_comment('PSEUDO'), reg_list_enumer_vals))
+        regs = [  x.name for x in  tmp]
 
         
         #put XED_REG_INVLAID in the beginning
@@ -292,7 +292,7 @@ class nt_function_gen_t(object):
         ordered_regs.extend(regs)
         
         #add XEG_REG_ prefix
-        full_reg_name = map(lambda x: 'XED_REG_' + x, ordered_regs)
+        full_reg_name = [  'XED_REG_' + x for x in  ordered_regs]
         
         self._check_duplications(full_reg_name)
         reg2int = {}

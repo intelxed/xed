@@ -58,14 +58,14 @@ def work(args):  # main function
 
     
     (insts,undoc) = check(args.chip, xeddb, chip_db)
-    ilist = list(set(map(lambda x: x.iclass, insts)))
+    ilist = list(set( [ x.iclass for x in insts ] ))
     ilist.sort()
-    ulist = list(set(map(lambda x: x.iclass, undoc)))
+    ulist = list(set( [x.iclass for x in  undoc] ))
     ulist.sort()
     if args.otherchip:
         (insts2,undoc2) = check(args.otherchip, xeddb, chip_db)
-        ilist2 = list(set(map(lambda x: x.iclass, insts2)))
-        ulist2 = list(set(map(lambda x: x.iclass, undoc2)))
+        ilist2 = list(set( [ x.iclass for x in insts2] ))
+        ulist2 = list(set( [ x.iclass for x in  undoc2] ))
         s1 = set(ilist + ulist)
         s2 = set(ilist2 + ulist2)
         d12 = list(s1-s2)

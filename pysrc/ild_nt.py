@@ -494,8 +494,8 @@ def _generate_lookup_function_indices(ii,state_space,argnames):
             indices[bt.token] = bt.requirement
          elif bt.test == 'ne':
             all_values_for_this_od = state_space[bt.token]
-            trimmed_vals = filter(lambda (x): x != bt.requirement,
-                                  all_values_for_this_od)
+            trimmed_vals = list(filter(lambda x: x != bt.requirement,
+                                  all_values_for_this_od))
             #Add the list of values; We flaten it later
             indices[bt.token] = trimmed_vals
          else:
@@ -573,8 +573,8 @@ def add_op_deciders(ipattern, state_space, argnames):
                argnames[bt.token][bt.requirement]=True
             elif bt.test == 'ne':
                all_values_for_this_od = state_space[bt.token]
-               trimmed_vals = filter(lambda (x): x != bt.requirement,
-                                     all_values_for_this_od)
+               trimmed_vals = list(filter(lambda x: x != bt.requirement,
+                                     all_values_for_this_od))
                for tv in trimmed_vals:
                   argnames[bt.token][tv]=True
             else:

@@ -33,7 +33,7 @@ class hlist_t(object):
             h = h << 1
         return h
     def __str__(self):
-        s = ",".join(map(lambda(x):str(x),self.lst))
+        s = ",".join( [ str(x) for x in self.lst])
         return s
 
 

@@ -491,7 +491,7 @@ def _find_l1_phash_fks(cdict):
 def _find_candidate_lengths_mul(lst):
     """Return integer lengths n, n*1.1, n*1.2, ... n*1.9, n*2"""
     n = len(lst)
-    r = map(lambda x: int(math.ceil((1 + x/10.0)*n)), range(0,11))
+    r = [ int(math.ceil((1 + x/10.0)*n)) for x in range(0,11)]
     # avoid duplicates
     s = set()
     for a in r:
