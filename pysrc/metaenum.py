@@ -58,7 +58,7 @@ class metaenum_t(object):
         """Read in an existing enumeration file name, and build our
         internal enumer structure. Return a tuple with the consumed data."""
         stream_ifdef = ''
-        lines = file(self.enum_fn).readlines()
+        lines = open(self.enum_fn,'r').readlines()
         simple_tuples = []
         density = 'automatic'
         namespace = None
