@@ -744,7 +744,6 @@ def parse_opcode_spec(agi, line, state_dict):
           wrds.extend(copy.deepcopy(state_dict[w].list_of_str))
        else:
           wrds.append(w)
-    
     all_bits = []
     #
     # 1. hex byte
@@ -832,7 +831,7 @@ def parse_opcode_spec(agi, line, state_dict):
        # remove the underscores now that we know it is a pattern
        w = w.replace('_','')
        # some binary value or letter
-       bits = map(str,list(w))
+       bits = [ str(x) for x in list(w) ]
        all_bits.extend(bits)
        for b in list(bits):
           btype = get_btype(b)
@@ -5198,7 +5197,7 @@ class all_generator_info_t(object):
 
       
    def add_file_name(self,fn,header=False):
-      if type(fn) == bytes or type(fn) == str:
+      if type(fn) in [bytes,str]:
           fns = [fn]
       elif type(fn) == list:
           fns = fn
@@ -6177,9 +6176,9 @@ def emit_pointer_name_lookup(options, widths_list):
    pointer name for disassembly."""
 
    max_width = 0
-   for bytes, name, suffix in widths_list:
-      if int(bytes) > max_width:
-         max_width = int(bytes)+1
+   for bbytes, name, suffix in widths_list:
+      if int(bbytes) > max_width:
+         max_width = int(bbytes)+1
    
    hfp = xed_file_emitter_t(options.xeddir,
                            options.gendir,
@@ -6192,16 +6191,16 @@ def emit_pointer_name_lookup(options, widths_list):
    fo = function_object_t('xed_init_pointer_names', 'void')
    fo.add_code_eol("memset((void*)xed_pointer_name,0," +
                    "sizeof(const char*)*XED_MAX_POINTER_NAMES)")
-   for bytes, name, suffix in widths_list:
+   for bbytes, name, suffix in widths_list:
       # add a trailing space to the name for formatting.
-      s = 'xed_pointer_name[%s] = \"%s \"' % (bytes, name)
+      s = 'xed_pointer_name[%s] = \"%s \"' % (bbytes, name)
       fo.add_code_eol(s)
 
    fo.add_code_eol("memset((void*)xed_pointer_name_suffix,0,"+
                    "sizeof(const char*)*XED_MAX_POINTER_NAMES)")
-   for bytes, name, suffix in widths_list:
+   for bbytes, name, suffix in widths_list:
       # add a trailing space to the name for formatting.
-      s = 'xed_pointer_name_suffix[%s] = \"%s \"' % (bytes, suffix)
+      s = 'xed_pointer_name_suffix[%s] = \"%s \"' % (bbytes, suffix)
       fo.add_code_eol(s)
 
    # write the file in our customized way
@@ -6228,10 +6227,10 @@ def refine_pointer_names_input(lines):
       wrds = pline.split()
       ntokens = len(wrds)
       if ntokens == 3:
-         (bytes, name, suffix) = wrds
+         (bbytes, name, suffix) = wrds
       else:
          die("Bad number of tokens on line: " + line)
-      widths_list.append((bytes,name,suffix))
+      widths_list.append((bbytes,name,suffix))
    return widths_list
    
 def gen_pointer_names(options,agi):
