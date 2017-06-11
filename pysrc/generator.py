@@ -3924,7 +3924,7 @@ def partition_attributes(agi, attr):
     #msgb("PARTITIONING ATTRIBUTES", '[%s]' % (",".join(attr)))
     for a in attr:
         i = lookup_attr(agi,a)
-        b = i / 64
+        b = i // 64
         try:
             d[b].append(a)
         except:
