@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,8 +17,10 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-import sys, os, re
+from __future__ import print_function
+import sys
+import os
+import re
 from stat import *
 
 def get_mode(fn):
@@ -144,13 +146,13 @@ def apply_header_to_data_file(header, file):
 ####################################################################
 if __name__ == '__main__':
     if len(sys.argv) < 4:
-        print "Usage " + sys.argv[0] + " [-s|-t] legal-header file-name [file-name...]\n"
+        print("Usage " + sys.argv[0] + " [-s|-t] legal-header file-name [file-name...]\n")
         sys.exit(1)
 
     type = sys.argv[1]
     header_file = sys.argv[2]
     if not os.path.exists(header_file):
-        print "Could not find header file: [%s]\n" % (header_file)
+        print("Could not find header file: [%s]\n" % (header_file))
         sys.exit(1)
 
     files_to_tag = sys.argv[3:]
@@ -169,5 +171,5 @@ if __name__ == '__main__':
             if  re.search(".svn",file) == None and re.search(".new$",file) == None:
                 apply_header_to_data_file(header, file.strip())
     else:
-        print "2nd argument must be -s or -t\n"
+        print("2nd argument must be -s or -t\n")
         sys.exit(1)
