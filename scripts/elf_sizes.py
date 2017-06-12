@@ -39,11 +39,12 @@ def _run_cmd(cmd, die_on_errors=True):
         sub = subprocess.Popen(cmd, 
                                shell=True, 
                                stdout=subprocess.PIPE, 
-                               stderr=subprocess.STDOUT)
+                               stderr=subprocess.STDOUT,
+                               universal_newlines=True)
         lines = sub.stdout.readlines()
         sub.wait()
         return (sub.returncode, lines)
-    except OSError, e:
+    except OSError as e:
         msg = "Execution failed for:" + str( cmd) + ".\nResult is " + str(e)
         if die_on_errors:
             _die(msg)
