@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import sys
 import os
 import re
@@ -44,11 +44,11 @@ def uniquify_list(l):
     d = {}
     for a in l:
         d[a]=True
-    return d.keys()
+    return list(d.keys())
 
 def expand_all_of_once(d):
     found = False
-    for chip,ext_list in d.iteritems():
+    for chip,ext_list in d.items():
         newexts = []
         for ext in ext_list:
             m = all_of_pattern.match(ext)
@@ -68,7 +68,7 @@ def expand_macro(d,expander):
         found = expander(d)
 
 def expand_macro_not(d):
-    for chip,ext_list in d.iteritems():
+    for chip,ext_list in d.items():
         to_remove = []
         positive_exts = []
         for ext in ext_list:
@@ -120,7 +120,7 @@ def _feature_index(all_features, f):
 
 
 def read_database(filename):
-    lines = file(filename).readlines()
+    lines = open(filename,'r').readlines()
     lines = filter_comments(lines)
     lines = genutil.process_continuations(lines)
     # returns a list and a dictionary
@@ -134,7 +134,7 @@ def read_database(filename):
 
 def _format_names(lst):
     cols = 4
-    lines = ('\t'.join(lst[i:i+cols]) for i in xrange(0,len(lst),cols))
+    lines = ('\t'.join(lst[i:i+cols]) for i in range(0,len(lst),cols))
     return '\n\t'.join(lines)
             
 def dump_chip_hierarchy(arg, chips, chip_features_dict):
@@ -172,7 +172,7 @@ def work(arg):
     
     # the XED_ISA_SET_ enum
     isa_set = set()
-    for vl in chip_features_dict.values():
+    for vl in list(chip_features_dict.values()):
         for v in vl:
             isa_set.add(v.upper())
     isa_set = list(isa_set)
@@ -272,6 +272,6 @@ if __name__ == '__main__':
     arg.xeddir = '.'
     arg.gendir = 'obj'
     files_created,chips,isa_set = work(arg)
-    print "Created files: %s" % (" ".join(files_created))
+    print("Created files: %s" % (" ".join(files_created)))
     sys.exit(0)
 

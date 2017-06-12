@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ class nt_function_gen_t(object):
                     #the the unwanted value.
                     #need to deep copy since we modify the list, and we want 
                     #to preserve the original 
-                    all_vals = copy.deepcopy(self.state_space[key])
+                    all_vals = list(copy.deepcopy(self.state_space[key]))
                     val = genutil.make_numeric(cond.rvalue.value)
                     all_vals.remove(val)
                     constraints[key] = all_vals
@@ -240,9 +240,9 @@ class nt_function_gen_t(object):
                 nt.default_action = actions.gen_return_action('')
 
     def gen_nt_functions(self):
-        nonterminals = (self.nonterminals.values() + 
-                       self.decoder_nonterminals.values() +  
-                       self.decoder_ntlufs.values())
+        nonterminals = (list(self.nonterminals.values()) + 
+                       list(self.decoder_nonterminals.values()) +  
+                       list(self.decoder_ntlufs.values()))
         
         for nt in nonterminals:
             if nt.name in _complicated_nt:
@@ -282,8 +282,8 @@ class nt_function_gen_t(object):
         
         #we do not need to the PSEUDO regs since 
         #they are not in use by the encoder
-        tmp = filter(lambda x: not x.in_comment('PSEUDO'), reg_list_enumer_vals)
-        regs = map(lambda x: x.name, tmp)
+        tmp = list(filter(lambda x: not x.in_comment('PSEUDO'), reg_list_enumer_vals))
+        regs = [  x.name for x in  tmp]
 
         
         #put XED_REG_INVLAID in the beginning
@@ -292,7 +292,7 @@ class nt_function_gen_t(object):
         ordered_regs.extend(regs)
         
         #add XEG_REG_ prefix
-        full_reg_name = map(lambda x: 'XED_REG_' + x, ordered_regs)
+        full_reg_name = [  'XED_REG_' + x for x in  ordered_regs]
         
         self._check_duplications(full_reg_name)
         reg2int = {}

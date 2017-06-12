@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
 # Returns a list of imported modules but it is unacceptably slow.  For
 # the execution of "pysrc/importfinder.py generator pysrc" it takes 23
 # seconds.
-
+from __future__ import print_function
 import os
 import sys
 import modulefinder
@@ -30,7 +30,7 @@ def _get_modules(fn):
     finder = modulefinder.ModuleFinder()
     finder.run_script(fn)
     all = []
-    for m in finder.modules.itervalues():
+    for m in finder.modules.values():
         if not isinstance(m, modulefinder.Module):
             continue
         if not m.__file__:
@@ -65,4 +65,4 @@ def find(root_module):
 
 if __name__ == "__main__":
     sys.path =  [sys.argv[2]] + sys.path
-    print find(os.path.join(sys.argv[2],sys.argv[1]+'.py'))
+    print(find(os.path.join(sys.argv[2],sys.argv[1]+'.py')))

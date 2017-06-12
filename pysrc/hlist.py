@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 class hlist_t(object):
     """A hashable integer list"""
 
@@ -33,7 +33,7 @@ class hlist_t(object):
             h = h << 1
         return h
     def __str__(self):
-        s = ",".join(map(lambda(x):str(x),self.lst))
+        s = ",".join( [ str(x) for x in self.lst])
         return s
 
 
@@ -43,17 +43,17 @@ def test_hlist():
     c = hlist_t([1,3])
     
     if a == b:
-        print 'a==b'
+        print('a==b')
     if a == c:
-        print 'a==c'
+        print('a==c')
         
     d = {}
 
     d[a] = 1
     d[b] = 2
     d[c] = 3
-    for k in d.keys():
-        print str(k)
+    for k in list(d.keys()):
+        print(str(k))
 
 if __name__ == '__main__':
     test_hlist()

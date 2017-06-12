@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -54,10 +54,10 @@ class ild_storage_t(object):
     
     def get_all_infos(self):
         all_infos = []
-        for opcode_dict in self.lookup.itervalues():
-            for info_list in opcode_dict.itervalues():
+        for opcode_dict in self.lookup.values():
+            for info_list in opcode_dict.values():
                 all_infos.extend(info_list)
         return all_infos
     
     def get_maps(self):
-        return self.lookup.keys()
+        return list(self.lookup.keys())

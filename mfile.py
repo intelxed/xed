@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -84,8 +84,8 @@ def find_mbuild_import():
     sys.path.insert(0,mbuild_install_path)
     
 def work():
-    if sys.version_info[0] >= 3:
-        fatal("Python version 3.x not supported.")
+    #if sys.version_info[0] >= 3:
+    #    fatal("Python version 3.x not supported.")
     if sys.version_info[0] == 2 and sys.version_info[1] < 7:        
         fatal("Need python version 2.7 or later.")
     try:
@@ -96,7 +96,7 @@ def work():
     import xed_build_common
     try:
         retval = xed_mbuild.execute()
-    except Exception, e:
+    except Exception as e:
         xed_build_common.handle_exception_and_die(e)
     return retval
     

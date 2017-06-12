@@ -3,7 +3,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -548,7 +548,7 @@ class conditions_t(object):
         return False
             
     def and_cond(self, c):
-        if type(c) == types.StringType:
+        if is_stringish(c):
             nc = condition_t(c)
         else:
             nc = c
@@ -579,9 +579,9 @@ class conditions_t(object):
         generation (emit actions), by searching the conditions to see
         which ones are captures"""
         if vcapture():
-            msgb("CAPTURE COLLECTION USING:\n\t%s\n" % "\n\t".join(map(str,clist)))
-        full_captures = filter(lambda(x): x.is_bit_capture(), clist)
-        captures = map(lambda(x): x.capture_info(), full_captures)
+            msgb("CAPTURE COLLECTION USING:\n\t%s\n" % "\n\t".join( [ str(x) for x in clist] ))
+        full_captures = list(filter(lambda x: x.is_bit_capture(), clist))
+        captures = [  x.capture_info() for x in full_captures]
         return captures
     
     def compute_field_capture_list(self):
@@ -664,7 +664,7 @@ class iform_builder_t(object):
             self.iforms[ntname] = True
     def _build(self):
         self.cgen = c_class_generator_t("xed_encoder_iforms_t", var_prefix="x_")
-        for v in self.iforms.iterkeys():
+        for v in self.iforms.keys():
                 self.cgen.add_var(v, 'xed_uint32_t', accessors='none')
     def emit_header(self):
         self._build()
@@ -694,7 +694,7 @@ class rule_t(object):
         self.actions = [] 
         
         for action in action_list:
-            if type(action) == types.StringType:
+            if is_stringish(action):
                 self.actions.append(actions.action_t(action))
             else:
                 self.actions.append(action)
@@ -1009,7 +1009,7 @@ class rule_t(object):
                     list_of_tuples = self.compute_field_capture_list()
 
                 if vtuples():
-                    msgb("TUPLES", (" ,".join(map(str, list_of_tuples))))
+                    msgb("TUPLES", (" ,".join( [str(x) for x in list_of_tuples] )))
                 if len(list_of_tuples) == 0 or a.emit_type == 'numeric':
                     # no substitutions required
                     (length, s) = self.prepare_value_for_emit(a)
@@ -1216,8 +1216,8 @@ class iform_t(object):
             modifying to input action_list
         '''
         
-        emit_actions = filter(lambda x: x.type == 'emit', action_list)
-        fb_actions = filter(lambda x: x.type == 'FB', action_list)
+        emit_actions = list(filter(lambda x: x.type == 'emit', action_list))
+        fb_actions = list(filter(lambda x: x.type == 'FB', action_list))
         
         #iterate to find overlapping actions
         action_to_remove = []
@@ -1248,7 +1248,11 @@ class iform_t(object):
             s.append("\t%s" % str(a))
         return '\n'.join(s)
 
-def rule_tuple_sort(a,b):
+def key_rule_tuple(x):
+    (a1,a2) = x
+    return a1
+
+def rule_tuple_sort(a,b): # FIXME:2017-06-10:PY3 port, no longer used
     (a1,a2) = a
     (b1,b2) = b
     if a1 > b1:
@@ -1332,7 +1336,7 @@ class nonterminal_t(object):
                 weight = len(rule.actions) # try to get shortest form first...
                 _vmsgb("RULE WEIGHT %d" % (weight), str(rule))
             tups.append((weight,rule))
-        tups.sort(cmp=rule_tuple_sort)
+        tups.sort(key=key_rule_tuple)
         newrules = []
         for (x,y) in tups:
             newrules.append(y)
@@ -1536,7 +1540,7 @@ class encoder_configuration_t(object):
         
         
         global storage_fields
-        lines = file(self.files.storage_fields_file)
+        lines = open(self.files.storage_fields_file,'r')
         operands_storage = operand_storage.operands_storage_t(lines) 
         storage_fields = operands_storage.get_operands()
 
@@ -1799,8 +1803,7 @@ class encoder_configuration_t(object):
                         elif rule.actions[0].is_error():
                             nt.otherwise = [actions.gen_return_action('0')]
                         else:
-                            nt.otherwise = map(lambda(x): actions.action_t(x), 
-                                               actns)
+                            nt.otherwise = [ actions.action_t(x) for x in actns]
                             # in case we have valid action for the otherwise
                             # rule we should finish it with returnning 1
                             # which is "not an error"
@@ -1858,7 +1861,7 @@ class encoder_configuration_t(object):
     def read_encoder_files(self):
         
         for f in self.files.encoder_input_files:
-            lines = file(f).readlines()
+            lines = open(f,'r').readlines()
             lines = self.expand_state_bits(lines)
             (seqs,nts,ntlufs) = self.parse_encode_lines(lines)
             del lines
@@ -1868,7 +1871,7 @@ class encoder_configuration_t(object):
     def reorder_encoder_rules(self,nts):
         """reorder rules so that any rules with ENCODER_PREFERRED is first
         """
-        for nt in nts.itervalues():
+        for nt in nts.values():
             first_rules = []
             rest_of_the_rules = []
             for r in nt.rules:
@@ -2176,7 +2179,7 @@ class encoder_configuration_t(object):
         #            decode-patterns are encode-actions [blot_t],
         #              modal-patterns that become encode-conditions [string])
 
-        #msgerr("OPERANDS %s" % ' '.join(map(str,operands)))
+        #msgerr("OPERANDS %s" % ' '.join( [str(x) for x in operands]))
         return (operands, patterns, modal_patterns)
 
     def print_iclass_info(self,iclass, operands, ipattern, conditions, 
@@ -2238,7 +2241,7 @@ class encoder_configuration_t(object):
         I need. """
         continuation_pattern = re.compile(r'\\$')
         _vmsgb("READING",self.files.instructions_file)
-        lines = file(self.files.instructions_file).readlines()
+        lines = open(self.files.instructions_file,'r').readlines()
         lines = process_continuations(lines)
         nts = {}
         nt = None
@@ -2328,9 +2331,9 @@ class encoder_configuration_t(object):
             
             
     def remove_deleted(self):
-        bad =  self.deleted_unames.keys()
+        bad =  list(self.deleted_unames.keys())
         _vmsgb("BAD UNAMES", str(bad))
-        for ic,v in self.iarray.iteritems():
+        for ic,v in self.iarray.items():
             x1 = len(v)
             l = []
             for i in v:
@@ -2343,7 +2346,7 @@ class encoder_configuration_t(object):
                 _vmsgb("DELETING IFORMS", "%s %d -> %d" % (ic,x1,x2))
             self.iarray[ic]=l
     
-        for k in self.deleted_instructions.keys():
+        for k in list(self.deleted_instructions.keys()):
             if k in self.iarray:
                 _vmsgb("DELETING", k)
                 del self.iarray[k] 
@@ -2354,7 +2357,7 @@ class encoder_configuration_t(object):
         
         all_iforms_list = []
         i = 0
-        for iforms in self.iarray.itervalues():
+        for iforms in self.iarray.values():
             for iform in iforms:
                 iform.rule.iform_id = i
                 all_iforms_list.append(iform)
@@ -2375,7 +2378,7 @@ class encoder_configuration_t(object):
         nts = {}
         ntlufs = {}
         for f in self.files.decoder_input_files:
-            lines = file(f).readlines()
+            lines = open(f,'r').readlines()
             lines = self.expand_state_bits(lines)
             (some_nts, some_ntlufs) = self.parse_decode_lines(lines) # read_flat_
             nts.update(some_nts)
@@ -2387,10 +2390,10 @@ class encoder_configuration_t(object):
         self.reorder_encoder_rules(ntlufs)
         if vread():
             msgb("NONTERMINALS")
-            for nt in nts.itervalues():
+            for nt in nts.values():
                 msg( str(nt))
             msgb("NTLUFS")
-            for ntluf in ntlufs.itervalues():
+            for ntluf in ntlufs.values():
                 msg( str(ntluf))
         _vmsgb("DONE","\n\n")
         
@@ -2430,7 +2433,10 @@ class encoder_configuration_t(object):
         fo.add_code_eol(code)
         # FIXME: 2014-04-17: copy to sorted_iforms still sorts ins_group.iforms
         sorted_iforms = ins_group.iforms
-        sorted_iforms.sort(cmp=ins_emit.cmp_iform_len)
+        sorted_iforms.sort(key=ins_emit.key_iform_by_bind_ptrn)
+        sorted_iforms.sort(key=ins_emit.key_rule_length)
+        sorted_iforms.sort(key=ins_emit.key_priority)
+        
         for i,iform in enumerate(sorted_iforms):
             # FIXME:2007-07-05 emit the iform.operand_order check of
             # the xed_encode_order[][] array
@@ -2532,13 +2538,13 @@ class encoder_configuration_t(object):
         template = "    xed_enc_iclass2group[XED_ICLASS_%s] = %d;"
         
         iclass2group = self.ins_groups.get_iclass2group()
-        for iclass,group_index in iclass2group.items():
+        for iclass,group_index in list(iclass2group.items()):
             code = template % (iclass.upper(),group_index) 
             init_table.append(code)
         
         template = "    xed_enc_iclass2index_in_group[XED_ICLASS_%s] = %d;"
         iclass2index_in_group = self.ins_groups.get_iclass2index_in_group()
-        for iclass,index in iclass2index_in_group.items():
+        for iclass,index in list(iclass2index_in_group.items()):
             code = template % (iclass.upper(),index) 
             init_table.append(code)
         fo.add_lines(init_table)
@@ -2707,7 +2713,7 @@ class encoder_configuration_t(object):
 
         # read the state bits 
         f = self.files.state_bits_file
-        lines = file(f).readlines()
+        lines = open(f,'r').readlines()
         self.state_bits = self.parse_state_bits(lines)
         del lines
 
@@ -2753,7 +2759,7 @@ class encoder_configuration_t(object):
     def look_for_encoder_inputs(self): 
         encoder_inputs_by_iclass = {}  # dictionary mapping iclass -> set of field names
         encoder_nts_by_iclass = {}  # dictionary mapping iclass -> set of nt names
-        for iclass,iform_list in self.iarray.iteritems():
+        for iclass,iform_list in self.iarray.items():
             encoder_field_inputs = set()
             encoder_nts = set()
             for iform  in iform_list:
@@ -2767,7 +2773,7 @@ class encoder_configuration_t(object):
             encoder_inputs_by_iclass[iclass] = encoder_field_inputs
             encoder_nts_by_iclass[iclass] = encoder_nts
 
-        for iclass in encoder_inputs_by_iclass.keys():
+        for iclass in list(encoder_inputs_by_iclass.keys()):
             fld_set = encoder_inputs_by_iclass[iclass]
             nt_set  = encoder_nts_by_iclass[iclass]
             if vinputs():
@@ -2818,7 +2824,7 @@ class encoder_configuration_t(object):
         this dictionary in each iform as iform.operand_order"""
 
         all_operand_name_list_dict = {}
-        for iclass,iform_list in self.iarray.iteritems():
+        for iclass,iform_list in self.iarray.items():
             for niform,iform  in enumerate(iform_list):
                 ordered_operand_name_list =  iform.make_operand_name_list()
                 key = "-".join(ordered_operand_name_list)
@@ -2833,7 +2839,7 @@ class encoder_configuration_t(object):
         _vmsgb("TOTAL ENCODE OPERAND SEQUENCES: %d" % (len(all_operand_name_list_dict)))
 
         if vopseq():
-            for iclass,iform_list in self.iarray.iteritems():
+            for iclass,iform_list in self.iarray.items():
                 for niform,iform  in enumerate(iform_list):
                         msg("OPSEQ: %20s-%03d: %s" % 
                             (iclass, niform+1,
@@ -2846,7 +2852,7 @@ class encoder_configuration_t(object):
         fo = function_object_t(fname, 'void')
         operands = 0 # columns
         entries = 0 # rows
-        for oo in all_operand_name_list_dict.itervalues(): # stringkeys -> operand_order_t's
+        for oo in all_operand_name_list_dict.values(): # stringkeys -> operand_order_t's
             for j,o in enumerate(oo.lst):
                 fo.add_code_eol("xed_encode_order[%d][%d]=XED_OPERAND_%s" % (oo.n,j,o))
             t = len(oo.lst)
@@ -2860,17 +2866,17 @@ class encoder_configuration_t(object):
 
     def dump(self):
         msgb("NONTERMINALS")
-        for nt in self.nonterminals.itervalues():
+        for nt in self.nonterminals.values():
             msg(str(nt))
         msgb("SEQUENCERS")
-        for s in self.sequences.itervalues():
+        for s in self.sequences.values():
             msg(str(s))
 
     def make_sequence_functions(self):
         # we pass in the list of known sequences so that we know to
         # call the right kind of function from the sequence function
         # we are creating.
-        for s in self.sequences.itervalues():
+        for s in self.sequences.values():
             fo = s.create_function(self.sequences)
             self.functions.append(fo)
 
@@ -2879,7 +2885,7 @@ class encoder_configuration_t(object):
         NTLUF. One version does the required bindings. The other
         version emits the required bytes"""
         
-        for nt in nts.itervalues():
+        for nt in nts.values():
             _vmsgb("SORTING FOR SIZE", nt.name)
             nt.sort_for_size()
             if nt.is_ntluf():
@@ -2973,12 +2979,12 @@ class encoder_configuration_t(object):
         fe.add_header(headers)
         fe.start()
         
-        f_names = map(lambda x: x.function_name,  self.fb_ptrs_fo_list)
+        f_names = [ x.function_name for x in self.fb_ptrs_fo_list]
         self._emit_functions_lu_table(fe, 'xed_ptrn_func_ptr_t', 
                                       f_names, 'xed_encode_fb_lu_table', 
                                       'XED_ENCODE_MAX_FB_PATTERNS')
         fe.write('\n\n\n')
-        f_names = map(lambda x: x.function_name,  self.emit_ptrs_fo_list)
+        f_names = [ x.function_name for x in  self.emit_ptrs_fo_list]
         self._emit_functions_lu_table(fe, 'xed_ptrn_func_ptr_t',
                                       f_names, 'xed_encode_emit_lu_table',
                                       'XED_ENCODE_MAX_EMIT_PATTERNS')
@@ -2990,7 +2996,7 @@ class encoder_configuration_t(object):
                                       'XED_ENCODE_FB_VALUES_TABLE_SIZE',20)
         
         fe.write('\n\n\n')
-        f_names = map(lambda x: x.function_name,  self.group_fos)
+        f_names = [  x.function_name for x in  self.group_fos]
         self._emit_functions_lu_table(fe,'xed_encode_function_pointer_t', 
                                       f_names, 'xed_encode_groups',
                                       'XED_ENC_GROUPS')

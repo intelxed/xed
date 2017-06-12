@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ class xed_reader_t(object):
        return widths_list
         
     def _gen_widths(self, fn):
-        lines = file(fn).readlines()
+        lines = open(fn,'r').readlines()
         widths_list = self._refine_widths_input(lines)
 
         # sets the default data type for each width
@@ -127,7 +127,7 @@ class xed_reader_t(object):
         return widths_dict
 
     def _gen_xtypes(self, fn):
-        lines = file(fn).readlines()
+        lines = open(fn,'r').readlines()
         xtypes_dict = opnd_types.read_operand_types(lines)
         return set(xtypes_dict.keys())
             
@@ -332,7 +332,7 @@ class xed_reader_t(object):
 
 
     def _parse_state_bits(self,f):
-        lines = file(f).readlines()
+        lines = open(f,'r').readlines()
         d = []
         state_input_pattern = re.compile(r'(?P<key>[^\s]+)\s+(?P<value>.*)')
         while len(lines) > 0:
@@ -370,7 +370,7 @@ class xed_reader_t(object):
         res = []
         for i in range(0,x):
             d = inst_t()
-            for k,v in in_rec.iteritems():
+            for k,v in in_rec.items():
                 if len(v) == 1:
                     setattr(d,k.lower(),v[0])
                 else:
@@ -385,7 +385,7 @@ class xed_reader_t(object):
         """The valies in the record are lists. Remove the lists since they are
         all now singletons        """
         n  = inst_t()
-        for k,v in in_rec.iteritems():
+        for k,v in in_rec.items():
             setattr(n,k.lower(),v[0])
         return n
 

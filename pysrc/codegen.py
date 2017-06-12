@@ -4,7 +4,7 @@
 # Code generation support: emitting files, emitting functions, etc.
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -104,27 +104,27 @@ class file_emitter_t(object):
 
    def add_header(self,h):
       """Add h to the list of headers"""
-      if type(h) == types.ListType:
+      if type(h) == list:
          self.headers.extend(h)
       else:
          self.headers.append(h)
 
    def add_system_header(self,h):
       """Add h to the list of system headers"""
-      if type(h) == types.ListType:
+      if type(h) == list:
          self.system_headers.extend(h)
       else:
          self.system_headers.append(h)
 
    def add_misc_header(self,h):
-      if type(h) == types.ListType:
+      if type(h) == list:
          self.misc_header.extend(h)
       else:
          self.misc_header.append(h)
 
    def replace_headers(self,h):
       """Replace the existing headers with the header h"""
-      if type(h) == types.ListType:
+      if type(h) == list:
          self.headers = h
       else:
          self.headers = [h]
@@ -883,7 +883,7 @@ class array_gen_t(object):
         number of elements."""
         expected_len = len(self.ranges)
         for idict,value in self.values:
-            if len(idict.keys()) != expected_len:
+            if len(list(idict.keys())) != expected_len:
                 return False
         return True
 
@@ -968,7 +968,7 @@ class array_gen_t(object):
         for indices_dict,value in self.values:
             if key in indices_dict:
                 present_values[indices_dict[key]] = True
-        return present_values.keys()
+        return list(present_values.keys())
 
 
     def make_initialization_function(self, init_function_name,verbose=False):
@@ -981,7 +981,7 @@ class array_gen_t(object):
     def emit_initialization(self,verbose=False): # private
         """Return a list of strings containing array initialization lines"""
         lines = []
-        indices = map(lambda(x): x[3], self.ranges) # get the argnames
+        indices = [ x[3] for x in self.ranges] # get the argnames
 
         missing_key = None
         missed_one = True
@@ -1026,7 +1026,7 @@ class array_gen_t(object):
             s = [self.name]
             for key in indices:
                 indx = indices_dict[key]
-                if type(indx) == types.DictType:
+                if type(indx) == dict:
                    die("A dictionary escaped during array init building for " + self.name)
                 s.append('[%s]' %(str(indx)))
             s.append( '=%s;' % str(value) )

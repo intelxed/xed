@@ -3,7 +3,7 @@
 # Generic utilities
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -120,8 +120,8 @@ def get_memory_usage():
     """Return a tuple of (vmsize, vmrss, vmdata) on linux systems with
     /proc filesystems."""
     try:
-        lines = file('/proc/%s/status' % os.getpid()).readlines()
-        pairs = map(lambda(x): x.split(':'), lines)
+        lines = open('/proc/%s/status' % os.getpid(),'r').readlines()
+        pairs = [ x.split(':') for x in lines]
         dct = dict(pairs)
         return (dct['VmSize'].strip(), dct['VmRSS'].strip(),  dct['VmData'].strip())
     except:
@@ -144,7 +144,7 @@ def flatten_sub(all,cur_list,rest):
         return
         
     r0 = rest[0]
-    if type(r0) == types.ListType:
+    if type(r0) == list:
         for v in r0:
             tlist = copy.copy(cur_list)
             tlist.append(v)
@@ -170,7 +170,7 @@ def flatten_dict_sub(all,cur_dict,main_dict_with_lists,rest_keys):
     # pick off the first key and see what it gives us from the dict
     r0 = rest_keys[0]
     rhs = main_dict_with_lists[r0]
-    if type(rhs) == types.ListType:
+    if type(rhs) == list:
         for v in rhs:
             tdict = copy.copy(cur_dict)
             # change the list-valued entry to a scalar-valued entry
@@ -185,7 +185,7 @@ def flatten_dict(dict_with_lists):
     """Take a dict with some possible sublists, and return a list of
     dicts where no rhs is a list. All possible combinations"""
     retval = []
-    kys = dict_with_lists.keys()
+    kys = list(dict_with_lists.keys())
     flatten_dict_sub(retval, {}, dict_with_lists,kys)
     return retval
 
@@ -230,7 +230,7 @@ def hex_to_binary(x):
    return decimal_to_binary(i)
 
 def stringify_list(lst):
-    return ' '.join(map(str,lst))
+    return ' '.join([ str(x) for x in lst])
 
 def round_up_power_of_two(x):
    lg = math.ceil(math.log(x,2))
@@ -286,7 +286,7 @@ def make_numeric(s, restriction_pattern=None):
    global make_numeric_binary_pattern
    global make_numeric_old_binary_pattern
    
-   if type(s) == types.IntType:
+   if type(s) == int:
        die("Converting integer to integer")
    elif make_numeric_hex_pattern.match(s):
        out = int(s,16)
@@ -405,8 +405,8 @@ def generate_lookup_function_basis(gi,state_space):
                argnames[bt.token][bt.requirement]=True
             elif bt.test == 'ne':
                all_values_for_this_od = state_space[bt.token]
-               trimmed_vals = filter(lambda (x): x != bt.requirement,
-                                     all_values_for_this_od)
+               trimmed_vals = list(filter(lambda x: x != bt.requirement,
+                                     all_values_for_this_od))
                for tv in trimmed_vals:
                   argnames[bt.token][tv]=True
             else:
@@ -421,7 +421,15 @@ def uniqueify(values):
    s = {}
    for a in values:
       s[a] = True
-   k = s.keys()
+   k = list(s.keys())
    k.sort()
    return k
 
+
+def is_stringish(x):
+   return isinstance(x,bytes) or isinstance(x,str) 
+def make_list_of_str(lst):
+   return [ str(x) for x in lst]
+def open_readlines(fn):
+   return open(f,'r').readlines()
+           

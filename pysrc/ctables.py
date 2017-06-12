@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,11 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-import re,types,sys,os
+from __future__ import print_function
+import re
+import types
+import sys
+import os
 import genutil
 import codegen
 import enum_txt_writer
@@ -61,12 +65,12 @@ class constant_table_t(object):
            return True
         return False
     def dump(self):
-        print "%s(%s)::" % (self.name, self.operand)
+        print("%s(%s)::" % (self.name, self.operand))
         for (v,p) in self.value_string_pairs:
-            if isinstance(p, types.StringType):
-                print "%s '%s'" % (hex(v),p)
+            if genutil.is_stringish(p):
+                print("%s '%s'" % (hex(v),p))
             else:
-                print "%s  error" %(hex(v))
+                print("%s  error" %(hex(v)))
 
     def emit_init(self):
         lines = []
@@ -74,7 +78,7 @@ class constant_table_t(object):
         lines.append('static const char* %s[] = {' % (self.string_table_name))
 
         for (v,p) in self.value_string_pairs:
-            if isinstance(p, types.StringType):
+            if genutil.is_stringish(p):
                 lines.append( '/*%s*/ "%s",' % (hex(v),p))
             else:
                 lines.append( '/*%s*/ 0, /* error */' % (hex(v)))
@@ -135,8 +139,8 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
    _read_constant_tables(lines,tables)
 
        
-   tables=filter(lambda(x): x.valid() , tables)
-   names=map(lambda(x): x.name , tables)
+   tables=list(filter(lambda x: x.valid() , tables))
+   names= [  x.name  for x in  tables ]
 
    srcs = emit_convert_enum(['INVALID'] + names, xeddir, gendir)
    src_file_name = 'xed-convert-table-init.c'
@@ -154,7 +158,7 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
    
    for t in tables:
        l = t.emit_init()
-       l = map(lambda(x): x+'\n', l)
+       l = [  x+'\n' for x in  l]
        xfe.writelines(l)
    fo = codegen.function_object_t('xed_init_convert_tables', 'void')
    
@@ -183,7 +187,7 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
    hdr.append("   unsigned int limit;\n")
    hdr.append("} xed_convert_table_t;")
    hdr.append("extern xed_convert_table_t xed_convert_table[XED_OPERAND_CONVERT_LAST];")
-   hfe.writelines(map(lambda(x): x+'\n', hdr))
+   hfe.writelines( [  x+'\n' for x in hdr] )
    hfe.close()
 
    srcs.append(hfe.full_file_name)
@@ -192,6 +196,6 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
 
 if __name__ == '__main__':
    import sys
-   lines = file(sys.argv[1]).readlines()
+   lines = open(sys.argv[1],'r').readlines()
    srcs = work(lines,xeddir='.',gendir='obj')
-   print "WROTE: ", "\n\t".join(srcs)
+   print("WROTE: ", "\n\t".join(srcs))

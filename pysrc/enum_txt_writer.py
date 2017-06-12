@@ -4,7 +4,7 @@
 # Enumeration support
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ class enum_info_t(object):
         if self.proto_prefix:
             fp.write("proto_prefix %s\n" % self.proto_prefix)
         if self.extra_header:
-            if isinstance(self.extra_header,types.ListType):
+            if isinstance(self.extra_header,list):
                 for f in self.extra_header:
                     fp.write("extra_header %s\n" % f)
             else:
@@ -113,7 +113,7 @@ class enum_info_t(object):
         for line in self.lines:
             if isinstance(line, enumer.enumer_value_t):
                 fp.write(self.prep_name(line.name) + eol)                            
-            elif type(line) == types.TupleType:
+            elif type(line) == tuple:
                 (token, val, comment) = line
                 fp.write(' '.join((self.prep_name(token), val, comment)) + eol)
             else:
@@ -133,7 +133,7 @@ class enum_info_t(object):
         for line in self.lines:
             if isinstance(line, enumer.enumer_value_t):
                 self.tuples.append(line)
-            elif type(line) == types.TupleType:
+            elif type(line) == tuple:
                 if len(line) == 3:
                     (token, value, comment) = line
                 else:

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -80,11 +80,11 @@ def dump_nt_enum_2_capture_fptr(agi, fname):
     
     h_file.add_code(('static %s ' % xed3_capture_f_t) +\
                   '%s[XED_NONTERMINAL_LAST] = {' % lu_name)
-    nonterminals = agi.nonterminal_dict.keys()
+    nonterminals = list(agi.nonterminal_dict.keys())
     
     invalid_line = '/*XED_NONTERMINAL_INVALID*/ (%s)0,' % xed3_capture_f_t
     h_file.add_code(invalid_line)
-    for nt_name in agi.xed3_nt_enum_val_map.values():
+    for nt_name in list(agi.xed3_nt_enum_val_map.values()):
         enum_val = 'XED_NONTERMINAL_%s' % nt_name.upper()
         if _skip_nt(nt_name):
             fn = '0'
@@ -105,7 +105,7 @@ def get_ii_constraints(ii, state_space, constraints):
     #set constraints that come from operands deciders
     ild_nt.add_op_deciders(ii.ipattern, state_space, constraints)
     #set constraints that come from prebindings
-    for name,binding in ii.prebindings.items():
+    for name,binding in list(ii.prebindings.items()):
         if binding.is_constant():
             if name not in constraints:
                 constraints[name] = {}
@@ -119,7 +119,7 @@ def _get_all_cnames(gi):
     """
     cnames = []
     for rule in gi.parser_output.instructions:
-        cnames.extend(rule.xed3_constraints.keys())
+        cnames.extend(list(rule.xed3_constraints.keys()))
     return set(cnames)
     
 def _gen_cdict(agi, nt_name, all_state_space):
@@ -132,7 +132,7 @@ def _gen_cdict(agi, nt_name, all_state_space):
     
     state_space = {}
     for opname in all_state_space:
-        state_space[opname] = all_state_space[opname].keys()
+        state_space[opname] = list(all_state_space[opname].keys())
     
     
     cdict_list = []
@@ -305,7 +305,7 @@ def _add_switchcase_lines(fo,
     
     int2key = {}
     key2int = {}
-    for key in cdict.tuple2rule.keys():
+    for key in list(cdict.tuple2rule.keys()):
         keyval = tup2int.tuple2int(key, cdict.cnames, all_ops_widths)
         #This checks for a nasty conflict that should never happen:
         #when two different tuple keys have the same integer value.
@@ -570,7 +570,7 @@ def _dump_op_capture_chain_fo_lu(agi, patterns):
     ild_codegen.dump_flist_2_header(agi, 
                                     _xed3_op_chain_header, 
                                     headers, 
-                                    fn_2_fo.values(), 
+                                    list(fn_2_fo.values()), 
                                     is_private=True)
     
     lu_size = max(inum_2_fn.keys()) + 1
@@ -639,7 +639,7 @@ def _dump_capture_chain_fo_lu(agi, patterns):
     ild_codegen.dump_flist_2_header(agi, 
                                     _xed3_chain_header, 
                                     headers, 
-                                    fn_2_fo.values(), 
+                                    list(fn_2_fo.values()), 
                                     is_private=True)
     
     lu_size = max(inum_2_fn.keys()) + 1
@@ -722,7 +722,7 @@ def _gen_dynamic_part1_fo(agi):
     nt_names = _get_nt_names_from_ii(rule)
     
     #filter NTs that we want to skip
-    nt_names = filter(lambda(x): not _skip_nt(x), nt_names)
+    nt_names = list(filter(lambda x: not _skip_nt(x), nt_names))
     fo = _gen_capture_chain_fo(nt_names, fname=_dynamic_part1_fn)
     return fo
     
@@ -746,7 +746,7 @@ def work(agi, all_state_space, all_ops_widths, patterns):
     
     #generate NT capturing functions
     capture_fn_list = []
-    for nt_name in agi.nonterminal_dict.keys():
+    for nt_name in list(agi.nonterminal_dict.keys()):
         #skip non terminals that we don't want to capture:
         #PREFIXES, AVX_SPLITTER, *ISA, etc.
         if _skip_nt(nt_name):

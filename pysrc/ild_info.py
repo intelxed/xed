@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ def add_ild_info(info_set, pattern):
 def get_min_prio_list(info_list):
     if len(info_list) == 0:
         return []
-    min_prio = min(info_list, key=lambda(x): x.priority).priority
+    min_prio = min(info_list, key=lambda x: x.priority).priority
     min_list = []
     for info in info_list:
         if info.priority == min_prio:

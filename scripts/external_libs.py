@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import re
 import os
 import sys
@@ -36,18 +36,16 @@ def _grab_ldd_libraries(lines):
             files.append(t[-2])
         elif pieces == 4:
             if re.search('not found',line):
-                print "\n\nWARNING: SKIPPING MISSING LIBRARY: [%s]\n\n" % \
-                    (t[0])
+                print("\n\nWARNING: SKIPPING MISSING LIBRARY: [{}]\n\n".format(t[0]))
             else:
                 files.append(t[-2])
         elif pieces == 3 and t[-2] == '=>':
             # missing library
-            print "\n\nWARNING: SKIPPING MISSING LIBRARY: [%s]\n\n" % \
-                       (line.strip())
+            print ("\n\nWARNING: SKIPPING MISSING LIBRARY: [{}]\n\n".format(line.strip()))
         else:
-            print "Unrecognized ldd line: [%s]" % line.strip()
+            print("Unrecognized ldd line: [{}]".format(line.strip()))
             okay = False
-    files = map(os.path.abspath,files)
+    files = [os.path.abspath(x) for x in files]
     return (okay, files)
 
 def _file_to_avoid(env,x):
@@ -92,7 +90,7 @@ def copy_system_libraries(env, kitdir, files, extra_ld_library_paths=[]):
                                               osenv=osenv) 
               for line in lines:
                   line = line.rstrip()
-                  print "\t%s"%(line)
+                  print("\t{}".format(line))
               if retval != 0: # error handling
                   if len(lines) >= 1:
                       if lines[0].find("not a dynamic executable") != -1:

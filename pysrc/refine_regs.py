@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import re
 from patterns import *
 from genutil import *
@@ -136,12 +136,12 @@ def refine_regs_input(lines):
           old_enclosing = regs_dict[ri.name].max_enclosing_reg
           a = reg_width_dict[old_enclosing]
           b = reg_width_dict[ri.max_enclosing_reg]
-          print  "LER: Comparing {} and {} for {}".format(old_enclosing,
+          print("LER: Comparing {} and {} for {}".format(old_enclosing,
                                                           ri.max_enclosing_reg,
-                                                          ri.name)
+                                                          ri.name))
           if a < b:
               # take the wider enclosing registers
-              print "\ttaking new wider version"
+              print("\ttaking new wider version")
               regs_dict[ri.name] = ri
 
    # return a list resembling the original order
@@ -151,7 +151,10 @@ def refine_regs_input(lines):
                                   
    return regs_list
 
-def _reg_cmp(a,b):
+def _key_reg_ordinal(x):
+    return x.ordinal
+
+def _reg_cmp(a,b):  # FIXME:2017-06-10: PY3 port, no longer used
     if a.ordinal < b.ordinal:
         return -1
     elif a.ordinal > b.ordinal:
@@ -161,12 +164,12 @@ def _reg_cmp(a,b):
 def rearrange_regs(regs_list):
     """Return a list of enumer.enumer_values_t objects to be passed to
        enum_txt_writer"""
-    groups = uniqueify(map(lambda(x) : x.rtype, regs_list))
+    groups = uniqueify( [ x.rtype for x in  regs_list])
     msgb("RGROUPS", str(groups))
     enumvals = []
     for g in groups:
-        k = filter(lambda(x): x.rtype == g, regs_list)
-        k.sort(cmp=_reg_cmp)
+        k = list(filter(lambda x: x.rtype == g, regs_list))
+        k.sort(key=_key_reg_ordinal)
         first = '%s_FIRST' % (g)
         last = '%s_LAST' % (g)
 
@@ -180,8 +183,8 @@ def rearrange_regs(regs_list):
         # everything in the middle
         if len(k) > 1:
             enumvals.extend(
-                map(lambda(x) : enumer.enumer_value_t(x.name,
-                                                      display_str=x.display_str), k[1:]))
+                [  enumer.enumer_value_t(x.name,
+                                         display_str=x.display_str) for x in k[1:] ] )  
         #last
         enumvals.append(enumer.enumer_value_t(last,
                                               value=k[-1].name,

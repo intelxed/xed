@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-import sys,re
+from __future__ import print_function
+import sys
+import re
 
 class opmap_field_t(object):
     """This describes one field that makes up a concatenated sequence of bits. It has a width and can be inverted"""
@@ -48,8 +49,8 @@ class opmap_t(object):
         self.emit_decoder_code()
         self.emit_encoder_code()
     def dump(self):
-        print self.index_name, " DECODER OUTPUT: ", self.decode_output
-        print self.index_name, " ENCODER OUTPUT: ", self.encode_output
+        print(self.index_name, " DECODER OUTPUT: ", self.decode_output)
+        print(self.index_name, " ENCODER OUTPUT: ", self.encode_output)
         
     def number_fields(self):
         self.fields.reverse()
@@ -183,10 +184,10 @@ class parse_opmap_t(object):
                 self.read_line(line)
                 
     def dump(self):
-        for g,v in self.groups.iteritems():
-            print g, ":  "
+        for g,v in self.groups.items():
+            print(g, ":  ")
             v.dump()
-            print "\n\n"
+            print("\n\n")
 
 if __name__ == "__main__":
     o = opmap_t('regidx1')

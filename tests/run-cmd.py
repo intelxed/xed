@@ -1,5 +1,22 @@
 #!/usr/bin/env python
 #-*- python -*-
+#BEGIN_LEGAL
+#
+#Copyright (c) 2017 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
 
 # The tests XED by running a bunch of cmd files from a bunch of directories.
 # It tests for correctness by looking at the return code, the stdout and stderr.
@@ -10,7 +27,7 @@
 # line file. It substitutes BUILDDIR for the path to the xed examples,
 # typically ../obj and that value comes from the env['build_dir']
 
- 
+from __future__ import print_function
 import sys
 import os
 import re
@@ -33,7 +50,7 @@ sys.path = [find_dir('mbuild')] + sys.path
 import mbuild
 
 def write_file(fn,lines):
-    print "[EMIT] %s" % (fn)
+    print("[EMIT] %s" % (fn))
     f = open(fn,"w")
     if lines:
         for line in lines:
@@ -56,16 +73,16 @@ def create_reference(env, test_dir, codes_and_cmd, make_new=True):
     # abspath required for windoze
     build_dir = mbuild.posix_slashes(os.path.abspath(env['build_dir']))
     cmd2 = re.sub('BUILDDIR',build_dir,cmd)
-    print cmd2
+    print(cmd2)
 
     (retcode, stdout,stderr) = mbuild.run_command(cmd2,separate_stderr=True)
-    print "Retcode %s" % (str(retcode))
+    print("Retcode %s" % (str(retcode)))
     if stdout:
         for line in stdout:
-            print "[STDOUT] %s" % (line)
+            print("[STDOUT] %s" % (line))
     if stderr:
         for line in stderr:
-            print "[STDERR] %s" % (line)
+            print("[STDERR] %s" % (line))
 
     write_file(os.path.join(test_dir,"retcode.reference"), [ str(retcode) + "\n" ])
     write_file(os.path.join(test_dir,"stdout.reference"), stdout)
@@ -74,9 +91,9 @@ def create_reference(env, test_dir, codes_and_cmd, make_new=True):
 def make_bulk_tests(env):
     i = 0
     for bulk_test_file in  env['bulk_tests']:
-        print "[READING BULK TESTS] %s" % (bulk_test_file)
-        tests = file(bulk_test_file).readlines()
-        tests = map(lambda x: x.strip(), tests)
+        print("[READING BULK TESTS] %s" % (bulk_test_file))
+        tests = open(bulk_test_file,'r').readlines()
+        tests = [ x.strip() for x in tests]
         for test in tests:
             if test:
                 si = mbuild.join(env['otests'],"test-%05d" % (i))
@@ -84,9 +101,9 @@ def make_bulk_tests(env):
                 i = i + 1
 
 def compare_file(reference, this_test):
-    ref_lines = file(reference).readlines()
-    ref_lines = map(lambda x: x.rstrip(), ref_lines)
-    this_test = map(lambda x: x.rstrip(), this_test)
+    ref_lines = open(reference,'r').readlines()
+    ref_lines = [ x.rstrip() for x in ref_lines]
+    this_test = [ x.rstrip() for x in  this_test]
     for line in difflib.unified_diff(ref_lines, this_test,
                                      fromfile=reference, tofile="current"):
         sys.stdout.write(line.rstrip()+'\n')
@@ -108,7 +125,7 @@ def all_codes_present(specified_codes, test_codes):
     If no codes are specified, we do everything.
     """
     if specified_codes:
-        print "comparing restriction: {} and  test: {}".format(str(specified_codes), str(test_codes))
+        print("comparing restriction: {} and  test: {}".format(str(specified_codes), str(test_codes)))
         s = set(specified_codes)
         t = set(test_codes)
         u = s.union(t)
@@ -120,16 +137,16 @@ def all_codes_present(specified_codes, test_codes):
 def one_test(env,test_dir):
 
     cmd_fn = os.path.join(test_dir,"cmd")
-    cmd = file(cmd_fn).readlines()[0]
+    cmd = open(cmd_fn,'r').readlines()[0]
 
     # abspath required for windoze
     build_dir = mbuild.posix_slashes(os.path.abspath(env['build_dir']))
     cmd2 = re.sub('BUILDDIR',build_dir,cmd)
     cmd2 = cmd2.strip()
-    print cmd2
+    print(cmd2)
 
     (retcode, stdout,stderr) = mbuild.run_command(cmd2,separate_stderr=True)
-    print "Retcode %s" % (str(retcode))
+    print("Retcode %s" % (str(retcode)))
     if stdout:
         if len(stdout) == 1:
             stdout= stdout[0].split("\n")
@@ -138,14 +155,14 @@ def one_test(env,test_dir):
         if len(stdout) > 0 and len(stdout[-1]) == 0:
             stdout.pop()
         for line in stdout:
-            print "[STDOUT] %d %s" % (len(line),line)
+            print("[STDOUT] %d %s" % (len(line),line))
     if stderr:
         if len(stderr) == 1:
             stderr= stderr[0].split("\n")
         if len(stderr) == 1 and stderr[0] == '':
             stderr = []
         for line in stderr:
-            print "[STDERR] %s" % (line)
+            print("[STDERR] %s" % (line))
 
 
 
@@ -163,7 +180,7 @@ def one_test(env,test_dir):
     if not stderr_match:
         mbuild.msgb("STDERR MISMATCH")
         okay = False
-    print "-"*40 + "\n\n\n"
+    print("-"*40 + "\n\n\n")
     return okay
 
 def find_tests(env):
@@ -176,7 +193,7 @@ def rebase_tests(env):
     test_dirs = find_tests(env)
     for test_dir in test_dirs:
         cmd_fn = os.path.join(test_dir,"cmd")
-        test_cmd = file(cmd_fn).readlines()[0]
+        test_cmd = open(cmd_fn,'r').readlines()[0]
         create_reference(env, test_dir, test_cmd, make_new=False)
     
 def run_tests(env):
@@ -187,11 +204,11 @@ def run_tests(env):
     for tdir in test_dirs:
         #if env.on_windows():
         #    time.sleep(1) # try to avoid a bug on windows running commands to quickly
-        print '-'*40 
+        print('-'*40) 
         mbuild.msgb("TESTING" , tdir)
 
         codes_fn = os.path.join(tdir,"codes")
-        codes = file(codes_fn).readlines()[0].strip().split()
+        codes = open(codes_fn,'r').readlines()[0].strip().split()
 
         if all_codes_present(env['codes'],codes):
             okay = one_test(env,tdir)
@@ -200,7 +217,7 @@ def run_tests(env):
                 errors += 1
         else:
             mbuild.msgb("SKIPPING DUE TO TEST SUBSET RESTRICTION")
-            print '-'*40 + "\n\n\n"
+            print('-'*40 + "\n\n\n")
             skipped += 1
 
     ntests = len(test_dirs)

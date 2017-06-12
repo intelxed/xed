@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 #  
 #END_LEGAL
 
+from __future__ import print_function
 import os
 import sys
 
@@ -32,7 +33,7 @@ def find_dir(d,required=True):
         idir = os.path.dirname(idir)
     if not os.path.exists(mfile):
         if required:
-            print "Could not find %s file, looking upwards"% (mfile)
+            print("Could not find {} file, looking upwards".format(mfile))
             sys.exit(1)
         return None
     return mfile

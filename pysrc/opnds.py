@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -144,11 +144,11 @@ class operand_info_t(object):
       
    def non_binary_fixed_number(self):
       "Returns True if this operand is a decimal number"
-      if type(self.bits) == types.ListType:
+      if type(self.bits) == list:
          if ( len(self.bits) == 1 and
               operand_info_t.decimal_number_pattern.match(self.bits[0]) ):
                return True
-      elif type(self.bits) == types.StringType:
+      elif genutil.is_stirngish(self.bits):
          if operand_info_t.decimal_number_pattern.match(self.bits):
             return True
       return False
@@ -179,7 +179,7 @@ class operand_info_t(object):
       s.append("{:6}".format(self.name))
       s.append("{:9}".format(self.type))
       if self.bits:
-         if type(self.bits) == types.ListType:
+         if type(self.bits) == list:
             s.append(''.join(self.bits) + " (L)")
          else:
             s.append('[' + self.bits + ']')
@@ -197,7 +197,7 @@ class operand_info_t(object):
           s.append("MULTIREG{}".format(self.multireg))
           
       if self.bit_positions:
-          s.append(' bitpos:  ' + ', '.join(map(str,self.bit_positions)))
+          s.append(' bitpos:  ' + ', '.join( [str(x) for x in self.bit_positions] ))
       
       if self.invert:
          s.append('invert')
@@ -383,7 +383,7 @@ def parse_one_operand(w,
             xtype = default_xtypes[oc2.upper()]
          except:
             s = ''
-            for i,v in default_xtypes.iteritems():
+            for i,v in default_xtypes.items():
                s += "\t%10s -> %10s\n" % (i,v)
             genutil.die("Parsing operand [%s]. Could not find default type for %s. xtypes=%s\nTypes=%s" % (w, oc2, str(xtypes), s))
       else:

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
+from __future__ import print_function
 import os
 import sys
 import argparse
@@ -58,14 +58,14 @@ def work(args):  # main function
 
     
     (insts,undoc) = check(args.chip, xeddb, chip_db)
-    ilist = list(set(map(lambda x: x.iclass, insts)))
+    ilist = list(set( [ x.iclass for x in insts ] ))
     ilist.sort()
-    ulist = list(set(map(lambda x: x.iclass, undoc)))
+    ulist = list(set( [x.iclass for x in  undoc] ))
     ulist.sort()
     if args.otherchip:
         (insts2,undoc2) = check(args.otherchip, xeddb, chip_db)
-        ilist2 = list(set(map(lambda x: x.iclass, insts2)))
-        ulist2 = list(set(map(lambda x: x.iclass, undoc2)))
+        ilist2 = list(set( [ x.iclass for x in insts2] ))
+        ulist2 = list(set( [ x.iclass for x in  undoc2] ))
         s1 = set(ilist + ulist)
         s2 = set(ilist2 + ulist2)
         d12 = list(s1-s2)
@@ -76,17 +76,17 @@ def work(args):  # main function
         both.sort()
 
         for i in d12:
-            print "{:20s} IN: {}   NOT IN: {}".format(i, args.chip, args.otherchip)
+            print("{:20s} IN: {}   NOT IN: {}".format(i, args.chip, args.otherchip))
         for i in d21:
-            print "{:20s} IN: {}   NOT IN: {}".format(i, args.otherchip, args.chip)
+            print("{:20s} IN: {}   NOT IN: {}".format(i, args.otherchip, args.chip))
         for i in both:
-            print "{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip)
+            print("{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip))
         
     else:
         for i in ilist:
-            print i
+            print(i)
         for i in ulist:
-            print i, "UNDOC"
+            print(i, "UNDOC")
     return 0
 
 
