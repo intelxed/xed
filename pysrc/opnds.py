@@ -148,7 +148,7 @@ class operand_info_t(object):
          if ( len(self.bits) == 1 and
               operand_info_t.decimal_number_pattern.match(self.bits[0]) ):
                return True
-      elif type(self.bits) == bytes:
+      elif genutil.is_stirngish(self.bits):
          if operand_info_t.decimal_number_pattern.match(self.bits):
             return True
       return False

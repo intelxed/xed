@@ -548,7 +548,7 @@ class conditions_t(object):
         return False
             
     def and_cond(self, c):
-        if type(c) in  [str,bytes]:
+        if is_stringish(c):
             nc = condition_t(c)
         else:
             nc = c
@@ -694,7 +694,7 @@ class rule_t(object):
         self.actions = [] 
         
         for action in action_list:
-            if type(action) in  [str,bytes]:
+            if is_stringish(action):
                 self.actions.append(actions.action_t(action))
             else:
                 self.actions.append(action)
