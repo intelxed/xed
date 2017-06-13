@@ -1,5 +1,4 @@
 build: off
 
 test_script:
-    - pip install --user https://github.com/intelxed/mbuild/zipball/master
     - python ci.py
