@@ -4,6 +4,7 @@ import subprocess
 
 def get_python_cmds():
     if platform.system() == 'Linux':
+        lst = []
         for pyver in ['2.7','3.5.2']:
             pycmd = '/opt/python/{}/bin/python'.format(pyver)
             lst.append((pyver,pycmd))
