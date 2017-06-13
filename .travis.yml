@@ -10,6 +10,8 @@ matrix:
     include:
     - compiler: gcc
       os: linux
+      sudo: enabled
+      dist: trusty
     - compiler: clang
       os: osx
      
