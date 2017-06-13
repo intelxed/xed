@@ -5,7 +5,8 @@ import subprocess
 def get_python_cmds():
     if platform.system() == 'Windows':
         lst = []
-        pyvers = ['27','35']
+        #pyvers = ['27','35']
+        pyvers = ['27']
         for pyver in pyvers:
             pycmd = 'C:/python{}/python'.format(pyver)
             lst.append((pyver,pycmd))
