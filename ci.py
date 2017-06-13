@@ -3,7 +3,14 @@ import platform
 import subprocess
 
 def get_python_cmds():
-    if platform.system() == 'Linux':
+    if platform.system() == 'Windows':
+        lst = []
+        pyvers = ['27','35']
+        for pyver in pyvers:
+            pycmd = 'C:/python{}/python'.format(pyver)
+            lst.append((pyver,pycmd))
+        return lst
+    elif platform.system() == 'Linux':
         lst = []
         #pyvers = ['2.7','3.5.2']
         pyvers = ['2.7']
