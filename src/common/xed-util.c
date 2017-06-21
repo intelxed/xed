@@ -345,7 +345,7 @@ xed_int64_t xed_sign_extend_arbitrary_to_64(xed_uint64_t x, unsigned int bits) {
     xed_int64_t mask = one<<(bits-1);
     xed_int64_t vmask, o=0;
     if (bits < 64) {
-        vmask = (1<<bits)-1;
+        vmask = (one<<bits)-1;
         o = ((x&vmask) ^ mask)- mask;
     }
     else if (bits == 64) 
