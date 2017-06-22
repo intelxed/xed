@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -27513,8 +27513,13 @@ EXTENSION:   AVX512VEX
 ISA_SET:     AVX512BW_KOP
 EXCEPTIONS:     AVX512-K20
 REAL_OPCODE: Y
-ATTRIBUTES:  KMASK 
-PATTERN:    VV1 0x92 VF2 V0F MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL=0  W0  NOVSR 
+ATTRIBUTES:  KMASK
+COMMENT:     KMOVQ aliases to KMOVD in 32b mode due to W bit being ignored.
+PATTERN:    VV1 0x92 VF2 V0F MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL=0  W0 mode64  NOVSR 
+OPERANDS:    REG0=MASK_R():w:mskw REG1=GPR32_B():r:d:u32
+IFORM:       KMOVD_MASKmskw_GPR32u32_AVX512
+
+PATTERN:    VV1 0x92 VF2 V0F MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL=0  not64 NOVSR 
 OPERANDS:    REG0=MASK_R():w:mskw REG1=GPR32_B():r:d:u32
 IFORM:       KMOVD_MASKmskw_GPR32u32_AVX512
 }
@@ -27529,8 +27534,13 @@ EXTENSION:   AVX512VEX
 ISA_SET:     AVX512BW_KOP
 EXCEPTIONS:     AVX512-K20
 REAL_OPCODE: Y
-ATTRIBUTES:  KMASK 
-PATTERN:    VV1 0x93 VF2 V0F MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL=0  W0  NOVSR 
+ATTRIBUTES:  KMASK
+COMMENT:     KMOVQ aliases to KMOVD in 32b mode due to W bit being ignored.
+PATTERN:    VV1 0x93 VF2 V0F MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL=0  W0  mode64 NOVSR 
+OPERANDS:    REG0=GPR32_R():w:d:u32 REG1=MASK_B():r:mskw
+IFORM:       KMOVD_GPR32u32_MASKmskw_AVX512
+
+PATTERN:    VV1 0x93 VF2 V0F MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL=0  not64  NOVSR 
 OPERANDS:    REG0=GPR32_R():w:d:u32 REG1=MASK_B():r:mskw
 IFORM:       KMOVD_GPR32u32_MASKmskw_AVX512
 }
