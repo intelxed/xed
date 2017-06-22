@@ -1,6 +1,6 @@
 Setting chip to SALTWELL
 Attempting to decode: da c0 
-iclass FCMOVB	category FCMOV	ISA-extension X87	ISA-set PPRO
+iclass FCMOVB	category FCMOV	ISA-extension X87	ISA-set FCMOV
 instruction-length 2
 operand-width 32
 effective-operand-width 32
@@ -24,4 +24,4 @@ FLAGS:
     written:               fc0 fc1 fc2 fc3  mask=0xf0000000
   undefined:                   fc0 fc2 fc3  mask=0xd0000000
 ATTRIBUTES: NOTSX 
-ISA SET: [PPRO]
+ISA SET: [FCMOV]
