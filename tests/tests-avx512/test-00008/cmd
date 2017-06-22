@@ -1,0 +1,1 @@
+ BUILDDIR/xed     -e KMOVQ k0 MEM8:ebx

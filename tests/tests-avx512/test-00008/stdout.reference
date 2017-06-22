@@ -1,0 +1,4 @@
+Request: KMOVQ EASZ:2, MEM0:qword ptr [EBX], MEM_WIDTH:8, MODE:1, REG0:K0, SMODE:1
+OPERAND ORDER: REG0 MEM0 
+Encodable! C4E1F89003
+.byte 0xc4,0xe1,0xf8,0x90,0x03

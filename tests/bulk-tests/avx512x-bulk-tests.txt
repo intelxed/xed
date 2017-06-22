@@ -5,3 +5,16 @@ DEC AVX512X          ; BUILDDIR/xed -64 -d 62F1740958DA
 DEC ENC AVX512X      ; BUILDDIR/xed -64 -de 62 e1 ad 0f 58 64 d9 08
 DEC ENC AVX512X      ; BUILDDIR/xed -64 -de 62 f1 7e 78 2d f0
 DEC AVX512X          ; BUILDDIR/xed -d  62 F2 7D 48 13 C0
+ENC AVX512X          ; BUILDDIR/xed -64 -e KMOVQ k0 rax
+ENC AVX512X          ; BUILDDIR/xed     -e KMOVQ k0 MEM8:ebx
+ENC AVX512X          ; BUILDDIR/xed -64 -e KMOVQ rax k0
+ENC AVX512X          ; BUILDDIR/xed     -e KMOVQ k1 k0
+ENC AVX512X          ; BUILDDIR/xed -64 -e KMOVQ k1 k0
+ENC AVX512X          ; BUILDDIR/xed     -e KMOVQ MEM8:ebx k0
+ENC AVX512X          ; BUILDDIR/xed -64 -e KMOVQ MEM8:rbx k0
+ENC AVX512X          ; BUILDDIR/xed -64 -e KMOVQ MEM8:ebx k0
+DEC AVX512X          ; BUILDDIR/xed     -d C4E1FB93D8
+DEC AVX512X          ; BUILDDIR/xed -64 -d C4E1FB93D8
+DEC AVX512X          ; BUILDDIR/xed     -d C4E1FB92FB
+DEC AVX512X          ; BUILDDIR/xed -64 -d C4E1FB92FB
+DEC AVX512X          ; BUILDDIR/xed     -d C4E17B92FB
