@@ -24,7 +24,7 @@ CATEGORY  : COND_BR
 EXTENSION : RTM
 COMMENT   : Not always a branch. If aborts, then branches & eax is written
 
-PATTERN   : 0xC7 MOD[0b11] MOD=3 REG[0b111] RM[0b000] BRDISPz()
+PATTERN   : 0xC7 MOD[0b11] MOD=3 REG[0b111] RM[0b000] BRDISPz() no66_prefix
 OPERANDS  : RELBR:r:z REG0=rIP():rw:SUPP REG1=XED_REG_EAX:cw:SUPP
 }
 
