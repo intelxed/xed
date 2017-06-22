@@ -1,0 +1,1 @@
+ BUILDDIR/xed -64 -e KMOVQ k1 k0
