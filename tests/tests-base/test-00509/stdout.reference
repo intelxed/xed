@@ -1,0 +1,4 @@
+Request: RDFSBASE EOSZ:3, MODE:2, REG0:RAX, SMODE:2
+OPERAND ORDER: REG0 
+Encodable! F3480FAEC0
+.byte 0xf3,0x48,0x0f,0xae,0xc0
