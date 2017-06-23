@@ -35,3 +35,7 @@ DEC                  ; BUILDDIR/xed -64 -d e31e
 DEC AVX              ; BUILDDIR/xed -d C4C3F916E0F8
 DEC AVX              ; BUILDDIR/xed -64 -d C4C3F916E0F8
 DEC AVX              ; BUILDDIR/xed -64 -d 6464262E6426C4EB791D05ED830A00
+ENC                  ; BUILDDIR/xed -64 -e rdfsbase/64 rax
+ENC                  ; BUILDDIR/xed -64 -e rdfsbase eax
+DEC                  ; BUILDDIR/xed -64 -d 66 f3 0f ae c0
+DEC                  ; BUILDDIR/xed -64 -d f3 0f ae c0
