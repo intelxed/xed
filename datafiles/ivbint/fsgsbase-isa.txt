@@ -24,7 +24,7 @@ CPL       : 3
 CATEGORY  : RDWRFSGS
 EXTENSION : RDWRFSGS
 
-PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b000] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b000] RM[nnn] mode64 f3_refining_prefix  
 OPERANDS  : REG0=GPRy_B():w  REG1=XED_REG_FSBASE:r:SUPP:y
 
 }
@@ -34,7 +34,7 @@ CPL       : 3
 CATEGORY  : RDWRFSGS
 EXTENSION : RDWRFSGS
 
-PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b001] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b001] RM[nnn] mode64 f3_refining_prefix  
 OPERANDS  : REG0=GPRy_B():w  REG1=XED_REG_GSBASE:r:SUPP:y
 
 }
@@ -48,7 +48,7 @@ CATEGORY  : RDWRFSGS
 EXTENSION : RDWRFSGS
 ATTRIBUTES: NOTSX
 
-PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b010] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b010] RM[nnn] mode64 f3_refining_prefix  
 OPERANDS  :   REG0=GPRy_B():r   REG1=XED_REG_FSBASE:w:SUPP:y
 
 }
@@ -59,7 +59,7 @@ CATEGORY  : RDWRFSGS
 EXTENSION : RDWRFSGS
 ATTRIBUTES: NOTSX
 
-PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b011] RM[nnn] mode64 f3_refining_prefix  no66_prefix
+PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b011] RM[nnn] mode64 f3_refining_prefix  
 OPERANDS  :   REG0=GPRy_B():r   REG1=XED_REG_GSBASE:w:SUPP:y
 
 }
