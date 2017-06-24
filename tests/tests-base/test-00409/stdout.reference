@@ -12,7 +12,7 @@ Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   REG0         REG0=STACKPOP SUPPRESSED   R      SPW3  192    24     1    192        INT     PSEUDO
-1   REG1              REG1=RIP SUPPRESSED   W         V   64     8     1     64        INT         IP
+1   REG1              REG1=RIP SUPPRESSED   W         Q   64     8     1     64        INT         IP
 2   MEM0           (see below) SUPPRESSED   R      SPW3  192    24     1    192        INT    INVALID
 3  BASE0             BASE0=RSP SUPPRESSED  RW       SSZ   64     8     1     64        INT        GPR
 4   REG2           REG2=RFLAGS SUPPRESSED  RW         Y   64     8     1     64        INT      FLAGS
