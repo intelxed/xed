@@ -13,7 +13,7 @@ Operands
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   MEM0           (see below)   EXPLICIT   R        P2   48     6     1     48     STRUCT    INVALID
 1   REG0        REG0=STACKPUSH SUPPRESSED   W      SPW2   64     8     1     64        INT     PSEUDO
-2   REG1              REG1=RIP SUPPRESSED   W         V   32     4     1     32        INT         IP
+2   REG1              REG1=RIP SUPPRESSED   W         Y   32     4     1     32        INT         IP
 3   MEM1           (see below) SUPPRESSED   W      SPW2   64     8     1     64        INT    INVALID
 4  BASE1             BASE1=RSP SUPPRESSED  RW       SSZ   64     8     1     64        INT        GPR
 Memory Operands
