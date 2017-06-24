@@ -2164,9 +2164,9 @@ def _run_canned_tests(env,osenv):
     (retcode, stdout, stderr) = mbuild.run_command_output_file(cmd,
                                                                output_file,
                                                                osenv=osenv)
-    if retcode == 1:
-       for l in stdout:
-          print(l.rstrip())
+    #if retcode == 1:
+    for l in stdout:
+        print(l.rstrip())
 
     for l in stdout:
         l = l.rstrip()
