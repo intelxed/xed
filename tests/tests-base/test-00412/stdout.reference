@@ -11,7 +11,7 @@ iclass-max-iform-dispatch 1
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0              REG0=RIP SUPPRESSED   W         V   64     8     1     64        INT         IP
+0   REG0              REG0=RIP SUPPRESSED   W         Q   64     8     1     64        INT         IP
 1   REG1           REG1=RFLAGS SUPPRESSED   W         Y   64     8     1     64        INT      FLAGS
 Memory Operands
   MemopBytes = 0
