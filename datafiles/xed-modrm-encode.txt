@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ SEQUENCE MODRM_EMIT
   DISP_NT_EMIT() 
 
 SEGMENT_DEFAULT_ENCODE()::
-BASE0=XED_REG_RIP -> nothing # no segment for RIP
+BASE0=rIPa() -> nothing # no segment for RIP/EIP
 BASE0=ArSP() -> default_ss # default to SS
 BASE0=ArBP() -> default_ss # default to SS
 BASE0=@      -> default_ds # default to DS -- baseless 
@@ -258,14 +258,16 @@ otherwise                      -> MOD=1  # might use SIB
 MODRM_MOD_EA32_DISP32()::
 BASE0=@                    -> MOD=0 #no base (handles SIB=1 case)
 BASE0=GPR32e()             -> MOD=2 #some base, not RIP, might use SIB
-BASE0=XED_REG_RIP mode64   -> MOD=0
+BASE0=rIPa() mode64        -> MOD=0
 
 ##############################################################################
 #### EAMODE64
 ##############################################################################
 
 MODRM_MOD_EA64_DISP0()::
+BASE0=XED_REG_EIP       -> MOD=0 DISP_WIDTH=32 DISP=0    # base eip
 BASE0=XED_REG_RIP       -> MOD=0 DISP_WIDTH=32 DISP=0    # base rip
+
 BASE0=XED_REG_RBP       -> MOD=1 DISP_WIDTH=8 DISP=0     # ARG MODIFICATION
 BASE0=XED_REG_R13       -> MOD=1 DISP_WIDTH=8 DISP=0     # ARG MODIFICATION
 BASE0=XED_REG_RAX       -> MOD=0 
@@ -288,6 +290,7 @@ BASE0=GPR64e()             -> MOD=1
 
 MODRM_MOD_EA64_DISP32()::
 BASE0=@              -> MOD=0 #no base, SIB=1 required (provided elsewhere)
+BASE0=XED_REG_EIP    -> MOD=0 #base eip
 BASE0=XED_REG_RIP    -> MOD=0 #base rip
 BASE0=XED_REG_RAX    -> MOD=2 
 BASE0=XED_REG_RBX    -> MOD=2 
@@ -357,6 +360,7 @@ BASE0=XED_REG_RBP -> DISP_WIDTH_0_8_32() RM=5  REXB=0
 
 # When we do the MOD encoding, we fix the displacement at 4B.
 BASE0=XED_REG_RIP -> RM=5 # not setting REXB FIXME?
+BASE0=XED_REG_EIP -> RM=5 # not setting REXB FIXME?
 
 # for r13 without a disp, we add a 1B disp so MOD will be 1
 BASE0=XED_REG_R13 -> DISP_WIDTH_0_8_32() RM=5  REXB=1  
@@ -387,6 +391,7 @@ BASE0=XED_REG_EBP -> DISP_WIDTH_0_8_32() RM=5  REXB=0
 BASE0=XED_REG_R13D -> DISP_WIDTH_0_8_32() RM=5  REXB=1  
 
 BASE0=XED_REG_RIP mode64 -> RM=5
+BASE0=XED_REG_EIP mode64 -> RM=5
 
 MODRM_RM_ENCODE_EANOT16_SIB1()::
 otherwise -> RM=4 # SIB will specify the REXB etc.

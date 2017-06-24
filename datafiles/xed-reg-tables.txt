@@ -112,6 +112,10 @@ mode16 | OUTREG=XED_REG_EIP
 mode32 | OUTREG=XED_REG_EIP
 mode64 | OUTREG=XED_REG_RIP
 
+xed_reg_enum_t rIPa()::
+EASZ=2 | OUTREG=XED_REG_EIP
+EASZ=3 | OUTREG=XED_REG_RIP
+
 #######################################################################
 # Expand the generic registers using the effective address size EOSZ - limit 32b
 #######################################################################

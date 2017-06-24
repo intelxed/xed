@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -80,8 +80,8 @@ MODRM64alt32()::
  REXB=1    MOD=0b00 RM=0b100   SIB()  | 
 
 # Ignores rexb -- must duplicate to avoid don't-care problems
- REXB=0    MOD=0b00 RM=0b101   | NEED_MEMDISP=32   BASE0=XED_REG_RIP SEG0=FINAL_DSEG() enc
- REXB=1    MOD=0b00 RM=0b101   | NEED_MEMDISP=32   BASE0=XED_REG_RIP SEG0=FINAL_DSEG()
+ REXB=0    MOD=0b00 RM=0b101   | NEED_MEMDISP=32   BASE0=rIPa() SEG0=FINAL_DSEG() enc
+ REXB=1    MOD=0b00 RM=0b101   | NEED_MEMDISP=32   BASE0=rIPa() SEG0=FINAL_DSEG()
 
  REXB=0    MOD=0b00 RM=0b110    |  BASE0=ArSI() SEG0=FINAL_DSEG()
  REXB=1    MOD=0b00 RM=0b110    |  BASE0=Ar14() SEG0=FINAL_DSEG()
