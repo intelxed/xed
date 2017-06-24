@@ -14,7 +14,7 @@ Operands
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0  RELBR BRANCH_DISPLACEMENT_BYTES= 1 ffffffaa   EXPLICIT   R         B    8     1     1      8        INT    INVALID
 1   REG0              REG0=ECX SUPPRESSED  RW       ASZ   32     4     1     32        INT        GPR
-2   REG1              REG1=EIP SUPPRESSED  RW         V   32     4     1     32        INT         IP
+2   REG1              REG1=EIP SUPPRESSED  RW         Y   32     4     1     32        INT         IP
 3   REG2           REG2=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
 Memory Operands
   MemopBytes = 0
