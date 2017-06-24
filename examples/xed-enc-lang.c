@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2016 Intel Corporation
+Copyright (c) 2017 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -457,10 +457,11 @@ parse_encode_request(ascii_encode_request_t areq)
 
             rc = xed_gpr_reg_class(mem_bis.base_reg);
             rci = xed_gpr_reg_class(mem_bis.index_reg);
-            
-            if (rc == XED_REG_CLASS_GPR32 || rci == XED_REG_CLASS_GPR32) 
+            if (mem_bis.base_reg == XED_REG_EIP)
                 xed_encoder_request_set_effective_address_size(&req, 32);
-            if (rc == XED_REG_CLASS_GPR16 || rci == XED_REG_CLASS_GPR16) 
+            else if (rc == XED_REG_CLASS_GPR32 || rci == XED_REG_CLASS_GPR32)
+                xed_encoder_request_set_effective_address_size(&req, 32);
+            else if (rc == XED_REG_CLASS_GPR16 || rci == XED_REG_CLASS_GPR16) 
                 xed_encoder_request_set_effective_address_size(&req, 16);
 
             // fill in the memory fields
