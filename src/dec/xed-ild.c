@@ -1347,13 +1347,12 @@ static void evex_scanner(xed_decoded_inst_t* d)
             evex2.u32 = xed_decoded_inst_get_byte(d, length+2);
 
             // above check guarantees that r and x are 1 in 16/32b mode.
-            xed3_operand_set_rexr(d,  ~evex1.s.r_inv&1);
-            xed3_operand_set_rexx(d,  ~evex1.s.x_inv&1);
-
-            // force rexb to zero in 16/32b mode because it can be used for gprs
-            xed3_operand_set_rexb(d,  (xed3_mode_64b(d) & ~evex1.s.b_inv)&1);
-            // rexrr not used for gprs. Only for evex x/y/zmm regs
-            xed3_operand_set_rexrr(d, ~evex1.s.rr_inv&1);
+            if (xed3_mode_64b(d)) {
+                xed3_operand_set_rexr(d,  ~evex1.s.r_inv&1);
+                xed3_operand_set_rexx(d,  ~evex1.s.x_inv&1);
+                xed3_operand_set_rexb(d,  ~evex1.s.b_inv&1);
+                xed3_operand_set_rexrr(d, ~evex1.s.rr_inv&1);
+            }
             
             xed3_operand_set_map(d, evex1.s.map);
 

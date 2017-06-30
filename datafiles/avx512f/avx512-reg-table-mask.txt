@@ -50,16 +50,19 @@ REXRR=0 REXR=0 REG=0x5 | OUTREG=XED_REG_K5
 REXRR=0 REXR=0 REG=0x6 | OUTREG=XED_REG_K6
 REXRR=0 REXR=0 REG=0x7 | OUTREG=XED_REG_K7
 
-# only used in VEX space for K-mask ops
+# MASK_B is used by VEX and EVEX encodings. SDM (rev 062) states in
+# EVEX, EVEX.B (REXB) is ignored. SDM does not (yet) say what happens
+# on VEX.B but assuming it is similar.
+
 xed_reg_enum_t MASK_B()::
-REXB=0 RM=0x0 | OUTREG=XED_REG_K0
-REXB=0 RM=0x1 | OUTREG=XED_REG_K1
-REXB=0 RM=0x2 | OUTREG=XED_REG_K2
-REXB=0 RM=0x3 | OUTREG=XED_REG_K3
-REXB=0 RM=0x4 | OUTREG=XED_REG_K4
-REXB=0 RM=0x5 | OUTREG=XED_REG_K5
-REXB=0 RM=0x6 | OUTREG=XED_REG_K6
-REXB=0 RM=0x7 | OUTREG=XED_REG_K7
+RM=0x0 | OUTREG=XED_REG_K0
+RM=0x1 | OUTREG=XED_REG_K1
+RM=0x2 | OUTREG=XED_REG_K2
+RM=0x3 | OUTREG=XED_REG_K3
+RM=0x4 | OUTREG=XED_REG_K4
+RM=0x5 | OUTREG=XED_REG_K5
+RM=0x6 | OUTREG=XED_REG_K6
+RM=0x7 | OUTREG=XED_REG_K7
 
 # only used in VEX space for K-mask ops
 # stored inverted
