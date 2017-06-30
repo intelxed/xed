@@ -2165,8 +2165,8 @@ def _run_canned_tests(env,osenv):
                                                                output_file,
                                                                osenv=osenv)
     if retcode == 1:
-       for l in stdout:
-          print(l.rstrip())
+        for l in stdout:
+            print(l.rstrip())
 
     for l in stdout:
         l = l.rstrip()
