@@ -523,8 +523,6 @@ def gen_l1_byreg_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
     else:
         _add_switch_dispatching(fo, fun_dict, reg_var, data_name)
 
-    fo.add_code("/*We should not ever get here*/")
-    fo.add_code_eol('xed_assert(0)')
     return fo
 
 def _add_int_dict_dispatching(fo, int_dict, dispatch_var, data_name):
@@ -553,12 +551,9 @@ def _add_switch_dispatching(fo, fun_dict, dispatch_var, data_name):
         fo.add_code('case %s:' % key)
         call_stmt = '%s(%s)' % (fun_dict[key], data_name)
         fo.add_code_eol(call_stmt)
-        fo.add_code_eol('return')
-    fo.add_code("/*We should not ever get here*/")
-    fo.add_code("/*If we got here, it means that we need" )
-    fo.add_code("to fill ild_storage entries for those MODE")
-    fo.add_code(" values that led us here*/")
-    fo.add_code_eol('default: xed_assert(0)')
+        fo.add_code_eol('break')
+    fo.add_code("/*We should only get here for #UDs and those have no defined architectural length*/")
+    fo.add_code_eol('default: ')
     fo.add_code("}")
 
 def gen_l1_bymode_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
@@ -620,8 +615,6 @@ def gen_l1_bymode_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
     else:
         _add_switch_dispatching(fo, fun_dict, mode_var, data_name)
 
-    fo.add_code("/*We should not ever get here*/")
-    fo.add_code_eol('xed_assert(0)')
     return fo
 
 def print_defines(file, define_dict):
