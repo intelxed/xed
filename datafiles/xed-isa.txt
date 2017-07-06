@@ -14772,7 +14772,7 @@ ATTRIBUTES : RING0 NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 PATTERN   : 0x0F 0x38 0x80 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
-PATTERN   : 0x0F 0x38 0x80 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode32 MODRM() CR_WIDTH()
+PATTERN   : 0x0F 0x38 0x80 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64  MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR32_R():r MEM0:r:dq
 COMMENT   : SDM rev 27
 }
@@ -14785,7 +14785,7 @@ ATTRIBUTES : RING0 NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 PATTERN   : 0x0F 0x38 0x81 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
-PATTERN   : 0x0F 0x38 0x81 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode32 MODRM() CR_WIDTH()
+PATTERN   : 0x0F 0x38 0x81 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64  MODRM() CR_WIDTH()
 OPERANDS  : REG0=GPR32_R():r MEM0:r:dq
 COMMENT   : SDM rev 27
 }
