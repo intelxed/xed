@@ -6389,8 +6389,7 @@ def main():
    (options, args ) = arg_parser.parse_args()
    
    if options.debug:
-       import pdb
-       pdb.set_trace()
+       activate_debugger() # genutil
        
    set_verbosity_options(options.verbosity)
    if options.xeddir == '':

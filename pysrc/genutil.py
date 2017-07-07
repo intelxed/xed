@@ -66,9 +66,21 @@ def cond_die(v, cmd, msg):
         s = msg + '\n  [CMD] ' + cmd
         die(s)
 
+import pdb
+_debugging = False
+
+def activate_debugger():
+    global _debugging
+    _debugging = True
+    pdb.set_trace()
+    
 def die(m):
+    global _debugging
     msgerr('[ERROR] ' + m)
-    traceback.print_stack()
+    if _debugging:
+        pdb.set_trace()
+    else:        
+        traceback.print_stack()
     sys.exit(1)
 def warn(m):
     msgerr('[WARNING] ' + m)
