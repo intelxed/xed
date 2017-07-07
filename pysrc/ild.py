@@ -143,7 +143,7 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
         _msg("vv%s cnames: %s" % (vv,cnames))
         
         constraints_log_file = mbuild.join(ild_gendir,
-                                           'all_constraints_vv%s.txt' %vv),
+                                           'all_constraints_vv%s.txt' %vv)
 
         #now generate the C hash functions for the constraint
         #dictionaries.

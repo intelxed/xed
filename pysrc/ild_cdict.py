@@ -441,7 +441,6 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
     
     #generate the int value for each tuple
     united_dict.create_tuple2int(all_ops_widths)
-    united_dict.strings_dict = ild_codegen._dec_strings
     
     #creating the default action that will be taken when we did not hit 
     #a valid hash entry
@@ -462,6 +461,8 @@ class constraint_dict_t(object):
          #cnames is sorted list of strings - constraints' names that we want
          #this cdict to have
          self.cnames = sorted(list(cnames))
+
+         self.strings_dict = ild_codegen._dec_strings
 
          #state_space is a dict with constraints' values we want
          #this cdict to represent.
@@ -676,7 +677,7 @@ def gen_ph_fos(agi, cdict_by_map_opcode, is_amd, log_fn,
     """
     maps = ild_info.get_maps(is_amd)
     log_f = open(log_fn, 'w')
-    cnames = set()
+    cnames = set() # only for logging
     stats = {
              '0. #map-opcodes': 0,
              '1. #entries': 0,
@@ -687,10 +688,10 @@ def gen_ph_fos(agi, cdict_by_map_opcode, is_amd, log_fn,
              '6. #cdict_size_10_to_20': 0,
              '7. #cdict_size_20_to_100': 0,
              '8. #cdict_size_at_least_100': 0
-             }##
-    lu_fo_list = []
-    op_lu_map = {}
-    phash_lu = {}
+             }
+    lu_fo_list = []  
+    op_lu_map = {} # fn name -> fn obj
+    phash_lu = {}  # map, opcode -> fn name
     for insn_map in maps:
         phash_lu [insn_map] = {}
         for opcode in range(0, 256):

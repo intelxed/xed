@@ -6437,8 +6437,6 @@ def main():
 ################################################
 
 if __name__ == '__main__':
-   #import pdb
-   #pdb.set_trace()
    _profile = False
    if _profile:
       # profiling takes A REAL LONG TIME
