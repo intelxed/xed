@@ -77,7 +77,9 @@ def _resolve_conflicts(agi, info_list, nt_dict):  # NOT USED
 #FIXME: use info_list instead?
 def get_getter_fn(ptrn_list):
     if len(ptrn_list) == 0:
-        l1_fn = '(%s)0' % (ildutil.ild_getter_typename)
+        #l1_fn = '(%s)0' % (ildutil.ild_getter_typename)
+        genutil.die("P2342: SHOULD NOT REACH HERE")
+
     first = ptrn_list[0]
     for cur in ptrn_list[1:]:
         if first.eosz_nt_seq != cur.eosz_nt_seq:

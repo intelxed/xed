@@ -50,7 +50,8 @@ _easz_header_fn = 'xed-ild-easz.h'
 
 def get_getter_fn(ptrn_list):
     if len(ptrn_list) == 0:
-        l1_fn = '(%s)0' % (ildutil.ild_getter_typename)
+        #l1_fn = '(%s)0' % (ildutil.ild_getter_typename)
+        genutil.die("P2341: SHOULD NOT REACH HERE")
     first = ptrn_list[0]
     for cur in ptrn_list[1:]:
         if first.easz_nt_seq != cur.easz_nt_seq:

@@ -602,7 +602,7 @@ class constraint_dict_t(object):
         if cname in list(_token_2_module.keys()):
             nt_module = _token_2_module[cname]
             getter_fn = nt_module.get_getter_fn(ptrn_list)
-            if not getter_fn:
+            if not getter_fn: # -> error
                     msg = 'Failed to resolve %s getter fn for '
                     msg += 'MAP:%s OPCODE:%s'
                     insn_map = ptrn_list[0].insn_map
