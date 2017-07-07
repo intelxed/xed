@@ -664,13 +664,14 @@ def get_constraints_lu_table(ptrns_by_map_opcode, is_amd, state_space,
 def gen_ph_fos(agi, cdict_by_map_opcode, is_amd, log_fn,
                ptrn_dict, vv):
     """
-    Returns a tuple (phash_lu_table,phash_fo_list,op_lu_list)
-    phash_lu_table is a traditional 2D dict by map, opcode to a
-    hash function name.
-    phash_fo_list is a list of all phash function objects created
-    (we might have fos that are not in lookup table - when we have
-    2-level hash functions).
-    op_lu_list is a list for all the operands lookup functions
+    Returns a tuple (phash_lu_table, phash_fo_list, op_lu_list)
+    * phash_lu_table:  is a traditional 2D dict by map, opcode to a
+      hash function name.
+    * phash_fo_list: is a list of all phash function objects created
+      (we might have fos that are not in lookup table - when we have
+      2-level hash functions).
+    * op_lu_list:  is a list for all the operands lookup functions
+
     Also writes log file for debugging.
     """
     maps = ild_info.get_maps(is_amd)

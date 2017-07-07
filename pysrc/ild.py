@@ -113,19 +113,19 @@ def init_debug(agi):
     debugdir = agi.common.options.gendir
     debug = open(mbuild.join(debugdir, 'ild_debug.txt'), 'w')
 
-def gen_xed3(agi,ild_info,is_3dnow,ild_patterns,
-            all_state_space,ild_gendir,all_ops_widths):
+def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
+             all_state_space, ild_gendir, all_ops_widths):
     all_cnames = set()
-    ptrn_dict = {}
+    ptrn_dict = {}  # map,opcode -> pattern
     maps = ild_info.get_maps(is_3dnow)
     for insn_map in maps:
             ptrn_dict[insn_map] = collections.defaultdict(list)
     for ptrn in ild_patterns:
         ptrn_dict[ptrn.insn_map][ptrn.opcode].append(ptrn)
     #FIXME:bad name
-    vv_lu = {}
+    vv_lu = {} # vexvalid-space -> ( ph_lu, lu_fo_list)
     #mapping between a operands to their look up function
-    op_lu_map = {}
+    op_lu_map = {}  # func name -> function (for unique-ifying)
 
     for vv in sorted(all_state_space['VEXVALID'].keys()):
         #cdict is a 2D dictionary:
@@ -141,15 +141,22 @@ def gen_xed3(agi,ild_info,is_3dnow,ild_patterns,
                                                           all_ops_widths)
         all_cnames = all_cnames.union(cnames)
         _msg("vv%s cnames: %s" % (vv,cnames))
+        
+        constraints_log_file = mbuild.join(ild_gendir,
+                                           'all_constraints_vv%s.txt' %vv),
 
         #now generate the C hash functions for the constraint
-        #dictionaries
-        (ph_lu,lu_fo_list,operands_lu_list) = ild_cdict.gen_ph_fos(
+        #dictionaries.
+        #
+        # ph_lu            map from map,opcode -> hash fn name
+        # lu_fo_list       list of all phash fn objects
+        # operands_lu_list list of operands lookup fns
+        #
+        (ph_lu, lu_fo_list, operands_lu_list) = ild_cdict.gen_ph_fos(
             agi, 
             cdict,
             is_3dnow,
-            mbuild.join(ild_gendir,
-                        'all_constraints_vv%s.txt' %vv),
+            constraints_log_file,
             ptrn_dict, 
             vv)
         #hold only one instance of each function
@@ -159,13 +166,14 @@ def gen_xed3(agi,ild_info,is_3dnow,ild_patterns,
 
         vv_lu[str(vv)] = (ph_lu,lu_fo_list)
     _msg("all cnames: %s" % all_cnames)
-    #dump the hash functions and lookup tables for obtaining these
-    #hash functions in the decode time
+    #dump the (a) hash functions and (b) lookup tables for obtaining
+    #these hash functions (at decode time)
     ild_codegen.dump_vv_map_lookup(agi,
                                    vv_lu,
                                    is_3dnow,
                                    list(op_lu_map.values()),
                                    h_fn='xed3-phash.h')
+    
     #xed3_nt.work generates all the functions and lookup tables for
     #dynamic decoding
     xed3_nt.work(agi, all_state_space, all_ops_widths, ild_patterns)
@@ -284,8 +292,8 @@ def work(agi):
         getters_dict =  agi.common.ild_getters_dict
         dump_header_with_header(agi, 'xed-ild-getters.h', getters_dict)
 
-        gen_xed3(agi,ild_info,is_3dnow,ild_patterns,
-                 all_state_space,ild_gendir,all_ops_widths)
+        gen_xed3(agi, ild_info, is_3dnow, ild_patterns, 
+                 all_state_space, ild_gendir, all_ops_widths)
 
 def dump_header_with_header(agi, fname, header_dict):
     """ emit the header fname.

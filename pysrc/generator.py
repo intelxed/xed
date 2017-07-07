@@ -123,6 +123,11 @@ import refine_regs
 #####################################################################
 def setup_arg_parser():
     arg_parser = optparse.OptionParser()
+    arg_parser.add_option('--debug',
+                          action='store_true', 
+                          dest='debug', 
+                          default=False,
+                          help='Start PDB debugger')
     arg_parser.add_option('--limit-enum-strings',
                           action='store_true', 
                           dest='limit_enum_strings', 
@@ -2280,7 +2285,7 @@ def partition_nodes(ilist,bitpos):
 
 def print_node(ilist):
    for ii in ilist:
-      msge("\t" + ii.dump_str())
+      msge("\t" + ii.dump_str(brief=True))
 
 def at_end_of_instructions(ilist, bitpos):
    """If all instructions are done with their bits, return 1
@@ -2492,7 +2497,7 @@ def build_sub_graph(common, graph, bitpos, skipped_bits):
       if len(graph.instructions) > 1:
          msge("\nBUILD ERROR: more than one leaf when ran out of bits:")
          for ii in graph.instructions:
-            msge(ii.dump_str('   '))
+            msge(ii.dump_str('   ', brief=True))
          msge("\n\n")
          (okay, splitpos) = scan_backwards_for_distinguishing_bit(
                                                      graph.instructions,bitpos)
@@ -3985,8 +3990,7 @@ def remember_operand(xop):
 
    try:
       xop.unique_id = global_operand_table[xop]
-      msgb("A9: Found existing operand ID {} for {}".format(xop.unique_id,
-                                                        str(xop)))
+      #msgb("A9: Found existing operand ID {} for {}".format(xop.unique_id, str(xop)))
    except:
       global_operand_table[xop] = global_operand_table_id
       xop.unique_id = global_operand_table_id
@@ -6383,6 +6387,11 @@ def gen_operand_storage_fields(options,agi):
 def main():
    arg_parser = setup_arg_parser()
    (options, args ) = arg_parser.parse_args()
+   
+   if options.debug:
+       import pdb
+       pdb.set_trace()
+       
    set_verbosity_options(options.verbosity)
    if options.xeddir == '':
       path_to_generator = sys.argv[0]
@@ -6428,6 +6437,8 @@ def main():
 ################################################
 
 if __name__ == '__main__':
+   #import pdb
+   #pdb.set_trace()
    _profile = False
    if _profile:
       # profiling takes A REAL LONG TIME
