@@ -111,6 +111,7 @@ def gen_getter_fn_lookup(agi, united_lookup, eosz_dict): # NOT USED
                 is_conflict = is_eosz_conflict(info_list)
             
             if is_conflict:
+                genutil.msg("EOSZ CONFLICT MAP/OPCODE:{}/{}".format(insn_map, opcode))
 #                l1_fo = _resolve_conflicts(agi, info_list, nt_dict)
 #                if not l1_fo:
 #                    ildutil.ild_err('FAILED TO GENERATE CONFLICT ' +
