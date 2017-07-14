@@ -33,7 +33,7 @@ void print_misc(xed_decoded_inst_t* xedd) {
     const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
     xed_exception_enum_t e = xed_inst_exception(xi);
     xed_uint_t np = xed_decoded_inst_get_nprefixes(xedd);
-    xed_uint_t vl_bits = xed_decoded_inst_vector_length_bits(xedd);
+
     xed_isa_set_enum_t isaset = xed_decoded_inst_get_isa_set(xedd);
 
     if (xed_operand_values_has_real_rep(ov)) {
@@ -71,20 +71,32 @@ void print_misc(xed_decoded_inst_t* xedd) {
     }
     if (xed_decoded_inst_is_broadcast(xedd))
         printf("BROADCAST\n");
+    
+    if ( xed_classify_avx(xedd) || xed_classify_avx512(xedd) )
+    {
+        if (xed_classify_avx512_maskop(xedd))
+            printf("AVX512 KMASK-OP\n");
+        else {
+            if (xed_classify_avx(xedd))
+                printf("AVX\n");
+            else if (xed_classify_avx512(xedd))
+                printf("AVX512\n");
+            if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_SIMD_SCALAR))
+                printf("SCALAR\n");
+            else {
+                xed_uint_t vl_bits = xed_decoded_inst_vector_length_bits(xedd);
+                printf("Vector length: %u \n", vl_bits);
+            }
+        }
+    }
 
     // does not include instructions that have XED_ATTRIBUTE_MASK_AS_CONTROL.
     // does not include vetor instructions that have k0 as a mask register.
     if (xed_decoded_inst_masked_vector_operation(xedd))
         printf("WRITE-MASKING\n");
 
-
     if (np) 
         printf("Number of legacy prefixes: %u \n", np);
-
-
-    if (vl_bits)
-        printf("Vector length: %u \n", vl_bits);
-
 
     printf("ISA SET: [%s]\n", xed_isa_set_enum_t2str(isaset));
     for(i=0; i<XED_MAX_CPUID_BITS_PER_ISA_SET; i++)

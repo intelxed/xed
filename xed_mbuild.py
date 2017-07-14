@@ -1371,7 +1371,7 @@ def build_libxed(env,work_queue):
              'pysrc/ild_storage_data.py', 'pysrc/slash_expand.py',
              'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
              'pysrc/hlist.py', 'pysrc/ctables.py', 'pysrc/ild.py',
-             'pysrc/refine_regs.py', 'pysrc/metaenum.py']
+             'pysrc/refine_regs.py', 'pysrc/metaenum.py', 'pysrc/classifier.py']
           
     enc_py = ['pysrc/genutil.py', 'pysrc/encutil.py',
               'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',

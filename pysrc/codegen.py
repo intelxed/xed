@@ -649,23 +649,26 @@ class c_switch_generator_t(object):
    def _add(self,s):
       self.func_obj.add_code(self.pad + s)
 
+   def add(self,s, pad='   '):
+       self._add(pad + s)
+       
    def add_case(self,case_name,clines, do_break=True):
       """Add a case with a bunch of lines of code -- no semicolons
       required"""
       self._add('case %s:' % (case_name))
       for line in clines:
-         self._add('   ' + line)
+         self.add(line)
       if do_break:
-         self._add('   break;')
+         self.add('break;')
 
    def add_default(self,clines, do_break=True):
       """Add a default case with a bunch of lines of code -- no
       semicolons required"""
       self._add('default:')
       for line in clines:
-         self._add('   ' + line)
+         self.add(line)
       if do_break:
-         self._add('   break;')
+         self.add('break;')
 
    def finish(self):
       self._add('}')

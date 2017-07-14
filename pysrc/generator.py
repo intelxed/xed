@@ -117,6 +117,7 @@ import chipmodel
 import ctables
 import ild
 import refine_regs
+import classifier
 
 #####################################################################
 ## OPTIONS
@@ -4958,20 +4959,18 @@ class generator_common_t(object):
    
    def open_file(self,fn, arg_shell_file=False, start=True):
       'open and record the file pointers'
-      if True: #MJC2006-10-10
-         fp = xed_file_emitter_t(self.options.xeddir,
-                                 self.options.gendir,
-                                 fn,
-                                 shell_file=arg_shell_file)
-         if is_header(fn):
-            self.header_file_names.append(fp.full_file_name)
-         else:
-            self.source_file_names.append(fp.full_file_name)
-            
-         if start:
-            fp.start()
+
+      fp = xed_file_emitter_t(self.options.xeddir,
+                              self.options.gendir,
+                              fn,
+                              shell_file=arg_shell_file)
+      if is_header(fn):
+          self.header_file_names.append(fp.full_file_name)
       else:
-         fp = base_open_file(fn,'w')
+          self.source_file_names.append(fp.full_file_name)
+
+      if start:
+          fp.start()
       self.file_pointers.append(fp)
       return fp
 
@@ -5244,18 +5243,16 @@ class all_generator_info_t(object):
 
    def open_file(self, fn, keeper=True, arg_shell_file=False, start=True):
       'open and record the file pointers'
-      if True: #MJC2006-10-10
-         fp = xed_file_emitter_t(self.common.options.xeddir,
-                                 self.common.options.gendir,
-                                 fn,
-                                 shell_file=arg_shell_file)
-         if keeper:
-            self.add_file_name(fp.full_file_name, is_header(fn))
 
-         if start:
-            fp.start()
-      else:
-         fp = base_open_file(fn,'w')
+      fp = xed_file_emitter_t(self.common.options.xeddir,
+                              self.common.options.gendir,
+                              fn,
+                              shell_file=arg_shell_file)
+      if keeper:
+          self.add_file_name(fp.full_file_name, is_header(fn))
+
+      if start:
+          fp.start()
       return fp
    
 
@@ -6422,7 +6419,10 @@ def main():
    # graph and the itable, emits the extractor functions, computes the
    # iforms, writes map using iforms, computes capture
    # functions, gathers and emits enums. (That part should move out).
-   gen_everything_else(agi) 
+   gen_everything_else(agi)
+   
+   # emit functions to identify AVX and AVX512 instruction groups
+   classifier.work(agi) 
    
    print_resource_usage('main.4')
    gen_ild(agi)

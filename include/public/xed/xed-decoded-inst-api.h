@@ -666,9 +666,22 @@ xed_decoded_inst_set_user_data(xed_decoded_inst_t* p,
                                xed_uint64_t new_value) {
     p->u.user_data = new_value;
 }
+//@}
 
-
-
+/// @name xed_decoded_inst_t Classifiers
+//@{
+/// @ingroup DEC
+/// True for AVX512 (EVEX-encoded) SIMD and (VEX encoded) K-mask instructions
+XED_DLL_EXPORT xed_bool_t
+xed_classify_avx512(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// True for AVX512 (VEX-encoded) K-mask operations
+XED_DLL_EXPORT xed_bool_t
+xed_classify_avx512_maskop(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// True for AVX/AVX2 SIMD VEX-encoded operations. Does not include BMI/BMI2 instructions.
+XED_DLL_EXPORT xed_bool_t
+xed_classify_avx(const xed_decoded_inst_t* d);
 
 //@}
 #endif

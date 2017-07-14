@@ -436,14 +436,14 @@ def override_mapping(base_mapping, all_values):
                     #we override the value those indices map to
                     is_match = row_match(base_row, row)
                     #None is returned on internal error.
-                    #We dontexit(1) on this because we don't want to break
+                    #We do not exit on this because we don't want to break
                     #xed's build if ild's build fails.
                     #This is temporary.
                     if is_match == None:
                         return None
-                    elif row_match(base_row, row):
+                    elif row_match(base_row, row): # FIXME: redundant call with line 437
                         temp_map.append(([base_row], value))
-                    else:
+                    else: 
                         temp_map.append(([base_row], base_value))
             base_mapping = temp_map
     return base_mapping        
