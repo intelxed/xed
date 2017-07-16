@@ -50,6 +50,7 @@ def _emit_function(fe, isa_sets, name):
 
 
 def work(agi):
+    sse_isa_sets = set([])
     avx_isa_sets = set([])
     avx512_isa_sets = set([])
     avx512_kmask_op = set([])
@@ -62,11 +63,13 @@ def work(agi):
                      avx512_kmask_op.add(ii.isa_set)
              elif re.search('AVX',ii.isa_set) or ii.isa_set in ['F16C', 'FMA']:
                  avx_isa_sets.add(ii.isa_set)
-
+             elif re.search('SSE',ii.isa_set) or ii.isa_set in ['AES','PCLMULQDQ']:
+                 sse_isa_sets.add(ii.isa_set)
                  
     fe = agi.open_file('xed-classifiers.c') # xed_file_emitter_t
     _emit_function(fe, avx512_isa_sets, 'avx512')
     _emit_function(fe, avx512_kmask_op, 'avx512_maskop')
     _emit_function(fe, avx_isa_sets,    'avx')
+    _emit_function(fe, sse_isa_sets,    'sse')
     fe.close()
     return

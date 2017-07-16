@@ -682,6 +682,10 @@ xed_classify_avx512_maskop(const xed_decoded_inst_t* d);
 /// True for AVX/AVX2 SIMD VEX-encoded operations. Does not include BMI/BMI2 instructions.
 XED_DLL_EXPORT xed_bool_t
 xed_classify_avx(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// True for SSE/SSE2/etc. SIMD operations.  Includes AES and PCLMULQDQ
+XED_DLL_EXPORT xed_bool_t
+xed_classify_sse(const xed_decoded_inst_t* d);
 
 //@}
 #endif
