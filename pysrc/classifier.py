@@ -64,7 +64,15 @@ def work(agi):
              elif re.search('AVX',ii.isa_set) or ii.isa_set in ['F16C', 'FMA']:
                  avx_isa_sets.add(ii.isa_set)
              elif re.search('SSE',ii.isa_set) or ii.isa_set in ['AES','PCLMULQDQ']:
-                 sse_isa_sets.add(ii.isa_set)
+                 # Exclude MMX instructions that come in with SSE2 &
+                 # SSSE3. The several purely MMX instr in SSE are
+                 # "SSE-opcodes" with memop operands. One can look for
+                 # those with SSE2MMX and SSSE3MMX xed isa_sets.
+                 #
+                 # Also exclude the SSE_PREFETCH operations; Those are
+                 # just memops.
+                 if not re.search('MMX',ii.isa_set) and not re.search('PREFETCH',ii.isa_set):
+                     sse_isa_sets.add(ii.isa_set)
                  
     fe = agi.open_file('xed-classifiers.c') # xed_file_emitter_t
     _emit_function(fe, avx512_isa_sets, 'avx512')

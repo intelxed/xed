@@ -10233,6 +10233,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSE2
+ISA_SET   : SSE2MMX
 PATTERN   : 0x0F 0xD4 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q:u64 MEM0:r:q:u64
 PATTERN   : 0x0F 0xD4 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -10738,6 +10739,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSE2
+ISA_SET   : SSE2MMX
 PATTERN   : 0x0F 0xF4 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q:u32 MEM0:r:q:u32
 PATTERN   : 0x0F 0xF4 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13242,6 +13244,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSE2
+ISA_SET   : SSE2MMX
 PATTERN   : 0x0F 0xFB no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0xFB no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13377,6 +13380,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x01 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x01 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13401,6 +13405,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x02 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x02 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13425,6 +13430,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x03 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x03 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13449,6 +13455,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x05 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x05 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13473,6 +13480,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x06 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x06 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13497,6 +13505,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x07 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x07 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13520,6 +13529,7 @@ EXCEPTIONS: mmx-mem
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 ATTRIBUTES : DOUBLE_WIDE_OUTPUT NOTSX
 PATTERN   : 0x0F 0x38 0x04 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q:i8 MEM0:r:q:i8
@@ -13545,6 +13555,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x0B no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x0B no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13569,6 +13580,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x00 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x00 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13593,6 +13605,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x08 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x08 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13617,6 +13630,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x09 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x09 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13640,6 +13654,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 EXCEPTIONS: mmx-mem
 PATTERN   : 0x0F 0x38 0x0A no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q
@@ -13665,6 +13680,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x3A 0x0F no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() UIMM8()
 OPERANDS  : REG0=MMX_R():rw:q MEM0:r:q IMM0:r:b
 PATTERN   : 0x0F 0x3A 0x0F no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  UIMM8()
@@ -13689,6 +13705,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x1C no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():w:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x1C no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13713,6 +13730,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x1D no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():w:q MEM0:r:q
 PATTERN   : 0x0F 0x38 0x1D no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -13737,6 +13755,7 @@ CPL       : 3
 ATTRIBUTES : simd_scalar NOTSX
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x1E no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():w:q MEM0:r:q
 }
@@ -13746,6 +13765,7 @@ CPL       : 3
 ATTRIBUTES : simd_scalar NOTSX
 CATEGORY  : MMX
 EXTENSION : SSSE3
+ISA_SET   : SSSE3MMX
 PATTERN   : 0x0F 0x38 0x1E no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=MMX_R():w:q REG1=MMX_B():r:q
 }

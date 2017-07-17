@@ -72,7 +72,10 @@ PENTIUM2:   ALL_OF(PENTIUM)  PENTIUMMMX  PPRO CMOV FCMOV FAT_NOP RDPMC PREFETCH_
 # The SSE_PREFETCH came in as NOPs on P6/PPRO.  innaccuracy...
 PENTIUM3:   ALL_OF(PENTIUM2)  SSE  SSEMXCSR SSE_PREFETCH   # SSE(incl. ldmxcsr/stmxcsr) (KNI) 
 
-PENTIUM4:     ALL_OF(PENTIUM3) SSE2 CLFSH PAUSE
+# SSE2MMX is a several purely mmx instructions that came with SSE2 (PADDQ, PSUBQ, PMULUDQ).
+# They are really part of SSE2.
+PENTIUM4:     ALL_OF(PENTIUM3) SSE2 SSE2MMX CLFSH PAUSE
+
 P4PRESCOTT:   ALL_OF(PENTIUM4) SSE3 LONGMODE CMPXCHG16B  FXSAVE64
 
 # Made a chip for the P4's that omit LAHF in 64b mode
@@ -80,7 +83,9 @@ P4PRESCOTT_NOLAHF:  ALL_OF(P4PRESCOTT)  NOT(LAHF)
 
 P4PRESCOTT_VTX:  ALL_OF(P4PRESCOTT)  VTX
 
-CORE2:       ALL_OF(P4PRESCOTT)  VTX SSSE3 SMX
+# SSSE3MMX is a a bunch of purely mmx instructions that came with SSSE3.
+# They are really part of SSSE3.
+CORE2:       ALL_OF(P4PRESCOTT)  VTX SSSE3 SSSE3MMX SMX
 
 PENRYN:      ALL_OF(CORE2)     SSE4
 PENRYN_E:    ALL_OF(PENRYN)    XSAVE
@@ -92,7 +97,7 @@ BONNELL:  ALL_OF(CORE2)     MOVBE  NOT(SMX)
 SALTWELL: ALL_OF(BONNELL)
 
 # PREFETCHW semantics added to PREFETCHW opcode but not subject
-# to chip-check because of prior implementation as NOP.
+# to chip-check because of prrior implementation as NOP.
 SILVERMONT:    ALL_OF(WESTMERE)  MOVBE RDRAND PREFETCHW
 
 
