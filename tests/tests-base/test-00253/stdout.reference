@@ -1,5 +1,5 @@
 Attempting to decode: 0f 01 c8 
-iclass MONITOR	category MISC	ISA-extension SSE3	ISA-set SSE3
+iclass MONITOR	category MISC	ISA-extension SSE3	ISA-set SSE3MWAIT
 instruction-length 3
 operand-width 32
 effective-operand-width 32
@@ -18,6 +18,6 @@ Memory Operands
   MemopBytes = 0
 ATTRIBUTES: NOTSX RING0 
 RING0 only
-ISA SET: [SSE3]
+ISA SET: [SSE3MWAIT]
 0	CPUID BIT NAME: [SSE3]
 	Leaf 0x00000001, subleaf 0x00000000, ECX[0]
