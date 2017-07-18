@@ -72,19 +72,27 @@ void print_misc(xed_decoded_inst_t* xedd) {
     if (xed_decoded_inst_is_broadcast(xedd))
         printf("BROADCAST\n");
     
-    if ( xed_classify_avx(xedd) || xed_classify_avx512(xedd) )
+    if ( xed_classify_sse(xedd) || xed_classify_avx(xedd) || xed_classify_avx512(xedd) )
     {
         if (xed_classify_avx512_maskop(xedd))
             printf("AVX512 KMASK-OP\n");
         else {
-            if (xed_classify_avx(xedd))
+            xed_bool_t sse = 0;
+            if (xed_classify_sse(xedd)) {
+                sse = 1;
+                printf("SSE\n");
+            }
+            else if (xed_classify_avx(xedd))
                 printf("AVX\n");
             else if (xed_classify_avx512(xedd))
                 printf("AVX512\n");
+            
             if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_SIMD_SCALAR))
                 printf("SCALAR\n");
             else {
-                xed_uint_t vl_bits = xed_decoded_inst_vector_length_bits(xedd);
+                // xed_decoded_inst_vector_length_bits is only for VEX/EVEX instr.
+                // This will print 128 vl for FXSAVE and LD/ST MXCSR which is unfortunate.
+                xed_uint_t vl_bits = sse ? 128 : xed_decoded_inst_vector_length_bits(xedd);
                 printf("Vector length: %u \n", vl_bits);
             }
         }

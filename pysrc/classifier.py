@@ -40,7 +40,7 @@ def _emit_function(fe, isa_sets, name):
     # FIXME: 2017-07-14 optimization: could use a static array for faster checking, smaller code
     switch = codegen.c_switch_generator_t('isa_set', fo);
     for c in isa_sets:
-        switch.add_case('XED_ISA_SET_{}'.format(c),[],do_break=False)
+        switch.add_case('XED_ISA_SET_{}'.format(c.upper()),[],do_break=False)
     if len(isa_sets) > 0:
         switch.add('return 1;')
     switch.add_default(['return 0;'], do_break=False)
@@ -71,7 +71,8 @@ def work(agi):
                  #
                  # Also exclude the SSE_PREFETCH operations; Those are
                  # just memops.
-                 if not re.search('MMX',ii.isa_set) and not re.search('PREFETCH',ii.isa_set):
+                 if (not re.search('MMX',ii.isa_set) and not re.search('PREFETCH',ii.isa_set)
+                     and not re.search('X87',ii.isa_set) and not re.search('MWAIT',ii.isa_set)):
                      sse_isa_sets.add(ii.isa_set)
                  
     fe = agi.open_file('xed-classifiers.c') # xed_file_emitter_t
