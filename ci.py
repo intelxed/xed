@@ -12,13 +12,9 @@ def get_python_cmds():
             lst.append((pyver,pycmd))
         return lst
     elif platform.system() == 'Linux':
-        lst = []
-        pyvers = ['2.7','3.5.2']
-        #pyvers = ['2.7']
-        for pyver in pyvers:
-            pycmd = '/opt/python/{}/bin/python'.format(pyver)
-            lst.append((pyver,pycmd))
-        return lst
+        # The file .travis.yml installs python2 and python3
+        return [('2.7','python'),
+                ('3.x','python3')]
     
     return [('dfltpython','python')]
         

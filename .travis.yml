@@ -14,6 +14,8 @@ matrix:
       dist: trusty
     - compiler: clang
       os: osx
-     
+      
+before_install:
+    - if [ `uname -s` = 'Linux' ]; then sudo apt-get install -y python python3 ; fi
 script:
     - python ci.py
