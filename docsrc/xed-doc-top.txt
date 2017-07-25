@@ -44,7 +44,7 @@ Intel XED was designed to be very fast and extensible.
 
 Intel XED compiles with the following compilers:
     <ul>   
-    <li> GNU Gcc
+    <li> GNU GCC
     <li> Microsoft Visual Studio
     <li> Intel ICL/ICC
     <li> LLVM/Clang 

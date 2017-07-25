@@ -29,7 +29,7 @@ by Mark Charney
 @section INTRO Introduction
 
 XED can build with many compilers:
-  - GNU Gcc
+  - GNU GCC
   - Microsoft Visual Studio
   - Intel ICL/ICC
   - LLVM/Clang 
