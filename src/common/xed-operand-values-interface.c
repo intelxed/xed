@@ -229,12 +229,12 @@ xed_bool_t
 xed_operand_values_memop_without_modrm(const xed_operand_values_t* p) {
     return (xed3_operand_get_mem0(p) &&
             xed3_operand_get_disp_width(p) &&
-            xed3_operand_get_modrm(p)==0);
+            xed3_operand_get_has_modrm(p)==0);
 }
 
 xed_bool_t 
 xed_operand_values_has_modrm_byte(const xed_operand_values_t* p) {
-    return xed3_operand_get_modrm(p);
+    return xed3_operand_get_has_modrm(p);
 }
 xed_bool_t 
 xed_operand_values_has_sib_byte(const xed_operand_values_t* p) {

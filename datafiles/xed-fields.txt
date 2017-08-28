@@ -92,8 +92,6 @@ EASZ           SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT PUBLIC DO
 
 
 #MODRM fields
-MODRM          SCALAR     xed_bits_t 1             SUPPRESSED  NOPRINT INTERNAL DO EO
-
 MOD            SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT INTERNAL DO EO
 REG            SCALAR     xed_bits_t 3             SUPPRESSED  NOPRINT INTERNAL DO EO
 # SRM is for partial-byte opcodes that capture a RM-like field.

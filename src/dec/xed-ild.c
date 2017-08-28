@@ -977,13 +977,12 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
       just set has_modrm to 1 in case of 3dnow (map==XED_ILD_MAPAMD) */
     xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
     xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
-    /* we set HAS_MODRM and not MODRM operand, because MODRM operand is 1
-     * bit only and we need to for MODRM_IGNORE value for CR and DR 
-     * instructions 
-     */
     xed3_operand_set_has_modrm(d,1);
-    if (map < XED_ILD_MAP2)
+    if (map < XED_ILD_MAP2) {
+        // need to set more complex codes like XED_ILD_HASMODRM_IGNORE_MOD
+        // from the has_modrm_2d[][] tables.
         xed3_operand_set_has_modrm(d,has_modrm_2d[map][opcode]);
+    }
 }
 
 
