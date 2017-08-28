@@ -281,7 +281,7 @@ enum_pattern = re.compile(r'^XED_')
 reg_pattern = re.compile(r'^XED_REG_')
 error_pattern = re.compile(r'^XED_ERROR_')
 hex_pattern = re.compile(r'0[xX][0-9A-Fa-f]+')
-multireg_pattern = re.compile(r'MULTI(?P<sd>(SOURCE|DEST))(?P<nreg>[0-9]+)')
+multireg_pattern = re.compile(r'MULTI(?P<sd>(SOURCE|DEST|SOURCEDEST))(?P<nreg>[0-9]+)')
 convert_pattern = re.compile(r'TXT=(?P<rhs>[0-9A-Za-z_]+)')
 
 
