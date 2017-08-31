@@ -50,6 +50,7 @@ reg RAX q
 reg RBX q
 reg RCX q
 reg RDX q
+reg R11 q
 reg RIP q
 reg XCR0 q
 reg SS w
