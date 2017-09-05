@@ -79,7 +79,7 @@ ICLASS    : ANDN
 CPL       : 3
 CATEGORY  : BMI1
 EXTENSION : BMI1
-FLAGS     : MUST [ of-0 sf-mod zf-mod af-u pf-mod cf-0 ]
+FLAGS     : MUST [ of-0 sf-mod zf-mod af-u pf-u cf-0 ]
 
 # 32b
 PATTERN   : VV1 0xF2 V0F38 VNP  not64 VL128 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
@@ -192,7 +192,7 @@ ICLASS    : BZHI
 CPL       : 3
 CATEGORY  : BMI2
 EXTENSION : BMI2
-FLAGS     : MUST [ of-0 sf-mod zf-mod af-u pf-mod cf-mod ]
+FLAGS     : MUST [ of-0 sf-mod zf-mod af-u pf-u cf-mod ]
 
 # 32b
 PATTERN   : VV1 0xF5 V0F38 VNP not64 VL128  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
