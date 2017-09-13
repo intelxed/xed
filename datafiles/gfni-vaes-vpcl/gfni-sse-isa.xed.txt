@@ -1,0 +1,111 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2017 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING GF2P8AFFINEINVQB (GF2P8AFFINEINVQB-N/A-1)
+{
+ICLASS:      GF2P8AFFINEINVQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     GFNI
+EXCEPTIONS:     E4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x3A 0xCF MOD[0b11] MOD=3  REG[rrr] RM[nnn]  osz_refining_prefix     UIMM8() 
+OPERANDS:    REG0=XMM_R():rw:dq:u8 REG1=XMM_B():r:dq:u64 IMM0:r:b
+IFORM:       GF2P8AFFINEINVQB_XMMu8_XMMu64_IMM8
+}
+
+{
+ICLASS:      GF2P8AFFINEINVQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     GFNI
+EXCEPTIONS:     E4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x3A 0xCF MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix     UIMM8() 
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:dq:u64 IMM0:r:b
+IFORM:       GF2P8AFFINEINVQB_XMMu8_MEMu64_IMM8
+}
+
+
+# EMITTING GF2P8AFFINEQB (GF2P8AFFINEQB-N/A-1)
+{
+ICLASS:      GF2P8AFFINEQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     GFNI
+EXCEPTIONS:     E4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x3A 0xCE MOD[0b11] MOD=3  REG[rrr] RM[nnn]  osz_refining_prefix     UIMM8() 
+OPERANDS:    REG0=XMM_R():rw:dq:u8 REG1=XMM_B():r:dq:u64 IMM0:r:b
+IFORM:       GF2P8AFFINEQB_XMMu8_XMMu64_IMM8
+}
+
+{
+ICLASS:      GF2P8AFFINEQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     GFNI
+EXCEPTIONS:     E4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x3A 0xCE MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix     UIMM8() 
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:dq:u64 IMM0:r:b
+IFORM:       GF2P8AFFINEQB_XMMu8_MEMu64_IMM8
+}
+
+
+# EMITTING GF2P8MULB (GF2P8MULB-N/A-1)
+{
+ICLASS:      GF2P8MULB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     GFNI
+EXCEPTIONS:     E4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xCF MOD[0b11] MOD=3  REG[rrr] RM[nnn]  osz_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:u8 REG1=XMM_B():r:dq:u8
+IFORM:       GF2P8MULB_XMMu8_XMMu8
+}
+
+{
+ICLASS:      GF2P8MULB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     GFNI
+EXCEPTIONS:     E4
+REAL_OPCODE: Y
+PATTERN:     0x0F 0x38 0xCF MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix     
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:dq:u8
+IFORM:       GF2P8MULB_XMMu8_MEMu8
+}
+
+

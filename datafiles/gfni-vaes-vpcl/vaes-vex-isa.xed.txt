@@ -1,0 +1,167 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2017 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING VAESDEC (VAESDEC-256-2)
+{
+ICLASS:      VAESDEC
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDE V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 REG2=YMM_B():r:qq:u128
+IFORM:       VAESDEC_YMMu128_YMMu128_YMMu128
+}
+
+{
+ICLASS:      VAESDEC
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDE V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 MEM0:r:qq:u128
+IFORM:       VAESDEC_YMMu128_YMMu128_MEMu128
+}
+
+
+# EMITTING VAESDECLAST (VAESDECLAST-256-2)
+{
+ICLASS:      VAESDECLAST
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDF V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 REG2=YMM_B():r:qq:u128
+IFORM:       VAESDECLAST_YMMu128_YMMu128_YMMu128
+}
+
+{
+ICLASS:      VAESDECLAST
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDF V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 MEM0:r:qq:u128
+IFORM:       VAESDECLAST_YMMu128_YMMu128_MEMu128
+}
+
+
+# EMITTING VAESENC (VAESENC-256-2)
+{
+ICLASS:      VAESENC
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDC V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 REG2=YMM_B():r:qq:u128
+IFORM:       VAESENC_YMMu128_YMMu128_YMMu128
+}
+
+{
+ICLASS:      VAESENC
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDC V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 MEM0:r:qq:u128
+IFORM:       VAESENC_YMMu128_YMMu128_MEMu128
+}
+
+
+# EMITTING VAESENCLAST (VAESENCLAST-256-2)
+{
+ICLASS:      VAESENCLAST
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDD V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 REG2=YMM_B():r:qq:u128
+IFORM:       VAESENCLAST_YMMu128_YMMu128_YMMu128
+}
+
+{
+ICLASS:      VAESENCLAST
+CPL:         3
+CATEGORY:    VAES
+EXTENSION:   VAES
+ISA_SET:     VAES
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xDD V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256     
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u128 MEM0:r:qq:u128
+IFORM:       VAESENCLAST_YMMu128_YMMu128_MEMu128
+}
+
+
+# EMITTING VPCLMULQDQ (VPCLMULQDQ-256-2)
+{
+ICLASS:      VPCLMULQDQ
+CPL:         3
+CATEGORY:    VPCLMULQDQ
+EXTENSION:   VPCLMULQDQ
+ISA_SET:     VPCLMULQDQ
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x44 V66 V0F3A MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256     UIMM8() 
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u64 REG2=YMM_B():r:qq:u64 IMM0:r:b
+IFORM:       VPCLMULQDQ_YMMu128_YMMu64_YMMu64_IMM8
+}
+
+{
+ICLASS:      VPCLMULQDQ
+CPL:         3
+CATEGORY:    VPCLMULQDQ
+EXTENSION:   VPCLMULQDQ
+ISA_SET:     VPCLMULQDQ
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x44 V66 V0F3A MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256     UIMM8() 
+OPERANDS:    REG0=YMM_R():w:qq:u128 REG1=YMM_N():r:qq:u64 MEM0:r:qq:u64 IMM0:r:b
+IFORM:       VPCLMULQDQ_YMMu128_YMMu64_MEMu64_IMM8
+}
+
+

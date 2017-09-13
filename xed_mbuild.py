@@ -548,7 +548,6 @@ def mkenv():
                                  glm=True,
                                  skl=True,
                                  skx=True,
-                                 memory_future=True,
                                  avx512_future=True,
                                  future=True,
                                  knl=True,
@@ -750,10 +749,6 @@ def xed_args(env):
                           action="store_false", 
                           dest="skx", 
                           help="Do not include SKX.")
-    env.parser.add_option("--no-memory-future",
-                          action="store_false", 
-                          dest="memory_future", 
-                          help="Do not include future memory NI.")
     env.parser.add_option("--no-future",
                           action="store_false", 
                           dest="future", 
@@ -1242,6 +1237,7 @@ def _configure_libxed_extensions(env):
         _add_normal_ext(env,'xsavec')
         
     # Add avx and fma under control of a knob
+    _add_normal_ext(env,'memory')
     if env['avx']:
         _add_normal_ext(env,'avx')
         if env['ivbavx']:
@@ -1261,11 +1257,7 @@ def _configure_libxed_extensions(env):
         if env['skx']:
             _add_normal_ext(env,'skx')
             _add_normal_ext(env,'pku')
-        if env['memory_future']:
-            _add_normal_ext(env,'memory')
-        if env['future']:
-            _add_normal_ext(env,'future')
-            _add_normal_ext(env,'pt')
+
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
@@ -1281,9 +1273,23 @@ def _configure_libxed_extensions(env):
         if env['skx']:
             _add_normal_ext(env,'avx512-skx')
         if env['avx512_future']:
-            _add_normal_ext(env,'avx512-future')
+            _add_normal_ext(env,'cnl')
             _add_normal_ext(env,'avx512ifma')
             _add_normal_ext(env,'avx512vbmi')
+            
+            _add_normal_ext(env,'icl')
+            _add_normal_ext(env,'bitalg')
+            _add_normal_ext(env,'vbmi2')
+            _add_normal_ext(env,'vnni')
+            _add_normal_ext(env,'gfni-vaes-vpcl', 'files-sse.cfg')
+            _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
+            _add_normal_ext(env,'vpopcntdq-512')
+            _add_normal_ext(env,'vpopcntdq-vl')
+            _add_normal_ext(env,'rdpid')
+            
+            if env['future']: # now based on ICL
+                _add_normal_ext(env,'future')
+                _add_normal_ext(env,'pt')
 
     env['extf'] = newstuff + env['extf']
 
@@ -2211,17 +2217,15 @@ def verify_args(env):
        env['fma']=False
 
     if env['knc']: 
-        mbuild.warn("Disabling AVX512, FUTURE, MEMORY-FUTURE for KNC build\n\n\n")
+        mbuild.warn("Disabling AVX512, FUTURE, for KNC build\n\n\n")
         env['knl'] = False
         env['knm'] = False
         env['skx'] = False
         env['avx512_future'] = False
-        env['memory_future'] = False
         env['future'] = False
         
     if not env['future']:
         env['avx512_future'] = False
-        env['memory_future'] = False
         env['cet'] = False
         
     if not env['skx'] and not env['skl'] and not env['glm']:

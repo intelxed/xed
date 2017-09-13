@@ -15,13 +15,6 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-
-  dec-instructions: clwb.xed.txt 
-  enc-instructions: clwb.xed.txt 
-
-  dec-instructions: clflushopt.xed.txt 
-  enc-instructions: clflushopt.xed.txt 
-
-    cpuid: cpuid.xed.txt
-    
+XED_ISA_SET_AVX512_VNNI_128:   avx512_vnni.7.0.ecx.11 avx512vl.7.0.ebx.31
+XED_ISA_SET_AVX512_VNNI_256:   avx512_vnni.7.0.ecx.11 avx512vl.7.0.ebx.31
+XED_ISA_SET_AVX512_VNNI_512:   avx512_vnni.7.0.ecx.11

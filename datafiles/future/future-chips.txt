@@ -21,4 +21,4 @@
 # time and I had to put the new instructions on some chip so I made
 # somethign up. 
 
-FUTURE: ALL_OF(SKYLAKE_SERVER) PT CET
+FUTURE: ALL_OF(ICELAKE) PT CET

@@ -1,0 +1,195 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2017 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING VGF2P8AFFINEINVQB (VGF2P8AFFINEINVQB-128-2)
+{
+ICLASS:      VGF2P8AFFINEINVQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F3A MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W1   UIMM8() 
+OPERANDS:    REG0=XMM_R():w:dq:u8 REG1=XMM_N():r:dq:u8 REG2=XMM_B():r:dq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEINVQB_XMMu8_XMMu8_XMMu64_IMM8
+}
+
+{
+ICLASS:      VGF2P8AFFINEINVQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F3A MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1   UIMM8() 
+OPERANDS:    REG0=XMM_R():w:dq:u8 REG1=XMM_N():r:dq:u8 MEM0:r:dq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEINVQB_XMMu8_XMMu8_MEMu64_IMM8
+}
+
+
+# EMITTING VGF2P8AFFINEINVQB (VGF2P8AFFINEINVQB-256-2)
+{
+ICLASS:      VGF2P8AFFINEINVQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F3A MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W1   UIMM8() 
+OPERANDS:    REG0=YMM_R():w:qq:u8 REG1=YMM_N():r:qq:u8 REG2=YMM_B():r:qq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEINVQB_YMMu8_YMMu8_YMMu64_IMM8
+}
+
+{
+ICLASS:      VGF2P8AFFINEINVQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F3A MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W1   UIMM8() 
+OPERANDS:    REG0=YMM_R():w:qq:u8 REG1=YMM_N():r:qq:u8 MEM0:r:qq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEINVQB_YMMu8_YMMu8_MEMu64_IMM8
+}
+
+
+# EMITTING VGF2P8AFFINEQB (VGF2P8AFFINEQB-128-2)
+{
+ICLASS:      VGF2P8AFFINEQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCE V66 V0F3A MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W1   UIMM8() 
+OPERANDS:    REG0=XMM_R():w:dq:u8 REG1=XMM_N():r:dq:u8 REG2=XMM_B():r:dq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEQB_XMMu8_XMMu8_XMMu64_IMM8
+}
+
+{
+ICLASS:      VGF2P8AFFINEQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCE V66 V0F3A MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1   UIMM8() 
+OPERANDS:    REG0=XMM_R():w:dq:u8 REG1=XMM_N():r:dq:u8 MEM0:r:dq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEQB_XMMu8_XMMu8_MEMu64_IMM8
+}
+
+
+# EMITTING VGF2P8AFFINEQB (VGF2P8AFFINEQB-256-2)
+{
+ICLASS:      VGF2P8AFFINEQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCE V66 V0F3A MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W1   UIMM8() 
+OPERANDS:    REG0=YMM_R():w:qq:u8 REG1=YMM_N():r:qq:u8 REG2=YMM_B():r:qq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEQB_YMMu8_YMMu8_YMMu64_IMM8
+}
+
+{
+ICLASS:      VGF2P8AFFINEQB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCE V66 V0F3A MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W1   UIMM8() 
+OPERANDS:    REG0=YMM_R():w:qq:u8 REG1=YMM_N():r:qq:u8 MEM0:r:qq:u64 IMM0:r:b
+IFORM:       VGF2P8AFFINEQB_YMMu8_YMMu8_MEMu64_IMM8
+}
+
+
+# EMITTING VGF2P8MULB (VGF2P8MULB-128-2)
+{
+ICLASS:      VGF2P8MULB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W0   
+OPERANDS:    REG0=XMM_R():w:dq:u8 REG1=XMM_N():r:dq:u8 REG2=XMM_B():r:dq:u8
+IFORM:       VGF2P8MULB_XMMu8_XMMu8_XMMu8
+}
+
+{
+ICLASS:      VGF2P8MULB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0   
+OPERANDS:    REG0=XMM_R():w:dq:u8 REG1=XMM_N():r:dq:u8 MEM0:r:dq:u8
+IFORM:       VGF2P8MULB_XMMu8_XMMu8_MEMu8
+}
+
+
+# EMITTING VGF2P8MULB (VGF2P8MULB-256-2)
+{
+ICLASS:      VGF2P8MULB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W0   
+OPERANDS:    REG0=YMM_R():w:qq:u8 REG1=YMM_N():r:qq:u8 REG2=YMM_B():r:qq:u8
+IFORM:       VGF2P8MULB_YMMu8_YMMu8_YMMu8
+}
+
+{
+ICLASS:      VGF2P8MULB
+CPL:         3
+CATEGORY:    GFNI
+EXTENSION:   GFNI
+ISA_SET:     AVX_GFNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xCF V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W0   
+OPERANDS:    REG0=YMM_R():w:qq:u8 REG1=YMM_N():r:qq:u8 MEM0:r:qq:u8
+IFORM:       VGF2P8MULB_YMMu8_YMMu8_MEMu8
+}
+
+

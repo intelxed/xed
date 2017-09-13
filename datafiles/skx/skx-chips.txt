@@ -18,6 +18,7 @@
 
 
 SKYLAKE_SERVER: ALL_OF(SKYLAKE)  PKU \
+              CLWB \
               AVX512F_512        \
               AVX512F_128        \
               AVX512F_128N       \
