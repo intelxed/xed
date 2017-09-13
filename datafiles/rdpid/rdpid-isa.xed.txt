@@ -1,0 +1,55 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2017 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING RDPID (RDPID-N/A-1-32)
+{
+ICLASS:      RDPID
+CPL:         3
+CATEGORY:    RDPID
+EXTENSION:   RDPID
+ISA_SET:     RDPID
+REAL_OPCODE: N
+PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3  REG[0b111] RM[nnn]  f3_refining_prefix    not64
+OPERANDS:    REG0=GPR32_B():r:d:u32 REG1=XED_REG_TSCAUX:r:SUPP:d:u32
+IFORM:       RDPID_GPR32u32
+}
+
+
+# EMITTING RDPID (RDPID-N/A-1-64)
+{
+ICLASS:      RDPID
+CPL:         3
+CATEGORY:    RDPID
+EXTENSION:   RDPID
+ISA_SET:     RDPID
+REAL_OPCODE: N
+PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3  REG[0b111] RM[nnn]  f3_refining_prefix   mode64 
+OPERANDS:    REG0=GPR64_B():r:q:u64 REG1=XED_REG_TSCAUX:r:SUPP:d:u32
+IFORM:       RDPID_GPR64u64
+}
+
+

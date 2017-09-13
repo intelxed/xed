@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 #  
 #END_LEGAL
 
-AVX512_FUTURE: ALL_OF(SKYLAKE_SERVER) SHA   \
+
+CANNONLAKE: ALL_OF(SKYLAKE_SERVER) SHA    \
             AVX512_IFMA_128 \
             AVX512_IFMA_256 \
             AVX512_IFMA_512 \
             AVX512_VBMI_128 \
             AVX512_VBMI_256 \
             AVX512_VBMI_512 
-
-
-
