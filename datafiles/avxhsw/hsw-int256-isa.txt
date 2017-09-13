@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -54,19 +54,6 @@ OPERANDS  : REG0=YMM_R():w:qq:u32 MEM0:r:qq:i32
 PATTERN : VV1 0x1E   VL256 V66 V0F38 NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=YMM_R():w:qq:u32  REG1=YMM_B():r:qq:i32
 }
-{
-ICLASS    : VPHMINPOSUW
-CPL       : 3
-CATEGORY  : AVX2
-EXTENSION : AVX2
-EXCEPTIONS: avx-type-4
-PATTERN : VV1 0x41   VL256 V66 V0F38 NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=YMM_R():w:qq:u16 MEM0:r:qq:u16
-
-PATTERN : VV1 0x41   VL256 V66 V0F38 NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=YMM_R():w:qq:u16  REG1=YMM_B():r:qq:u16
-}
-
 
 
 
