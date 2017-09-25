@@ -8029,7 +8029,7 @@ CATEGORY  : DECIMAL
 EXTENSION : BASE
 ISA_SET   : I86
 FLAGS     : MUST [ of-u sf-mod zf-mod af-u pf-mod cf-u ]
-PATTERN   : 0xD4 not64 SIMM8()
+PATTERN   : 0xD4 not64 UIMM8()
 OPERANDS  : IMM0:r:b:i8 REG0=XED_REG_AL:rw:SUPP REG1=XED_REG_AH:w:SUPP
 }
 {
@@ -8039,7 +8039,7 @@ CATEGORY  : DECIMAL
 EXTENSION : BASE
 ISA_SET   : I86
 FLAGS     : MUST [ of-u sf-mod zf-mod af-u pf-mod cf-u ]
-PATTERN   : 0xD5 not64 SIMM8()
+PATTERN   : 0xD5 not64 UIMM8()
 OPERANDS  : IMM0:r:b:i8 REG0=XED_REG_AL:rw:SUPP REG1=XED_REG_AH:rw:SUPP
 }
 {
