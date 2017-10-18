@@ -1,0 +1,5 @@
+6200
+ICLASS: BOUND   CATEGORY: INTERRUPT   EXTENSION: BASE  IFORM: BOUND_GPRv_MEMa16   ISA_SET: I186
+SHORT: bound ax, dword ptr [bx+si*1]
+Encodable! 6200
+Identical re-encoding

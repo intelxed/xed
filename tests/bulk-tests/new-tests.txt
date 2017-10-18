@@ -39,3 +39,7 @@ ENC                  ; BUILDDIR/xed -64 -e rdfsbase/64 rax
 ENC                  ; BUILDDIR/xed -64 -e rdfsbase eax
 DEC                  ; BUILDDIR/xed -64 -d 66 f3 0f ae c0
 DEC                  ; BUILDDIR/xed -64 -d f3 0f ae c0
+DEC ENC              ; BUILDDIR/xed  -16 -de 62 00
+DEC ENC              ; BUILDDIR/xed  -16 -de 66 62 00
+DEC ENC              ; BUILDDIR/xed      -de 62 00	
+DEC ENC              ; BUILDDIR/xed      -de 66 62 00	
