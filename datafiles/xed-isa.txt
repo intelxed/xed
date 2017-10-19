@@ -7886,7 +7886,7 @@ ISA_SET   : I86
 PATTERN   : 0b1011_0 SRM[rrr] UIMM8()
 OPERANDS  : REG0=GPR8_SB():w IMM0:r:b
 # i had to come up with a partial nibble name
-IFORM     : MOV_GPR8_IMMb_D0
+IFORM     : MOV_GPR8_IMMb_B0
 }
 {
 ICLASS    : MOV
