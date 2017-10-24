@@ -587,6 +587,14 @@ parse_encode_request(ascii_encode_request_t areq)
                     cres_reg, i);
             exit(1);
         }
+
+        if (areq.dstate.mmode != XED_MACHINE_MODE_LONG_64)
+            if (reg == XED_REG_DIL || reg == XED_REG_SPL ||  reg == XED_REG_BPL ||  reg == XED_REG_SIL)
+            {
+                fprintf(stderr,
+                        "[XED CLIENT ERROR] Cannot use DIL/SPL/BPL/SIL outside of 64b mode\n");
+                exit(1);
+            }
         // The registers operands aer numbered starting from the first one
         // as XED_OPERAND_REG0. We incremenet regnum (below) every time we
         // add a register operands.
