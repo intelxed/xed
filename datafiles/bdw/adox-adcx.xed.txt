@@ -21,8 +21,11 @@ INSTRUCTIONS()::
 ICLASS    : ADCX
 CPL       : 3
 CATEGORY  : BDW
-EXTENSION : BDW
+EXTENSION : ADOX_ADCX
+ISA_SET   : ADOX_ADCX
+
 FLAGS     : MUST [ cf-tst cf-mod ]
+
 # reg:rw rm:r 
 # 32b
 PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix W0  IMMUNE66() 
@@ -43,8 +46,11 @@ OPERANDS  : REG0=GPR64_R():rw:q  MEM0:r:q
 ICLASS    : ADOX
 CPL       : 3
 CATEGORY  : BDW
-EXTENSION : BDW
+EXTENSION : ADOX_ADCX
+ISA_SET   : ADOX_ADCX
+
 FLAGS     : MUST [ of-tst of-mod ]
+
 # reg:rw rm:r 
 # 32b
 PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] refining_f3  W0 IMMUNE66()

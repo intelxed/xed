@@ -15,6 +15,6 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-  XED_ISA_SET_BDW:         adoxadcx.7.0.ebx.19
-  XED_ISA_SET_RDSEED:        rdseed.7.0.ebx.18
-  XED_ISA_SET_SMAP:             smap.7.0.ebx.20
+  XED_ISA_SET_ADOX_ADCX:         adoxadcx.7.0.ebx.19
+  XED_ISA_SET_RDSEED:            rdseed.7.0.ebx.18
+  XED_ISA_SET_SMAP:              smap.7.0.ebx.20
