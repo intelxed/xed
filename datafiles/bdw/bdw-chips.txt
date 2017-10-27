@@ -18,5 +18,5 @@
 
 # PREFETCHW semantics added to PREFETCHW opcode but not subject
 # to chip-check because of prior implementation as NOP
-BROADWELL: ALL_OF(HASWELL)  BDW RDSEED SMAP PREFETCHW
+BROADWELL: ALL_OF(HASWELL)  ADOX_ADCX RDSEED SMAP PREFETCHW
 
