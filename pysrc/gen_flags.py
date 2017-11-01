@@ -30,45 +30,40 @@ def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
     sys.exit(1)
 def msgb(b,s=''):
-    sys.stdout.write("[{0}] {1}\n".format(b,s))
+    sys.stderr.write("[{0}] {1}\n".format(b,s))
+def msg(b):
+    sys.stdout.write("{0}\n".format(b))
 
 
 
 def work(args):  # main function
     msgb("READING XED DB")
 
-
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
                                      args.instructions_filename,
                                      args.widths_filename,
                                      args.element_types_filename)
-
-    histo = collections.defaultdict(int)
+    d = {}
     for r in xeddb.recs:
-        if hasattr(r,'operands'):
-            s = re.sub(r'[ ]+',' ',r.operands)
-            if 0:
-                histo[s] = histo[s] + 1
-            if 1:
-                for t in s.split():
-                    if t.startswith('REG'):
-                        t = 'REG' + t[4:]
-                    if t.startswith('MEM'):
-                        t = 'MEM' + t[4:]
-                    histo[t] = histo[t] + 1
-        
-
-
-    for k,v in sorted( list(histo.items()), key=lambda t: t[1] ):
-        print("{0:4d} {1}".format(v,k))
-    print("TOTAL: ", len(histo))
-
+        if hasattr(r,'flags'):
+            if hasattr(r,'isa_set'):
+                isa_set = r.isa_set
+            else:
+                isa_set = r.extension
+                
+            s= "{:<20} {:<20} {}".format(r.iclass, isa_set, r.flags)
+            d[s]=True
+    k = d.keys()
+    k.sort()
+    for a in k:
+        msg(a)
+    
     return 0
 
 
 def setup():
     parser = argparse.ArgumentParser(
-        description='Generate instruction counts per chip')
+        description='Generate EFLAGS flags report')
     parser.add_argument('state_bits_filename', 
                         help='Input state bits file')
     parser.add_argument('instructions_filename', 
