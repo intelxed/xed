@@ -10976,8 +10976,11 @@ CATEGORY  : MISC
 EXTENSION : BASE
 ISA_SET   : PPRO
 ATTRIBUTES: NOTSX
-PATTERN   : 0x0F 0xFF
-OPERANDS  :
+COMMENT   : Older processors (before NHM) did not take a MODRM byte sequence.
+PATTERN   : 0x0F 0xFF MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
+OPERANDS  : REG0=GPR32_R():r MEM0:r:d
+PATTERN   : 0x0F 0xFF MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+OPERANDS  : REG0=GPR32_R():r REG1=GPR32_B():r 
 }
 {
 ICLASS    : UD1
