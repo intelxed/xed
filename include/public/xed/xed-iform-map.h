@@ -71,7 +71,7 @@ xed_uint32_t xed_iform_first_per_iclass(xed_iclass_enum_t iclass);
 /// function returns valid data as soon as global data is initialized. (This
 /// function does not require a decoded instruction as input).
 static
-xed_iclass_enum_t XED_INLINE xed_iform_to_iclass(xed_iform_enum_t iform) {
+XED_INLINE xed_iclass_enum_t xed_iform_to_iclass(xed_iform_enum_t iform) {
     const xed_iform_info_t* ii = xed_iform_map(iform);
     if (ii)
         return (xed_iclass_enum_t) ii->iclass;
