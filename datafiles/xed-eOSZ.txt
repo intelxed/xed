@@ -76,7 +76,8 @@ mode32               | EOSZ=2 no66_prefix
 mode64 norexw_prefix | EOSZ=2 no66_prefix
 mode64 rexw_prefix   | EOSZ=3 no66_prefix
 
-CR_WIDTH()::
+# Used for for CRs and DRs.
+CR_WIDTH():: 
 mode16  | EOSZ=2 DF32=1 no66_prefix
 mode32  | EOSZ=2 DF32=1 no66_prefix
 mode64  | EOSZ=3 DF64=1 no66_prefix
