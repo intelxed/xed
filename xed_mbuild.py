@@ -1739,7 +1739,6 @@ def _copy_generated_headers(env, dest):
     if len(gincs) == 0:
         xbc.cdie("No generated include headers found for install")
     for  h in gincs:
-        mbuild.msgb("COPY", "{} <- {}".format(dest,h))
         if do_system_copy:
             mbuild.copy_file(h,dest)
 
@@ -1750,7 +1749,6 @@ def _copy_nongenerated_headers(env, dest):
     if len(incs) == 0:
         xbc.cdie("No standard include headers found for install")
     for  h in incs:
-        mbuild.msgb("COPY", "{} <- {}".format(dest,h))
         if do_system_copy:
             mbuild.copy_file(h,dest)
 
@@ -1810,7 +1808,6 @@ def system_install(env, work_queue):
     if len(libs) == 0:
         xbc.cdie("No libraries found for install")
     for f in libs:
-        mbuild.msgb("COPY", "{} <- {}".format(lib,f))
         if do_system_copy:
             mbuild.copy_file(f, lib)
             fn = mbuild.join(lib,os.path.basename(f))
