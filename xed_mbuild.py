@@ -1815,7 +1815,7 @@ def system_install(env, work_queue):
             mbuild.copy_file(f, lib)
             fn = mbuild.join(lib,os.path.basename(f))
             if env['shared']:
-                __set_perm(fn)
+                _set_perm(fn)
             else:
                 mbuild.make_read_only(fn)
 
