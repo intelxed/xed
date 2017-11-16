@@ -171,6 +171,10 @@ static void XED_NOINLINE bad_v4(xed_decoded_inst_t* d)
 {
     xed3_operand_set_error(d,XED_ERROR_BAD_EVEX_V_PRIME);
 }
+static void XED_NOINLINE bad_z_aaa(xed_decoded_inst_t* d)
+{
+    xed3_operand_set_error(d,XED_ERROR_BAD_EVEX_Z_NO_MASKING);
+}
 #endif
 
 static void prefix_scanner(xed_decoded_inst_t* d)
@@ -1394,6 +1398,8 @@ static void evex_scanner(xed_decoded_inst_t* d)
                     bad_v4(d);
 
                 xed3_operand_set_mask(d, evex3.s.mask);
+                if (evex3.s.mask == 0 && evex3.s.z == 1)
+                    bad_z_aaa(d);
 #endif
             }
 #if defined(XED_SUPPORTS_KNC)            
