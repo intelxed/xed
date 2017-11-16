@@ -1237,7 +1237,6 @@ def _configure_libxed_extensions(env):
         _add_normal_ext(env,'xsavec')
         
     # Add avx and fma under control of a knob
-    _add_normal_ext(env,'memory')
     if env['avx']:
         _add_normal_ext(env,'avx')
         if env['ivbavx']:
@@ -1254,10 +1253,11 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'sgx')
             _add_normal_ext(env,'xsaves')
             _add_normal_ext(env,'xsavec')
+            _add_normal_ext(env,'clflushopt')
         if env['skx']:
             _add_normal_ext(env,'skx')
             _add_normal_ext(env,'pku')
-
+            _add_normal_ext(env,'clwb')
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
