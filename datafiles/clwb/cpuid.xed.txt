@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2017 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,5 +15,4 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-  XED_ISA_SET_CLFLUSHOPT:  clflushopt.7.0.ebx.23
   XED_ISA_SET_CLWB:        clwb.7.0.ebx.24
