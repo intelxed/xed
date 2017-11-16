@@ -36,6 +36,7 @@ BAD_REX_PREFIX    ///< A REX prefix was found where none is allowed.
 BAD_EVEX_UBIT    ///< An illegal value for the EVEX.U bit was present in the instruction.
 BAD_MAP          ///< An illegal value for the MAP field was detected in the instruction.
 BAD_EVEX_V_PRIME  ///< EVEX.V'=0  was detected in a non-64b mode instruction.
+BAD_EVEX_Z_NO_MASKING  ///< EVEX.Z!=0 when EVEX.aaa==0
 NO_OUTPUT_POINTER ///< The output pointer for xed_agen was zero
 NO_AGEN_CALL_BACK_REGISTERED ///< One or both of the callbacks for xed_agen were missing.
 BAD_MEMOP_INDEX   ///< Memop indices must be 0 or 1.
