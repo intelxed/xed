@@ -235,6 +235,7 @@ _rm_token = 'RM'
 _rm_token_4 = 'RM4'
 #FIXME: make one function for RM4 and VD7
 def _is_binary_RM_4(cnames, ptrn_list):
+    # ptrn_list is a list of ild.pattern_t
     found = False
     if _rm_token not in cnames:
         return False
@@ -249,6 +250,8 @@ def _is_binary_RM_4(cnames, ptrn_list):
     return found
 
 def _replace_RM_with_RM4(cnames, ptrn_list):
+    # ptrn_list is a list of ild.pattern_t
+    #
     # This looks for RM=4 in the pattern. It will not find "RM[0b100]"
     # so the patterns should NOT use that for specifying RM=4
     # requirements.  

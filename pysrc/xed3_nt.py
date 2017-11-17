@@ -99,7 +99,7 @@ def get_ii_constraints(ii, state_space, constraints):
     """
     sets constraints[xed_operand_name][xed_operand_val] = True
     
-    xed_operandname and xed_operand_val correspond to operands
+    xed_operand_name and xed_operand_val correspond to operands
     encountered in ii (both operand deciders and constant prebindings)
     """
     #set constraints that come from operands deciders
