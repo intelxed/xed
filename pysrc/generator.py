@@ -848,7 +848,7 @@ def parse_opcode_spec(agi, line, state_dict):
     # We now also have a a list of bit_info_t's in all_bit_infos and a
     # dictionary of prebinding_t's in all_prebindings.
        
-    return (all_bits,extra_bindings,all_bit_infos, all_prebindings,False)
+    return (all_bits, extra_bindings, all_bit_infos, all_prebindings, False)
 
 def add_str(s, name, value):
    t =  s + '%-15s' % (name) + ': '
@@ -1417,6 +1417,8 @@ class instruction_info_t(partitionable_info_t):
           s.append(" iform=%s " % str(self.iform))
       if field_check(self,'iform_input') and self.iform_input:
           s.append(" iform_input=%s " % str(self.iform_input))
+      if field_check(self,'isa_set') and self.isa_set:
+          s.append(" isa_set=%s " % str(self.isa_set))
       s.append("pattern len=%d\n" % len(self.ipattern.bits))
       s.append(" %s ipattern: %s\n" % (pad,self.ipattern.just_bits()) )
       
