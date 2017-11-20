@@ -193,7 +193,7 @@ class phash_t(object):
     def get_find_fn(self, func_id):
         return '%s_%s' %(_find_fn_pfx, func_id)
 
-    def gen_find_fos(self, fname):
+    def gen_find_fos(self, fname):  # phash_t
         obj_str = self.cdict.strings_dict['obj_str']
         obj_type = self.cdict.strings_dict['obj_type']
         key_str= self.cdict.strings_dict['key_str']
@@ -206,6 +206,8 @@ class phash_t(object):
         if genutil.field_check(self.cdict, 'ntluf') or \
             genutil.field_check(self.cdict, 'nt'):
             return_type = 'xed_uint32_t'
+        elif self.hash_f.kind() == 'trivial':
+            return_type = 'xed_uint32_t'
         else:
             return_type = self.cdict.action_codegen.get_return_type()
         static = self.cdict.strings_dict['static']
@@ -215,33 +217,47 @@ class phash_t(object):
                                        inline=False)
 
         lu_operands = '_'.join(self.cdict.cnames)
+        # temporary function name. we override this later
         lu_operands_fn = 'xed_lu_%s' % lu_operands 
         key_ctype = self.cdict.strings_dict['key_type']
-        operand_lu_fo = codegen.function_object_t(lu_operands_fn,
-                                       return_type=key_ctype,
-                                       static=False,
-                                       inline=False,
-                                       force_no_inline=True)
-        ild_arg = "%s%s* %s" % (const,obj_type, obj_str)
+
+        ild_arg = "%s%s* %s" % (const, obj_type, obj_str)
         fo.add_arg(ild_arg)
-        if genutil.field_check(self.cdict, 'ntluf'):
-            fo.add_arg('xed_reg_enum_t arg_reg')
-        operand_lu_fo.add_arg(ild_arg)
-        #add key-computing code (constraints tuple to integer)
-        nt_lups = self.add_cgen_key_lines(operand_lu_fo)
-        #several non terminals has special getter functions
-        #the add-cgen_kiet function returns a list of all the nt_lups and 
-        #regular cnames  
-        lu_operands_fn = 'xed_%s_lu_%s' % (lu_namespace,'_'.join(nt_lups))
-        operand_lu_fo.set_function_name(lu_operands_fn)
         
-        #add the operands lookup function
-        self.add_lu_table(fo)
-        self.add_op_lu_function(fo,lu_operands_fn)
-        self.add_find_lines(fo)
+        if self.hash_f.kind() == 'trivial':
+            operand_lu_fo = None
+            # rule is a pattern_t
+            fo.add_code_eol("return {}".format(self.cdict.rule.ii.inum))
+            # avoid parmameter-not-used warnings with compilers that
+            # care (like MSVS)
+            fo.add_code_eol("(void)d") 
+        else:
+            operand_lu_fo = codegen.function_object_t(lu_operands_fn,
+                                           return_type=key_ctype,
+                                           static=False,
+                                           inline=False,
+                                           force_no_inline=True)
+            operand_lu_fo.add_arg(ild_arg)
+            if genutil.field_check(self.cdict, 'ntluf'):
+                fo.add_arg('xed_reg_enum_t arg_reg')
+
+            #add key-computing code (constraints tuple to integer)
+            nt_lups = self.add_cgen_key_lines(operand_lu_fo)
+            #Several nonterminals have special getter functions.  The
+            #add_cgen_key_lines function returns a list of all the
+            #nt_lups and regular cnames.  (lu_operands is not always
+            #the same as the underscore-joined nt_lups.)
+            lu_operands_fn = 'xed_%s_lu_%s' % (lu_namespace,'_'.join(nt_lups))
+            operand_lu_fo.set_function_name(lu_operands_fn)
+        
+            #add the operands lookup function
+            self.add_lu_table(fo)
+            self.add_op_lu_function(fo,lu_operands_fn)
+            self.add_find_lines(fo)
+            
         
         return ([fo],operand_lu_fo)
-
+                            
     def __str__(self):
         lines = ['-----------PHASH-------------']
         lines.append('tuple scheme:')
@@ -405,7 +421,7 @@ class l2_phash_t(phash_t):
         #fo.add_code('}')
         #fo.add_code_eol('return %s' % _notfound_str)
 
-    def gen_find_fos(self, fname):
+    def gen_find_fos(self, fname):  # L2 phash
         obj_str = self.cdict.strings_dict['obj_str']
         obj_type = self.cdict.strings_dict['obj_type']
         const = self.cdict.strings_dict['obj_const']
@@ -413,6 +429,8 @@ class l2_phash_t(phash_t):
         for hx,phash in list(self.hx2phash.items()):
             fid = '%s_%d_l1' % (fname, hx)
             (hx2fo_list,operand_lu_fo) = phash.gen_find_fos(fid)
+            if not operand_lu_fo:
+               genutil.die("L2 hash cannot have trivial operand lu fn")             
             hx2fo[hx] = hx2fo_list[0]
 
         fname = '%s' % fname
@@ -460,6 +478,34 @@ class l2_phash_t(phash_t):
         return '\n'.join(lines) + '\n'
 
 
+def _zero_constraints(cdict):
+    if len(cdict.cnames)==0:
+        return True
+    return False
+
+class trivial_hash_func_t(xedhash.hash_fun_interface_t):
+    """This is a hash function that works with no inputs. Always returns true"""
+    def __init__(self):
+        pass
+    def kind(self):
+        return "trivial"
+    def get_table_size(self):
+        return 1
+    def apply(self,x):
+        return 0 # not used
+    def emit_cexpr(self, key_str='key'):
+        return '0' # not used
+    
+    def need_hash_index_validation(self):
+        return False
+    def __str__(self):
+        return "h(x) = always true"
+    
+def _get_zero_constraint_hash(cdict):
+    ''' returns a l1_phash_t that generate a trivial function that is always true'''
+    hash_f = trivial_hash_func_t()
+    return l1_phash_t(cdict, hash_f)
+    
 def _is_linear(keys):
     ''' @param keys: list of keys
         @return: True is the keys in the input list are sequential 
@@ -546,6 +592,9 @@ def _find_l2_phash(cdict):
 def _gen_hash_one_level(cdict):
     """Generate a 1 level hash function or give up"""
 
+    if _zero_constraints(cdict):
+        return _get_zero_constraint_hash(cdict)
+    
     # linear means all keys are sequential. not required to be zero-based. 
     if _is_linear(list(cdict.int2tuple.keys())):
         return _get_linear_hash_function(cdict)

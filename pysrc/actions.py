@@ -28,11 +28,7 @@ def msgb(s,b=''):
 
 def gen_return_action(ret_val):
     ''' create new action with type return '''
-    
-    #temporary creating it as dummy
-    action = action_t("nothing")
-    action.type = 'return'
-    action.value = str(ret_val)
+    action = action_t("return {}".format(ret_val))
     return action
 
 def dummy_emit(act_in,name):
@@ -69,7 +65,7 @@ class action_t(object):
 
     
     def __init__(self, arg_action):
-        self.type = None #  'FB', 'emit', 'nt', 'error', 'nothing', return
+        self.type = None #  'FB', 'emit', 'nt', 'error', 'nothing', 'return'
         self.field_name = None
         self.value = None
         self.nt = None
@@ -79,9 +75,16 @@ class action_t(object):
         self.nbits = 0
         if vaction():
             msgb("ARGACTION", arg_action)
-        if arg_action == 'nothing' or arg_action == "NOTHING":
+        if arg_action in ['nothing', "NOTHING"]:
             self.type = 'nothing'
             return
+        
+        b = patterns.return_pattern.search(arg_action)
+        if b:
+            self.type = 'return'
+            self.value = b.group('retval')
+            return 
+        
         # in the inputs, "error" gets expanded to "ERROR=1" via the statebits.
         if arg_action == 'error' or arg_action == "ERROR" or arg_action == 'ERROR=1':
             self.type = 'error'

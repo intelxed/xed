@@ -250,7 +250,8 @@ class nt_function_gen_t(object):
 
             fos, operand_lu_fo = self._gen_ntluf(nt)
             self.functions.extend(fos)
-            self._add_op_lu_fo(operand_lu_fo)
+            if operand_lu_fo:
+                self._add_op_lu_fo(operand_lu_fo)
         
         self.vec_gen_log.close()
         return self.functions, self.operand_lu_fos
