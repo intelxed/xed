@@ -819,10 +819,13 @@ def parse_opcode_spec(agi, line, state_dict):
           if agi.operand_storage.decoder_skip(token):
               #msge("SKIPPING RESTRICTION PATTERN " +  str(w))
               continue
-          bits = [ w ]
-          all_bit_infos.append(bit_info_t(w,'operand', bcount))
-          bcount += 1
-          all_bits.extend(bits)
+          
+          # avoid adding redundant restriction patterns
+          if w not in all_bits:
+              # bit_info_t constructor reparses restriction pattern
+              all_bit_infos.append(bit_info_t(w,'operand', bcount))
+              bcount += 1
+              all_bits.extend([ w ])
           continue
        
        if formal_binary_pattern.search(w):

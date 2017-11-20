@@ -747,7 +747,7 @@ def work(agi, all_state_space, all_ops_widths, patterns):
     #generate NT capturing functions
     capture_fn_list = []
     for nt_name in list(agi.nonterminal_dict.keys()):
-        #skip non terminals that we don't want to capture:
+        #skip nonterminals that we don't want to capture:
         #PREFIXES, AVX_SPLITTER, *ISA, etc.
         if _skip_nt(nt_name):
             continue

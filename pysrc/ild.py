@@ -65,7 +65,6 @@ _xed_3dnow_category = '3DNOW'
 
 _mode_token = 'MODE'
 
-_vexvalid_op = 'VEXVALID'
 
 
 #checks if we have 3dnow instructions
@@ -139,6 +138,9 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
                                                           all_state_space,
                                                           vv,
                                                           all_ops_widths)
+        
+        #print "AAA VV={}: {}".format(vv, ild_cdict.replacement_stats())
+        
         all_cnames = all_cnames.union(cnames)
         _msg("vv%s cnames: %s" % (vv,cnames))
         
@@ -291,7 +293,7 @@ def work(agi):
 
         getters_dict =  agi.common.ild_getters_dict
         dump_header_with_header(agi, 'xed-ild-getters.h', getters_dict)
-
+        
         gen_xed3(agi, ild_info, is_3dnow, ild_patterns, 
                  all_state_space, ild_gendir, all_ops_widths)
 
@@ -599,11 +601,20 @@ class pattern_t(object):
         xed3_nt.get_ii_constraints(ii, state_space, self.constraints)
         #print "CONSTRAINTS: {}".format(self.constraints)
 
-        #special care for VEXVALID - it makes it easy to dispatch
-        #vex and legacy instructions:
-        #for legacy we will explicitly set VEXVALID=0
-        if _vexvalid_op not in self.constraints:
-            self.constraints[_vexvalid_op] = {0:True}
+        #special care for VEXVALID - it makes it easy to dispatch vex
+        #and legacy instructions. For legacy we will explicitly set
+        #VEXVALID=0.
+        if 'VEXVALID' not in self.constraints:
+            self.constraints['VEXVALID'] = {0:True}
+
+        # since we dispatch at the high level on MAP and VEXVALID, we
+        # should not include them in the standard constraints.
+        self.special_constraints = {}
+        for od in ['MAP','VEXVALID']:
+            if od in self.constraints:
+                self.special_constraints[od] = self.constraints[od]
+                del self.constraints[od]
+
 
     def set_mode(self, ii, mode_space):
         for bit_info in ii.ipattern.bits:
@@ -759,11 +770,21 @@ class pattern_t(object):
         printed_members.append('EASZ_SEQ:\t %s' % self.easz_nt_seq)
         printed_members.append('IMM_SEQ\t: %s' % self.imm_nt_seq)
         printed_members.append('DISP_SEQ\t: %s' % self.disp_nt_seq)
-        printed_members.append('CONSTRAINTS\t: %s' % self.constraints)
+        
+        printed_members.append('CONSTRAINTS\t: {}'.format(self.emit_constraints()))
         printed_members.append('INUM\t: %s' % self.ii.inum)
 
         return "{\n"+ ",\n".join(printed_members) + "\n}"
-
+    
+    def emit_constraints(self):
+        sl = []
+        for k in self.constraints.keys():
+            v = self.constraints[k] # dict with always true-valued items.
+            # Only keys of v are relevant.
+            s = "{}:{} ".format(k,str(v.keys()))
+            sl.append(s)
+        return "".join(sl)
+        
     def __eq__(self, other):
         return (other != None and
                 self.ptrn == other.ptrn and
