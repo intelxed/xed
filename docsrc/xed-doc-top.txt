@@ -981,12 +981,6 @@ specify a memory operation width. This can be accomplished by
 indicating a number of bytes just after the MEM specifier. For
 example: MEM2:EAX indicates a 2 byte memory operation. 
 
-- If the Haswell gather instructions are included in the build, then
-you can also specify a VSIB memop as follows: VSIB4:RAX,YMM2,2,ff.
-This would be a memory operand for a gather with RAX as the base, YMM2
-as the gather index register. The scale is 2 and the displacement is
-0xff. The element size is 4 (dwords, 4 bytes). Use 8 for qwords (8
-bytes).
 
 - An address generation specifer that has the same syntax as the above
 MEM: specifier, but is only used for LEA instructions.  Example:
