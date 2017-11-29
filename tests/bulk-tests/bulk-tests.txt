@@ -269,22 +269,22 @@ DEC                  ; BUILDDIR/xed -A -d a1 00 70 70 c1
 DEC                  ; BUILDDIR/xed -A -d 00 80 00 70 70 c1
 DEC AVX              ; BUILDDIR/xed -d c4 e2 f1 92 64 40 11
 DEC ENC AVX          ; BUILDDIR/xed -de c4 e2 f1 92 64 40 11
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPS xmm0  MEM16:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPS ymm0  MEM32:rax,ymm1,1 ymm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDD xmm0  MEM16:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDD ymm0  MEM32:rax,xmm1,1 ymm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDQ xmm0  MEM16:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDQ ymm0  MEM32:rax,xmm1,1 ymm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPD xmm0  MEM16:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPD ymm0  MEM32:rax,xmm1,1 ymm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPS xmm0   MEM8:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPS xmm0  MEM16:rax,ymm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPD xmm0  MEM16:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPD ymm0  MEM32:rax,ymm1,1 ymm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQD xmm0   MEM8:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQD xmm0  MEM16:rax,ymm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQQ xmm0  MEM16:rax,xmm1,1 xmm2
-ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQQ ymm0  MEM32:rax,ymm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPS xmm0  MEM4:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPS ymm0  MEM4:rax,ymm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDD xmm0  MEM4:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDD ymm0  MEM4:rax,xmm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDQ xmm0  MEM8:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERDQ ymm0  MEM8:rax,xmm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPD xmm0  MEM8:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERDPD ymm0  MEM8:rax,xmm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPS xmm0  MEM4:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPS xmm0  MEM4:rax,ymm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPD xmm0  MEM8:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VGATHERQPD ymm0  MEM8:rax,ymm1,1 ymm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQD xmm0  MEM4:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQD xmm0  MEM4:rax,ymm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQQ xmm0  MEM8:rax,xmm1,1 xmm2
+ENC AVX              ; BUILDDIR/xed-ex3 -64 VPGATHERQQ ymm0  MEM8:rax,ymm1,1 ymm2
 DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E269920408
 DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E26D920408
 DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E269900408

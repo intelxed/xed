@@ -1,5 +1,5 @@
 C4E2ED910408
 ICLASS: VPGATHERQQ   CATEGORY: AVX2GATHER   EXTENSION: AVX2GATHER  IFORM: VPGATHERQQ_YMMu64_MEMqq_YMMi64_VL256   ISA_SET: AVX2GATHER
-SHORT: vpgatherqq ymm0, ymmword ptr [rax+ymm1*1], ymm2
+SHORT: vpgatherqq ymm0, qword ptr [rax+ymm1*1], ymm2
 Encodable! C4E2ED910408
 Identical re-encoding

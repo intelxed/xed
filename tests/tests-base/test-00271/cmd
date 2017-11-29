@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 -64 VGATHERDPS xmm0  MEM16:rax,xmm1,1 xmm2
+ BUILDDIR/xed-ex3 -64 VGATHERDPS xmm0  MEM4:rax,xmm1,1 xmm2
