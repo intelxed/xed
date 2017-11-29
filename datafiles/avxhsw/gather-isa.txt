@@ -43,12 +43,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x92   VL256 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=YMM_R():crw:qq:f64   MEM0:r:qq:f64 REG1=YMM_N():rw:qq:i64
+OPERANDS  : REG0=YMM_R():crw:qq:f64   MEM0:r:q:f64 REG1=YMM_N():rw:qq:i64
 IFORM: VGATHERDPD_YMMf64_MEMqq_YMMi64_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x92   VL128 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:f64   MEM0:r:dq:f64 REG1=XMM_N():rw:dq:i64
+OPERANDS  : REG0=XMM_R():crw:dq:f64   MEM0:r:q:f64 REG1=XMM_N():rw:dq:i64
 IFORM: VGATHERDPD_XMMf64_MEMdq_XMMi64_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -64,12 +64,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x92   VL256 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_YMM() eanot16
-OPERANDS  : REG0=YMM_R():crw:qq:f32   MEM0:r:qq:f32 REG1=YMM_N():rw:qq:i32
+OPERANDS  : REG0=YMM_R():crw:qq:f32   MEM0:r:d:f32 REG1=YMM_N():rw:qq:i32
 IFORM: VGATHERDPS_YMMf32_MEMqq_YMMi32_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x92   VL128 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:f32   MEM0:r:dq:f32 REG1=XMM_N():rw:dq:i32
+OPERANDS  : REG0=XMM_R():crw:dq:f32   MEM0:r:d:f32 REG1=XMM_N():rw:dq:i32
 IFORM: VGATHERDPS_XMMf32_MEMdq_XMMi32_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -84,12 +84,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x93   VL256 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_YMM() eanot16
-OPERANDS  : REG0=YMM_R():crw:qq:f64   MEM0:r:qq:f64 REG1=YMM_N():rw:qq:i64
+OPERANDS  : REG0=YMM_R():crw:qq:f64   MEM0:r:q:f64 REG1=YMM_N():rw:qq:i64
 IFORM: VGATHERQPD_YMMf64_MEMqq_YMMi64_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x93   VL128 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:f64   MEM0:r:dq:f64 REG1=XMM_N():rw:dq:i64
+OPERANDS  : REG0=XMM_R():crw:dq:f64   MEM0:r:q:f64 REG1=XMM_N():rw:dq:i64
 IFORM: VGATHERQPD_XMMf64_MEMdq_XMMi64_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -105,12 +105,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x93   VL256 V66 V0F38   W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_YMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:f32   MEM0:r:dq:f32 REG1=XMM_N():rw:dq:i32
+OPERANDS  : REG0=XMM_R():crw:dq:f32   MEM0:r:d:f32 REG1=XMM_N():rw:dq:i32
 IFORM: VGATHERQPS_XMMf32_MEMdq_XMMi32_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x93   VL128 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:q:f32   MEM0:r:q:f32 REG1=XMM_N():rw:q:i32
+OPERANDS  : REG0=XMM_R():crw:q:f32   MEM0:r:d:f32 REG1=XMM_N():rw:q:i32
 IFORM: VGATHERQPS_XMMf32_MEMq_XMMi32_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -126,12 +126,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x90   VL256 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=YMM_R():crw:qq:u64   MEM0:r:qq:u64 REG1=YMM_N():rw:qq:i64
+OPERANDS  : REG0=YMM_R():crw:qq:u64   MEM0:r:q:u64 REG1=YMM_N():rw:qq:i64
 IFORM: VPGATHERDQ_YMMu64_MEMqq_YMMi64_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x90   VL128 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:u64   MEM0:r:dq:u64 REG1=XMM_N():rw:dq:i64
+OPERANDS  : REG0=XMM_R():crw:dq:u64   MEM0:r:q:u64 REG1=XMM_N():rw:dq:i64
 IFORM: VPGATHERDQ_XMMu64_MEMdq_XMMi64_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -146,12 +146,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x90   VL256 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_YMM() eanot16
-OPERANDS  : REG0=YMM_R():crw:qq:u32   MEM0:r:qq:u32 REG1=YMM_N():rw:qq:i32
+OPERANDS  : REG0=YMM_R():crw:qq:u32   MEM0:r:d:u32 REG1=YMM_N():rw:qq:i32
 IFORM: VPGATHERDD_YMMu32_MEMqq_YMMi32_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x90   VL128 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:u32   MEM0:r:dq:u32 REG1=XMM_N():rw:dq:i32
+OPERANDS  : REG0=XMM_R():crw:dq:u32   MEM0:r:d:u32 REG1=XMM_N():rw:dq:i32
 IFORM: VPGATHERDD_XMMu32_MEMdq_XMMi32_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -166,12 +166,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x91   VL256 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_YMM() eanot16
-OPERANDS  : REG0=YMM_R():crw:qq:u64   MEM0:r:qq:u64 REG1=YMM_N():rw:qq:i64
+OPERANDS  : REG0=YMM_R():crw:qq:u64   MEM0:r:q:u64 REG1=YMM_N():rw:qq:i64
 IFORM: VPGATHERQQ_YMMu64_MEMqq_YMMi64_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x91   VL128 V66 V0F38 W1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:u64   MEM0:r:dq:u64 REG1=XMM_N():rw:dq:i64
+OPERANDS  : REG0=XMM_R():crw:dq:u64   MEM0:r:q:u64 REG1=XMM_N():rw:dq:i64
 IFORM: VPGATHERQQ_XMMu64_MEMdq_XMMi64_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
@@ -186,12 +186,12 @@ EXCEPTIONS: avx-type-12
 
 # VL = 256 - when data/mask differ from index size see asterisks in above chart.
 PATTERN : VV1 0x91   VL256 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_YMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:dq:u32   MEM0:r:dq:u32 REG1=XMM_N():rw:dq:i32
+OPERANDS  : REG0=XMM_R():crw:dq:u32   MEM0:r:d:u32 REG1=XMM_N():rw:dq:i32
 IFORM: VPGATHERQD_XMMu32_MEMdq_XMMi32_VL256
 
 # VL = 128 - index, mask and dest are all XMMs
 PATTERN : VV1 0x91   VL128 V66 V0F38 W0 MOD[mm] MOD!=3 REG[rrr] RM[nnn] RM=4 VMODRM_XMM() eanot16
-OPERANDS  : REG0=XMM_R():crw:q:u32   MEM0:r:q:u32 REG1=XMM_N():rw:q:i32
+OPERANDS  : REG0=XMM_R():crw:q:u32   MEM0:r:d:u32 REG1=XMM_N():rw:q:i32
 IFORM: VPGATHERQD_XMMu32_MEMq_XMMi32_VL128
 
 COMMENT: mask reg is zeroized on normal termination. mask_sz=data_sz
