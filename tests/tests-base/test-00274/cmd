@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 -64 VPGATHERDD ymm0  MEM32:rax,xmm1,1 ymm2
+ BUILDDIR/xed-ex3 -64 VPGATHERDD ymm0  MEM4:rax,xmm1,1 ymm2

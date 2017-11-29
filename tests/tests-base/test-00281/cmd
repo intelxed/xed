@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 -64 VGATHERQPD xmm0  MEM16:rax,xmm1,1 xmm2
+ BUILDDIR/xed-ex3 -64 VGATHERQPD xmm0  MEM8:rax,xmm1,1 xmm2

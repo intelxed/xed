@@ -1,5 +1,5 @@
 C4E269910408
 ICLASS: VPGATHERQD   CATEGORY: AVX2GATHER   EXTENSION: AVX2GATHER  IFORM: VPGATHERQD_XMMu32_MEMq_XMMi32_VL128   ISA_SET: AVX2GATHER
-SHORT: vpgatherqd xmm0, qword ptr [rax+xmm1*1], xmm2
+SHORT: vpgatherqd xmm0, dword ptr [rax+xmm1*1], xmm2
 Encodable! C4E269910408
 Identical re-encoding
