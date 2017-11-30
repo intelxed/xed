@@ -312,6 +312,22 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
     }
 }
 
+static void find_vl(xed_reg_enum_t reg, xed_int_t* vl)
+{
+    // This will "grow" bad user settings. So if you try to specify /128 on
+    // the instruction and it sees a YMM or ZMM register operand, then
+    // it'll grow the VL to the right observed size. The right observed
+    // size might still be wrong, that is too small (as it can be for
+    // "shrinking" converts (PD2PS, PD2DQ, etc.).
+    xed_int_t nvl = *vl;
+    xed_reg_class_enum_t rc = xed_reg_class(reg);
+    if (rc == XED_REG_CLASS_XMM && nvl == -1)  // not set and see xmm
+        *vl = 0;
+    else if (rc == XED_REG_CLASS_YMM && nvl < 1) // not set, set to xmm and then see ymm
+        *vl = 1;
+    else if (rc == XED_REG_CLASS_ZMM && nvl < 2) // not set, set to xmm or ymm and then see zmm
+        *vl = 2;
+}
 
 
 xed_encoder_request_t
@@ -328,6 +344,10 @@ parse_encode_request(ascii_encode_request_t areq)
     xed_uint_t regnum = 0;
     xed_uint_t operand_index = 0;
     xed_iclass_enum_t iclass = XED_ICLASS_INVALID;
+    xed_int_t vl = -1;
+    xed_int_t uvl = -1;
+    
+    
     
     // this calls xed_encoder_request_zero()
     xed_encoder_request_zero_set_mode(&req,&(areq.dstate));
@@ -390,6 +410,13 @@ parse_encode_request(ascii_encode_request_t areq)
             xed_encoder_request_set_effective_operand_width(&req, 32);
         else if (strcmp(csecond,"64")==0)
             xed_encoder_request_set_effective_operand_width(&req, 64);
+        
+        else if (strcmp(csecond,"128")==0)
+            uvl = 0;
+        else if (strcmp(csecond,"256")==0)
+            uvl = 1;
+        else if (strcmp(csecond,"512")==0)
+            uvl = 2;
     }
 
 
@@ -455,6 +482,7 @@ parse_encode_request(ascii_encode_request_t areq)
             else 
                 assert(mem_bis.agen || mem_bis.mem);
 
+            
             rc = xed_gpr_reg_class(mem_bis.base_reg);
             rci = xed_gpr_reg_class(mem_bis.index_reg);
             if (mem_bis.base_reg == XED_REG_EIP)
@@ -469,7 +497,7 @@ parse_encode_request(ascii_encode_request_t areq)
             xed_encoder_request_set_index(&req, mem_bis.index_reg);
             xed_encoder_request_set_scale(&req, mem_bis.scale_val);
             xed_encoder_request_set_seg0(&req, mem_bis.segment_reg);
-
+            find_vl(mem_bis.index_reg, &vl); // for scatter/gather
             if (mem_bis.mem_len) 
                 xed_encoder_request_set_memory_operand_length(
                     &req,
@@ -603,8 +631,26 @@ parse_encode_request(ascii_encode_request_t areq)
         xed_encoder_request_set_reg(&req, r, reg);
         // store the operand storage field name in the encode-order array
         xed_encoder_request_set_operand_order(&req, operand_index, r);
+
+        find_vl(reg, &vl);
+        
         regnum++;
     } // for loop
 
+    if (uvl == -1)
+    {
+        // no user VL setting, so use our observation-based guess.
+        if (vl>=0) 
+            xed3_operand_set_vl(&req,(xed_uint_t)vl);
+    }
+    else
+    {
+        if (vl >= 0 && uvl < vl)
+            xedex_derror("User specified VL is smaller than largest observed register.");
+        // go with the user value. The encoder still might increase it
+        // based on observed values. But we test for that above so they'll
+        // get the feedback.
+        xed3_operand_set_vl(&req,(xed_uint_t)uvl);
+    }
     return req;
 }

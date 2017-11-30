@@ -23,6 +23,7 @@ END_LEGAL */
 #include "xed-internal-header.h"
 #include "xed-encode-private.h"
 #include "xed-operand-accessors.h"
+#include "xed-reg-class.h"
 
 #include "xed-encoder.h" // a generated file of prototypes
 
@@ -482,6 +483,64 @@ xed_encode_nop(xed_uint8_t* array,
 }
 
 
+#if defined(XED_AVX) || defined(XED_SUPPORTS_AVX512)        
+static void set_vl(xed_reg_enum_t reg, xed_uint_t* vl)
+{
+    xed_uint_t nvl = *vl;
+    xed_reg_class_enum_t rc = xed_reg_class(reg);
+    // ignore XMM class becaues *vl is either 0 or set by user.
+
+    if (rc == XED_REG_CLASS_YMM && nvl < 1)
+        nvl = 1;
+#  if defined(XED_SUPPORTS_AVX512)
+    else if (rc == XED_REG_CLASS_ZMM && nvl < 2)
+        nvl = 2;
+#  endif
+
+    *vl = nvl;
+}
+
+
+// uvl= 0,    1,    2
+// vl=  012   012   012
+//      xgg   txt   ttx
+//
+// x=match
+// t=trust
+// g=grow (using observed guess)
+
+static void xed_encode_precondition_vl(xed_encoder_request_t* req)
+{
+    xed_uint_t vl;
+    vl = xed3_operand_get_vl(req);
+    // If user set nonzero value, respect it.  If user set vl=0, we cannot
+    // tell so we try to override.  Note: It would be very wrong to
+    // override incoming nonzero VL values because the observed register
+    // sizes represent a MINIMUM valid VL. The actual VL can be larger for
+    // "shrinking" converts (PD2PS, PD2DQ, PD2UQQ, etc.). 
+    if (vl == 0)  
+    {
+        xed_operand_enum_t i;
+        xed_reg_enum_t r;
+
+        r = xed3_operand_get_index(req);
+        // set VL based on index reg if vector reg as it would be for VSIB.
+        set_vl(r,&vl);  
+
+        // set VL based on REG any operands
+        for (i=XED_OPERAND_REG0;i<=XED_OPERAND_REG8;i++)
+        {
+            xed3_get_generic_operand(req, i, &r);
+            if (r == XED_REG_INVALID)
+                break;
+            set_vl(r,&vl);
+        }
+        xed3_operand_set_vl(req,vl);
+    }
+}
+
+#endif
+
 static void xed_encode_precondition(xed_encoder_request_t* r) {
     /* If the base is RIP, then we help the encoder users by adjusting or
      * supplying a memory displacement. It must be 4B, even if it is zero.
@@ -504,6 +563,9 @@ static void xed_encode_precondition(xed_encoder_request_t* r) {
                                                             t, 32);
         }
     }
+#if defined(XED_AVX) || defined(XED_SUPPORTS_AVX512)        
+    xed_encode_precondition_vl(r);
+#endif
 }
 
 XED_DLL_EXPORT xed_error_enum_t xed_encode(xed_encoder_request_t* r,
