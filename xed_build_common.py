@@ -186,6 +186,9 @@ def  _greater_than_gcc(env,amaj,amin,aver):
         (vmaj, vmin, vver) = vstr.split('.')
     except:
         return False
+    vmaj = int(vmaj)
+    vmin = int(vmin)
+    vver = int(vver)
     if vmaj > amaj:
         return True
     if vmaj == amaj and vmin > amin:
