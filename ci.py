@@ -15,6 +15,10 @@ def get_python_cmds():
         # The file .travis.yml installs python2 and python3
         return [('2.7','python'),
                 ('3.x','python3')]
+    elif platform.system() == 'Darwin':
+        # The file .travis.yml installs python2 and python3
+        return [('2.7','/usr/local/bin/python2'),
+                ('3.x','/usr/local/bin/python3')]
     
     return [('dfltpython','python')]
         
