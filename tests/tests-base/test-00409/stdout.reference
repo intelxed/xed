@@ -11,14 +11,14 @@ iclass-max-iform-dispatch 1
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0         REG0=STACKPOP SUPPRESSED   R      SPW3  192    24     1    192        INT     PSEUDO
+0   REG0         REG0=STACKPOP SUPPRESSED   R      SPW5  320    40     1    320        INT     PSEUDO
 1   REG1              REG1=RIP SUPPRESSED   W         Q   64     8     1     64        INT         IP
-2   MEM0           (see below) SUPPRESSED   R      SPW3  192    24     1    192        INT    INVALID
+2   MEM0           (see below) SUPPRESSED   R      SPW5  320    40     1    320        INT    INVALID
 3  BASE0             BASE0=RSP SUPPRESSED  RW       SSZ   64     8     1     64        INT        GPR
 4   REG2           REG2=RFLAGS SUPPRESSED  RW         Y   64     8     1     64        INT      FLAGS
 Memory Operands
   0    read BASE= RSP/GPR  ASZ0=64
-  MemopBytes = 24
+  MemopBytes = 40
 FLAGS:
    reads-rflags id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop 
        read:                    iopl vm nt  mask=0x27000
