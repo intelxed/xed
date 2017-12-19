@@ -44,6 +44,12 @@ dec-instructions:
      DISASM      : (optional) substituted name when a simple conversion
                    from iclass is inappropriate
 
+     DISASM_INTEL: (optional) like DISASM, but uses Intel/Microsoft syntax.
+                   Usually used instead of DISASM and with DISASM_ATTSV.
+
+     DISASM_ATTSV: (optional) like DISASM, but uses AT&T/GNU syntax.
+                   Usually used instead of DISASM and with DISASM_INTEL.
+
      ATTRIBUTES  : (optional) names for bits in the binary attributes field
 
      UNAME       : (optional) unique name used for deleting / replacing
@@ -56,6 +62,9 @@ dec-instructions:
      EXTENSION   : ad-hoc grouping of instructions.  If no ISA_SET is
                    specified, this is used instead.
 
+     EXCEPTIONS  : (optional) exception set name.
+                   Examples: "SSE_TYPE_7", "avx-type-4".
+
      ISA_SET     : (optional) name for the group of instructions that
                    introduced this feature. On the older stuff we used the
                    EXTENSION field but that got too complicated.
@@ -63,6 +72,14 @@ dec-instructions:
      FLAGS       : (optional) read/written flag bit values.
 
      COMMENT     : (optional) a hopefully useful comment
+
+     VERSION     : (optional) numeric instruction version number (revision).
+                   Examples: "1", "2".
+
+     REAL_OPCODE : (optional) indicates if the opcode is a prototyping opcode
+                   or an official allocation.  Prototyping opcodes are subject
+                   to change at any time.
+                   Examples: "Y" - real opcode, "N" - prototyping opcode.
 
    These are repeatable:
 
