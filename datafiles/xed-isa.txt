@@ -8028,7 +8028,7 @@ EXTENSION : BASE
 ISA_SET   : I86
 FLAGS     : MUST [ id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
 PATTERN   : 0xCF EOSZ=1
-OPERANDS  : REG0=XED_REG_STACKPOP:r:spw3:SUPP REG1=rIP():w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
 }
 {
 ICLASS    : IRETD
@@ -8039,7 +8039,7 @@ EXTENSION : BASE
 ISA_SET   : I386
 FLAGS     : MUST [ id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
 PATTERN   : 0xCF EOSZ=2
-OPERANDS  : REG0=XED_REG_STACKPOP:r:spw3:SUPP REG1=rIP():w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
 }
 {
 ICLASS    : IRETQ
@@ -8050,7 +8050,7 @@ EXTENSION : LONGMODE
 FLAGS     : MUST [ id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
 PATTERN   : 0xCF EOSZ=3 mode64
 # FIXME: This is only an approximate width for the stack pops
-OPERANDS  : REG0=XED_REG_STACKPOP:r:spw3:SUPP REG1=XED_REG_RIP:w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=XED_REG_RIP:w:SUPP
 }
 {
 ICLASS    : AAM

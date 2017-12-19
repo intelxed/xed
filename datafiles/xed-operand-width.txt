@@ -106,6 +106,7 @@ w           i16       2
 z           int       2    4   4 
 spw8        int      16   32   0  # varies (64b invalid)         STACK POINTER WIDTH
 spw         int       2    4   8  # varies                       STACK POINTER WIDTH
+spw5        int      10   20  40  # varies (IRET approx)         STACK POINTER WIDTH
 spw3        int       6   12  24  # varies (IRET approx)         STACK POINTER WIDTH
 spw2        int       4    8  16  # varies (FAR call/ret approx) STACK POINTER WIDTH
 i1          int   1bits
