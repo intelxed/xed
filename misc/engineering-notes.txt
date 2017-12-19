@@ -1,19 +1,19 @@
 # BEGIN_LEGAL
-# 
+#
 # Copyright (c) 2017 Intel Corporation
-# 
+#
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use this file except in compliance with the License.
 #   You may obtain a copy of the License at
-# 
+#
 #       http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
 #   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #   See the License for the specific language governing permissions and
 #   limitations under the License.
-#   
+#
 # END_LEGAL
 
 2017-05-01 Engineering Notes for XED
@@ -38,40 +38,40 @@ dec-instructions:
 
 
    These tokens are not repeatable:
-   
+
      ICLASS      : instruction name
-     
+
      DISASM      : (optional) substituted name when a simple conversion
                    from iclass is inappropriate
-     
+
      ATTRIBUTES  : (optional) names for bits in the binary attributes field
-     
+
      UNAME       : (optional) unique name used for deleting / replacing
                    instructions.
-                   
+
      CPL         : current privilege level. Valid values: 0, 3.
-     
+
      CATEGORY    : ad-hoc categorization of instructions
-     
+
      EXTENSION   : ad-hoc grouping of instructions.  If no ISA_SET is
                    specified, this is used instead.
-                   
+
      ISA_SET     : (optional) name for the group of instructions that
                    introduced this feature. On the older stuff we used the
                    EXTENSION field but that got too complicated.
-                   
+
      FLAGS       : (optional) read/written flag bit values.
-     
+
      COMMENT     : (optional) a hopefully useful comment
 
    These are repeatable:
-     
+
      PATTERN     : the sequence of bits and nonterminals used to
                    decode/encode an instruction.
-                   
+
      OPERANDS    : the operands, typicall registers,  memory operands
                    and pseudo-resources.
-                   
+
      IFORM       : (optional) a name for the pattern that starts with the
                    iclass and bakes in the operands. If omitted, xed
                    tries to generate one. We often add custom suffixes
@@ -79,17 +79,17 @@ dec-instructions:
 
    The PATTERN and OPERANDS lines come in pairs. Each pair can have
    its own IFORM line.
-   
+
    The PATTERN and OPERANDS tokens require further description due to
    their complexity and importance.
 
-    
+
 enc-instructions:
 
    instruction patterns used to create the encoder. Same forat as
    dec-instructions. We an include extra instructions for encoding
    standardized wide nops for example.
-   
+
 dec-patterns:
 
    non-instruction patterns and tables used to create the decoder
@@ -97,11 +97,11 @@ dec-patterns:
 enc-patterns:
 
    non-instruction patterns and tables used to create the encoder.
-   
+
 enc-dec-patterns:
 
    decode patterns used for encode
-   
+
 fields:
 
    names and properties of storage variables. This is where the
@@ -134,7 +134,7 @@ element-types:
 
    This maps xtypes to base-types (UINT, INT, SINGLE, DOUBLE, etc.)
    and bit widths.
-        
+
 element-type-base:
 
     Enumeration definition file for the
@@ -152,8 +152,8 @@ pointer-names:
    For printing memory operations in disassembly, we are required to
    map memory reference widths to terms like "WORD" or "DWORD"
    etc. This file establishes that mapping.
- 
-    
+
+
 chip-models:
 
    XED defines a xed_chip_enum_t as a collection of xed_isa_set_enum_t
@@ -167,7 +167,7 @@ conversion-table:
 
    string tables for converting field values to ASCII strings during
    disassembly.
-  
+
 ild-scanners:
 
    Since XED supports variance in what features are enabled, the
@@ -175,7 +175,7 @@ ild-scanners:
    are baked in ot the build. This file supplies the C code function
    xed_ild_scanners_init() which is responsible for wiring up the ILD
    scanners in the correct order.
-   
+
 ild-getters:
 
    Not currently used.  Allows extending the list of
@@ -186,7 +186,7 @@ ild-getters:
    publicly. Once the features defined here become pulic, the code can
    be moved to the static part of the code.
 
-   
+
 cpuid:
 
    Maps xed_isa_set_enum_t values to a set of CPUID bits. Each
