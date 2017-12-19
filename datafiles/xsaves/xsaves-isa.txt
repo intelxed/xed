@@ -22,7 +22,7 @@ ICLASS    : XSAVES
 CPL       : 0
 CATEGORY  : XSAVE
 EXTENSION : XSAVES
-COMMENT   : variable length load and conditianal reg write
+COMMENT   : variable length store and conditional reg read. does not read header
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
 PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b101] RM[nnn] MODRM() norexw_prefix no_refining_prefix 
 OPERANDS  : MEM0:w:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
@@ -34,7 +34,7 @@ ICLASS    : XSAVES64
 CPL       : 0
 CATEGORY  : XSAVE
 EXTENSION : XSAVES
-COMMENT   : variable length load and conditianal reg write
+COMMENT   : variable length store and conditional reg read. does not read header
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
 PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b101] RM[nnn] MODRM() rexw_prefix no_refining_prefix 
 OPERANDS  : MEM0:w:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
@@ -49,7 +49,7 @@ ICLASS    : XRSTORS
 CPL       : 0
 CATEGORY  : XSAVE
 EXTENSION : XSAVES
-COMMENT   : variable length load and conditianal reg write
+COMMENT   : variable length load and conditional reg write.
 ATTRIBUTES : xmm_state_w REQUIRES_ALIGNMENT x87_mmx_state_w NOTSX SPECIAL_AGEN_REQUIRED
 PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b011] RM[nnn] MODRM() norexw_prefix no_refining_prefix 
 OPERANDS  : MEM0:r:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
@@ -61,7 +61,7 @@ ICLASS    : XRSTORS64
 CPL       : 0
 CATEGORY  : XSAVE
 EXTENSION : XSAVES
-COMMENT   : variable length load and conditianal reg write
+COMMENT   : variable length load and conditional reg write
 ATTRIBUTES : xmm_state_w REQUIRES_ALIGNMENT x87_mmx_state_w NOTSX SPECIAL_AGEN_REQUIRED
 PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b011] RM[nnn] MODRM() rexw_prefix no_refining_prefix 
 OPERANDS  : MEM0:r:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
