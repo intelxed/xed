@@ -1290,6 +1290,7 @@ def _configure_libxed_extensions(env):
             if env['future']: # now based on ICL
                 _add_normal_ext(env,'future')
                 _add_normal_ext(env,'pt')
+                _add_normal_ext(env,'pconfig')
 
     env['extf'] = newstuff + env['extf']
 
