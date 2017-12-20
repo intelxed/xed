@@ -15,10 +15,4 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-# This is intentionally *completely* inaccurate but Intel is not
-# saying which chips will have these instructions publicly at this
-# time and I had to put the new instructions on some chip so I made
-# somethign up. 
-
-FUTURE: ALL_OF(ICELAKE) PT CET PCONFIG
+XED_ISA_SET_PCONFIG : pconfig.7.0.edx.18
