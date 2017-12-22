@@ -32,7 +32,7 @@ CPL:         3
 CATEGORY:    GFNI
 EXTENSION:   GFNI
 ISA_SET:     GFNI
-EXCEPTIONS:     E4
+EXCEPTIONS:     SSE_TYPE_4
 REAL_OPCODE: Y
 PATTERN:     0x0F 0x3A 0xCF MOD[0b11] MOD=3  REG[rrr] RM[nnn]  osz_refining_prefix     UIMM8() 
 OPERANDS:    REG0=XMM_R():rw:dq:u8 REG1=XMM_B():r:dq:u64 IMM0:r:b
@@ -45,7 +45,7 @@ CPL:         3
 CATEGORY:    GFNI
 EXTENSION:   GFNI
 ISA_SET:     GFNI
-EXCEPTIONS:     E4
+EXCEPTIONS:     SSE_TYPE_4
 REAL_OPCODE: Y
 PATTERN:     0x0F 0x3A 0xCF MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix     UIMM8() 
 OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:dq:u64 IMM0:r:b
@@ -60,7 +60,7 @@ CPL:         3
 CATEGORY:    GFNI
 EXTENSION:   GFNI
 ISA_SET:     GFNI
-EXCEPTIONS:     E4
+EXCEPTIONS:     SSE_TYPE_4
 REAL_OPCODE: Y
 PATTERN:     0x0F 0x3A 0xCE MOD[0b11] MOD=3  REG[rrr] RM[nnn]  osz_refining_prefix     UIMM8() 
 OPERANDS:    REG0=XMM_R():rw:dq:u8 REG1=XMM_B():r:dq:u64 IMM0:r:b
@@ -73,7 +73,7 @@ CPL:         3
 CATEGORY:    GFNI
 EXTENSION:   GFNI
 ISA_SET:     GFNI
-EXCEPTIONS:     E4
+EXCEPTIONS:     SSE_TYPE_4
 REAL_OPCODE: Y
 PATTERN:     0x0F 0x3A 0xCE MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix     UIMM8() 
 OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:dq:u64 IMM0:r:b
@@ -88,7 +88,7 @@ CPL:         3
 CATEGORY:    GFNI
 EXTENSION:   GFNI
 ISA_SET:     GFNI
-EXCEPTIONS:     E4
+EXCEPTIONS:     SSE_TYPE_4
 REAL_OPCODE: Y
 PATTERN:     0x0F 0x38 0xCF MOD[0b11] MOD=3  REG[rrr] RM[nnn]  osz_refining_prefix     
 OPERANDS:    REG0=XMM_R():rw:dq:u8 REG1=XMM_B():r:dq:u8
@@ -101,7 +101,7 @@ CPL:         3
 CATEGORY:    GFNI
 EXTENSION:   GFNI
 ISA_SET:     GFNI
-EXCEPTIONS:     E4
+EXCEPTIONS:     SSE_TYPE_4
 REAL_OPCODE: Y
 PATTERN:     0x0F 0x38 0xCF MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix     
 OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:dq:u8
