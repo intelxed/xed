@@ -548,7 +548,7 @@ REG=0x5  | OUTREG=XED_REG_GS
 REG=0x6  | OUTREG=XED_REG_ERROR     enc
 REG=0x7  | OUTREG=XED_REG_ERROR
 
-# MOV to CR cannot load CS 
+# MOV to SEG cannot load CS 
 xed_reg_enum_t SEG_MOV()::
 REG=0x0  | OUTREG=XED_REG_ES
 REG=0x1  | OUTREG=XED_REG_ERROR
