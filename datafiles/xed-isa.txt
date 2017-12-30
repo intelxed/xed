@@ -8488,7 +8488,7 @@ CATEGORY  : DATAXFER
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
 ATTRIBUTES : 
-PATTERN   : 0x0F 0x13 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  no_refining_prefix MODRM()
+PATTERN   : 0x0F 0x13 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : MEM0:w:q:f32 REG0=XMM_R():r:ps:f32
 }
 {
@@ -8523,7 +8523,7 @@ CATEGORY  : DATAXFER
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
 ATTRIBUTES : 
-PATTERN   : 0x0F 0x17 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  no_refining_prefix MODRM()
+PATTERN   : 0x0F 0x17 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : MEM0:w:q:f32 REG0=XMM_R():r:ps:f32
 }
 {
