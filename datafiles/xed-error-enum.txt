@@ -44,3 +44,4 @@ CALLBACK_PROBLEM  ///< The register or segment callback for xed_agen experienced
 GATHER_REGS       ///< The index, dest and mask regs for AVX2 gathers must be different.
 INSTR_TOO_LONG    ///< Full decode of instruction would exeed 15B.
 INVALID_MODE      ///< The instruction was not valid for the specified mode
+BAD_EVEX_LL       ///< EVEX.LL must not ==3 unless using embedded rounding

@@ -780,6 +780,23 @@ static void init_has_sib_table(void) {
 }
 
 
+#if defined(XED_SUPPORTS_AVX512)
+static void bad_ll(xed_decoded_inst_t* d) {
+    xed3_operand_set_error(d,XED_ERROR_BAD_EVEX_LL);
+}
+
+
+static void bad_ll_check(xed_decoded_inst_t* d)
+{
+    if (xed3_operand_get_llrc(d) == 3)  {
+        // we have a potentially bad EVEX.LL field.
+        if (xed3_operand_get_mod(d) != 3) // memop
+            bad_ll(d);
+        else if (xed3_operand_get_bcrc(d)==0) // reg-reg but not rounding
+            bad_ll(d);
+    }
+}
+#endif
 
 static void modrm_scanner(xed_decoded_inst_t* d)
 {
@@ -806,7 +823,10 @@ static void modrm_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_mod(d, mod);
             xed3_operand_set_rm(d, rm);
             xed3_operand_set_reg(d, xed_modrm_reg(b));
-      
+            
+#if defined(XED_SUPPORTS_AVX512)
+            bad_ll_check(d);
+#endif
             /*This checks that we are not in MOV_DR or MOV_CR instructions
             that ignore MODRM.MOD bits and don't have DISP and SIB */
             if (has_modrm != XED_ILD_HASMODRM_IGNORE_MOD) {
