@@ -217,8 +217,10 @@ lookup32(Elf32_Word stoffset,
 {
     char* p = (char*)start + offset;
     char* q = p + stoffset;
-    if ((unsigned char*)q > (unsigned char*)start+len)
+    if ((unsigned char*)q >= (unsigned char*)start+len)
         return 0;
+    if ((unsigned char*)q < (unsigned char*)start)
+      return 0;
     return q;
 }
 
@@ -230,7 +232,9 @@ lookup64(Elf64_Word stoffset,
 {
   char* p = (char*)start + offset;
   char* q = p + stoffset;
-  if ((unsigned char*)q > (unsigned char*)start+len)
+  if ((unsigned char*)q >= (unsigned char*)start+len)
+      return 0;
+  if ((unsigned char*)q < (unsigned char*)start)
       return 0;
   return q;
 }
@@ -256,7 +260,10 @@ disas_test32(xed_disas_info_t* fi,
   fi->a = (unsigned char*)start + offset;
   if (fi->a >  hard_limit)
       fi->a = hard_limit;
-
+  if ((void*)(fi->a) < start) {
+      fprintf(stderr,"# malformed region limit. stopping\n");
+      exit(1);
+  }
   fi->q = fi->a + size; // end of region
   if (fi->q > hard_limit)
       fi->q = hard_limit;
@@ -289,6 +296,10 @@ disas_test64(xed_disas_info_t* fi,
   fi->a = (unsigned char*)start + offset;
   if (fi->a >  hard_limit)
       fi->a = hard_limit;
+  if ((void*)(fi->a) < start) {
+      fprintf(stderr,"# malformed region limit. stopping\n");
+      exit(1);
+  }
   
   fi->q = fi->a + size; // end of region
   if (fi->q > hard_limit)
@@ -334,7 +345,10 @@ process_elf32(xed_disas_info_t* fi,
     int nsect = elf_hdr->e_shnum;
     int i;
     unsigned char* hard_limit = (unsigned char*)start + length;
-        
+
+    if ((void*)shp < start)
+        return;
+            
     for(i=0;i<nsect;i++) {
         char* name;
         xed_bool_t text = 0;
@@ -413,11 +427,15 @@ process_elf64(xed_disas_info_t* fi,
     Elf64_Half sect_strings  = elf_hdr->e_shstrndx;
     Elf64_Half nsect = elf_hdr->e_shnum;
     unsigned char* hard_limit = (unsigned char*)start + length;
+    unsigned int i;
+    xed_bool_t text = 0;
 
     if (CLIENT_VERBOSE1) 
         printf("# sections %d\n" , nsect);
-    unsigned int i;
-    xed_bool_t text = 0;
+    
+    if ((void*)shp < start)
+        return;
+
     for( i=0;i<nsect;i++)  {
         char* name = 0;
         
@@ -468,6 +486,8 @@ void read_symbols64(void* start,
     Elf64_Sym* p = XED_STATIC_CAST(Elf64_Sym*,a + offset);
     Elf64_Sym* q = XED_STATIC_CAST(Elf64_Sym*,a + offset + size);
     unsigned char* hard_limit = (unsigned char*)start + len;
+    if ((void*)p < start)
+        return;
     if ((unsigned char*) p + sizeof(Elf64_Sym) > hard_limit)
         p =  (Elf64_Sym*)hard_limit;
     if ((unsigned char*) q > hard_limit)
@@ -524,7 +544,9 @@ symbols_elf64(xed_disas_info_t* fi,
     unsigned char* hard_limit = (unsigned char*)start + len;
 
     /* find the string_table_offset and the dynamic_string_table_offset */
-
+    if ((void*)shp < start)
+        return;
+    
     for( i=0;i<nsect;i++)  {
         if ((unsigned char*)(shp+i+1) > hard_limit) 
             break;
@@ -587,6 +609,9 @@ read_symbols32(void* start,
     Elf32_Sym* q = XED_STATIC_CAST(Elf32_Sym*,a + offset + size);
     
     unsigned char* hard_limit = (unsigned char*)start + len;
+    if ((void*)p < start)
+        return;
+    
     if ((unsigned char*) p + sizeof(Elf32_Sym) > hard_limit)
         p =  (Elf32_Sym*)hard_limit;
     if ((unsigned char*) q > hard_limit)
@@ -623,6 +648,9 @@ symbols_elf32(xed_disas_info_t* fi,
     Elf32_Off dynamic_string_table_offset=0;
     int sect_strings  = elf_hdr->e_shstrndx;
     unsigned char* hard_limit = (unsigned char*)start + len;
+
+    if ((void*)shp < start)
+        return;
 
     /* find the string_table_offset and the dynamic_string_table_offset */
     for( i=0;i<nsect;i++)  {
