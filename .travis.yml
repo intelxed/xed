@@ -16,6 +16,6 @@ matrix:
       os: osx
       
 before_install:
-    - if [ `uname -s` = 'Linux' ]; then sudo apt-get install -y python python-pip python3 python3-pip ; else brew install python python3 ; fi
+    - if [ `uname -s` = 'Linux' ]; then sudo apt-get install -y python python-pip python3 python3-pip ; else brew install  python3 ; fi
 script:
     - python ci.py
