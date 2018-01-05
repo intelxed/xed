@@ -8456,7 +8456,7 @@ ISA_SET   : LONGMODE
 FLAGS     : MUST [ id-mod vip-mod vif-mod ac-mod rf-0 nt-mod iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x07 mode64 eosz64
 OPERANDS  : REG0=XED_REG_RIP:w:SUPP
-PATTERN   : 0x0F 0x07 mode64 eosz32
+PATTERN   : 0x0F 0x07 mode64 eosznot64
 OPERANDS  : REG0=XED_REG_EIP:w:SUPP
 COMMENT   : 32B VERSION IS ONLY SUPPORTED ON AMD
 }
