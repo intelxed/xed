@@ -4295,7 +4295,7 @@ CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
 ATTRIBUTES: MXCSR
-PATTERN   : VV1 0xAE VL128 VNP V0F NOVSR MOD[mm] MOD!=3 REG[0b010] RM[nnn] no_refining_prefix MODRM()
+PATTERN   : VV1 0xAE VL128 VNP V0F NOVSR MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM()
 OPERANDS  : MEM0:r:d REG0=XED_REG_MXCSR:w:SUPP
 }
 {
@@ -4305,7 +4305,7 @@ CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
 ATTRIBUTES: MXCSR_RD
-PATTERN   : VV1 0xAE VL128 VNP V0F NOVSR MOD[mm] MOD!=3 REG[0b011] RM[nnn] no_refining_prefix MODRM()
+PATTERN   : VV1 0xAE VL128 VNP V0F NOVSR MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM()
 OPERANDS  : MEM0:w:d REG0=XED_REG_MXCSR:r:SUPP
 }
 #######################################################################################
