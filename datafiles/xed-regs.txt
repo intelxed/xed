@@ -174,14 +174,6 @@ DR4 dr  32/64  DR4  4
 DR5 dr  32/64  DR5  5  
 DR6 dr  32/64  DR6  6  
 DR7 dr  32/64  DR7  7  
-DR8 dr  32/64 DR8   8  
-DR9 dr  32/64 DR9   9  
-DR10 dr 32/64 DR10   10
-DR11 dr 32/64 DR11   11
-DR12 dr 32/64 DR12   12
-DR13 dr 32/64 DR13   13
-DR14 dr 32/64 DR14   14
-DR15 dr 32/64 DR15   15
 
 STACKPUSH   pseudo NA
 STACKPOP    pseudo NA
