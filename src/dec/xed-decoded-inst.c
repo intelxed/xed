@@ -889,7 +889,8 @@ xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
     if (xed3_operand_get_mask(p) != 0)
 #   if defined(XED_SUPPORTS_AVX512)
         if (xed3_operand_get_zeroing(p) == 0)
-            return 1;
+            if (!xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_MASK_AS_CONTROL))            
+                return 1;
 #   elif defined(XED_SUPPORTS_KNC)
         return 1;
 #   endif
@@ -912,15 +913,18 @@ xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
                                 unsigned int operand_index)
 {
 
-    /* For the 0th operand, except for stores:
+    /* For the 0th operand, except for stores and except if attribute MASK_AS_CONTROL
                              RW             W   <<< SDM/XED notion
       ===========================================
-      aaa=0   merging     r  w            w
-      aaa=0   zeroing     n/a           n/a
-      aaa!=0  merging     r  cw          r cw  <<< This one requires special handling
-      aaa!=0  zeroing     r  w            w
-
+      aaa=0   control     n/a             w
+      aaa=0   merging     rw              w
+      aaa=0   zeroing     n/a             n/a
+      
+      aaa!=0  control     n/a             w
+      aaa!=0  merging     r+cw            r+cw  <<< This one requires special handling
+      aaa!=0  zeroing     r+w             w
      */
+    
     const xed_inst_t* xi = xed_decoded_inst_inst(p);
     const xed_operand_t* op = xed_inst_operand(xi,operand_index);
     xed_operand_action_enum_t rw = xed_operand_rw(op);
