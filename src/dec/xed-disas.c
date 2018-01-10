@@ -418,16 +418,16 @@ static void print_seg_prefix_for_suppressed_operands(
     const xed_operand_enum_t names[] = { XED_OPERAND_MEM0,XED_OPERAND_MEM1};
     for(i=0;i<2;i++) {
         if (op_name == names[i]) {
-            if (xed_operand_values_using_default_segment(ov, i) == 0) {
-                xed_reg_enum_t seg = XED_REG_INVALID;
+            xed_reg_enum_t seg = XED_REG_INVALID;
+            switch(i) {
+              case 0: seg = xed3_operand_get_seg0(ov); break;
+              case 1: seg = xed3_operand_get_seg1(ov); break;
+            }
+            if (seg != XED_REG_INVALID &&
+                xed_operand_values_using_default_segment(ov, i) == 0) {
                 xed_operand_spacer(pi);
                 if (pi->format_options.xml_a)
                     xed_pi_strcat(pi,"<OPERAND><REG bits=\"16\">");
-                switch(i)
-                {
-                  case 0: seg = xed3_operand_get_seg0(ov); break;
-                  case 1: seg = xed3_operand_get_seg1(ov); break;
-                }
                 pi->blen = xed_strncat_lower(pi->buf,
                                              xed_reg_enum_t2str(seg),
                                              pi->blen); 
