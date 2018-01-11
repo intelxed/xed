@@ -323,7 +323,7 @@ disas_test64(xed_disas_info_t* fi,
 # define EM_IAMCU 3
 #endif
 
-int check_binary_32b(void* start) {
+static int check_binary_32b(void* start) {
     Elf32_Ehdr* elf_hdr = (Elf32_Ehdr*) start;
     if ( elf_hdr->e_machine == EM_386   ||
          elf_hdr->e_machine == EM_IAMCU )  
@@ -331,6 +331,11 @@ int check_binary_32b(void* start) {
     return 0;
 }
 
+static int range_check(void* p, unsigned int esize, void* start, void* end)  {
+    if (p < start || (unsigned char*)p+esize >= (unsigned char*)end)
+        return 1;
+    return 0;
+}
 
 void
 process_elf32(xed_disas_info_t* fi,
@@ -353,7 +358,9 @@ process_elf32(xed_disas_info_t* fi,
         char* name;
         xed_bool_t text = 0;
         
-        if ((unsigned char*) (shp+i) + sizeof(Elf32_Shdr) > hard_limit)
+        if (range_check(shp+i, sizeof(Elf32_Shdr), start, hard_limit))
+            break;
+        if (range_check(shp+sect_strings, sizeof(Elf32_Shdr), start, hard_limit))
             break;
                 
         name = lookup32(shp[i].sh_name, start,  length,
@@ -414,6 +421,7 @@ int check_binary_64b(void* start) {
     return 0;
 }
 
+
 /*-----------------------------------------------------------------*/
 void
 process_elf64(xed_disas_info_t* fi,
@@ -439,9 +447,11 @@ process_elf64(xed_disas_info_t* fi,
     for( i=0;i<nsect;i++)  {
         char* name = 0;
         
-        if ((unsigned char*) (shp+i) + sizeof(Elf64_Shdr) > hard_limit)
+        if (range_check(shp+i,sizeof(Elf64_Shdr), start, hard_limit))
             break;
-
+        if (range_check(shp+sect_strings,sizeof(Elf64_Shdr), start, hard_limit))
+            break;
+        
         name = lookup64(shp[i].sh_name, start, length,
                         shp[sect_strings].sh_offset);
         
@@ -548,11 +558,11 @@ symbols_elf64(xed_disas_info_t* fi,
         return;
     
     for( i=0;i<nsect;i++)  {
-        if ((unsigned char*)(shp+i+1) > hard_limit) 
+        if (range_check(shp+i, sizeof(Elf64_Shdr), start, hard_limit))
             break;
-
-        
         if (shp[i].sh_type == SHT_STRTAB) {
+            if (range_check(shp+sect_strings, sizeof(Elf64_Shdr), start, hard_limit))
+                break;
             char* name = lookup64(shp[i].sh_name, start, len,
                                   shp[sect_strings].sh_offset);
             if (name)
@@ -575,7 +585,7 @@ symbols_elf64(xed_disas_info_t* fi,
 
     /* now read the symbols */
     for( i=0;i<nsect;i++)  {
-        if ((unsigned char*)(shp+i)+sizeof(Elf64_Shdr) >= hard_limit)
+        if (range_check(shp+i, sizeof(Elf64_Shdr), start, hard_limit))
             break;
 
         if (shp[i].sh_type == SHT_SYMTAB) {
@@ -631,6 +641,8 @@ read_symbols32(void* start,
     }
 }
 
+
+
 static void
 symbols_elf32(xed_disas_info_t* fi, 
               void* start,
@@ -654,9 +666,11 @@ symbols_elf32(xed_disas_info_t* fi,
 
     /* find the string_table_offset and the dynamic_string_table_offset */
     for( i=0;i<nsect;i++)  {
-        if ((unsigned char*)(shp+i)+sizeof(Elf32_Shdr) >= hard_limit)
+        if (range_check(shp+i, sizeof(Elf32_Shdr), start, hard_limit))
             break;
         if (shp[i].sh_type == SHT_STRTAB) {
+            if (range_check(shp+sect_strings, sizeof(Elf32_Shdr), start, hard_limit))
+                break;
             char* name = lookup32(shp[i].sh_name, start,  len,
                                   shp[sect_strings].sh_offset);
             if (name)
@@ -679,7 +693,7 @@ symbols_elf32(xed_disas_info_t* fi,
 
     /* now read the symbols */
     for( i=0;i<nsect;i++)  {
-        if ((unsigned char*)(shp+i+1) > hard_limit)
+        if (range_check(shp+i, sizeof(Elf32_Shdr), start, hard_limit))
             break;
         
         if (shp[i].sh_type == SHT_SYMTAB) {
