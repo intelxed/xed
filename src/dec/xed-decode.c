@@ -35,23 +35,46 @@ END_LEGAL */
 #include "xed-chip-features.h"
 #include "xed-chip-features-private.h" // for xed_test_chip_features()
 #include "xed-chip-modes.h"
+#include "xed-reg-class.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
 #if defined(XED_AVX)
+static xed_uint_t reg_id_avx2(xed_reg_enum_t r) {
+    xed_reg_class_enum_t reg_class =  xed_reg_class(r);
+    if (reg_class == XED_REG_CLASS_YMM)
+        return r - XED_REG_YMM0;
+    return r - XED_REG_XMM0;
+}
+ 
 static void check_avx2_gathers(xed_decoded_inst_t* xds) {
+    // compare by register id because reg width (ymm vs xmm) can vary.
+    xed_uint_t indx_id = reg_id_avx2(xed3_operand_get_index(xds));
+    xed_uint_t dest_id = reg_id_avx2(xed3_operand_get_reg0(xds));
+    xed_uint_t mask_id = reg_id_avx2(xed3_operand_get_reg1(xds));
     // the 3 regs (dest, mask and index) cannot be the same.
-    if (xed3_operand_get_index(xds) == xed3_operand_get_reg1(xds) ||
-        xed3_operand_get_index(xds) == xed3_operand_get_reg0(xds) ||
-        xed3_operand_get_reg0(xds)  == xed3_operand_get_reg1(xds)   )
+    if (indx_id == mask_id ||
+        indx_id == dest_id ||
+        mask_id == dest_id )
     {
         xed3_operand_set_error(xds,XED_ERROR_GATHER_REGS);
     }
 }
 # if defined(XED_SUPPORTS_AVX512)
+static xed_uint_t reg_id_avx512(xed_reg_enum_t r) {
+    xed_reg_class_enum_t reg_class =  xed_reg_class(r);
+    if (reg_class == XED_REG_CLASS_ZMM)
+        return r - XED_REG_ZMM0;
+    if (reg_class == XED_REG_CLASS_YMM)
+        return r - XED_REG_YMM0;
+    return r - XED_REG_XMM0;
+}
 static void check_avx512_gathers(xed_decoded_inst_t* xds) {
+    // compare by register id because reg width (ymm vs xmm) can vary.
     // index cannot be same as dest on avx512 gathers
-    if ( xed3_operand_get_index(xds) == xed3_operand_get_reg0(xds))
+    xed_uint_t indx_id = reg_id_avx512(xed3_operand_get_index(xds));
+    xed_uint_t dest_id = reg_id_avx512(xed3_operand_get_reg0(xds));
+    if (indx_id == dest_id)
         xed3_operand_set_error(xds,XED_ERROR_GATHER_REGS);
 
 }
