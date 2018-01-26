@@ -1235,6 +1235,11 @@ def _configure_libxed_extensions(env):
         _add_normal_ext(env,'glm')
         _add_normal_ext(env,'xsaves')
         _add_normal_ext(env,'xsavec')
+        _add_normal_ext(env,'clflushopt')
+        
+        # goldmont plus
+        _add_normal_ext(env,'sgx')
+        _add_normal_ext(env,'rdpid')
         
     # Add avx and fma under control of a knob
     if env['avx']:
@@ -1281,6 +1286,7 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'wbnoinvd') # FIXME: relies on ICL existing
             _add_normal_ext(env,'sgx')  
             _add_normal_ext(env,'pconfig')
+            _add_normal_ext(env,'rdpid')
                 
             _add_normal_ext(env,'bitalg')
             _add_normal_ext(env,'vbmi2')
@@ -1289,7 +1295,7 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
             _add_normal_ext(env,'vpopcntdq-512')
             _add_normal_ext(env,'vpopcntdq-vl')
-            _add_normal_ext(env,'rdpid')
+
             
             if env['future']: # now based on ICL
                 _add_normal_ext(env,'future')
