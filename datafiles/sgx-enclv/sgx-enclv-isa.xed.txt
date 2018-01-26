@@ -15,10 +15,27 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING ENCLV (ENCLV-N/A-1)
+{
+ICLASS:      ENCLV
+CPL:         3
+CATEGORY:    SGX
+EXTENSION:   SGX_ENCLV
+ISA_SET:     SGX_ENCLV
+REAL_OPCODE: N
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3  REG[0b000] RM[0b000]  no_refining_prefix     
+OPERANDS:    REG0=XED_REG_EAX:r:SUPP:d:u32 REG1=XED_REG_RBX:crw:SUPP:q:u64 REG2=XED_REG_RCX:crw:SUPP:q:u64 REG3=XED_REG_RDX:crw:SUPP:q:u64
+IFORM:       ENCLV
+}
 
-# This is intentionally *completely* inaccurate but Intel is not
-# saying which chips will have these instructions publicly at this
-# time and I had to put the new instructions on some chip so I made
-# somethign up. 
 
-FUTURE: ALL_OF(ICELAKE) PT CET 

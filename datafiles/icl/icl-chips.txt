@@ -18,6 +18,8 @@
 
 ICELAKE: ALL_OF(CANNONLAKE)  RDPID  \
          WBNOINVD \
+         SGX_ENCLV \
+         PCONFIG \
          AVX512_VBMI2_128 \
          AVX512_VBMI2_256 \
          AVX512_VBMI2_512 \
