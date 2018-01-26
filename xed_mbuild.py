@@ -1283,10 +1283,10 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'avx512vbmi')
             
             _add_normal_ext(env,'icl')
-            _add_normal_ext(env,'wbnoinvd') # FIXME: relies on ICL existing
-            _add_normal_ext(env,'sgx')  
-            _add_normal_ext(env,'pconfig')
-            _add_normal_ext(env,'rdpid')
+            _add_normal_ext(env,'wbnoinvd') # icl server # FIXME: relies on ICL existing
+            _add_normal_ext(env,'sgx-enclv')             # FIXME: relies on ICL existing
+            _add_normal_ext(env,'pconfig') # icl server  # FIXME: relies on ICL existing
+            _add_normal_ext(env,'rdpid')   
                 
             _add_normal_ext(env,'bitalg')
             _add_normal_ext(env,'vbmi2')
