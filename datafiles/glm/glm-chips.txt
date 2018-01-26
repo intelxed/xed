@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,4 +18,8 @@
 
 # Requires IVB for RDWRFSGS, BDW for RDSEED, SMAP
 GOLDMONT:  ALL_OF(SILVERMONT) MPX SHA RDSEED RDWRFSGS \
-                              XSAVE XSAVEOPT XSAVEC XSAVES SMAP 
+                              XSAVE XSAVEOPT XSAVEC XSAVES SMAP \
+                              CLFLUSHOPT 
+
+GOLDMONT_PLUS:  ALL_OF(GOLDMONT) PT RDPID SGX 
+# and UMIP but not instr for that
