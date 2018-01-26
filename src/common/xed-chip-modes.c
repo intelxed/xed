@@ -20,7 +20,29 @@ END_LEGAL */
 #include "xed-isa-set.h"
 #include "xed-chip-features-private.h"
 
-#include "xed-chip-modes-override.h"        
+#include "xed-chip-modes-override.h"
+
+static void
+xed_chip_modes_wbnoinvd(xed_decoded_inst_t* xedd,
+                        xed_chip_enum_t chip,
+                        xed_chip_features_t* features)
+{
+    // WBNOINVD repurposes an existing encoding (prefixed WBINVD) so we
+    // need to rely on the xed chip to tell us which semantics are associated
+    // with that encoding.
+    
+    xed_chip_features_t* f = features;
+    xed_chip_features_t loc_features;
+    if (f==0) {
+        // if no features supplied, get default features for specified chip.
+        xed_get_chip_features(&loc_features, chip);
+        f = &loc_features;
+    }
+    if (xed_test_chip_features(f, XED_ISA_SET_WBNOINVD)) 
+        xed3_operand_set_wbnoinvd(xedd,1);
+}
+
+
 void
 set_chip_modes(xed_decoded_inst_t* xedd,
                xed_chip_enum_t chip,
@@ -69,6 +91,7 @@ set_chip_modes(xed_decoded_inst_t* xedd,
     }
 
     xed_chip_modes_override(xedd, chip, features);  //replaceable function
+    xed_chip_modes_wbnoinvd(xedd, chip, features); 
     
     if (first_prefix)
         xed3_operand_set_mode_first_prefix(xedd,1);
