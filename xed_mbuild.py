@@ -1277,7 +1277,10 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'avx512ifma')
             _add_normal_ext(env,'avx512vbmi')
             
+
             _add_normal_ext(env,'icl')
+            _add_normal_ext(env,'wbnoinvd') # FIXME: relies on ICL existing
+            
             _add_normal_ext(env,'bitalg')
             _add_normal_ext(env,'vbmi2')
             _add_normal_ext(env,'vnni')
@@ -1292,6 +1295,7 @@ def _configure_libxed_extensions(env):
                 _add_normal_ext(env,'pt')
                 _add_normal_ext(env,'pconfig')
 
+        
     env['extf'] = newstuff + env['extf']
 
 def _get_src(env,subdir):
