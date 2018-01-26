@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2017 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,9 +17,6 @@
 #END_LEGAL
 
 ICELAKE: ALL_OF(CANNONLAKE)  RDPID  \
-         WBNOINVD \
-         SGX_ENCLV \
-         PCONFIG \
          AVX512_VBMI2_128 \
          AVX512_VBMI2_256 \
          AVX512_VBMI2_512 \
@@ -46,3 +43,8 @@ ICELAKE: ALL_OF(CANNONLAKE)  RDPID  \
          AVX512_VNNI_256 \
          AVX512_VNNI_512 
 
+
+ICELAKE_SERVER: ALL_OF(ICELAKE) \
+         SGX_ENCLV \
+         PCONFIG \
+         WBNOINVD
