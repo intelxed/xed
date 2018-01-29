@@ -94,7 +94,7 @@ def work():
     import xed_examples_mbuild
     try:
         retval = xed_examples_mbuild.execute()
-    except Exception, e:
+    except Exception as e:
         xed_build_common.handle_exception_and_die(e)
     return retval
     
