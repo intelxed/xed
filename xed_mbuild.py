@@ -538,23 +538,20 @@ def mkenv():
                                  xedext_dir='%(xed_dir)s/../xedext',
                                  default_isa='',
                                  avx=True,
+                                 avx512=True,
                                  knc=False,
-                                 xsaveopt=True,
-                                 ivbavx=True,
-                                 ivbint=True,
-                                 avxhsw=True,
+                                 ivb=True,
+                                 hsw=True,
                                  mpx=True,
                                  cet=True,
-                                 glm=True,
                                  skl=True,
                                  skx=True,
-                                 avx512_future=True,
+                                 cnl=True,
+                                 icl=True,
                                  future=True,
                                  knl=True,
                                  knm=True,
-                                 sha=True,
                                  bdw=True,
-                                 fma=True,
                                  dbghelp=False,
                                  install_dir=None,
                                  prefix_dir='',
@@ -688,23 +685,19 @@ def xed_args(env):
     env.parser.add_option("--no-avx",
                           action="store_false",
                           dest="avx", 
-                          help="Do not include AVX")
-    env.parser.add_option("--no-xsaveopt",
+                          help="Do not include AVX (nor down-stream unrelated technologies).")
+    env.parser.add_option("--no-avx512",
                           action="store_false",
-                          dest="xsaveopt", 
-                          help="Do not include XSAVEOPT")
-    env.parser.add_option("--no-ivbavx",
+                          dest="avx512", 
+                          help="Do not include AVX512 (nor down-stream unrelated technologies).")
+    env.parser.add_option("--no-ivb",
                           action="store_false", 
-                          dest="ivbavx", 
-                          help="Do not include AVX for IVB.")
-    env.parser.add_option("--no-ivbint",
+                          dest="ivb", 
+                          help="Do not include IVB.")
+    env.parser.add_option("--no-hsw",
                           action="store_false", 
-                          dest="ivbint", 
-                          help="Do not include integer (nonAVX) IVB NI.")
-    env.parser.add_option("--no-avxhsw",
-                          action="store_false", 
-                          dest="avxhsw", 
-                          help="Do not include AVX for HSW.")
+                          dest="hsw", 
+                          help="Do not include HSW.")
     env.parser.add_option("--no-mpx",
                           action="store_false", 
                           dest="mpx", 
@@ -713,34 +706,14 @@ def xed_args(env):
                           action="store_false", 
                           dest="cet", 
                           help="Do not include CET.")
-    env.parser.add_option("--no-sha",
-                          action="store_false", 
-                          dest="sha", 
-                          help="Do not include SHA.")
-    env.parser.add_option("--no-bdw",
-                          action="store_false", 
-                          dest="bdw", 
-                          help="Do not include BDW NI.")
-    env.parser.add_option("--no-glm",
-                          action="store_false", 
-                          dest="glm", 
-                          help="Do not include GLM.")
-    env.parser.add_option("--knl",
-                          action="store_true", 
-                          dest="knl", 
-                          help="Include KNL AVX512{PF,ER} on top of " +
-                               "AVX512{F,CD}. " +
-                               "Default: Currently enabled.")
-    env.parser.add_option("--knm",
-                          action="store_true", 
-                          dest="knm", 
-                          help="Include KNM AVX512{4FMAPS,4VNNIW}  " +
-                               "Default: Currently enabled.")
     env.parser.add_option("--no-knl",
                           action="store_false", 
                           dest="knl", 
-                          help="Do no include KNL AVX512{PF,ER}. " +
-                               "Default: KNL enabled.")
+                          help="Do no include KNL AVX512{PF,ER}.")
+    env.parser.add_option("--no-knm",
+                          action="store_false", 
+                          dest="knm", 
+                          help="Do not include KNM.")
     env.parser.add_option("--no-skl",
                           action="store_false", 
                           dest="skl", 
@@ -749,14 +722,18 @@ def xed_args(env):
                           action="store_false", 
                           dest="skx", 
                           help="Do not include SKX.")
+    env.parser.add_option("--no-cnl",
+                          action="store_false", 
+                          dest="cnl", 
+                          help="Do not include CNL.")
+    env.parser.add_option("--no-icl",
+                          action="store_false", 
+                          dest="icl", 
+                          help="Do not include ICL.")
     env.parser.add_option("--no-future",
                           action="store_false", 
                           dest="future", 
                           help="Do not include future NI.")
-    env.parser.add_option("--no-avx512-future",
-                          action="store_false", 
-                          dest="avx512_future", 
-                          help="Do not include future avx512 instructions.")
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -1149,39 +1126,37 @@ def _replace_sources(srclist, sources_to_replace):
                     prio_d[s] = prio
                     newfn_d[s] = newfn
     return newfn_d.values()
+
+def _test_chip(env, names_list):
+    for nm in names_list:
+        if env[nm]:
+            return True
+    return False
         
 def _configure_libxed_extensions(env):
     if env['amd_enabled']:
-       env.add_define('XED_AMD_ENABLED')
+        env.add_define('XED_AMD_ENABLED')
 
     if env['avx']:
-       env.add_define('XED_AVX')
-    if not env['avx']:
-        mbuild.warn("No AVX -> Disabling KNM, KNL, SKX, Future AVX512\n\n\n")
-        env['knl'] = False
-        env['knm'] = False
-        env['skx'] = False
-        env['avx512_future'] = False
+        env.add_define('XED_AVX')
 
-    if env['avx512_future']:
-        env['skx'] = True
-
-    if env['knm'] or env['knl'] or env['skx'] or env['avx512_future']:
-       # this is also supplied by xed_interface.py
-       env.add_define('XED_SUPPORTS_AVX512')
+    if _test_chip(env, ['knl','knm', 'skx', 'cnl', 'icl']):
+        env.add_define('XED_SUPPORTS_AVX512')
     if env['knc']:
-       env.add_define('XED_SUPPORTS_KNC')
+        env.add_define('XED_SUPPORTS_KNC')
     if env['mpx']:
-       env.add_define('XED_MPX')
+        env.add_define('XED_MPX')
     if env['cet']:
-       env.add_define('XED_CET')
-    if env['sha']:
-        env.add_define('XED_SUPPORTS_SHA')
+        env.add_define('XED_CET')
+    #SHA on GLM & CNL, support by default
+    env.add_define('XED_SUPPORTS_SHA')
+    if env['icl']:
+        env.add_define('XED_SUPPORTS_WBNOINVD')
 
     if env['decoder']:
-       env.add_define('XED_DECODER')
+        env.add_define('XED_DECODER')
     if env['encoder']:
-       env.add_define('XED_ENCODER')
+        env.add_define('XED_ENCODER')
 
     #insert default isa files at the front of the extension list
     newstuff = []
@@ -1221,38 +1196,45 @@ def _configure_libxed_extensions(env):
         else:
             _add_normal_ext(env,'knc', 'files-no-avx512f.cfg')
             
-    if env['xsaveopt']:
-        _add_normal_ext(env,'xsaveopt')
-    if env['mpx']:
+    if env['mpx']: # MPX first on GLM or SKL
         _add_normal_ext(env,'mpx')
     if env['cet']:
         _add_normal_ext(env,'cet')
-    if env['sha']:
-        _add_normal_ext(env,'sha')
-    if env['ivbint']:
-        _add_normal_ext(env,'ivbint')
-    if env['glm']: # FIXME requires BDW (partly) and IVBINT and XSAVEOPT
-        _add_normal_ext(env,'glm')
-        _add_normal_ext(env,'xsaves')
-        _add_normal_ext(env,'xsavec')
-        _add_normal_ext(env,'clflushopt')
+
+    # Silvermont & Ivybridge
+    _add_normal_ext(env,'rdrand') 
+    # Goldmont
+    _add_normal_ext(env,'glm')
+    _add_normal_ext(env,'sha')
+    _add_normal_ext(env,'xsaveopt')
+    _add_normal_ext(env,'xsaves')
+    _add_normal_ext(env,'xsavec')
+    _add_normal_ext(env,'clflushopt')
+    _add_normal_ext(env,'rdrand')
+    _add_normal_ext(env,'rdseed')
+    _add_normal_ext(env,'fsgsbase')
+    _add_normal_ext(env,'smap')
+    _add_normal_ext(env,'xsaveopt')
+    # Goldmont plus
+    _add_normal_ext(env,'sgx')
+    _add_normal_ext(env,'rdpid')
+    _add_normal_ext(env,'pt')
         
-        # goldmont plus
-        _add_normal_ext(env,'sgx')
-        _add_normal_ext(env,'rdpid')
-        
-    # Add avx and fma under control of a knob
     if env['avx']:
         _add_normal_ext(env,'avx')
-        if env['ivbavx']:
+        _add_normal_ext(env,'xsaveopt')
+        if env['ivb']:
+            _add_normal_ext(env,'fsgsbase')
+            _add_normal_ext(env,'rdrand')
             _add_normal_ext(env,'ivbavx')
-        if env['avxhsw']:
+        if env['hsw']:
             env.add_define('XED_SUPPORTS_LZCNT_TZCNT')
-            _add_normal_ext(env,'avxhsw')
-        if env['fma']: # FIXME on HSW, but announced w/SNB, could move them
-            _add_normal_ext(env, 'avx', 'files-fma.cfg')
+            _add_normal_ext(env,'hswavx')
+            _add_normal_ext(env,'hsw')
         if env['bdw']:
             _add_normal_ext(env,'bdw')
+            _add_normal_ext(env,'smap')
+            _add_normal_ext(env,'rdseed')
         if env['skl'] or env['skx']: # FIXME: requires MPX and BDW
             _add_normal_ext(env,'skl')
             _add_normal_ext(env,'sgx')
@@ -1277,29 +1259,28 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'avx512cd')
         if env['skx']:
             _add_normal_ext(env,'avx512-skx')
-        if env['avx512_future']:
+        if env['cnl']:
             _add_normal_ext(env,'cnl')
+            _add_normal_ext(env,'sha')
             _add_normal_ext(env,'avx512ifma')
             _add_normal_ext(env,'avx512vbmi')
-            
+        if env['icl']:
             _add_normal_ext(env,'icl')
-            _add_normal_ext(env,'wbnoinvd') # icl server # FIXME: relies on ICL existing
-            _add_normal_ext(env,'sgx-enclv')             # FIXME: relies on ICL existing
-            _add_normal_ext(env,'pconfig') # icl server  # FIXME: relies on ICL existing
+            _add_normal_ext(env,'wbnoinvd') # icl server
+            _add_normal_ext(env,'sgx-enclv') # icl server           
+            _add_normal_ext(env,'pconfig') # icl server 
             _add_normal_ext(env,'rdpid')   
-                
-            _add_normal_ext(env,'bitalg')
+            _add_normal_ext(env,'bitalg')            
             _add_normal_ext(env,'vbmi2')
             _add_normal_ext(env,'vnni')
             _add_normal_ext(env,'gfni-vaes-vpcl', 'files-sse.cfg')
             _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
             _add_normal_ext(env,'vpopcntdq-512')
             _add_normal_ext(env,'vpopcntdq-vl')
-
             
-            if env['future']: # now based on ICL
-                _add_normal_ext(env,'future')
-                _add_normal_ext(env,'pt')
+        if env['future']: # now based on ICL
+            _add_normal_ext(env,'future')
+            _add_normal_ext(env,'pt')
 
 
         
@@ -2165,7 +2146,7 @@ def _run_canned_tests(env,osenv):
         codes.append('AVX512X')
     if env['knm'] or env['knl']:
         codes.append('AVX512PF')
-    if env['avxhsw']: # hack misnomer for BSF/BSR/TZCNT/LZCNT tests
+    if env['hsw']: 
         codes.append('HSW')
     if env['amd_enabled'] and env['avx']:
         codes.append('XOP')
@@ -2214,45 +2195,63 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-       env['avxhsw']=False
-       env['ivbavx']=False
-       env['fma']=False
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CNL, ICL, KNL, KNM Future\n\n\n")
+        env['ivb'] = False
+        env['hsw'] = False
+        env['bdw'] = False
+        env['skl'] = False
+        env['skx'] = False
+        env['cnl'] = False
+        env['icl'] = False
+        env['knl'] = False
+        env['knm'] = False
+        env['future'] = False
 
-    if not env['ivbavx']:
-       env['avxhsw'] = False
-       env['fma']=False
+    # default is enabled. oldest disable disables upstream (younger, newer) stuff.
+    if not env['knl']:
+        env['knm'] = False
+        
+    if not env['avx']:
+        env['avx512'] = False
+        
+    if not env['avx512']:
+        env['skx'] = False
+        env['cnl'] = False
+        env['icl'] = False
+        env['knl'] = False
+        env['knm'] = False
+        env['future'] = False
 
-    if not env['avxhsw']:
-       env['fma']=False
+    if not env['ivb']:
+        env['hsw'] = False
+    if not env['hsw']:
+        env['bdw'] = False
+    if not env['bdw']:
+        env['skl'] = False
+    if not env['skl']:
+        env['skx'] = False
+    if not env['skx']:
+        env['cnl'] = False
+    if not env['cnl']:
+        env['icl'] = False
+    if not env['icl']:
+        env['future'] = False
 
     if env['knc']: 
         mbuild.warn("Disabling AVX512, FUTURE, for KNC build\n\n\n")
         env['knl'] = False
         env['knm'] = False
         env['skx'] = False
-        env['avx512_future'] = False
+        env['cnl'] = False
+        env['icl'] = False
         env['future'] = False
         
     if not env['future']:
-        env['avx512_future'] = False
         env['cet'] = False
-        
-    if not env['skx'] and not env['skl'] and not env['glm']:
-        env['mpx'] = False
-    
-    # SKX implies SKL
-    if env['skx']:
-        env['skl'] = True
-
-    # no SKL implies no SKX (order matters w/the previous)
-    if not env['skl']:
-        env['skx'] = False
-
-    if not env['glm']:
-        env['sha'] = False
 
     if env['use_elf_dwarf_precompiled']:
        env['use_elf_dwarf'] = True
+       
 
 def work(env):
     """External entry point for non-command line invocations.

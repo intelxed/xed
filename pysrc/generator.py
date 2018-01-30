@@ -5728,7 +5728,7 @@ def call_chipmodel(agi):
         if v in ['INVALID']:
             continue
         if v not in agi.isa_sets: # stuff from the instructions
-            genutil.warn("isa_set referenced by chip model hierarchy," +
+            genutil.warn("isa_set referenced by chip model hierarchy, " +
                          "but not used by any instructions: {}".format(v))
 
 ################################################

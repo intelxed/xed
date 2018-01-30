@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,5 +16,3 @@
 #  
 #END_LEGAL
   XED_ISA_SET_ADOX_ADCX:         adoxadcx.7.0.ebx.19
-  XED_ISA_SET_RDSEED:            rdseed.7.0.ebx.18
-  XED_ISA_SET_SMAP:              smap.7.0.ebx.20

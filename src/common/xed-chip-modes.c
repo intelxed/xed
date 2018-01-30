@@ -38,8 +38,10 @@ xed_chip_modes_wbnoinvd(xed_decoded_inst_t* xedd,
         xed_get_chip_features(&loc_features, chip);
         f = &loc_features;
     }
+#if defined(XED_SUPPORTS_WBNOINVD)
     if (xed_test_chip_features(f, XED_ISA_SET_WBNOINVD)) 
         xed3_operand_set_wbnoinvd(xedd,1);
+#endif
 }
 
 
@@ -103,7 +105,7 @@ set_chip_modes(xed_decoded_inst_t* xedd,
             p4 = 0;
     xed3_operand_set_p4(xedd,p4);
 
-
+#if defined(XED_SUPPORTS_LZCNT_TZCNT)
     /* LZCNT / TZCNT show up on HSW. LZCNT has its own CPUID bit, TZCNT is on
      * BMI1.  */
     lzcnt = 1;
@@ -120,5 +122,7 @@ set_chip_modes(xed_decoded_inst_t* xedd,
     }
     xed3_operand_set_lzcnt(xedd,lzcnt);
     xed3_operand_set_tzcnt(xedd,tzcnt);
+#endif
+    (void) lzcnt; (void) tzcnt; //pacify compiler
 
 }
