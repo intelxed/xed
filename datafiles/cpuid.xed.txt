@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@ XED_ISA_SET_I86:             n/a
 
 XED_ISA_SET_LAHF:            lahf.80000001.0.ecx.0 
 XED_ISA_SET_LONGMODE:        intel64.80000001.0.edx.29
-XED_ISA_SET_LZCNT:           lzcnt.80000001.0.ecx.5 
 
 XED_ISA_SET_MOVBE:           movebe.1.0.ecx.22       
 XED_ISA_SET_PAUSE:           n/a              
@@ -64,7 +63,6 @@ XED_ISA_SET_SSEMXCSR:        sse.1.0.edx.25
 XED_ISA_SET_SSSE3:           ssse3.1.0.ecx.9
 XED_ISA_SET_SSSE3MMX:           ssse3.1.0.ecx.9        
 
-XED_ISA_SET_VMFUNC:          n/a              
 
 XED_ISA_SET_VTX:             vmx.1.0.ecx.5        
 XED_ISA_SET_X87:             n/a              

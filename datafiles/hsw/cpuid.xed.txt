@@ -15,7 +15,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-  XED_ISA_SET_AVX:               avx.1.0.ecx.28
-  XED_ISA_SET_AVXAES:            aes.1.0.ecx.25 avx.1.0.ecx.28
-
+  XED_ISA_SET_RTM:             rtm.7.0.ebx.11
+  XED_ISA_SET_INVPCID:         invpcid.7.0.ebx.10
+  XED_ISA_SET_VMFUNC:          n/a                
+  XED_ISA_SET_LZCNT:           lzcnt.80000001.0.ecx.5 

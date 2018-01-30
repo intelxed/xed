@@ -16,7 +16,7 @@
 #  
 #END_LEGAL
 
-# Requires IVB for RDWRFSGS, BDW for RDSEED, SMAP
+
 GOLDMONT:  ALL_OF(SILVERMONT) MPX SHA RDSEED RDWRFSGS \
                               XSAVE XSAVEOPT XSAVEC XSAVES SMAP \
                               CLFLUSHOPT 

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -51,18 +51,4 @@ OPERANDS  : REG0=GPRv_R():cw MEM0:r:v
 
 PATTERN   : 0x0F 0xBC refining_f3 TZCNT=0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
-}
-
-{
-ICLASS    : INVPCID
-CPL       : 0
-CATEGORY  : MISC
-EXTENSION : INVPCID
-ISA_SET   : INVPCID
-ATTRIBUTES : RING0 NOTSX
-PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 MODRM() CR_WIDTH()
-OPERANDS  : REG0=GPR64_R():r MEM0:r:dq
-PATTERN   : 0x0F 0x38 0x82 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64 MODRM() CR_WIDTH()
-OPERANDS  : REG0=GPR32_R():r MEM0:r:dq
-COMMENT   : 
 }

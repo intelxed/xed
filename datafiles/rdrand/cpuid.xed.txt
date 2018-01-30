@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,12 +15,4 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
- dec-instructions:ivb-int-isa.txt 
- enc-instructions:ivb-int-isa.txt 
- dec-instructions:fsgsbase-isa.txt 
- enc-instructions:fsgsbase-isa.txt 
-        registers:ivb-regs.txt
-
-    cpuid: cpuid.xed.txt
-    
+XED_ISA_SET_RDRAND:        rdrand.1.0.ecx.30
