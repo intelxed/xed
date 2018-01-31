@@ -17,6 +17,4 @@
 #END_LEGAL
   XED_ISA_SET_AVX2:                avx2.7.0.ebx.5
   XED_ISA_SET_AVX2GATHER:          avx2.7.0.ebx.5
-  XED_ISA_SET_BMI1:                bmi1.7.0.ebx.3
-  XED_ISA_SET_BMI2:                bmi2.7.0.ebx.8
   XED_ISA_SET_FMA:                 fma.1.0.ecx.12 avx.1.0.ecx.28
