@@ -1230,6 +1230,7 @@ def _configure_libxed_extensions(env):
         if env['hsw']:
             env.add_define('XED_SUPPORTS_LZCNT_TZCNT')
             _add_normal_ext(env,'hswavx')
+            _add_normal_ext(env,'hswbmi') # AMD XOP requires the reg NT defns
             _add_normal_ext(env,'hsw')
         if env['bdw']:
             _add_normal_ext(env,'bdw')
