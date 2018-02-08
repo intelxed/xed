@@ -97,7 +97,11 @@ def  parse_lines(input_file_name, lines): # returns a dictionary
             _die("reading file %s. " + 
                  "Missing colon in line: %s" % 
                  (input_file_name, line))
-        (chip, extensions) = line.split(':')
+        try:
+            (chip, extensions) = line.split(':')
+        except:
+            _die("Bad line: {}".format(line))
+            
         chip = chip.strip()
         chips.append(chip)
         extensions = extensions.split()
