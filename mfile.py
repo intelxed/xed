@@ -84,8 +84,8 @@ def find_mbuild_import():
     sys.path.insert(0,mbuild_install_path)
     
 def work():
-    #if sys.version_info[0] >= 3:
-    #    fatal("Python version 3.x not supported.")
+    if sys.version_info[0] == 3 and sys.version_info[1] < 4:        
+        fatal("Need python version 3.4 or later.")
     if sys.version_info[0] == 2 and sys.version_info[1] < 7:        
         fatal("Need python version 2.7 or later.")
     try:
