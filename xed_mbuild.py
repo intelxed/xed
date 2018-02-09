@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2017 Intel Corporation
+#Copyright (c) 2018 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -389,20 +389,20 @@ def legal_header_tagging(env):
     if 'apply-header' not in env['targets']:
         return
         
-    public_source_files = [ 
+    source_files = [ 
         mbuild.join(env['src_dir'],'include', 'public', '*.h'),
         mbuild.join(env['src_dir'],'examples','*.cpp'),
         mbuild.join(env['src_dir'],'examples','*.c'),
         mbuild.join(env['src_dir'],'examples','*.[hH]'),
-        mbuild.join(mbuild.join(env['build_dir'],'*.h')) ]
-
-    private_source_files = [ 
+        mbuild.join(mbuild.join(env['build_dir'],'*.h')),
         mbuild.join(env['src_dir'],'src','*.c'),
         mbuild.join(env['src_dir'],'include', 'private','*.h') ]
 
-    private_data_files =   [ 
+    data_files =   [
+        mbuild.join(env['src_dir'],'examples','*.py'),
         mbuild.join(env['src_dir'],'scripts','*.py'),
-        mbuild.join(env['src_dir'],'pysrc','*.py')]
+        mbuild.join(env['src_dir'],'pysrc','*.py'),
+        mbuild.join(env['src_dir'],'*.py')  ]
 
     # find and classify the files in datafiles directories
     for root,dirs,files in os.walk( mbuild.join(env['src_dir'],'datafiles') ):
@@ -413,9 +413,9 @@ def legal_header_tagging(env):
                     # skip backup files
                     continue
                 elif re.search(r'[.][ch]$',fn):
-                    private_source_files.append(fn)
+                    source_files.append(fn)
                 else:
-                    private_data_files.append(fn)
+                    data_files.append(fn)
 
     if env.on_windows():
         xbc.cdie("ERROR","TAGGING THE IN-USE PYTHON FILES DOES " +
@@ -423,12 +423,8 @@ def legal_header_tagging(env):
 
     legal_header = open(mbuild.join(env['src_dir'],'misc',
                                     'apache-header.txt'), 'r').readlines()
-    header_tag_files(env,public_source_files, legal_header,
-                     script_files=False)
-    header_tag_files(env,private_source_files, legal_header,
-                     script_files=False)
-    header_tag_files(env, private_data_files, legal_header,
-                     script_files=True)
+    header_tag_files(env, source_files, legal_header, script_files=False)
+    header_tag_files(env, data_files,   legal_header, script_files=True)
     mbuild.msgb("STOPPING", "after %s" % 'header tagging')
     xbc.cexit(0)
 
