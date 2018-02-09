@@ -390,14 +390,14 @@ def legal_header_tagging(env):
         return
         
     source_files = [ 
-        mbuild.join(env['src_dir'],'include', 'public', '*.h'),
         mbuild.join(env['src_dir'],'examples','*.cpp'),
         mbuild.join(env['src_dir'],'examples','*.c'),
         mbuild.join(env['src_dir'],'examples','*.[hH]'),
         mbuild.join(mbuild.join(env['build_dir'],'*.h')),
-        mbuild.join(env['src_dir'],'src','*.c'),
-        mbuild.join(env['src_dir'],'include', 'private','*.h') ]
-
+        mbuild.join(env['src_dir'],'src','*','*.c'),
+        mbuild.join(env['src_dir'],'include', 'private','*.h'),
+        mbuild.join(env['src_dir'],'include', 'public', 'xed', '*.h') ]
+    
     data_files =   [
         mbuild.join(env['src_dir'],'examples','*.py'),
         mbuild.join(env['src_dir'],'scripts','*.py'),
