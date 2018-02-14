@@ -534,6 +534,20 @@ static void xed_encode_precondition_vl(xed_encoder_request_t* req)
                 break;
             set_vl(r,&vl);
         }
+
+        // FIXME: ONLY SET FOR THINGS WITH SIMD (OR K-MASK FOR FPCLASS, VCMP) REGISTERS
+        if (xed3_operand_get_mem0(req)) {
+            xed_uint_t bytes = xed3_operand_get_mem_width(req);
+            if (bytes == 32) {
+                if (vl < 1)
+                    vl = 1;
+            }
+            else if (bytes == 64) {
+                vl = 2;
+            }
+        }
+            
+        
         xed3_operand_set_vl(req,vl);
     }
 }
