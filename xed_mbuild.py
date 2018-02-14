@@ -918,8 +918,9 @@ def init(env):
     env.add_include_dir(mbuild.join(env['src_dir'],"include","public"))
     env.add_include_dir(mbuild.join(env['src_dir'],"include","public",'xed'))
 
-    valid_targets = [ 'clean',       'just-gen',
-                      'skip-gen',    'install',
+    valid_targets = [ 'clean',       'just-prep',
+                      'just-gen',    'skip-gen',
+                      'install',
                       'apply-header',
                       'skip-lib',
                       'examples',    'cmdline',
@@ -1357,6 +1358,17 @@ def build_libxed(env,work_queue):
                        output= env.build_dir_join('dummy-prep') )
     gen_dag = mbuild.dag_t('xedgen', env=env)
     prep = gen_dag.add(env,c0)
+
+    if 'just-prep' in env['targets']:
+        okay = work_queue.build(dag=gen_dag,
+                                show_progress=True,
+                                show_output=True,
+                                show_errors_only=_wk_show_errors_only())
+
+        if not okay:
+            xbc.cdie("[PREP] failed. dying...")
+        mbuild.msgb("STOPPING", "after prep")
+        xbc.cexit()
 
     # Python imports used by the 2 generators.
     # generated 2016-04-15 by importfinder.py:
