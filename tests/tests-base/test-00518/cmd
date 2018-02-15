@@ -1,0 +1,1 @@
+ BUILDDIR/xed -chip-check CANNONLAKE -d 66 0fae 30

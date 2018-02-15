@@ -1,0 +1,4 @@
+Setting chip to ICELAKE
+660FAE30
+ICLASS: CLWB   CATEGORY: CLWB   EXTENSION: CLWB  IFORM: CLWB_MEMmprefetch   ISA_SET: CLWB
+SHORT: clwb zmmword ptr [eax]
