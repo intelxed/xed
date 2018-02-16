@@ -62,6 +62,7 @@ typedef struct {
     int decode_only;
     int sixty_four_bit;
     int mpx_mode;
+    int cet_mode;
     char* input_file_name;
     char* symbol_search_path;     // for dbghelp symbol caches
     char* target_section;
