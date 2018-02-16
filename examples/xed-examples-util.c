@@ -320,6 +320,9 @@ void init_xedd(xed_decoded_inst_t* xedd,
 #if defined(XED_MPX)
     xed3_operand_set_mpxmode(xedd, di->mpx_mode);
 #endif
+#if defined(XED_CET)
+    xed3_operand_set_cet(xedd, di->cet_mode);
+#endif
     if (di->operand != XED_OPERAND_INVALID) 
         xed3_set_generic_operand(xedd, di->operand, di->operand_value);
 }
