@@ -42,4 +42,9 @@ DEC                  ; BUILDDIR/xed -64 -d f3 0f ae c0
 DEC ENC              ; BUILDDIR/xed  -16 -de 62 00
 DEC ENC              ; BUILDDIR/xed  -16 -de 66 62 00
 DEC ENC              ; BUILDDIR/xed      -de 62 00	
-DEC ENC              ; BUILDDIR/xed      -de 66 62 00	
+DEC ENC              ; BUILDDIR/xed      -de 66 62 00
+DEC                  ; BUILDDIR/xed -chip-check SKYLAKE_SERVER -d 66 0fae 30
+DEC                  ; BUILDDIR/xed -chip-check CANNONLAKE -d 66 0fae 30
+DEC                  ; BUILDDIR/xed -chip-check ICELAKE -d 66 0fae 30
+
+

@@ -48,7 +48,9 @@ END_LEGAL */
 #if defined(XED_ENCODER)
 # include "xed-encode.h"
 # include "xed-encoder-hl.h"
+# include "xed-patch.h"
 #endif
+
 #include "xed-util.h"
 #include "xed-operand-action.h"
 

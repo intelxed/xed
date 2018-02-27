@@ -24,7 +24,7 @@
 @mainpage X86 Encoder Decoder User Guide
 by Mark Charney
 
-2017-11-29
+2018-02-27
 
 @section INTRO Introduction
 
@@ -526,19 +526,21 @@ set to 0100 (base 2) or 4 (base 10).
 
 @section API_REF  API Reference
 
-  - @ref INIT         "INIT"      Initialization
-  - @ref DEC          "DEC"       Decoding instructions
-  - @ref ENC          "ENC"       Encoding instructions
-  - @ref ENCHL        "ENCHL"     High level API for encoding instructions
-  - @ref OPERANDS     "OPERANDS"  Operand storage fields
-  - @ref IFORM        "IFORM"     Iforms
-  - @ref ISASET       "ISASET"    ISA-sets and chips
-  - @ref PRINT        "PRINT"     Printing (disassembling) instructions
-  - @ref REGINTFC     "REGINTFC"  Register interface functions
-  - @ref FLAGS        "FLAGS"     Flags interface functions
-  - @ref AGEN         "AGEN"      Address generation calculation support
-  - @ref ENUM         "ENUM"      Enumerations
-  - @ref EXAMPLES     "Examples"  Examples
+  - @ref INIT         "INIT"       Initialization
+  - @ref DEC          "DEC"        Decoding instructions
+  - @ref ENC          "ENC"        Encoding instructions
+  - @ref ENCHL        "ENCHL"      High level API for encoding instructions
+  - @ref ENCHLPATCH   "ENCHLPATCH" Patching instructions
+
+  - @ref OPERANDS     "OPERANDS"   Operand storage fields
+  - @ref IFORM        "IFORM"      Iforms
+  - @ref ISASET       "ISASET"     ISA-sets and chips
+  - @ref PRINT        "PRINT"      Printing (disassembling) instructions
+  - @ref REGINTFC     "REGINTFC"   Register interface functions
+  - @ref FLAGS        "FLAGS"      Flags interface functions
+  - @ref AGEN         "AGEN"       Address generation calculation support
+  - @ref ENUM         "ENUM"       Enumerations
+  - @ref EXAMPLES     "Examples"   Examples
 
 
 
@@ -735,6 +737,24 @@ When all the operands are "suppressed" operands, then the effective
 operand width must be supplied for nondefault operation widths.
 
 */
+
+/*! @defgroup ENCHLPATCH Patching instructions
+
+These functions are useful for JITs and other uses where one must
+modify certain fields of instructions after encoding. To modify an
+instruction, one must encode it (creating an itext array of bytes) and
+then decode it (so that the patching routines know where the various
+fields are located.). Once the itext and the decoded instruction are
+available, certain fields can be modified.
+
+The decode step required to create patchable instructions obviously
+takes additional time so it is suggested one only create patchable
+instructions once as templates and re-use them as needed.
+
+See examples/xed-ex9-patch.c for an example.
+*/
+
+
 
 /*! @defgroup OPERANDS Operand storage fields
 

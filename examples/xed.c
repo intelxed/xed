@@ -280,6 +280,9 @@ static void usage(char* prog) {
 #if defined(XED_MPX)
       "\t-mpx          (Turn on MPX mode for disassembly, default is off)",
 #endif
+#if defined(XED_CET)
+      "\t-cet          (Turn on CET mode for disassembly, default is off)",
+#endif
       "\t-s32          (32b stack addressing, default, not in LONG_64 mode)",
       "\t-s16          (16b stack addressing, not in LONG_64 mode)",
       "\t-set OP VAL   (Set a XED operand to some integer value)",
@@ -357,6 +360,7 @@ main(int argc, char** argv)
 {
     xed_bool_t sixty_four_bit = 0;
     unsigned int mpx_mode = 0;
+    unsigned int cet_mode = 0;
     xed_bool_t decode_only = 1;
     char* input_file_name = 0;
     char* symbol_search_path = 0;
@@ -646,6 +650,11 @@ main(int argc, char** argv)
             mpx_mode = 1;
         }
 #endif
+#if defined(XED_CET)
+        else if (strcmp(argv[i],"-cet")==0)         {
+            cet_mode = 1;
+        }
+#endif
         else if (strcmp(argv[i],"-s32")==0) {
             dstate.stack_addr_width = XED_ADDRESS_WIDTH_32b;
             use_binary_mode = 0;
@@ -738,6 +747,7 @@ main(int argc, char** argv)
     decode_info.histo            = histo;
     decode_info.chip             = xed_chip;
     decode_info.mpx_mode         = mpx_mode;
+    decode_info.cet_mode         = cet_mode;
     decode_info.emit_isa_set     = emit_isa_set;
     decode_info.format_options   = format_options;
     decode_info.operand          = operand;

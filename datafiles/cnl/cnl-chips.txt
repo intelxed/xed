@@ -17,7 +17,9 @@
 #END_LEGAL
 
 
+# CANNONLAKE does not have CLWB
 CANNONLAKE: ALL_OF(SKYLAKE_SERVER) SHA    \
+            NOT(CLWB) \ 
             AVX512_IFMA_128 \
             AVX512_IFMA_256 \
             AVX512_IFMA_512 \
