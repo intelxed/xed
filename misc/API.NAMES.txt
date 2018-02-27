@@ -413,3 +413,6 @@ xed_decoded_inst_is_broadcast_instruction
 xed_decoded_inst_is_broadcast
 xed3_get_generic_operand
 xed3_set_generic_operand
+xed_patch_imm0
+xed_patch_relbr
+xed_patch_disp
