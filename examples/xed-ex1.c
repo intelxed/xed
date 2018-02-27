@@ -436,6 +436,9 @@ int main(int argc, char** argv) {
 #if defined(XED_MPX)
     unsigned int mpx_mode=0;
 #endif
+#if defined(XED_CET)
+    unsigned int cet_mode=0;
+#endif
     xed_tables_init();
     xed_state_zero(&dstate);
 
@@ -453,6 +456,12 @@ int main(int argc, char** argv) {
 #if defined(XED_MPX)
         else if (strcmp(argv[i], "-mpx") == 0) {
             mpx_mode = 1;
+            first_argv++;
+        }
+#endif
+#if defined(XED_CET)
+        else if (strcmp(argv[i], "-cet") == 0) {
+            cet_mode = 1;
             first_argv++;
         }
 #endif
@@ -483,6 +492,9 @@ int main(int argc, char** argv) {
     xed_decoded_inst_set_input_chip(&xedd, chip);
 #if defined(XED_MPX)
     xed3_operand_set_mpxmode(&xedd, mpx_mode);
+#endif
+#if defined(XED_CET)
+    xed3_operand_set_cet(&xedd, cet_mode);
 #endif
 
     // convert ascii hex to hex bytes
