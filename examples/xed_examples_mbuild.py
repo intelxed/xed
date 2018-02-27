@@ -362,7 +362,8 @@ def build_examples(env, work_queue):
        small_examples += ['xed-ex5-enc.c']
        other_c_examples += ['xed-ex3.c']
     if env['decoder'] and env['encoder']:
-       other_c_examples += ['xed-ex6.c']
+       other_c_examples += ['xed-ex6.c',
+                            'xed-ex9-patch.c' ]
     if env['decoder']:
        ild_examples += [ 'xed-ex-ild.c' ]
        other_c_examples += ['xed-ex1.c',
