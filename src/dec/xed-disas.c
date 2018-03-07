@@ -1068,10 +1068,17 @@ xed_decoded_inst_dump_intel_format_internal(xed_print_info_t* pi)
         xed_pi_strcat(pi,"<ICLASS>");
     pi->blen = xed_strncat_lower(pi->buf, instruction_name, pi->blen);
     xml_print_end(pi,"ICLASS");
-    xed_pi_strcat(pi," ");
+    
+    noperands = xed_inst_noperands(xi);
+    // to avoid printing the space in the no-operands case, it is
+    // sufficient to test noperands because the skip_operand and
+    // extra_index_operand cases are guaranteed to have other printed
+    // operands.
+    if (noperands)
+        xed_pi_strcat(pi," ");
 
     /* print the operands */
-    noperands = xed_inst_noperands(xi);
+
     for( i=0;i<noperands;i++)
     {
         if (pi->skip_operand)
@@ -1125,9 +1132,11 @@ xed_decoded_inst_dump_att_format_internal(
     if (suffix) {
         xed_pi_strcat(pi,suffix);
     }
+    
+    noperands = xed_inst_noperands(xi);    
+    if (noperands)
+        xed_pi_strcat(pi," ");
 
-    xed_pi_strcat(pi," ");
-    noperands = xed_inst_noperands(xi);
     intel_way = 0;
     if (xed_inst_get_attribute(xi, XED_ATTRIBUTE_ATT_OPERAND_ORDER_EXCEPTION))
         intel_way = 1;
