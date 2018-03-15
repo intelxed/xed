@@ -11068,9 +11068,9 @@ CATEGORY  : CONVERT
 EXTENSION : SSE
 ATTRIBUTES : MXCSR MMX_EXCEPT NOTSX
 PATTERN   : 0x0F 0x2D no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=MMX_R():w:q:f32 MEM0:r:q:i32
+OPERANDS  : REG0=MMX_R():w:q:i32 MEM0:r:q:f32
 PATTERN   : 0x0F 0x2D no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=MMX_R():w:q:f32 REG1=XMM_B():r:q:i32
+OPERANDS  : REG0=MMX_R():w:q:i32 REG1=XMM_B():r:q:f32
 }
 {
 ICLASS    : UCOMISS
