@@ -8955,9 +8955,9 @@ EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x54 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():rw:ps MEM0:r:ps
+OPERANDS  : REG0=XMM_R():rw:xud MEM0:r:xud
 PATTERN   : 0x0F 0x54 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():rw:ps REG1=XMM_B():r:ps
+OPERANDS  : REG0=XMM_R():rw:xud REG1=XMM_B():r:xud
 }
 {
 ICLASS    : ANDNPS
@@ -8967,9 +8967,9 @@ EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x55 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():rw:ps MEM0:r:ps
+OPERANDS  : REG0=XMM_R():rw:xud MEM0:r:xud
 PATTERN   : 0x0F 0x55 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():rw:ps REG1=XMM_B():r:ps
+OPERANDS  : REG0=XMM_R():rw:xud REG1=XMM_B():r:xud
 }
 {
 ICLASS    : ORPS
@@ -8979,9 +8979,9 @@ EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x56 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():rw:ps MEM0:r:ps
+OPERANDS  : REG0=XMM_R():rw:xud MEM0:r:xud
 PATTERN   : 0x0F 0x56 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():rw:ps REG1=XMM_B():r:ps
+OPERANDS  : REG0=XMM_R():rw:xud REG1=XMM_B():r:xud
 }
 {
 ICLASS    : XORPS
@@ -8991,9 +8991,9 @@ EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x57 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():rw:ps MEM0:r:ps
+OPERANDS  : REG0=XMM_R():rw:xud MEM0:r:xud
 PATTERN   : 0x0F 0x57 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():rw:ps REG1=XMM_B():r:ps
+OPERANDS  : REG0=XMM_R():rw:xud REG1=XMM_B():r:xud
 }
 {
 ICLASS    : SQRTSS
@@ -9060,9 +9060,9 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x54 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : REG0=XMM_R():rw:pd MEM0:r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq MEM0:r:xuq
 PATTERN   : 0x0F 0x54 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:pd REG1=XMM_B():r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq REG1=XMM_B():r:xuq
 }
 {
 ICLASS    : ANDNPD
@@ -9072,9 +9072,9 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x55 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : REG0=XMM_R():rw:pd MEM0:r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq MEM0:r:xuq
 PATTERN   : 0x0F 0x55 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:pd REG1=XMM_B():r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq REG1=XMM_B():r:xuq
 }
 {
 ICLASS    : ORPD
@@ -9084,9 +9084,9 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x56 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : REG0=XMM_R():rw:pd MEM0:r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq MEM0:r:xuq
 PATTERN   : 0x0F 0x56 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:pd REG1=XMM_B():r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq REG1=XMM_B():r:xuq
 }
 {
 ICLASS    : XORPD
@@ -9096,9 +9096,9 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES :  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x57 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : REG0=XMM_R():rw:pd MEM0:r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq MEM0:r:xuq
 PATTERN   : 0x0F 0x57 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:pd REG1=XMM_B():r:pd
+OPERANDS  : REG0=XMM_R():rw:xuq REG1=XMM_B():r:xuq
 }
 {
 ICLASS    : SQRTSD
