@@ -39,6 +39,7 @@ def filter_comments(lines):
 
 all_of_pattern  = re.compile(r'ALL_OF[(](?P<chip>[A-Z0-9a-z_]+)[)]')
 not_pattern  = re.compile(r'NOT[(](?P<ext>[A-Z0-9a-z_]+)[)]')
+common_subset_pattern  = re.compile(r'COMMON_SUBSET[(](?P<chip1>[A-Z0-9a-z_]+),(?P<chip2>[A-Z0-9a-z_]+)[)]')
 
 def uniquify_list(l):
     d = {}
@@ -46,7 +47,30 @@ def uniquify_list(l):
         d[a]=True
     return list(d.keys())
 
+def expand_common_subset(d):
+    """return true to keep going, false otherwise"""
+    found = False
+    for chip,ext_list in d.items():
+        newexts = []
+        for ext in ext_list:
+            m = common_subset_pattern.match(ext)
+            if m:
+                found = True
+                chip1 = m.group('chip1')
+                chip2 = m.group('chip2')
+                exts1 = set(d[chip1])
+                exts2 = set(d[chip2])
+                common = exts1.intersection(exts2)
+                newexts.extend(list(common))
+            else:
+                newexts.append(ext)
+        d[chip]  = uniquify_list(newexts)
+                
+    return found
+
+
 def expand_all_of_once(d):
+    """return true to keep going, false otherwise"""
     found = False
     for chip,ext_list in d.items():
         newexts = []
@@ -131,6 +155,7 @@ def read_database(filename):
     (chips,chip_features_dict) = parse_lines(filename,lines) 
 
     expand_macro(chip_features_dict,expand_all_of_once)
+    expand_macro(chip_features_dict,expand_common_subset)
     expand_macro_not(chip_features_dict)
 
     return (chips,chip_features_dict)
