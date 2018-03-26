@@ -16,3 +16,4 @@ TAGS
 kits/*
 logs/*
 .developer
+*.diff
