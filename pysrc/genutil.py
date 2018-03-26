@@ -102,12 +102,21 @@ def make_readable_by_all_writeable_by_owner(fn):
     except IOError:
         die('Could not chmod: ' + errorname + ' file: [' + fn  + ']' )
 
+def open_for_writing(mode):
+  # The default mode is 'r'.
+  mode = mode or 'r'
+  for c in mode:
+    if c in ['w', 'a', '+']:
+      return True
+  return False
+
 def base_open_file(fn, rw, errorname=''):
     try:
         fp = open(fn,rw)
     except IOError:
         die('Could not open: ' + errorname + ' file: [' + fn  + ']' )
-    make_readable_by_all_writeable_by_owner(fn)
+    if open_for_writing(rw):
+      make_readable_by_all_writeable_by_owner(fn)
     return fp
 
 def resource_usage():
