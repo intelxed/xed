@@ -380,7 +380,7 @@ process_macho(xed_uint8_t* start,
 {
     xed_uint8_t* base_pos  = start;
     xed_uint32_t narch = read_fat_header_narch(base_pos);
-
+    xed_uint32_t fat_arch_slot=0;
 
     xed_uint32_t lim = 1;
     
@@ -388,7 +388,7 @@ process_macho(xed_uint8_t* start,
     if (narch > lim)
         lim = narch;
 
-    for (xed_uint32_t fat_arch_slot = 0; fat_arch_slot < lim; fat_arch_slot++)
+    for (fat_arch_slot = 0; fat_arch_slot < lim; fat_arch_slot++)
     {
         xed_uint32_t offset=0;
         xed_uint32_t size;
@@ -432,7 +432,7 @@ process_macho(xed_uint8_t* start,
 
 }
 
-void xed_disas_macho_init() {
+void xed_disas_macho_init(void) {
     xed_register_disassembly_callback(xed_disassembly_callback_function);
 }
 
