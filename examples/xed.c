@@ -854,9 +854,9 @@ main(int argc, char** argv)
 #else
             xedex_derror("No PECOFF, ELF or MACHO support compiled in");
 #endif
-            printf("# Total Errors: " XED_FMT_LD "\n", decode_info.errors);
+            printf("# Total Errors: " XED_FMT_LU "\n", decode_info.errors);
             if (decode_info.chip)
-                printf("# Total Chip Check Errors: " XED_FMT_LD "\n",
+                printf("# Total Chip Check Errors: " XED_FMT_LU "\n",
                        decode_info.errors_chip_check);
         }
 #endif // XED_DECODER
