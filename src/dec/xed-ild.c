@@ -386,11 +386,8 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
     if (xed3_mode_64b(d))   {
         length++; /* eat the c4/c5 */
     }
-    /* we don't need to check (d->length < d->max_bytes) because
-     * it was already checked in previous scanner (prefix_scanner).
-     */
-    else if (length + 1 < max_bytes)   {
-        xed_uint8_t n = xed_decoded_inst_get_byte(d,length +1);
+    else if (length+1 < max_bytes)   {
+        xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
         /* in 16/32b modes, the MODRM.MOD field MUST be 0b11 */
         if ((n&0xC0) == 0xC0)    {
             length++; /* eat the c4/c5 */
@@ -408,9 +405,10 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
         return ;
     }
 
-    /* we want to make sure, that we have additional 3 bytes
-     * available for reading - for 2 vex payload bytes and opcode */
-    if ((length + 3) <= max_bytes) {
+    /* pointing at first payload byte. we want to make sure, that we have
+     * additional 2 bytes available for reading - for 2nd vex c4 payload
+     * byte and opcode */
+    if (length + 2 < max_bytes) {
       xed_avx_c4_payload1_t c4byte1;
       xed_avx_c4_payload2_t c4byte2;
 
@@ -445,7 +443,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
 
       length += 2; /* eat the c4 vex 2B payload */
       xed_decoded_inst_set_length(d, length);
-      /* FIXME: too hardcoded? maybe define graph data structure?*/
+
       evex_vex_opcode_scanner(d);
       return;
     }
@@ -475,9 +473,6 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
     {
         length++; /* eat the c4/c5 */
     }
-    /* we don't need to check (d->length < d->max_bytes) because
-     * it was already checked in previous scanner (prefix_scanner).
-     */
     else if (length + 1 < max_bytes)
     {
         xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
@@ -502,9 +497,10 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
     }
 
 
-    /* we want to make sure, that we have additional 2 bytes
-     * available for reading - for vex payload byte and opcode */
-    if ((length + 2) <= max_bytes) {
+    /* pointing at vex c5 payload byte. we want to make sure, that we have
+     * additional 2 bytes available for reading - for vex payload byte and
+     * opcode */
+    if (length + 1 < max_bytes) {
         xed_avx_c5_payload_t c5byte1;
         c5byte1.u32 = xed_decoded_inst_get_byte(d, length);
 
@@ -527,15 +523,13 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
         length++;  /* eat the vex opcode payload */
         xed_decoded_inst_set_length(d, length);
         
-
-        /* FIXME: too hardcoded? maybe define graph data structure?*/
-        evex_vex_opcode_scanner(d);
+        evex_vex_opcode_scanner(d);  //eats opcode byte
         return;
     }
     else {
-        /* We don't have 2 bytes available for reading, but we for sure
-         * need to read them - for vex payload byte and opcode bytes,
-         * hence we are out of bytes.
+        /* We don't have 2 bytes available for reading, but we need to read
+         * them - for vex payload byte and opcode bytes, hence we are out
+         * of bytes.
          */
         xed_decoded_inst_set_length(d, length);
         too_short(d);
@@ -588,9 +582,10 @@ static void xop_scanner(xed_decoded_inst_t* d)
         return ;
     }
 
-    /* we want to make sure, that we have additional 3 bytes
-     * available for reading - for 2 xop payload bytes and opcode */
-    if ((length + 3) <= max_bytes)
+    /* pointing at the first xop payload byte. we want to make sure, that
+     * we have additional 2 bytes available for reading - for 2nd xop payload
+     * byte and opcode */
+    if (length + 2 < max_bytes)
     {
       xed_avx_c4_payload1_t xop_byte1;
       xed_avx_c4_payload2_t xop_byte2;
@@ -691,8 +686,8 @@ static void vex_scanner(xed_decoded_inst_t* d)
 #endif
 
 static void get_next_as_opcode(xed_decoded_inst_t* d) {
-    if (xed_decoded_inst_get_length(d) < xed3_operand_get_max_bytes(d)) {     
-        unsigned char length = xed_decoded_inst_get_length(d);
+    unsigned char length = xed_decoded_inst_get_length(d);
+    if (length < xed3_operand_get_max_bytes(d)) {     
         xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
         xed3_operand_set_nominal_opcode(d, b);
         xed_decoded_inst_inc_length(d);
@@ -1360,9 +1355,11 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 return;
             }
         }
-        /*we want to ensure that we have enough bytes available to
-        read: 4 bytes for evex prefix and 1 byte for an opcode */
-        if (length + 5 <= max_bytes) {
+        /*Unlike the vex and xop prefix scanners, here length is pointing
+        at the evex prefix byte.  We want to ensure that we have enough
+        bytes available to read 4 bytes for evex prefix and 1 byte for an
+        opcode */
+        if (length + 4 < max_bytes) {
             xed_avx512_payload1_t evex1;
             xed_avx512_payload2_t evex2;
 
