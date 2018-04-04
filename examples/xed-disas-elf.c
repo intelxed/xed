@@ -48,6 +48,8 @@ END_LEGAL */
 #if defined(XED_DWARF)
 static void dwarf_handler(Dwarf_Error err, Dwarf_Ptr errarg)
 {
+    (void)err;
+    (void)errarg;
 }
 
 /* file 0 does not exist */
