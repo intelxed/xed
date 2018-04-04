@@ -32,7 +32,7 @@ CPL:         3
 CATEGORY:    MOVDIR
 EXTENSION:   MOVDIR
 ISA_SET:     MOVDIR
-REAL_OPCODE: N
+REAL_OPCODE: Y
 ATTRIBUTES:  REQUIRES_ALIGNMENT 
 PATTERN:    0x0F 0x38 0xF8 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix   not64
 OPERANDS:    REG0=A_GPR_R():r MEM0:r:zd:u32 MEM1:w:zd:SUPP BASE1=A_GPR_R():r:SUPP  SEG1=XED_REG_ES:r:SUPP
@@ -51,7 +51,7 @@ CPL:         3
 CATEGORY:    MOVDIR
 EXTENSION:   MOVDIR
 ISA_SET:     MOVDIR
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:    0x0F 0x38 0xF9 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      norexw_prefix 
 OPERANDS:    MEM0:w:d:u32 REG0=GPR32_R():r:d:u32
 IFORM:       MOVDIRI_MEMu32_GPR32u32
@@ -65,7 +65,7 @@ CPL:         3
 CATEGORY:    MOVDIR
 EXTENSION:   MOVDIR
 ISA_SET:     MOVDIR
-REAL_OPCODE: N
+REAL_OPCODE: Y
 PATTERN:    0x0F 0x38 0xF9 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      mode64 rexw_prefix 
 OPERANDS:    MEM0:w:q:u64 REG0=GPR64_R():r:q:u64
 IFORM:       MOVDIRI_MEMu64_GPR64u64
