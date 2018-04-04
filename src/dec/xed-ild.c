@@ -1362,7 +1362,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
         }
         /*we want to ensure that we have enough bytes available to
         read: 4 bytes for evex prefix and 1 byte for an opcode */
-        if (length + 5 <= max_bytes) {
+        if (length + 5 < max_bytes) {
             xed_avx512_payload1_t evex1;
             xed_avx512_payload2_t evex2;
 
