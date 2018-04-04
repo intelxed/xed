@@ -1,0 +1,101 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2018 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING TPAUSE (TPAUSE-N/A-1-32)
+{
+ICLASS:      TPAUSE
+CPL:         3
+CATEGORY:    WAITPKG
+EXTENSION:   WAITPKG
+ISA_SET:     WAITPKG
+REAL_OPCODE: Y
+FLAGS:       MUST [  cf-mod zf-0 pf-0 af-0 sf-0 of-0  ]
+PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b110] RM[nnn]  osz_refining_prefix      norexw_prefix 
+OPERANDS:    REG0=GPR32_B():r:d:u32 REG1=XED_REG_EDX:r:SUPP:d:u32 REG2=XED_REG_EAX:r:SUPP:d:u32
+IFORM:       TPAUSE_GPR32u32
+}
+
+
+# EMITTING TPAUSE (TPAUSE-N/A-1-64)
+{
+ICLASS:      TPAUSE
+CPL:         3
+CATEGORY:    WAITPKG
+EXTENSION:   WAITPKG
+ISA_SET:     WAITPKG
+REAL_OPCODE: Y
+FLAGS:       MUST [  cf-mod zf-0 pf-0 af-0 sf-0 of-0  ]
+PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b110] RM[nnn]  osz_refining_prefix      mode64 rexw_prefix 
+OPERANDS:    REG0=GPR64_B():r:q:u64 REG1=XED_REG_EDX:r:SUPP:d:u32 REG2=XED_REG_EAX:r:SUPP:d:u32
+IFORM:       TPAUSE_GPR64u64
+}
+
+
+# EMITTING UMONITOR (UMONITOR-N/A-1)
+{
+ICLASS:      UMONITOR
+CPL:         3
+CATEGORY:    WAITPKG
+EXTENSION:   WAITPKG
+ISA_SET:     WAITPKG
+REAL_OPCODE: Y
+PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b110] RM[nnn]  f3_refining_prefix     
+OPERANDS:    REG0=A_GPR_B():r
+IFORM:       UMONITOR_GPRa
+}
+
+
+# EMITTING UMWAIT (UMWAIT-N/A-1-32)
+{
+ICLASS:      UMWAIT
+CPL:         3
+CATEGORY:    WAITPKG
+EXTENSION:   WAITPKG
+ISA_SET:     WAITPKG
+REAL_OPCODE: Y
+FLAGS:       MUST [  cf-mod zf-0 pf-0 af-0 sf-0 of-0  ]
+PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b110] RM[nnn]  f2_refining_prefix      norexw_prefix 
+OPERANDS:    REG0=GPR32_B():r:d:u32 REG1=XED_REG_EDX:r:SUPP:d:u32 REG2=XED_REG_EAX:r:SUPP:d:u32
+IFORM:       UMWAIT_GPR32
+}
+
+
+# EMITTING UMWAIT (UMWAIT-N/A-1-64)
+{
+ICLASS:      UMWAIT
+CPL:         3
+CATEGORY:    WAITPKG
+EXTENSION:   WAITPKG
+ISA_SET:     WAITPKG
+REAL_OPCODE: Y
+FLAGS:       MUST [  cf-mod zf-0 pf-0 af-0 sf-0 of-0  ]
+PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b110] RM[nnn]  f2_refining_prefix      mode64 rexw_prefix 
+OPERANDS:    REG0=GPR64_B():r:q:u64 REG1=XED_REG_EDX:r:SUPP:d:u32 REG2=XED_REG_EAX:r:SUPP:d:u32
+IFORM:       UMWAIT_GPR64
+}
+
+

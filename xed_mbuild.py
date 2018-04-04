@@ -1216,7 +1216,13 @@ def _configure_libxed_extensions(env):
     _add_normal_ext(env,'sgx')
     _add_normal_ext(env,'rdpid')
     _add_normal_ext(env,'pt')
-        
+    # Tremont
+    _add_normal_ext(env,'tremont')
+    _add_normal_ext(env,'movdir')
+    _add_normal_ext(env,'waitpkg')
+    _add_normal_ext(env,'cldemote')
+    _add_normal_ext(env,'sgx-enclv') 
+
     if env['avx']:
         _add_normal_ext(env,'avx')
         _add_normal_ext(env,'xsaveopt')
