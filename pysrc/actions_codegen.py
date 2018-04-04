@@ -345,6 +345,8 @@ class actions_codegen_t(object):
         # for the decoder
         if self.ret_action:
             slots_num += 1
+        if self.has_emit:
+            slots_num += 1
         return ['0'] * slots_num
         
     def has_fcall(self):
