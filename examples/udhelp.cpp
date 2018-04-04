@@ -116,7 +116,7 @@ void get_dll_version(char* file_name, short u[4]) {
     verlen = GetFileVersionInfoSize(file_name,&handle);
     if (verlen == 0)  {
         error = GetLastError();
-        fprintf(stderr,"GetFileVersionInfoSize: error code was %d (0x%x)\n", 
+        fprintf(stderr,"GetFileVersionInfoSize: error code was %u (0x%x)\n", 
                error, error);
         exit(1);
     }
@@ -126,7 +126,7 @@ void get_dll_version(char* file_name, short u[4]) {
     if (!ret)  {
         error = GetLastError();
         fprintf(stderr,
-                "GetFileVersionInfo: error code was %d (0x%x)\n", error, error);
+                "GetFileVersionInfo: error code was %u (0x%x)\n", error, error);
         exit(1);
     }
    
@@ -135,7 +135,7 @@ void get_dll_version(char* file_name, short u[4]) {
     if (!ret)  {
         error = GetLastError();
         fprintf(stderr,
-                "VerQueryValue: error code was %d (0x%x)\n", error, error);
+                "VerQueryValue: error code was %u (0x%x)\n", error, error);
         exit(1);
     }
     assert(len == sizeof(VS_FIXEDFILEINFO));
@@ -187,7 +187,7 @@ int dbg_help_client_t::init(char const* const path,
     }
     else    {
         error = GetLastError();
-        fprintf(stderr,"SymInitialize returned error : %d 0x%x\n",
+        fprintf(stderr,"SymInitialize returned error : %u 0x%x\n",
                 error, error);
         fflush(stderr);
         return 0;
@@ -200,7 +200,7 @@ int dbg_help_client_t::init(char const* const path,
         }
         else    {
             error = GetLastError();
-            fprintf(stderr,"SymSetSearchPath returned error : %d 0x%x\n",
+            fprintf(stderr,"SymSetSearchPath returned error : %u 0x%x\n",
                     error, error);
             fflush(stderr);
             return 0;
@@ -214,7 +214,7 @@ int dbg_help_client_t::init(char const* const path,
     }
     else    {
         error = GetLastError();
-        fprintf(stderr,"SymLoadModuleEx returned error : %d 0x%x\n", 
+        fprintf(stderr,"SymLoadModuleEx returned error : %u 0x%x\n", 
                 error, error);
         fflush(stderr);
         return 0;
