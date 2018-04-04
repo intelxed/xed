@@ -63,7 +63,12 @@ xed_decoded_inst_inc_length(xed_decoded_inst_t* p) {
 }
 
 static XED_INLINE xed_uint32_t
-xed_phash_invalid(const xed_decoded_inst_t* d) {
+xed_phash_invalid(xed_decoded_inst_t* d) {
+    return 0;
+    (void) d; 
+}
+static XED_INLINE xed_uint32_t
+xed_phash_invalid_const(const xed_decoded_inst_t* d) {
     return 0;
     (void) d; 
 }

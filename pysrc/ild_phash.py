@@ -406,7 +406,11 @@ class l2_phash_t(phash_t):
                 #slots with -1?
                 #Seems it is enough to set value=0, saying that it's an
                 #illegal instruction
-                elem = '/*empty slot2 */ {0, xed_phash_invalid},'
+                if self.cdict.strings_dict['obj_const']:
+                    elem = '/*empty slot2 */ {0, xed_phash_invalid_const},'
+                else:
+                    elem = '/*empty slot2 */ {0, xed_phash_invalid},'
+                    
             fo.add_code(elem)
 
         fo.add_code_eol('}')
