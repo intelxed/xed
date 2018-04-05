@@ -1,0 +1,1 @@
+ BUILDDIR/xed -set CLDEMOTE 1 -e CLDEMOTE MEM:eax
