@@ -1,0 +1,5 @@
+Request: CLDEMOTE EASZ:2, MEM0:ptr [EAX], MODE:1, SMODE:1
+OPERAND ORDER: MEM0 
+Could not encode: CLDEMOTE MEM:eax 
+Error code was: GENERAL_ERROR
+[XED CLIENT ERROR] Dying

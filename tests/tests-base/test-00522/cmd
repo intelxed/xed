@@ -1,0 +1,1 @@
+ BUILDDIR/xed -chip-check TREMONT -d 0f1c00

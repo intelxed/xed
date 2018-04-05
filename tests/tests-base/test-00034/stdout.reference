@@ -1,5 +1,5 @@
 6690
 ICLASS: NOP   CATEGORY: NOP   EXTENSION: BASE  IFORM: NOP_90   ISA_SET: I86
-SHORT: data16 nop 
+SHORT: data16 nop
 Encodable! 6690
 Identical re-encoding

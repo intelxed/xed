@@ -1,0 +1,1 @@
+ BUILDDIR/xed -chip-check TREMONT -e CLDEMOTE MEM1:eax

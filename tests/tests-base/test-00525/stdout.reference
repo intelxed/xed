@@ -1,0 +1,5 @@
+Setting chip to TREMONT
+Request: CLDEMOTE EASZ:2, MEM0:byte ptr [EAX], MEM_WIDTH:1, MODE:1, SMODE:1
+OPERAND ORDER: MEM0 
+Encodable! 0F1C00
+.byte 0x0f,0x1c,0x00
