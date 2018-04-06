@@ -64,6 +64,11 @@ def _is_bits(val):
 
     
 class xed_reader_t(object):
+    """This class is designed to be used on the partial build materials
+    collected up in early part of the build and dumped in to the
+    BUILDDIR/dgen directory. Once initialized, the recs attribute 
+    is what you'll iterate over to access the instruction records.
+    """
     def __init__(self,
                  state_bits_filename,
                  instructions_filename,
