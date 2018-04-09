@@ -334,7 +334,7 @@ static int check_binary_32b(void* start) {
 }
 
 static int range_check(void* p, unsigned int esize, void* start, void* end)  {
-    if (p < start || (unsigned char*)p+esize >= (unsigned char*)end)
+    if (p < start || (unsigned char*)p+esize > (unsigned char*)end)
         return 1;
     return 0;
 }
@@ -560,11 +560,14 @@ symbols_elf64(xed_disas_info_t* fi,
         return;
     
     for( i=0;i<nsect;i++)  {
-        if (range_check(shp+i, sizeof(Elf64_Shdr), start, hard_limit))
+        if (range_check(shp+i, sizeof(Elf64_Shdr), start, hard_limit)) {
             break;
+        }
         if (shp[i].sh_type == SHT_STRTAB) {
-            if (range_check(shp+sect_strings, sizeof(Elf64_Shdr), start, hard_limit))
+            if (range_check(shp+sect_strings, sizeof(Elf64_Shdr),
+                            start, hard_limit)) {
                 break;
+            }
             char* name = lookup64(shp[i].sh_name, start, len,
                                   shp[sect_strings].sh_offset);
             if (name)
@@ -584,20 +587,19 @@ symbols_elf64(xed_disas_info_t* fi,
             }
         }
     }
-
     /* now read the symbols */
     for( i=0;i<nsect;i++)  {
         if (range_check(shp+i, sizeof(Elf64_Shdr), start, hard_limit))
             break;
 
-        if (shp[i].sh_type == SHT_SYMTAB) {
+        if (shp[i].sh_type == SHT_SYMTAB && string_table_offset) {
             if (fi->xml_format == 0) {
                 print_comment64(i,shp, "symtab");
             }
             read_symbols64(start, len, shp[i].sh_offset, shp[i].sh_size, 
                            string_table_offset,symtab);
         }
-        else if (shp[i].sh_type == SHT_DYNSYM) {
+        else if (shp[i].sh_type == SHT_DYNSYM && dynamic_string_table_offset) {
             if (fi->xml_format == 0) {
                 print_comment64(i,shp, "dynamic symtab");
             }
@@ -671,7 +673,8 @@ symbols_elf32(xed_disas_info_t* fi,
         if (range_check(shp+i, sizeof(Elf32_Shdr), start, hard_limit))
             break;
         if (shp[i].sh_type == SHT_STRTAB) {
-            if (range_check(shp+sect_strings, sizeof(Elf32_Shdr), start, hard_limit))
+            if (range_check(shp+sect_strings, sizeof(Elf32_Shdr),
+                            start, hard_limit))
                 break;
             char* name = lookup32(shp[i].sh_name, start,  len,
                                   shp[sect_strings].sh_offset);
@@ -698,14 +701,15 @@ symbols_elf32(xed_disas_info_t* fi,
         if (range_check(shp+i, sizeof(Elf32_Shdr), start, hard_limit))
             break;
         
-        if (shp[i].sh_type == SHT_SYMTAB) {
+        if (shp[i].sh_type == SHT_SYMTAB && string_table_offset) {
             if (fi->xml_format == 0) {
                 print_comment32(i,shp, "symtab");
             }
             read_symbols32(start, len, shp[i].sh_offset, shp[i].sh_size, 
                            string_table_offset, symtab);
         } 
-        else if (shp[i].sh_type == SHT_DYNSYM) {
+        else if (shp[i].sh_type == SHT_DYNSYM && dynamic_string_table_offset)
+        {
             if (fi->xml_format == 0) {
                 print_comment32(i,shp, "dynamic symtab");
             }
