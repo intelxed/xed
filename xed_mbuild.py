@@ -568,7 +568,7 @@ def mkenv():
                                  limit_strings=False,
                                  strip='strip',
                                  pti_test=False,
-                                 verbose = 1,
+                                 verbose = 0,
                                  compress_operands=False,
                                  test_perf=False,
                                  example_linkflags='',
