@@ -261,8 +261,9 @@ class generator_inputs_t(object):
     def concatenate_one_set_of_files(self, env, target, inputs):
         """Concatenate input files creating the target file."""
         try:
-            mbuild.msgb("CONCAT", "%s <-\n\t\t%s" % (target ,
-                                                     '\n\t\t'.join(inputs)))
+            if mbuild.verbose(1):
+                mbuild.msgb("CONCAT", "%s <-\n\t\t%s" % (target ,
+                                                         '\n\t\t'.join(inputs)))
             output = open(target,"w")
             for f in inputs:
                 if os.path.exists(f):
