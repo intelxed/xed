@@ -289,7 +289,7 @@ the implementation. The changes are as follows:
     <li> XED_ICLASS_JRCXZ was split in to 3 distinct iclasses:
     XED_ICLASS_JCXZ, XED_ICLASS_JECXZ and XED_ICLASS_JRCXZ.
     <li> The REP-prefixed (0xF2, 0xF3) string instructions were split
-    in to new iclasses making tqhem distinct from the underlying
+    in to new iclasses making them distinct from the underlying
     non-REP-prefixed instructions.  For example XED_ICLASS_REP_STOSW
     is distinct from XED_ICLASS_STOSW.  And the CMPS{B,W,D,Q} and
     SCAS{B,W,D,Q} instructions have "REPE_" or "REPNE_" prefixes to
@@ -773,7 +773,7 @@ iforms are supposed to aid in creating dispatch tables for
 instructions. You can often use a flat array indexed by iform. The
 maximum iform is #XED_IFORM_LAST.
 
-The iforms some times do not uniquely identify instructions. For
+The iforms sometimes do not uniquely identify instructions. For
 example, many instructions in the ISA are "scalable" in that their
 operand width depends on the machine mode and the prefixes. The memory
 operation of these scalable opcodes is either 16 bits, 32 bits or 64
@@ -783,7 +783,7 @@ single iform and need to be further refined by the
 #xed_operand_values_get_effective_operand_width function.
 
 The names of the iforms are derived from information about the
-#xed_iclass_enum_t and the names of their explicit operands (the name of of
+#xed_iclass_enum_t and the names of their explicit operands (the name of 
 nonterminals in the Intel XED internal grammar) and the data types of those
 operands. Other information is sometimes included to disambiguate
 similar instructions. For example, there are several opcodes and
