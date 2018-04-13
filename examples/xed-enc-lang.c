@@ -623,8 +623,8 @@ parse_encode_request(ascii_encode_request_t areq)
                         "[XED CLIENT ERROR] Cannot use DIL/SPL/BPL/SIL outside of 64b mode\n");
                 exit(1);
             }
-        // The registers operands aer numbered starting from the first one
-        // as XED_OPERAND_REG0. We incremenet regnum (below) every time we
+        // The registers operands are numbered starting from the first one
+        // as XED_OPERAND_REG0. We increment regnum (below) every time we
         // add a register operands.
         r = XED_CAST(xed_operand_enum_t,XED_OPERAND_REG0 + regnum);
         // store the register identifier in the operand storage field
