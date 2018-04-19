@@ -27,6 +27,7 @@ import slash_expand
 import genutil
 import opnd_types
 import opnds
+import cpuid_rdr
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
@@ -73,12 +74,15 @@ class xed_reader_t(object):
                  state_bits_filename,
                  instructions_filename,
                  widths_filename,
-                 element_types_filename):
+                 element_types_filename,
+                 cpuid_filename=''):
 
         self.xtypes = self._gen_xtypes(element_types_filename) 
         self.widths_dict = self._gen_widths(widths_filename)
         
         self.state_bits = self._parse_state_bits(state_bits_filename)
+        
+        
         self.deleted_unames = {}
         self.deleted_instructions = {}
         self.recs = self._process_lines(instructions_filename)
@@ -86,6 +90,11 @@ class xed_reader_t(object):
         self._fix_real_opcode()
         self._generate_explicit_operands()
         self._parse_operands()
+        
+        self.cpuid_map = {}
+        if cpuid_filename:
+            self.cpuid_map = cpuid_rdr.read_file(cpuid_filename)
+            self._add_cpuid()
 
 
     def _refine_widths_input(self,lines):
@@ -172,6 +181,14 @@ class xed_reader_t(object):
             if not hasattr(v,'iform'):
                 v.iform=''
             v.explicit_operands = self._compute_explicit_operands(v)
+            
+    def _add_cpuid(self):
+        '''set v.cpuid with list of cpuid bits for this instr'''
+        for v in self.recs:
+            v.cpuid = []
+            ky = 'XED_ISA_SET_{}'.format(v.isa_set.upper())
+            if ky in self.cpuid_map:
+                v.cpuid = self.cpuid_map[ky]
             
     def _parse_operands(self):
         '''set v.parsed_operands with list of operand_info_t objects (see opnds.py).'''
