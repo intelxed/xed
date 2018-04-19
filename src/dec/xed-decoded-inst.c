@@ -646,10 +646,7 @@ xed_decoded_inst_operand_element_type(const xed_decoded_inst_t* p,
         /* This is a catch case for the register NTs that do not have 
            type codes. It is not 100% accurate */
         if (dtype == XED_OPERAND_ELEMENT_TYPE_INVALID) 
-            return XED_OPERAND_ELEMENT_TYPE_INT; 
-        else if (dtype == XED_OPERAND_ELEMENT_TYPE_VARIABLE) 
-            dtype = XED_STATIC_CAST(xed_operand_element_type_enum_t,
-                                    xed3_operand_get_type(p));
+            return XED_OPERAND_ELEMENT_TYPE_INT;
     }
     return dtype;
 }
