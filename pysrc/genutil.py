@@ -370,6 +370,11 @@ def no_comments(line):
    oline = oline.strip()
    return oline
 
+def blank_line(line):
+   if line == '':
+      return False
+   return True
+
 continuation_pattern = re.compile(r'\\$')
 def process_continuations(lines):
    global continuation_pattern

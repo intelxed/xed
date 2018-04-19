@@ -101,6 +101,7 @@ from verbosity import *
 import opnds
 import opnd_types
 import genutil
+import cpuid_rdr
 
 send_stdout_message_to_file = False
 if send_stdout_message_to_file:
@@ -576,10 +577,6 @@ class state_info_t(object):
 
 ############################################################################
       
-def blank_line(line):
-   if line == '':
-      return False
-   return True
 
 def pad_pattern(pattern):
    "pad it to a multiple of 8 bits"
@@ -597,7 +594,7 @@ def read_dict_spec(fn):
       die("Could not read file: " + fn)
     lines = open(fn,'r').readlines()
     lines = map(no_comments, lines)
-    lines = list(filter(blank_line, lines))
+    lines = list(filter(genutil.blank_line, lines))
     for line in lines:
         wrds = line.split()
         key = wrds[0]
@@ -621,7 +618,7 @@ def read_state_spec(fn):
       die("Could not read file: " + fn)
    lines = open(fn,'r').readlines()
    lines = map(no_comments, lines)
-   lines = list(filter(blank_line, lines))
+   lines = list(filter(genutil.blank_line, lines))
    for line in lines:
       ## remove comment lines
       #line = no_comments(line)
@@ -5733,20 +5730,7 @@ def call_chipmodel(agi):
 
 ################################################
 def read_cpuid_mappings(fn):
-    lines = open(fn,'r').readlines()
-    lines = map(no_comments, lines)
-    lines = list(filter(blank_line, lines))
-    d = {} # isa-set to list of cpuid records
-    for line in lines:
-        wrds = line.split(':')
-        isa_set = wrds[0].strip()
-        #cpuid_bits = re.sub('[.]','_',wrds[1].upper()).split()
-        cpuid_bits = wrds[1].upper().split()
-        if isa_set in d:
-            die("Duplicate cpuid definition for isa set. isa-set={} old ={} new={}".format(
-                isa_set, d[isa_set], cpuid_bits))
-        d[isa_set] = cpuid_bits
-    return d
+    return cpuid_rdr.read_file(fn)
 
 def make_cpuid_mappings(agi,mappings):
 
