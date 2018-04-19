@@ -46,7 +46,10 @@ def work(args):  # main function
 
     xeddb.recs.sort(key=lambda x:x.iclass)
     for r in xeddb.recs:
-        print("{}: {}".format(r.iclass, " ".join(r.cpuid)))
+        if r.space in ['vex','evex']:
+            print("{}: {}/{}: {}".format(r.iclass, r.space, r.vl, " ".join(r.cpuid)))
+        else:
+            print("{}: {}: {}".format(r.iclass, r.space, " ".join(r.cpuid)))
 
     return 0
 

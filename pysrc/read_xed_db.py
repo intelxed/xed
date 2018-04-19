@@ -95,7 +95,7 @@ class xed_reader_t(object):
         if cpuid_filename:
             self.cpuid_map = cpuid_rdr.read_file(cpuid_filename)
             self._add_cpuid()
-
+        self._add_vl()
 
     def _refine_widths_input(self,lines):
        """Return  a list of width_info_t. Skip comments and blank lines"""
@@ -189,6 +189,26 @@ class xed_reader_t(object):
             ky = 'XED_ISA_SET_{}'.format(v.isa_set.upper())
             if ky in self.cpuid_map:
                 v.cpuid = self.cpuid_map[ky]
+                
+    def _add_vl(self):
+        def _get_vl(iclass,space,pattern):
+            if 'VL=0' in pattern:
+                return '128'
+            elif 'VL=1' in pattern:
+                return '256'
+            elif 'VL=2' in pattern:
+                return '512'
+            elif space == 'vex':
+                return 'LIG'
+            elif space == 'evex':
+                return 'LLIG'
+            die("Not reached")
+
+        for v in self.recs:
+            if v.space in ['vex','evex']:
+                v.vl = _get_vl(v.iclass, v.space, v.pattern)
+            else:
+                v.vl = 'n/a'
             
     def _parse_operands(self):
         '''set v.parsed_operands with list of operand_info_t objects (see opnds.py).'''
