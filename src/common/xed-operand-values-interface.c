@@ -1022,11 +1022,6 @@ xed_operand_values_dump(    const xed_operand_values_t* ov,
                           }
                           break;
                       }
-                      case XED_OPERAND_CTYPE_XED_OPERAND_ELEMENT_TYPE_ENUM_T: { 
-                          //not printed currently
-                          break;
-                      }
-                                        
                       default:
                         blen = xed_strncat(buf,"NOT HANDLING CTYPE ",blen);
                         blen = xed_strncat(buf, xed_operand_ctype_enum_t2str(ctype),blen);
