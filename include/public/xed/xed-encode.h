@@ -211,11 +211,15 @@ xed_encoder_request_set_scale(xed_encoder_request_t* p,
 
 //////////////////////////////////////////////
 /// @ingroup ENC
-XED_DLL_EXPORT const xed_operand_values_t*
-xed_encoder_request_operands_const(const xed_encoder_request_t* p);
+static XED_INLINE const xed_operand_values_t*
+xed_encoder_request_operands_const(const xed_encoder_request_t* p) {
+    return p;
+}
 /// @ingroup ENC
-XED_DLL_EXPORT xed_operand_values_t*
-xed_encoder_request_operands(xed_encoder_request_t* p);
+static XED_INLINE xed_operand_values_t*
+xed_encoder_request_operands(xed_encoder_request_t* p) {
+    return p;
+}
 
 /// @name Initialization
 //@{
