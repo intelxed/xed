@@ -31,14 +31,6 @@ END_LEGAL */
 //xed_encode_nonterminal_ISA_ENCODE(xed_encoder_request_t& xes);
 
 
-const xed_operand_values_t*
-xed_encoder_request_operands_const(const xed_encoder_request_t* p) {
-    return p;
-}
-xed_operand_values_t*
-xed_encoder_request_operands(xed_encoder_request_t* p) {
-    return p;
-}
 
 // Emitting the legacy map bytes.
 // Need to convert from xed_ild_map_enum_t to the actual bytes.
