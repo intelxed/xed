@@ -647,6 +647,11 @@ xed_decoded_inst_operand_element_type(const xed_decoded_inst_t* p,
            type codes. It is not 100% accurate */
         if (dtype == XED_OPERAND_ELEMENT_TYPE_INVALID) 
             return XED_OPERAND_ELEMENT_TYPE_INT;
+#if defined(XED_SUPPORTS_KNC)
+        else if (dtype == XED_OPERAND_ELEMENT_TYPE_VARIABLE) 
+            dtype = XED_STATIC_CAST(xed_operand_element_type_enum_t,
+                                    xed3_operand_get_type(p));
+#endif
     }
     return dtype;
 }
