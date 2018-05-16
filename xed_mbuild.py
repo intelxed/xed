@@ -2171,7 +2171,7 @@ def _run_canned_tests(env,osenv):
 
     output_file = env.build_dir_join('TEST.OUT.txt')
     cmd  = env.expand_string(cmd)
-    if mbuild.verbose(2):
+    if mbuild.verbose(1):
         mbuild.msgb("TEST COMMAND", "%s > %s" %(cmd,str(output_file)))
     (retcode, stdout, stderr) = mbuild.run_command_output_file(cmd,
                                                                output_file,
