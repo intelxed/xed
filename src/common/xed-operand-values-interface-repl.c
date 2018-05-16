@@ -26,7 +26,6 @@ END_LEGAL */
 #include "xed-operand-ctype-enum.h"
 #include "xed-operand-ctype-map.h"
 #include "xed-reg-class.h"
-#include <string.h> //memset
 
 #include "xed-ild.h"
 

@@ -19,21 +19,26 @@ END_LEGAL */
 #include "xed-internal-header.h"
 #include "xed-decoded-inst.h"
 #include "xed-operand-values-interface.h"
-#include <string.h> // memset
 
 /* INITIALIZATION */
-
+static XED_INLINE void zero_inst(xed_decoded_inst_t* p)
+{
+    unsigned int i;
+    xed_uint32_t* xp = (xed_uint32_t*)p;
+    for(i=0;i<sizeof(xed_decoded_inst_t)/4;i++)
+        xp[i]=0;
+}
 XED_DLL_EXPORT void
 xed_decoded_inst_zero_set_mode(xed_decoded_inst_t* p,
                                const xed_state_t* dstate)
 {
-    memset(p, 0, sizeof(xed_decoded_inst_t));
+    zero_inst(p);
     xed_operand_values_set_mode(p,dstate);
 }
-    
+
 XED_DLL_EXPORT void
 xed_decoded_inst_zero(xed_decoded_inst_t* p) {
-    memset(p, 0, sizeof(xed_decoded_inst_t));
+    zero_inst(p);
 }
 
 XED_DLL_EXPORT void
