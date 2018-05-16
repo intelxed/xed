@@ -313,6 +313,8 @@ decode_internal(xed_decoded_inst_t* xedd,
 void init_xedd(xed_decoded_inst_t* xedd,
                xed_disas_info_t* di)
 {
+
+
 #if defined(XED_DECODER)
     xed_decoded_inst_zero_set_mode(xedd, &(di->dstate));
 #endif
@@ -1215,7 +1217,7 @@ void xed_disas_test(xed_disas_info_t* di)
         okay = 0;
         length = 0;
 
-        init_xedd(&xedd, di); // &(di->dstate), di->chip, di->mpx_mode);
+        init_xedd(&xedd, di); 
         
         if ( di->decode_only )
         {

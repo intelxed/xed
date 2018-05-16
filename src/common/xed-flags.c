@@ -22,7 +22,6 @@ END_LEGAL */
 #include "xed-portability.h"
 #include "xed-util.h"
 #include "xed-tables-extern.h"
-#include <string.h> //memset
 
 xed_bool_t 
 xed_flag_set_is_subset_of(const xed_flag_set_t* p, const xed_flag_set_t* other)

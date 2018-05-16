@@ -28,10 +28,12 @@ END_LEGAL */
 #include "xed-operand-ctype-map.h"
 #include "xed-reg-class.h"
 #include "xed-operand-accessors.h"
-#include <string.h> //memset
 
 void xed_operand_values_init(xed_operand_values_t* p) {
-    memset(&(p->_operands),0,sizeof(xed_operand_storage_t));
+    unsigned int i;
+    xed_uint32_t* xp = (xed_uint32_t*)p;
+    for(i=0;i<sizeof(xed_operand_storage_t)/4;i++)
+        xp[i]=0;
 }
 
 void xed_operand_values_init_keep_mode( xed_operand_values_t* dst,
