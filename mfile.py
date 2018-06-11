@@ -86,8 +86,10 @@ def find_mbuild_import():
 def work():
     if sys.version_info[0] == 3 and sys.version_info[1] < 4:        
         fatal("Need python version 3.4 or later.")
-    if sys.version_info[0] == 2 and sys.version_info[1] < 7:        
-        fatal("Need python version 2.7 or later.")
+    if sys.version_info[0] == 2:
+        if (sys.version_info[1] < 7 or (sys.version_info[1] == 7 and
+                                        sys.version_info[2] < 5)):
+            fatal("Need python version 2.7.5 or later.")
     try:
         find_mbuild_import()
     except:
