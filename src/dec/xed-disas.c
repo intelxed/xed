@@ -626,7 +626,7 @@ print_rel_sym(xed_print_info_t* pi,
      xed_uint64_t pc = pi->runtime_address + instruction_length;
      xed_uint64_t effective_addr;
      xed_bool_t long_mode, symbolic;
-     xed_uint_t bits_to_print;
+     xed_uint_t bits_to_print, eosz;
      char symbol[XED_SYMBOL_LEN];
      xed_uint64_t offset;
      const xed_bool_t leading_zeros = 0;
@@ -640,8 +640,13 @@ print_rel_sym(xed_print_info_t* pi,
                             xed_decoded_inst_operands_const(pi->p));
               
      bits_to_print = long_mode ? 8*8 :4*8;
-
+     
      effective_addr = (xed_uint64_t) ((xed_int64_t)pc  + disp);
+     
+     eosz = xed_operand_values_get_effective_operand_width(
+                         xed_decoded_inst_operands_const(pi->p));
+     if (eosz == 16) 
+         effective_addr = effective_addr & 0xFFFF;
 
      symbolic = xed_get_symbolic_disassembly(pi,
                                              effective_addr, 
