@@ -49,7 +49,7 @@ def _grab_ldd_libraries(lines):
     return (okay, files)
 
 def _file_to_avoid(env,x):
-    avoid_libraries = [ 'ld-linux', 'linux-vdso']
+    avoid_libraries = [ 'ld-linux', 'linux-vdso', 'linux-gate']
     if 'copy_libc' in env:
         if env['copy_libc']==False:
             avoid_libraries.append('libc')
