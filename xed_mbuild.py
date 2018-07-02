@@ -2182,7 +2182,7 @@ def _run_canned_tests(env,osenv):
 
     for l in stdout:
         l = l.rstrip()
-        if re.search(r'^[[](TESTS|ERRORS|SKIPPED|PASS_PCT|FAIL)[]]',l):
+        if re.search(r'^\[(TESTS|ERRORS|SKIPPED|PASS_PCT|FAIL)\]',l):
            mbuild.msgb("TESTSUMMARY", l)
     if retcode == 0:
         mbuild.msgb("CANNED TESTS", "PASSED")
