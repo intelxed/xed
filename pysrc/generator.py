@@ -5920,7 +5920,7 @@ def emit_reg_class_mappings(options, regs_list):
       if ri.max_enclosing_reg_32:
           m32 = ri.max_enclosing_reg_32
       else:
-          m32 = ri.max_enclosing_reg
+          m32 = 'INVALID' # used for 64b GPRs
 
       s = 'xed_largest_enclosing_register_array_32[XED_REG_%s]= XED_REG_%s' % (
           ri.name, m32)
