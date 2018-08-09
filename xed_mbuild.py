@@ -543,6 +543,7 @@ def mkenv():
                                  cet=True,
                                  skl=True,
                                  skx=True,
+                                 clx=True,
                                  cnl=True,
                                  icl=True,
                                  future=True,
@@ -714,11 +715,15 @@ def xed_args(env):
     env.parser.add_option("--no-skl",
                           action="store_false", 
                           dest="skl", 
-                          help="Do not include SKL.")
+                          help="Do not include SKL (Skylake Client).")
     env.parser.add_option("--no-skx",
                           action="store_false", 
                           dest="skx", 
-                          help="Do not include SKX.")
+                          help="Do not include SKX (Skylake Server).")
+    env.parser.add_option("--no-clx",
+                          action="store_false", 
+                          dest="clx", 
+                          help="Do not include CLX (Cascade Lake Server).")
     env.parser.add_option("--no-cnl",
                           action="store_false", 
                           dest="cnl", 
@@ -1138,7 +1143,7 @@ def _configure_libxed_extensions(env):
     if env['avx']:
         env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'cnl', 'icl']):
+    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cnl', 'icl']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['knc']:
         env.add_define('XED_SUPPORTS_KNC')
@@ -1250,6 +1255,9 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'skx')
             _add_normal_ext(env,'pku')
             _add_normal_ext(env,'clwb')
+        if env['clx']:
+            _add_normal_ext(env,'clx')
+            _add_normal_ext(env,'vnni')
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
@@ -2211,12 +2219,13 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CNL, ICL, KNL, KNM Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CNL, ICL, KNL, KNM Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
         env['skl'] = False
         env['skx'] = False
+        env['clx'] = False
         env['cnl'] = False
         env['icl'] = False
         env['knl'] = False
@@ -2232,12 +2241,14 @@ def verify_args(env):
         
     if not env['avx512']:
         env['skx'] = False
+        env['clx'] = False
         env['cnl'] = False
         env['icl'] = False
         env['knl'] = False
         env['knm'] = False
         env['future'] = False
 
+    # turn off downstream (later) stuff logically
     if not env['ivb']:
         env['hsw'] = False
     if not env['hsw']:
@@ -2248,6 +2259,7 @@ def verify_args(env):
         env['skx'] = False
     if not env['skx']:
         env['cnl'] = False
+        env['clx'] = False
     if not env['cnl']:
         env['icl'] = False
     if not env['icl']:
@@ -2258,6 +2270,7 @@ def verify_args(env):
         env['knl'] = False
         env['knm'] = False
         env['skx'] = False
+        env['clx'] = False
         env['cnl'] = False
         env['icl'] = False
         env['future'] = False
