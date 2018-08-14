@@ -889,13 +889,20 @@ xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
 xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
     if (xed3_operand_get_mask(p) != 0)
+    {
 #   if defined(XED_SUPPORTS_AVX512)
+        const xed_inst_t* xi = xed_decoded_inst_inst(p);
+        const xed_operand_t* op = xed_inst_operand(xi,0); // 0'th operand.
+        if (xed_operand_width(op) == XED_OPERAND_WIDTH_MSKW) // mask dest -> always zeroing
+            return 0;
+                
         if (xed3_operand_get_zeroing(p) == 0)
             if (!xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_MASK_AS_CONTROL))            
                 return 1;
 #   elif defined(XED_SUPPORTS_KNC)
         return 1;
 #   endif
+    }
 #endif
     return 0;
     (void)p; //pacify compiler
@@ -914,7 +921,6 @@ xed_operand_action_enum_t
 xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
                                 unsigned int operand_index)
 {
-
     /* For the 0th operand, except for stores and except if attribute MASK_AS_CONTROL
                              RW             W   <<< SDM/XED notion
       ===========================================
@@ -925,6 +931,8 @@ xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
       aaa!=0  control     n/a             w
       aaa!=0  merging     r+cw            r+cw  <<< This one requires special handling
       aaa!=0  zeroing     r+w             w
+
+      special case: things that write mask reg dests  have EVEX.z==0 but never merge.
      */
     
     const xed_inst_t* xi = xed_decoded_inst_inst(p);
@@ -933,7 +941,8 @@ xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
 
     if (operand_index == 0)
     {
-        if (xed_decoded_inst_masking(p) && xed_decoded_inst_merging(p))
+        if ( xed_decoded_inst_masking(p)  &&
+             xed_decoded_inst_merging(p)   )
         {
             if (rw == XED_OPERAND_ACTION_RW)
                 return XED_OPERAND_ACTION_RCW;
