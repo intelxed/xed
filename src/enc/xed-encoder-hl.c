@@ -115,11 +115,10 @@ xed_bool_t xed_convert_to_encoder_request(xed_encoder_request_t* out,
             break;
 
           case XED_ENCODER_OPERAND_TYPE_OTHER:
+            // this is used to set encode parameters for AVX512, like
+            // zeroing, rounding or sae. It could be abused to set other
+            // nonsensical things.
             xed3_set_generic_operand(out, op->u.s.operand_name,  op->u.s.value);
-            //xed_encoder_request_set_operand_order(out, real_operands, op->u.s.operand_name);
-            //real_operands++;
-            //FIXME: What is this ??? 
-            xed_assert(0);
             break;
 
           case XED_ENCODER_OPERAND_TYPE_MEM: 

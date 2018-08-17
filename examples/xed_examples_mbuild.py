@@ -267,6 +267,18 @@ def _add_libxed_rpath(env):
       env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/..'"
 
 
+def build_asmparse(env, dag, otherobj):
+    srcs = env.src_dir_join(['xed-asmparse.c'])
+    objs = env.compile(dag, srcs)
+
+    exe = ex_compile_and_link(env,
+                              dag,
+                              env.src_dir_join('xed-asmparse-main.c'),
+                              objs + otherobj + [env['link_libxed']])
+    return exe
+
+      
+
 def build_examples(env, work_queue):
     """Build the examples"""
     example_exes = [] 
@@ -354,6 +366,11 @@ def build_examples(env, work_queue):
                                       extra_libs)
     mbuild.msgb("CMDLINE", xed_cmdline)
     example_exes.append(xed_cmdline)
+
+    if env['encoder']:
+        exe = build_asmparse(cenv, examples_dag, cc_shared_objs)
+        example_exes.append(exe)
+        
 
     ild_examples = []
     other_c_examples = []
