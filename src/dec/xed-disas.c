@@ -840,6 +840,11 @@ static void xed_print_operand( xed_print_info_t* pi )
                           xed_pi_strcat(pi,"+");
                   }
                   xed_pi_strcat(pi,"0x");
+                  
+                  if (no_base_index && negative) 
+                      if (xed_operand_values_get_effective_address_width(ov) == 64)
+                          disp_bits = 64;
+
                   pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),
                                                    disp,
                                                    disp_bits,
@@ -1264,13 +1269,22 @@ xed_decoded_inst_dump_att_format_internal(
               if (xed_operand_values_has_memory_displacement(ov))
               {
                   if (disp_bits && disp) {
-                      if (disp<0) {
-                          if ( (base != XED_REG_INVALID) ||
-                               (index != XED_REG_INVALID) ) {
+                      xed_uint_t no_base_index = (base == XED_REG_INVALID) &&
+                                                 (index == XED_REG_INVALID);
+                      xed_uint_t negative = (disp < 0) ? 1 : 0;
+
+                      if (negative)
+                      {
+                          if (no_base_index)  {
+                              if (xed_operand_values_get_effective_address_width(ov) == 64)
+                                  disp_bits = 64;
+                          }
+                          else  {
                               xed_pi_strcat(pi,"-");                      
                               disp = - disp;
                           }
                       }
+                      
                       xed_pi_strcat(pi,"0x");
                       pi->blen =
                           xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),
