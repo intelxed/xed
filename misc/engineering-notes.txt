@@ -18,10 +18,10 @@
 
 2017-05-01 Engineering Notes for XED
 
-The files.cfg files specify which files get collected in to the
+The files.cfg files specify which files get collected into the
 "obj/dgen" directory and then used for the subsequent build.  Each
 files.cfg file has lines in token:value format specifying the tokens
-below. The values are generally file names. Some of the tokens also
+below. The values are generally filenames. Some of the tokens also
 have priority values used for replacing earlier files.
 
 dec-spine:
@@ -32,7 +32,7 @@ dec-spine:
 dec-instructions:
 
    instruction patterns used to create the decoder. Each instruction
-   is defined in in a sequence of token:value lines between a pair of
+   is defined in a sequence of token:value lines between a pair of
    lines containing curly braces { ... }.  Some of the tokens are
    repeatable, some are not. The most common tokens are:
 
@@ -57,7 +57,7 @@ dec-instructions:
                    specified, this is used instead.
                    
      ISA_SET     : (optional) name for the group of instructions that
-                   introduced this feature. On the older stuff we used the
+                   introduced this feature. On the older stuff, we used the
                    EXTENSION field but that got too complicated.
                    
      FLAGS       : (optional) read/written flag bit values.
@@ -86,8 +86,8 @@ dec-instructions:
     
 enc-instructions:
 
-   instruction patterns used to create the encoder. Same forat as
-   dec-instructions. We an include extra instructions for encoding
+   instruction patterns used to create the encoder. Same format as
+   dec-instructions. We include extra instructions for encoding
    standardized wide nops for example.
    
 dec-patterns:
@@ -105,12 +105,12 @@ enc-dec-patterns:
 fields:
 
    names and properties of storage variables. This is where the
-   decoder and the encoder store all dynamicly collected and derived
+   decoder and the encoder store all dynamically collected and derived
    information about instructions.
 
 state:
 
-   This rathr poorly named file contains simple macro definitions to
+   This rather poorly named file contains simple macro definitions to
    abstract and name some of the details of the conventions.  Example:
    (1) Rather than say "MODE=2" we can say "mode64". (2) Rather than
    say "MODE!=2" we can say "not64".
@@ -125,7 +125,7 @@ widths:
    The operands have types and widths. The width system gives names to
    these features. Operand widths often vary with the x86 effective
    operand size calculation; This is where those widths are specified.
-   A width is called and "oc2-code" and maps to a lower level type called
+   A width is called an "oc2-code" and maps to a lower level type called
    an "xtype" and a set of one or more widths. The name "oc2-code" comes
    from the old Intel SDM opcode maps that tried to use two letters to
    specify operand widths but that system was incomplete.
@@ -172,7 +172,7 @@ ild-scanners:
 
    Since XED supports variance in what features are enabled, the
    instruction-length-decoder (ILD) allows overriding what scanners
-   are baked in ot the build. This file supplies the C code function
+   are baked into the build. This file supplies the C code function
    xed_ild_scanners_init() which is responsible for wiring up the ILD
    scanners in the correct order.
    
@@ -182,8 +182,8 @@ ild-getters:
    xed3_operand_get_*() functions with functions that are used during
    decoding for creating hash values.  These functions are generally
    only used in prototyping and internal early enabling before the
-   features or the code supporting those features are made exposed
-   publicly. Once the features defined here become pulic, the code can
+   features or the code supporting those features are exposed
+   publicly. Once the features defined here become public, the code can
    be moved to the static part of the code.
 
    
