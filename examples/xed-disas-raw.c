@@ -31,7 +31,7 @@ void xed_disas_raw(xed_disas_info_t* fi)
     fi->s =  (unsigned char*)region;
     fi->a = (unsigned char*)region;
     fi->q = (unsigned char*)(region) + len; // end of region
-    fi->runtime_vaddr = 0;
+    fi->runtime_vaddr = fi->fake_base;
     fi->runtime_vaddr_disas_start = 0;
     fi->runtime_vaddr_disas_end = 0;
     fi->symfn = 0;
