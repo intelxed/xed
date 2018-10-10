@@ -129,7 +129,7 @@ xed_decoded_inst_vector_length_bits(xed_decoded_inst_t const* const p);
 /// @ingroup DEC
 /// Returns the number of legacy prefixes.
 XED_DLL_EXPORT xed_uint_t
-xed_decoded_inst_get_nprefixes(xed_decoded_inst_t* p);
+xed_decoded_inst_get_nprefixes(const xed_decoded_inst_t* p);
 
 //@}
 

@@ -874,7 +874,7 @@ xed_decoded_inst_masked_vector_operation(xed_decoded_inst_t* p)
 
 
 xed_uint_t
-xed_decoded_inst_get_nprefixes(xed_decoded_inst_t* p) {
+xed_decoded_inst_get_nprefixes(const xed_decoded_inst_t* p) {
     return xed3_operand_get_nprefixes(p);
 }
 
