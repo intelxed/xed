@@ -75,6 +75,11 @@ void xed_operand_values_set_mode(xed_operand_values_t* p,
         xed3_operand_set_realmode(p,1);
         xed3_operand_set_mode(p,0);
         break;
+        
+      case XED_MACHINE_MODE_REAL_32:
+        xed3_operand_set_realmode(p,1);
+        xed3_operand_set_mode(p,1);
+        break;
 
       case XED_MACHINE_MODE_LEGACY_16:
       case XED_MACHINE_MODE_LONG_COMPAT_16:
