@@ -1650,7 +1650,8 @@ xed_ild_cvt_mode(xed_machine_mode_enum_t mmode) {
         break;
       case XED_MACHINE_MODE_LEGACY_32:
       case XED_MACHINE_MODE_LONG_COMPAT_32:
-        result  = XED_GRAMMAR_MODE_32;
+      case XED_MACHINE_MODE_REAL_32:
+        result = XED_GRAMMAR_MODE_32;
         break;
 
       case XED_MACHINE_MODE_REAL_16:

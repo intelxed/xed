@@ -271,6 +271,8 @@ static void usage(char* prog) {
       "",
       "\t-r            (for REAL_16 mode, 16b addressing (20b addresses),",
       "\t               16b default data size)",
+      "\t-r32          (for REAL_32 mode, 16b addressing (20b addresses),",
+      "\t               32b default data size)",
       "\t-16           (for LEGACY_16 mode, 16b addressing,",
       "\t               16b default data size)",
       "\t-32           (for LEGACY_32 mode, 32b addressing,",
@@ -624,6 +626,12 @@ main(int argc, char** argv)
         }
         else if (strcmp(argv[i],"-isa-set")==0)   {
             emit_isa_set = 1;
+        }
+        else if (strcmp(argv[i],"-r32")==0)         {
+            sixty_four_bit = 0;
+            dstate.mmode = XED_MACHINE_MODE_REAL_32;
+            dstate.stack_addr_width = XED_ADDRESS_WIDTH_16b;
+            use_binary_mode = 0;
         }
         else if (strcmp(argv[i],"-r")==0)         {
             sixty_four_bit = 0;

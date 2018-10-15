@@ -30,4 +30,5 @@ LONG_COMPAT_16    ///< 16b protected mode
 LEGACY_32         ///< 32b protected mode
 LEGACY_16         ///< 16b protected mode
 REAL_16           ///< 16b real mode
+REAL_32           ///< 32b real mode (CS.D bit = 1)
 
