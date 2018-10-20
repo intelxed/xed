@@ -114,7 +114,10 @@ static void print_intel_asm_emit(const xed_uint8_t* array, unsigned int olen) {
 }
 
 static unsigned int disas_encode(const xed_state_t* dstate,
-                                 const char* encode_text) {
+                                 const char* encode_text,
+                                 xed_operand_enum_t operand,
+                                 xed_uint32_t operand_value)
+{
     char buf[5000];
     xed_uint8_t array[XED_MAX_INSTRUCTION_BYTES];
     unsigned int ilen = XED_MAX_INSTRUCTION_BYTES;
@@ -126,6 +129,10 @@ static unsigned int disas_encode(const xed_state_t* dstate,
     areq.dstate = *dstate;
     areq.command = encode_text;
     req = parse_encode_request(areq);
+
+    if (operand != XED_OPERAND_INVALID)
+        xed3_set_generic_operand(&req, operand, operand_value);
+
     xed_encode_request_print(&req, buf, 5000);
     printf("Request: %s", buf);
 
@@ -805,7 +812,10 @@ main(int argc, char** argv)
     else if (encode)
     {
 #if defined(XED_ENCODER)
-        obytes = disas_encode(&dstate, encode_text);
+        obytes = disas_encode(&dstate,
+                              encode_text,
+                              operand,
+                              operand_value);
 #endif
     }
     else if (decode_text && strlen(decode_text) != 0)
