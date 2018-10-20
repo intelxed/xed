@@ -2079,7 +2079,7 @@ class encoder_configuration_t(object):
                 # FIXME: 2016-01-28: MJC: HACK TO ENCODE ROUNDC/SAE CONSTRAINTS
                 if 'SAE' in pattern_str:
                     modal_patterns.append("SAE!=0")
-                else:
+                elif 'AVX512_ROUND' in pattern_str:
                     modal_patterns.append("ROUNDC!=0")
             
             # The pattern_list is a list of blot_t's covering the
@@ -2407,7 +2407,7 @@ class encoder_configuration_t(object):
         @returns: an encoder function object that encodes group
         """
         if vencode():
-            msgb("ENCODING GROUP", " %s  -- %s" % (group_index, bind_or_emit))
+            msgb("ENCODING GROUP", " %s  -- %s" % (group_index, ins_group))
         fname = "xed_encode_group_%d" % (group_index)
         fo = function_object_t(fname,'xed_bool_t')
         fo.add_arg("%s* xes" % xed_encoder_request)
