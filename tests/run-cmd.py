@@ -264,7 +264,7 @@ def work():
                           action="append",
                           default=[], 
                           help="Codes for test subsetting (DEC, ENC, AVX, " 
-                             + "AVX512X, AVX512PF, XOP, KNC)." 
+                             + "AVX512X, AVX512PF, XOP, VIA, KNC)." 
                              + " Only used for running tests, not creating them.")
     env.parse_args()
 
