@@ -3399,7 +3399,10 @@ def emit_iclass_rep_ops(agi):
     # fill in the no-rep info for each object
     for o in repobjs:
         o.no_rep_iclass = re.sub(r'REP(E|NE)?_', '', o.iclass)
-        o.no_rep_indx  = agi.iclasses_enum_order.index(o.no_rep_iclass)
+        if o.no_rep_iclass in agi.iclasses_enum_order:
+            o.no_rep_indx  = agi.iclasses_enum_order.index(o.no_rep_iclass)
+        else:
+            o.no_rep_indx  = 0  # invalid
 
     # make a list of keys for the norep-to-whatever hash functions
     no_rep_keys = uniqueify( [x.no_rep_indx for x in repobjs])

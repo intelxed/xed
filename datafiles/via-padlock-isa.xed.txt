@@ -1,0 +1,135 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2018 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+{
+ICLASS    : XSTORE
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_RNG
+ISA_SET   : VIA_PADLOCK_RNG
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b000] RM[0b000]  not_refining
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():r:SUPP REG1=OrDX():rw:SUPP REG2=OrAX():w:SUPP BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP
+}
+
+
+{
+ICLASS    : REP_XSTORE
+DISASM    : xstore
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_RNG
+ISA_SET   : VIA_PADLOCK_RNG
+ATTRIBUTES : REP  FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b000] RM[0b000] f3_refining_prefix
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():rw:SUPP REG1=OrDX():rw:SUPP REG2=OrAX():w:SUPP BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP
+}
+
+
+{
+ICLASS    : REP_XCRYPTECB
+DISASM    : xcryptecb 
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_AES
+ISA_SET   : VIA_PADLOCK_AES
+ATTRIBUTES : REP  FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b001] RM[0b000] f3_refining_prefix
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():rw:SUPP REG1=OrDX():r:SUPP REG2=OrBX():r:SUPP  BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP  MEM1:cr:SUPP:b BASE1=ArSI():rcw:SUPP SEG1=FINAL_DSEG1():r:SUPP
+}
+
+{
+ICLASS    : REP_XCRYPTCBC
+DISASM    : xcryptcbc
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_AES
+ISA_SET   : VIA_PADLOCK_AES
+ATTRIBUTES : REP  FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b010] RM[0b000] f3_refining_prefix
+COMMENT   : rAX contains a pointer to memory using ES segment.
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():rw:SUPP REG1=OrDX():r:SUPP REG2=OrBX():r:SUPP REG3=ArAX():r:SUPP  BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP  MEM1:cr:SUPP:b BASE1=ArSI():rcw:SUPP SEG1=FINAL_DSEG1():r:SUPP
+}
+
+
+{
+ICLASS    : REP_XCRYPTCTR
+DISASM    : xcryptctr
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_AES
+ISA_SET   : VIA_PADLOCK_AES
+ATTRIBUTES : REP  FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b011] RM[0b000] f3_refining_prefix
+COMMENT   : rAX contains a pointer to memory using ES segment.
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():rw:SUPP REG1=OrDX():r:SUPP REG2=OrBX():r:SUPP REG3=ArAX():r:SUPP  BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP  MEM1:cr:SUPP:b BASE1=ArSI():rcw:SUPP SEG1=FINAL_DSEG1():r:SUPP
+}
+{
+ICLASS    : REP_XCRYPTCFB
+DISASM    : xcryptcfb
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_AES
+ISA_SET   : VIA_PADLOCK_AES
+ATTRIBUTES : REP  FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b100] RM[0b000] f3_refining_prefix
+COMMENT   : rAX contains a pointer to memory using ES segment.
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():rw:SUPP REG1=OrDX():r:SUPP REG2=OrBX():r:SUPP REG3=ArAX():r:SUPP  BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP  MEM1:cr:SUPP:b BASE1=ArSI():rcw:SUPP SEG1=FINAL_DSEG1():r:SUPP
+}
+{
+ICLASS    : REP_XCRYPTOFB
+DISASM    : xcryptofb
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_AES
+ISA_SET   : VIA_PADLOCK_AES
+ATTRIBUTES : REP  FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA7 MOD[0b11] REG[0b101] RM[0b000]  f3_refining_prefix
+COMMENT   : rAX contains a pointer to memory using ES segment.
+OPERANDS  : MEM0:w:SUPP:b REG0=OrCX():rw:SUPP REG1=OrDX():r:SUPP REG2=OrBX():r:SUPP REG3=ArAX():r:SUPP  BASE0=ArDI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP  MEM1:cr:SUPP:b BASE1=ArSI():rcw:SUPP SEG1=FINAL_DSEG1():r:SUPP
+}
+
+
+
+{
+ICLASS    : REP_XSHA1
+DISASM    : xsha1
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_SHA
+ISA_SET   : VIA_PADLOCK_SHA
+ATTRIBUTES : REP FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA6 MOD[0b11] REG[0b001] RM[0b000] f3_refining_prefix
+OPERANDS  : REG3=ArAX():rcw:SUPP REG0=OrCX():rcw:SUPP MEM0:w:SUPP:b  BASE0=ArSI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP MEM1:r:SUPP:b  BASE1=ArDI():r:SUPP   SEG1=FINAL_ESEG1():r:SUPP
+}
+
+
+
+{
+ICLASS    : REP_XSHA256
+DISASM    : xsha256
+CPL       : 3
+CATEGORY  : VIA_PADLOCK
+EXTENSION : VIA_PADLOCK_SHA
+ISA_SET   : VIA_PADLOCK_SHA
+ATTRIBUTES : REP FIXED_BASE0 BYTEOP
+PATTERN   : 0x0F 0xA6 MOD[0b11] REG[0b010] RM[0b000] f3_refining_prefix
+OPERANDS  : REG3=ArAX():rcw:SUPP REG0=OrCX():rcw:SUPP MEM0:w:SUPP:b  BASE0=ArSI():rw:SUPP  SEG0=FINAL_ESEG():r:SUPP MEM1:r:SUPP:b  BASE1=ArDI():r:SUPP   SEG1=FINAL_ESEG1():r:SUPP
+}
+
+
+

@@ -557,6 +557,7 @@ def mkenv():
                                  kit_kind='base',
                                  win=False,
                                  amd_enabled=True,
+                                 via_enabled=True,
                                  encoder=True,
                                  decoder=True,
                                  dev=False,
@@ -767,6 +768,10 @@ def xed_args(env):
                           action="store_false",
                           dest="amd_enabled",
                           help="Disable AMD public instructions")
+    env.parser.add_option("--no-via", 
+                          action="store_false",
+                          dest="via_enabled",
+                          help="Disable VIA public instructions")
     env.parser.add_option("--limit-strings", 
                           action="store_true",
                           dest="limit_strings",
@@ -1144,6 +1149,8 @@ def _test_chip(env, names_list):
 def _configure_libxed_extensions(env):
     if env['amd_enabled']:
         env.add_define('XED_AMD_ENABLED')
+    if env['via_enabled']:
+        env.add_define('XED_VIA_ENABLED')
 
     if env['avx']:
         env.add_define('XED_AVX')
@@ -1183,6 +1190,10 @@ def _configure_libxed_extensions(env):
                                                          'files-xmm.cfg')))
     else:
         newstuff.append( env['default_isa'] )
+        
+    if env['via_enabled']:
+        newstuff.append( env.src_dir_join(mbuild.join('datafiles',
+                                                      'files-via-padlock.cfg')))
 
     # add AMD stuff under knob control
     if env['amd_enabled']:
@@ -2179,6 +2190,8 @@ def _run_canned_tests(env,osenv):
         codes.append('HSW')
     if env['amd_enabled'] and env['avx']:
         codes.append('XOP')
+    if env['via_enabled']:
+        codes.append('VIA')
     for c in codes:
         cmd += ' -c ' + c
 

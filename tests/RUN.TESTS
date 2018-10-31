@@ -1,2 +1,2 @@
-./run-cmd.py --build-dir ../obj/examples     --tests tests-base  --tests tests-avx512 --tests tests-avx512pf --tests tests-cet
+./run-cmd.py --build-dir ../obj/examples     --tests tests-base  --tests tests-avx512 --tests tests-avx512pf --tests tests-cet --tests tests-via
 ./run-cmd.py --build-dir ../obj-knc/examples --tests tests-base  --tests tests-knc
