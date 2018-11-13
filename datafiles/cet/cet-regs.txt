@@ -16,5 +16,5 @@
 #  
 #END_LEGAL
 
-SSP          MSR NA
+SSP          MSR 32/64
 IA32_U_CET   MSR NA
