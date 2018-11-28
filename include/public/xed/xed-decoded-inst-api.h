@@ -300,7 +300,7 @@ xed_decoded_inst_get_byte(const xed_decoded_inst_t* p, xed_uint_t byte_index)
 /// derived from the input mode information.
 static XED_INLINE xed_uint_t
 xed_decoded_inst_get_machine_mode_bits(const xed_decoded_inst_t* p) {
-    xed_uint8_t mode = xed3_operand_get_mode(p);
+    xed_uint_t mode = xed3_operand_get_mode(p);
     if (mode == 2) return 64;
     if (mode == 1) return 32;
     return 16;
@@ -310,7 +310,7 @@ xed_decoded_inst_get_machine_mode_bits(const xed_decoded_inst_t* p) {
 /// bits. This is derived from the input mode information.
 static XED_INLINE xed_uint_t
 xed_decoded_inst_get_stack_address_mode_bits(const xed_decoded_inst_t* p) {
-    xed_uint8_t smode = xed3_operand_get_smode(p);
+    xed_uint_t smode = xed3_operand_get_smode(p);
     if (smode == 2) return 64;
     if (smode == 1) return 32;
     return 16;

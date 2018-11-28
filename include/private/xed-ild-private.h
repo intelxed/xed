@@ -87,7 +87,7 @@ static XED_INLINE void xed_ild_hasimm_map0x0F_op0x78_l1(xed_decoded_inst_t* x) {
     {
         /*for INSERTQ and EXTRQ*/
         /*straight in bytes*/
-        xed3_operand_set_imm_width(x, bytes2bits(1));
+        xed3_operand_set_imm_width(x, (xed_uint8_t)bytes2bits(1));
         xed3_operand_set_imm1_bytes(x, 1);
         return;
     }
@@ -98,7 +98,7 @@ static XED_INLINE void xed_ild_hasimm_map0x0F_op0x78_l1(xed_decoded_inst_t* x) {
 static XED_INLINE void xed_ild_hasimm_map0x0_op0xc8_l1(xed_decoded_inst_t* x) {
     /* for ENTER */
     /*straight in bytes*/
-    xed3_operand_set_imm_width(x, bytes2bits(2));
+    xed3_operand_set_imm_width(x, (xed_uint8_t)bytes2bits(2));
     xed3_operand_set_imm1_bytes(x, 1);
 }
 
@@ -127,7 +127,7 @@ xed_ild_get_rm(const xed_decoded_inst_t* ild) {
     xed_uint8_t modrm;
     if (xed3_operand_get_has_modrm(ild))
         return xed3_operand_get_rm(ild);
-    modrm = xed3_operand_get_nominal_opcode(ild);
+    modrm = (xed_uint8_t)xed3_operand_get_nominal_opcode(ild);
     return xed_modrm_rm(modrm);
 }
 

@@ -45,7 +45,7 @@ xed_decoded_inst_compute_memory_operand_length(const xed_decoded_inst_t* p,
 static XED_INLINE void
 xed_decoded_inst_cache_memory_operand_length(xed_decoded_inst_t* p) {
     xed_uint16_t mem_width =
-        xed_decoded_inst_compute_memory_operand_length(p, 0);
+        (xed_uint16_t)xed_decoded_inst_compute_memory_operand_length(p, 0);
     xed3_operand_set_mem_width(p,mem_width);
 }
 

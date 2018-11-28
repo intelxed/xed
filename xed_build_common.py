@@ -208,6 +208,10 @@ def set_env_gnu(env):
     #env['LIBS'] += ' -lgcov'
     
     flags += ' -Wall'
+    
+    # 2018-11-28: I am working on hammering out all the issues found by these knobs:
+    #flags += ' -Wconversion'
+    #flags += ' -Wsign-conversion'
 
     # 2014-06-23: tried out address sanitizer. it did not find any
     # issues.
