@@ -42,7 +42,7 @@ swap_endian(xed_uint32_t x)
     xed_uint_t i; 
     for(i=0;i<4;i++)
     {
-        xed_uint8_t b = t;
+        xed_uint8_t b = (xed_uint8_t) (t&0xFF);
         r =(r << 8)  | b;
         t = t >> 8;
     }
@@ -80,7 +80,7 @@ read_fat_header(xed_uint8_t const* const current_position,
             XED_CAST(struct fat_arch*,current_position + 
                                  sizeof(struct fat_header) + 
                                  fat_arch_slot*sizeof(struct fat_arch) );
-        const cpu_type_t cpu_type = swap_endian(fa->cputype);
+        const cpu_type_t cpu_type = (cpu_type_t) swap_endian((xed_uint32_t)fa->cputype);
         
         if ((cpu_type & CPU_TYPE_I386) != 0)
         {
@@ -135,8 +135,8 @@ process_segment32( xed_uint_t* sectoff,
           decode_info->a = section_text;
           decode_info->q = section_text + sp->size;
           decode_info->runtime_vaddr = runtime_vaddr + decode_info->fake_base;
-          decode_info->runtime_vaddr_disas_start = decode_info->addr_start;
-          decode_info->runtime_vaddr_disas_end = decode_info->addr_end;
+          decode_info->runtime_vaddr_disas_start = (xed_uint64_t)decode_info->addr_start;
+          decode_info->runtime_vaddr_disas_end = (xed_uint64_t)decode_info->addr_end;
           decode_info->symfn = get_symbol;
           decode_info->caller_symbol_data = symbol_table;
           decode_info->input_file_name   = decode_info->input_file_name;
@@ -184,8 +184,8 @@ process_segment64( xed_uint_t* sectoff,
           decode_info->a = section_text;
           decode_info->q = section_text + sp->size;
           decode_info->runtime_vaddr = runtime_vaddr + decode_info->fake_base;
-          decode_info->runtime_vaddr_disas_start = decode_info->addr_start;
-          decode_info->runtime_vaddr_disas_end = decode_info->addr_end;
+          decode_info->runtime_vaddr_disas_start = (xed_uint64_t)decode_info->addr_start;
+          decode_info->runtime_vaddr_disas_end = (xed_uint64_t)decode_info->addr_end;
           decode_info->symfn = get_symbol;
           decode_info->caller_symbol_data = symbol_table;
           decode_info->input_file_name   = decode_info->input_file_name;

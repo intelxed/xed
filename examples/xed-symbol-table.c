@@ -137,9 +137,9 @@ int xed_disassembly_callback_function(
         char* symbol  = get_symbol(symbol_address, caller_data);
         if (symbol) {
             if (xed_strlen(symbol) < buffer_length)
-                xed_strncpy(symbol_buffer, symbol, buffer_length);
+                xed_strncpy(symbol_buffer, symbol, (int)buffer_length);
             else {
-                xed_strncpy(symbol_buffer, symbol, buffer_length-1);
+                xed_strncpy(symbol_buffer, symbol, (int)(buffer_length-1));
                 symbol_buffer[buffer_length-1]=0;
             }
             *offset = address - symbol_address;

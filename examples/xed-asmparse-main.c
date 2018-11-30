@@ -255,17 +255,17 @@ static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint
 }
 
 
-static xed_uint_t get_nbits_unsigned(xed_uint64_t imm_disp_val) {
+static xed_uint_t get_nbits_signed(xed_int64_t imm_disp_val) {
     xed_uint_t nbits = 0;
     xed_uint8_t legal_widths = 1|2|4|8;  // bytes
     xed_uint_t nbytes = 0;
-    nbytes = xed_shortest_width_unsigned(imm_disp_val, legal_widths);
-    //nbytes = xed_shortest_width_signed(q->imm, legal_widths); //FIXME: handle negative?
+    //nbytes = xed_shortest_width_unsigned(imm_disp_val, legal_widths);
+    nbytes = xed_shortest_width_signed(imm_disp_val, legal_widths); 
     nbits = 8 * nbytes;
     return nbits;
 }
 
-static xed_uint_t get_nbits_signed_disp(xed_uint64_t disp_val) {
+static xed_uint_t get_nbits_signed_disp(xed_int64_t disp_val) {
     // displacements are 1 or 4 bytes in 32/64b addressing.
     // FIXME: In 16b addressing one can have 16b displacements.
     xed_uint_t nbits = 0;
@@ -388,10 +388,10 @@ static void process_operand(xed_enc_line_parsed_t* v,
         }
     }
     else if (q->type == OPND_IMM) {
-        xed_uint_t nbits = get_nbits_unsigned(q->imm);
+        xed_uint_t nbits = get_nbits_signed(q->imm);
         if (*has_imm0==0) {
             assert(i < ASP_MAX_OPERANDS);
-            operands[i++] = xed_imm0(q->imm, nbits);
+            operands[i++] = xed_imm0((uint64_t)q->imm, nbits); //FIXME: cast or make imm0 signed?
             *has_imm0=1;
         }
         else {
@@ -406,7 +406,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
         xed_reg_enum_t indx = XED_REG_INVALID;
         xed_uint_t scale = q->mem.nscale;
         xed_uint_t displacement_bits = get_nbits_signed_disp(q->mem.ndisp);
-        xed_enc_displacement_t disp = xed_disp(q->mem.ndisp, displacement_bits);
+        xed_enc_displacement_t disp = xed_disp(q->mem.ndisp, displacement_bits); 
         xed_uint_t width_bits = q->mem.mem_bits;
 
         if (q->mem.base) 

@@ -24,10 +24,11 @@ END_LEGAL */
 #include "xed-iclass-enum.h"
 #include "xed-portability.h"
 #include "xed-encode.h"
+#include "xed-util.h"
 
 
 typedef struct {
-    xed_uint64_t   displacement; 
+    xed_int64_t    displacement; 
     xed_uint32_t   displacement_bits;
 } xed_enc_displacement_t; /* fixme bad name */
 
@@ -39,7 +40,7 @@ typedef struct {
 /// @param displacement_bits The width of the displacement in bits. Typically 8 or 32.
 /// @returns #xed_enc_displacement_t
 static XED_INLINE
-xed_enc_displacement_t xed_disp(xed_uint64_t   displacement,
+xed_enc_displacement_t xed_disp(xed_int64_t   displacement,
                                 xed_uint32_t   displacement_bits   ) {
     xed_enc_displacement_t x;
     x.displacement = displacement;
@@ -168,7 +169,7 @@ static XED_INLINE  xed_encoder_operand_t xed_simm0(xed_int32_t v,
     extended.  Later we convert it to the right width_bits for the
     instruction. The maximum width_bits of a signed immediate is currently
     32b. */
-    o.u.imm0 = v;
+    o.u.imm0 = XED_STATIC_CAST(xed_uint64_t,xed_sign_extend32_64(v));
     o.width_bits = width_bits;
     return o;
 }
@@ -194,7 +195,7 @@ static XED_INLINE  xed_encoder_operand_t xed_other(
     xed_encoder_operand_t o;
     o.type = XED_ENCODER_OPERAND_TYPE_OTHER;
     o.u.s.operand_name = operand_name;
-    o.u.s.value = value;
+    o.u.s.value = XED_STATIC_CAST(xed_uint32_t,value);
     o.width_bits = 0;
     return o;
 }

@@ -125,6 +125,11 @@ xed_decoded_inst_explicit_operand(const xed_decoded_inst_t* p)
 }
 
 
+static int buffer_remains(int buflen, char* ptr) {
+    int blen = buflen - XED_STATIC_CAST(int,xed_strlen(ptr));
+    return blen;
+}
+
 void
 xed_decoded_inst_dump(const xed_decoded_inst_t* p, char* buf, int buflen)
 {
@@ -151,7 +156,7 @@ xed_decoded_inst_dump(const xed_decoded_inst_t* p, char* buf, int buflen)
 
     t = buf + xed_strlen(buf);
     xed_operand_values_print_short( xed_decoded_inst_operands_const(p), t, blen);
-    blen = buflen - xed_strlen(buf);
+    blen = buffer_remains(buflen,buf);
 
     blen = xed_strncat(buf,"\n",blen);
     noperands = xed_inst_noperands(xi);
@@ -162,7 +167,7 @@ xed_decoded_inst_dump(const xed_decoded_inst_t* p, char* buf, int buflen)
         blen = xed_itoa(t,i,blen);
         blen = xed_strncat(buf,"\t\t",blen);
         xed_operand_print(op,buf+xed_strlen(buf),blen);
-        blen = buflen - xed_strlen(buf);
+        blen = buffer_remains(buflen,buf);
         blen = xed_strncat(buf,"\n",blen);
     }
 
@@ -295,7 +300,7 @@ xed_decoded_inst_dump_common(xed_print_info_t* pi)
 {
     const xed_operand_values_t* ov = xed_decoded_inst_operands_const(pi->p);  
 
-    int long_mode = xed_operand_values_get_long_mode(ov);
+    xed_bool_t long_mode = xed_operand_values_get_long_mode(ov);
     const xed_uint32_t dmode = xed_decoded_inst_get_machine_mode_bits(pi->p);
     int dmode16 = (dmode == 16);
     int dmode32 = (dmode == 32);
@@ -412,7 +417,7 @@ static void print_seg_prefix_for_suppressed_operands(
     const xed_operand_values_t* ov,
     const xed_operand_t*        op)
 {
-    int i;
+    xed_uint_t i;
     xed_operand_enum_t op_name = xed_operand_name(op);
     /* suppressed memops with nondefault segments get their segment printed */
     const xed_operand_enum_t names[] = { XED_OPERAND_MEM0,XED_OPERAND_MEM1};
@@ -625,7 +630,8 @@ print_rel_sym(xed_print_info_t* pi,
      xed_uint64_t instruction_length = xed_decoded_inst_get_length(pi->p);
      xed_uint64_t pc = pi->runtime_address + instruction_length;
      xed_uint64_t effective_addr;
-     xed_bool_t long_mode, symbolic;
+     xed_bool_t long_mode;
+     xed_int_t  symbolic;
      xed_uint_t bits_to_print, eosz;
      char symbol[XED_SYMBOL_LEN];
      xed_uint64_t offset;
@@ -1123,7 +1129,7 @@ static xed_bool_t
 xed_decoded_inst_dump_att_format_internal(
     xed_print_info_t* pi)
 {
-    int i,j,intel_way, noperands;
+    xed_uint_t i,j,intel_way, noperands;
     const int leading_zeros=0;
     const xed_inst_t* xi = xed_decoded_inst_inst(pi->p);
     const xed_operand_values_t* ov = xed_decoded_inst_operands_const(pi->p);  

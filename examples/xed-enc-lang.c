@@ -21,22 +21,14 @@ END_LEGAL */
 
 #include <assert.h>
 #include <string.h>
-#include <stdlib.h>
+#include <stdlib.h>  // strtol, ...
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include "xed-enc-lang.h"
 
 
-static char xed_enc_lang_toupper(char c) {
-    if (c >= 'a' && c <= 'z')
-        return c-'a'+'A';
-    return c;
-}
-
 static void upcase(char* s) {
-    char* p = s;
-    for( ;  *p ;  p++ ) 
-        *p = xed_enc_lang_toupper(*p);
+    (void)xed_upcase_buf(s);
 }
 
 xed_str_list_t* 
@@ -186,7 +178,7 @@ typedef struct
     xed_int64_t disp_val;
     unsigned int disp_width_bits;
 
-    unsigned int mem_len;
+    xed_uint_t mem_len;
 } mem_bis_parser_t;  
     // parse: MEMlength:[segment:]base,index,scale[,displacement]
     // parse: AGEN:base,index,scale[,displacement]
@@ -254,7 +246,7 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
         return;
     if (self->mem && strlen(main_token) > 3) {
         char* mlen = main_token+3;
-        self->mem_len = strtol(mlen,0,0);
+        self->mem_len = XED_STATIC_CAST(xed_uint_t,strtol(mlen,0,0));
     }
 
     if (self->agen && strcmp(self->segment,"INVALID")!=0)
@@ -293,19 +285,19 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
             unsigned int nibbles = 0;
             self->disp = astr[3];
             self->disp_valid = 1;
-            nibbles = XED_STATIC_CAST(int,strlen(self->disp));
+            nibbles = xed_strlen(self->disp);
             if (nibbles & 1) 
                 xedex_derror("Displacement must have an even number of nibbles");
             unsigned64_disp = convert_ascii_hex_to_int(self->disp);
             self->disp_width_bits = nibbles*4; // nibbles to bits
             switch (self->disp_width_bits){
-              case 8:  self->disp_val = xed_sign_extend8_64(unsigned64_disp);
+              case 8:  self->disp_val = xed_sign_extend8_64((xed_int8_t)unsigned64_disp);
                 break;
-              case 16: self->disp_val = xed_sign_extend16_64(unsigned64_disp);
+              case 16: self->disp_val = xed_sign_extend16_64((xed_int16_t)unsigned64_disp);
                 break;
-              case 32: self->disp_val = xed_sign_extend32_64(unsigned64_disp);
+              case 32: self->disp_val = xed_sign_extend32_64((xed_int32_t)unsigned64_disp);
                 break;
-              case 64: self->disp_val = unsigned64_disp;
+              case 64: self->disp_val = (xed_int64_t)unsigned64_disp;
                 break;
             }               
         }
@@ -567,7 +559,7 @@ parse_encode_request(ascii_encode_request_t areq)
         if (imm2.valid) {
             if (imm2.width_bits != 8)
                 xedex_derror("2nd immediate must be just 1 byte long");
-            xed_encoder_request_set_uimm1(&req, imm2.immed_val);
+            xed_encoder_request_set_uimm1(&req, (xed_uint8_t)imm2.immed_val);
             xed_encoder_request_set_operand_order(&req,
                                                   operand_index,
                                                   XED_OPERAND_IMM1);
@@ -582,7 +574,7 @@ parse_encode_request(ascii_encode_request_t areq)
                        disp.immed_val);
             xed_encoder_request_set_branch_displacement(
                 &req,
-                XED_STATIC_CAST(xed_uint32_t,disp.immed_val),
+                XED_STATIC_CAST(xed_int32_t,disp.immed_val),
                 disp.width_bits/8); //FIXME
             xed_encoder_request_set_operand_order(&req,
                                                   operand_index,
@@ -599,7 +591,7 @@ parse_encode_request(ascii_encode_request_t areq)
                        ptr_disp.immed_val);
             xed_encoder_request_set_branch_displacement(
                 &req,
-                XED_STATIC_CAST(xed_uint32_t,ptr_disp.immed_val),
+                XED_STATIC_CAST(xed_int32_t,ptr_disp.immed_val),
                 ptr_disp.width_bits/8); //FIXME
             xed_encoder_request_set_operand_order(&req,
                                                   operand_index,

@@ -131,7 +131,7 @@ xed_decoded_inst_has_mpx_prefix(const xed_decoded_inst_t* p){
 xed_uint8_t
 xed_decoded_inst_get_modrm(const xed_decoded_inst_t* p)
 {
-    return xed3_operand_get_modrm_byte(p);
+    return XED_STATIC_CAST(xed_uint8_t,xed3_operand_get_modrm_byte(p));
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -678,7 +678,7 @@ xed_decoded_inst__compute_masked_immediate( const xed_decoded_inst_t* p)
     if (xed_operand_values_get_effective_operand_width(p) == 64)
         mask = 0x3F;
     xed_assert(xed3_operand_get_imm_width(p) == 8);
-    imm_byte = xed3_operand_get_uimm0(p);
+    imm_byte = XED_STATIC_CAST(xed_uint8_t,xed3_operand_get_uimm0(p));
     masked_imm_byte = imm_byte & mask;
     return masked_imm_byte;
 }

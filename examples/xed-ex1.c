@@ -28,7 +28,7 @@ END_LEGAL */
 
 int main(int argc, char** argv);
 void print_misc(xed_decoded_inst_t* xedd) {
-    int i;
+    xed_uint_t i=0;
     const xed_operand_values_t* ov = xed_decoded_inst_operands_const(xedd);
     const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
     xed_exception_enum_t e = xed_inst_exception(xi);
@@ -330,8 +330,10 @@ void print_operands(xed_decoded_inst_t* xedd) {
               if (xed_decoded_inst_get_immediate_is_signed(xedd)) {
                   xed_uint_t rbits = ibits?ibits:8;
                   xed_int32_t x = xed_decoded_inst_get_signed_immediate(xedd);
-                  xed_uint64_t y = xed_sign_extend_arbitrary_to_64(
-                                              (xed_uint64_t)x, ibits);
+                  xed_uint64_t y = XED_STATIC_CAST(xed_uint64_t,
+                                                   xed_sign_extend_arbitrary_to_64(
+                                                       (xed_uint64_t)x,
+                                                       ibits));
                   xed_itoa_hex_ul(buf, y, rbits, no_leading_zeros, 64, lowercase);
               }
               else {
@@ -424,9 +426,10 @@ void print_operands(xed_decoded_inst_t* xedd) {
 int main(int argc, char** argv) {
     xed_state_t dstate;
     xed_decoded_inst_t xedd;
-    int i, bytes = 0;
+    xed_uint_t i, bytes = 0;
+    xed_uint_t argcu = (xed_uint_t)argc;
     unsigned char itext[XED_MAX_INSTRUCTION_BYTES];
-    int first_argv;
+    xed_uint_t first_argv;
     xed_bool_t already_set_mode = 0;
     xed_chip_enum_t chip = XED_CHIP_INVALID;
     char const* decode_text=0;
@@ -446,7 +449,7 @@ int main(int argc, char** argv) {
     dstate.mmode=XED_MACHINE_MODE_LEGACY_32;
     dstate.stack_addr_width=XED_ADDRESS_WIDTH_32b;
 
-    for(i=1;i< argc;i++) {
+    for(i=1;i< argcu;i++) {
         if (strcmp(argv[i], "-64") == 0) {
             assert(already_set_mode == 0);
             already_set_mode = 1;
@@ -478,7 +481,7 @@ int main(int argc, char** argv) {
             first_argv++;
         }
         else if (strcmp(argv[i], "-chip") == 0) {
-            assert(i+1 < argc);
+            assert(i+1 < argcu);
             chip = str2xed_chip_enum_t(argv[i+1]);
             printf("Setting chip to %s\n", xed_chip_enum_t2str(chip));
             assert(chip != XED_CHIP_INVALID);
@@ -486,7 +489,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    assert(first_argv < argc);
+    assert(first_argv < argcu);
 
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
     xed_decoded_inst_set_input_chip(&xedd, chip);
@@ -498,7 +501,7 @@ int main(int argc, char** argv) {
 #endif
 
     // convert ascii hex to hex bytes
-    for(i=first_argv; i< argc;i++) 
+    for(i=first_argv; i< argcu;i++) 
         decode_text = xedex_append_string(decode_text,argv[i]);
 
     len = (unsigned int) strlen(decode_text);

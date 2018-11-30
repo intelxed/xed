@@ -222,7 +222,7 @@ xed_encoder_request__memop_compatible(const xed_encoder_request_t* p,
     xed_uint16_t request_width_bytes = xed3_operand_get_mem_width(p);
 
     // figure out the width, in bytes, of the specified operand
-    xed_uint8_t eosz  = xed3_operand_get_eosz(p);
+    xed_uint_t eosz = xed3_operand_get_eosz(p);
     xed_assert(operand_width < XED_OPERAND_WIDTH_LAST);
     xed_assert(eosz < 4);
     operand_width_bytes = xed_width_bits[operand_width][eosz]>>3;
@@ -360,7 +360,7 @@ void xed_encoder_request_set_mem1(xed_encoder_request_t* p) {
 }
 void xed_encoder_request_set_memory_operand_length(xed_encoder_request_t* p,
                                                    xed_uint_t nbytes) {
-    xed3_operand_set_mem_width(p,nbytes);
+    xed3_operand_set_mem_width(p,XED_STATIC_CAST(xed_uint16_t,nbytes));
 }
 void xed_encoder_request_set_seg0(xed_encoder_request_t* p,
                                   xed_reg_enum_t seg_reg) {
@@ -395,7 +395,8 @@ void xed_encoder_request_set_operand_order(xed_encoder_request_t* p,
 
     /* track the maximum number of operands */
     if (operand_index+1 > p->_n_operand_order)
-        p->_n_operand_order = operand_index + 1;
+        p->_n_operand_order =
+            XED_STATIC_CAST(xed_uint8_t, operand_index + 1);
 }
 
 xed_operand_enum_t
@@ -424,12 +425,12 @@ xed_encode_request_print(const xed_encoder_request_t* p,
                          xed_uint_t buflen)  {
     char* t;
     xed_uint_t i;
-    xed_uint_t blen = buflen;
+    xed_int_t blen = XED_STATIC_CAST(xed_int_t,buflen);
     if (buflen < 1000) {
         (void)xed_strncpy(buf,
                           "Buffer passed to xed_encode_request_print is "
                           "too short. Try 1000 bytes",
-                          buflen);
+                          blen);
         return;
     }
     blen = xed_strncpy(buf,
@@ -438,7 +439,7 @@ xed_encode_request_print(const xed_encoder_request_t* p,
     blen = xed_strncat(buf, " ",blen);
     t = buf + xed_strlen(buf);
     xed_operand_values_print_short( p, t, blen);
-    blen = buflen  - xed_strlen(buf);
+    blen = XED_STATIC_CAST(xed_int_t,buflen  - xed_strlen(buf));
 
     if (p->_n_operand_order) {
         blen = xed_strncat(buf,"\nOPERAND ORDER: ",blen);

@@ -37,7 +37,7 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
             d->_operand_order[eops++] = xed_operand_name(o);
         }
     }
-    d->_n_operand_order=eops;
+    d->_n_operand_order=XED_STATIC_CAST(xed_uint8_t,eops);
 
     // the decoder does not set the iclass field
     xed3_operand_set_iclass(d,xed_decoded_inst_get_iclass(d));
