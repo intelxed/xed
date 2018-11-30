@@ -82,6 +82,7 @@ def mkenv():
                                  strip='strip',
                                  verbose = 1,
                                  example_linkflags='',
+                                 example_flags='',
                                  example_rpaths=[],
                                  android=False,
                                  xed_inc_dir='',
@@ -113,6 +114,10 @@ def xed_args(env):
                           dest="example_linkflags",
                           action="store",
                           help="Extra link flags for the examples")
+    env.parser.add_option("--example-flags", 
+                          dest="example_flags",
+                          action="store",
+                          help="Extra compilation flags for the examples")
     env.parser.add_option("--example-rpath", 
                           dest="example_rpaths",
                           action="append",
@@ -290,6 +295,8 @@ def build_examples(env, work_queue):
             env.add_to_var('example_linkflags',
                                    '-Wl,-rpath,{}'.format(d))
     env.add_to_var('LINKFLAGS', env['example_linkflags'])
+    env.add_to_var('CCFLAGS', env['example_flags'])
+    env.add_to_var('CXXFLAGS', env['example_flags'])
     # put the examples in their own subdirectory
     env['build_dir'] = mbuild.join(env['build_dir'],'examples')
     mbuild.cmkdir(env['build_dir'])
