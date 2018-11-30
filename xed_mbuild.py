@@ -574,6 +574,7 @@ def mkenv():
                                  compress_operands=False,
                                  test_perf=False,
                                  example_linkflags='',
+                                 example_flags='',
                                  example_rpaths=[],
                                  android=False,
                                  copy_libc=False,
@@ -603,6 +604,10 @@ def xed_args(env):
                           dest="example_linkflags",
                           action="store",
                           help="Extra link flags for the examples")
+    env.parser.add_option("--example-flags", 
+                          dest="example_flags",
+                          action="store",
+                          help="Extra compilation flags for the examples")
     env.parser.add_option("--example-rpath", 
                           dest="example_rpaths",
                           action="append",
