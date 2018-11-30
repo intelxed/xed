@@ -36,7 +36,8 @@ main(int argc, char** argv) {
     unsigned int first_argv;
     unsigned int bytes = 0;
     unsigned char itext[XED_MAX_INSTRUCTION_BYTES];
-    int i;
+    unsigned int i;
+    unsigned int argcu = (unsigned int)argc;
     unsigned int u;
     xed_decoded_inst_t xedd;
 #define BUFLEN  1000
@@ -55,9 +56,9 @@ main(int argc, char** argv) {
     xed_tables_init();
     xed_set_verbosity( 99 );
 
-    if (argc > 2 && strcmp(argv[1], "-64") == 0) 
+    if (argcu > 2 && strcmp(argv[1], "-64") == 0) 
         long_mode = 1;
-    else if (argc > 2 && strcmp(argv[1], "-16") == 0) 
+    else if (argcu > 2 && strcmp(argv[1], "-16") == 0) 
         prot16 = 1;
 
     if (long_mode) {
@@ -79,7 +80,7 @@ main(int argc, char** argv) {
     xed_decoded_inst_zero(&xedd);
     xed_decoded_inst_set_mode(&xedd, mmode, stack_addr_width);
 
-    for( i=first_argv ;i < argc; i++)    {
+    for( i=first_argv ;i < argcu; i++)    {
         if (strlen(argv[i]) != 2) {
             fprintf(stderr, "not two hex characters: \"%s\"\n", argv[i]);
             exit(1);

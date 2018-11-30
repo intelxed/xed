@@ -88,16 +88,16 @@ void build_map_to_xed(void) {
 }
 
 /* map from xed values to values I know about  - dynamically allocated */
-int* xed2my_enum = 0;
+unsigned int* xed2my_enum = 0;
 
 void invert_map(void) {
-    int n = xed_iclass_enum_t_last();
-    int i;
+    unsigned int n = xed_iclass_enum_t_last();
+    unsigned int i;
     
-    xed2my_enum = malloc(sizeof(int)*n);
+    xed2my_enum = malloc(sizeof(unsigned int)*n);
     
     for(i=0;i<n;i++) {
-        xed2my_enum[i] = -1;
+        xed2my_enum[i] = 0; // invalid
     }
     for (i=0;i<MY_ICLASS_LAST;i++) {
         xed2my_enum[ xed_iclass_interface[i].xed_name ] = i;
@@ -110,7 +110,6 @@ void invert_map(void) {
 int main(int argc, char** argv) {
     // initialize the XED tables -- one time.
     xed_tables_init();
-
 
     build_map_to_xed();
     invert_map();

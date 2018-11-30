@@ -121,7 +121,7 @@ int xed_itoa(char* buf, xed_uint64_t f, int buflen) {
         x = xed_divide_by_10_64by32(t);
 #endif
         v = t - (x*10);
-        *p++ = '0' + v;
+        *p++ = XED_STATIC_CAST(char, '0' + v);
         t = x;
     }
     /* reverse string */
@@ -175,7 +175,7 @@ int xed_itoa_hex_ul(char* buf,
     //  mask the value to the bits we care about. makes everything else easier.
     xed_uint64_t ff,t; 
     xed_uint_t div = 0;
-    char base_letter;
+    xed_uint64_t base_letter;
 
     if (bits_to_print == 64) // no masking required
         ff = f;
@@ -200,9 +200,9 @@ int xed_itoa_hex_ul(char* buf,
     n = ff;
     
     if (lowercase)
-        base_letter = 'a';
+        base_letter = XED_STATIC_CAST(xed_uint64_t,'a');
     else
-        base_letter = 'A';
+        base_letter = XED_STATIC_CAST(xed_uint64_t,'A');
 
     while(div > 0) {
 
@@ -251,10 +251,10 @@ int xed_itoa_signed(char* buf, xed_int64_t f, int buflen) {
     int blen = buflen;
     if (f<0) {
         blen = xed_strncpy(buf,"-",blen);
-        x = -f;
+        x = XED_STATIC_CAST(xed_uint64_t,-f);
     }
     else
-        x = f;
+        x = XED_STATIC_CAST(xed_uint64_t,f);
     return xed_itoa(buf+xed_strlen(buf), x, blen);
 }
 
@@ -314,12 +314,12 @@ static char xed_tolower(char c) {
 
 
 int xed_strncat_lower(char* dst, const char* src, int len) {
-    unsigned int dst_len = xed_strlen(dst) ;
-    unsigned int orig_max = dst_len + len;
-    unsigned int i;
-    unsigned int src_len = xed_strlen(src);
-    unsigned int copy_max = src_len;
-    unsigned int ulen = (unsigned int)len-1;
+    xed_uint_t dst_len = xed_strlen(dst) ;
+    xed_uint_t orig_max = dst_len + XED_STATIC_CAST(xed_uint_t,len);
+    xed_uint_t i;
+    xed_uint_t src_len = xed_strlen(src);
+    xed_uint_t copy_max = src_len;
+    xed_uint_t ulen = (xed_uint_t)len-1;
     if (len <= 0) 
         return 0;
 
@@ -332,7 +332,8 @@ int xed_strncat_lower(char* dst, const char* src, int len) {
         dst[dst_len+i]=xed_tolower(src[i]);
 
     dst[dst_len+copy_max]=0;
-    return orig_max - xed_strlen(dst);
+    // should never go negative
+    return XED_STATIC_CAST(int,orig_max - xed_strlen(dst));
 }
 
 
@@ -544,9 +545,14 @@ xed_uint8_t xed_get_byte(xed_uint64_t x, unsigned int i, unsigned int len) {
 xed_uint_t
 xed_shortest_width_signed(xed_int64_t x, xed_uint8_t legal_widths) {
     static const  xed_int64_t max1[] = { 0x7f, 0x7fff, 0x7fffffff };
-    static const  xed_int64_t min1[] = { -128,
-                                         0xffffffffffff8000LL,
-                                         0xffffffff80000000LL };
+    static const  xed_int64_t min1[] = {
+        -128,
+        // supposedly the negative 64b values w/leading F digit is machine
+        // dependent. So we use a leading minus sign to cause the compiler
+        // to do 2s complement and install the desired values.
+        -0x8000LL,       // == 0xffffffffffff8000LL
+        -0x80000000LL    // == 0xffffffff80000000LL
+    };
     /*historical note: I experimented with different ways of computing the
      * constants without making memory references, by shifting, etc. The
      * thing is that any way I coded it, Gcc's optimizer unrolled the loop,

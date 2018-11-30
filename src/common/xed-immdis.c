@@ -42,7 +42,7 @@ static int xed_immdis__print_ptr(const xed_immdis_t* p, char* buf, int buflen) {
     return blen;
 }
 
-static void xed_immdis__check(xed_immdis_t* q, int p)    {
+static void xed_immdis__check(xed_immdis_t* q, xed_uint_t p)    {
     xed_assert(q->currently_used_space == 0);
     q->present = 1;
     q->currently_used_space  = p;
@@ -50,7 +50,7 @@ static void xed_immdis__check(xed_immdis_t* q, int p)    {
 }
 
 
-void xed_immdis_init(xed_immdis_t* p, int max_bytes) {
+void xed_immdis_init(xed_immdis_t* p, xed_uint_t max_bytes) {
     xed_assert(max_bytes == 4 || max_bytes == 8);
     p->currently_used_space=0;
     p->max_allocated_space=max_bytes;
@@ -168,7 +168,7 @@ void
 xed_immdis_add8(xed_immdis_t* p, xed_int8_t d)
 {
     xed_immdis__check(p,1);
-    p->value.x[0] = d;
+    p->value.x[0] = XED_BYTE_CAST(d);
 }
 
 /// add a 16 bit value to the byte array
@@ -313,7 +313,7 @@ int xed_immdis_print(const xed_immdis_t* p, char* buf, int buflen) {
     int blen = buflen;
     char tbuf[100];
     char* x=tbuf;
-    char uppercase=0;
+    xed_bool_t uppercase=0;
     blen = xed_strncpy(buf,"0x",blen);
     for( i=0; i< p->currently_used_space; i++ ) {
         *x++ = xed_to_ascii_hex_nibble(p->value.x[i]>>4, uppercase);

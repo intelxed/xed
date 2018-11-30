@@ -38,7 +38,7 @@ typedef struct {
     char* base;
     char* index;
     char* disp;
-    uint64_t ndisp; // disp converted to a number
+    int64_t ndisp; // disp converted to a number
     char* scale;
     unsigned int nscale; // 0(invalid), 1,2,4,8
     int minus;
@@ -51,7 +51,7 @@ typedef struct opnd_list_s {
     opnd_type_t type;
     memparse_rec_t mem;
     slist_t* decorators;
-    uint64_t imm;
+    int64_t imm;
     struct opnd_list_s* next;
 } opnd_list_t;
 

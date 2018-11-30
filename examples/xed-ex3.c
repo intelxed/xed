@@ -38,17 +38,18 @@ usage(char* progname)
 }
 
 ascii_encode_request_t
-parse_args(unsigned int argc, char** argv)
+parse_args(int argc, char** argv)
 {
     char const* c = 0;
     unsigned int i = 1;
+    unsigned int argcu = (unsigned int)argc;
     ascii_encode_request_t r;
-    if (argc == 1)
+    if (argcu == 1)
         usage(argv[0]);
     r.dstate.mmode = XED_MACHINE_MODE_LEGACY_32;
     r.dstate.stack_addr_width = XED_ADDRESS_WIDTH_32b;
     
-    for( ; i< argc; i++)
+    for( ; i< argcu; i++)
         if (strcmp(argv[i],"-16")==0) 
             r.dstate.mmode = XED_MACHINE_MODE_LEGACY_16;
         else if (strcmp(argv[i],"-32")==0) 
@@ -67,11 +68,11 @@ parse_args(unsigned int argc, char** argv)
         else
             break;
 
-    if (i == argc)
+    if (i == argcu)
         usage(argv[0]);
     
     c = xed_strdup(argv[i++]);
-    for( ;i<argc;i++) {
+    for( ;i<argcu;i++) {
         c = xedex_append_string(c, " ");
         c = xedex_append_string(c, argv[i]);
     }

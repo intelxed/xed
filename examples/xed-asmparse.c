@@ -49,8 +49,8 @@ static void grab_operand(char**p, xed_enc_line_parsed_t* v);
 //static slist_t* reverse_list(slist_t* head);
 static int isreg(char* s);
 static int isdecorator(char* s);
-static uint64_t letter_cvt(char a, char base);
-static int asm_isnumber(char* s, uint64_t* onum, int arg_negative);
+static int64_t letter_cvt(char a, char base);
+static int asm_isnumber(char* s, int64_t* onum, int arg_negative);
 static int ismemref(char* s);
 static int valid_decorator(char const* s);
 static int grab_decorator(char* s, unsigned int pos, char** optr);
@@ -438,12 +438,12 @@ static int isdecorator(char* s) {
     return 0;
 }
 
-static uint64_t letter_cvt(char a, char base) {
-    return (uint64_t)(a-base);
+static int64_t letter_cvt(char a, char base) {
+    return (int64_t)(a-base);
 }
 
 
-static int asm_isnumber(char* s, uint64_t* onum, int arg_negative) {
+static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
     // return 1/0 if the string s is a number, and store the number in
     // onum. Handles base10, binary (0b prefix), octal (0 prefix) and hex
     // (0x prefix) number strings.
@@ -463,7 +463,7 @@ static int asm_isnumber(char* s, uint64_t* onum, int arg_negative) {
     unsigned int i = 0;
     unsigned int j = 0;
     unsigned int len = xed_strlen(s);
-    uint64_t val = 0;
+    int64_t val = 0;
     
     if (arg_negative) {
         negative = 1;
@@ -868,7 +868,7 @@ static void parse_memref(char* s, opnd_list_t* onode)
 static void refine_operand(xed_enc_line_parsed_t* v, char* s)
 {
     opnd_list_t* onode = get_opnd_list_node();
-    uint64_t num = 0;
+    int64_t num = 0;
     
     asp_dbg_printf("REFINE OPERAND [%s]\n", s);
     if (isreg(s)) {

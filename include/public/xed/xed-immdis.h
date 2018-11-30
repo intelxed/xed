@@ -64,7 +64,7 @@ typedef struct xed_immdis_s {
 
 
 
-XED_DLL_EXPORT void xed_immdis_init(xed_immdis_t* p, int max_bytes);
+XED_DLL_EXPORT void xed_immdis_init(xed_immdis_t* p, xed_uint_t max_bytes);
 
 /// @name Sizes and lengths
 //@{

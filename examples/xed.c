@@ -163,7 +163,7 @@ static void xed_assemble(const xed_state_t* dstate,
                          const char* encode_file_name)
 {
 #define ASM_BUF_SIZE 1024
-    const xed_uint_t bsize = ASM_BUF_SIZE;
+    const xed_int_t bsize = ASM_BUF_SIZE;
     char buf[ASM_BUF_SIZE];
     FILE* f = fopen_portable(encode_file_name,"r");
     if (!f) {
@@ -359,8 +359,8 @@ int
 main(int argc, char** argv)
 {
     xed_bool_t sixty_four_bit = 0;
-    unsigned int mpx_mode = 0;
-    unsigned int cet_mode = 0;
+    xed_bool_t mpx_mode = 0;
+    xed_bool_t cet_mode = 0;
     xed_bool_t decode_only = 1;
     char* input_file_name = 0;
     char* symbol_search_path = 0;
@@ -368,7 +368,7 @@ main(int argc, char** argv)
     char const* encode_text=0;
     xed_state_t dstate;
     xed_bool_t encode = 0;
-    unsigned int ninst = 100*1000*1000; // FIXME: should use maxint...
+    xed_uint_t ninst = 100*1000*1000; // FIXME: should use maxint...
     //perf_tail is for skipping first insts in performance measure mode
     unsigned int perf_tail = 0;         
     xed_bool_t decode_encode = 0;
@@ -380,14 +380,14 @@ main(int argc, char** argv)
     char* target_section = 0;
     xed_bool_t use_binary_mode = 1;
     xed_bool_t emit_isa_set = 0;
-    xed_int64_t addr_start = 0;
-    xed_int64_t addr_end = 0;
-    xed_int64_t fake_base = 0;
+    xed_uint64_t addr_start = 0;
+    xed_uint64_t addr_end = 0;
+    xed_uint64_t fake_base = 0;
     xed_bool_t xml_format =0;
     xed_bool_t resync = 0;
     xed_bool_t ast = 0;
     xed_bool_t histo = 0;
-    int line_numbers = 0;
+    xed_bool_t line_numbers = 0;
     xed_chip_enum_t xed_chip = XED_CHIP_INVALID;
     xed_operand_enum_t operand = XED_OPERAND_INVALID;
     xed_uint32_t operand_value = 0;
@@ -547,7 +547,7 @@ main(int argc, char** argv)
 #endif
         else if (strcmp(argv[i],"-n") ==0)         {
             test_argc(i,argc);
-            ninst = XED_STATIC_CAST(unsigned int,
+            ninst = XED_STATIC_CAST(xed_uint_t,
                 xed_atoi_general(argv[i+1],1000));
             i++;
         }
@@ -560,19 +560,20 @@ main(int argc, char** argv)
         }
         else if (strcmp(argv[i],"-b") ==0)         {
             test_argc(i,argc);
-            fake_base = xed_atoi_general(argv[i+1],1000);
+            fake_base = (xed_uint64_t)xed_atoi_general(argv[i+1],1000);
             printf("ASSUMED BASE = " XED_FMT_LX "\n",fake_base);
             i++;
         }
         else if (strcmp(argv[i],"-as") == 0 || strcmp(argv[i],"-sa") == 0)    {
             test_argc(i,argc);
-            addr_start = XED_STATIC_CAST(xed_int64_t,
+            addr_start = XED_STATIC_CAST(xed_uint64_t,
                                          xed_atoi_general(argv[i+1],1000));
             i++;
         }
         else if (strcmp(argv[i],"-ae") == 0 || strcmp(argv[i],"-ea") == 0)    {
             test_argc(i,argc);
-            addr_end = XED_STATIC_CAST(xed_int64_t,xed_atoi_general(argv[i+1],1000));
+            addr_end = XED_STATIC_CAST(xed_uint64_t,
+                                       xed_atoi_general(argv[i+1],1000));
             i++;
         }
 
@@ -590,10 +591,10 @@ main(int argc, char** argv)
             i++;
         }
         else if (strcmp(argv[i],"-xv") ==0)        {
-            unsigned int xed_engine_verbose;
+            int xed_engine_verbose;
             test_argc(i,argc);
-            xed_engine_verbose = XED_STATIC_CAST(unsigned int,
-                                           xed_atoi_general(argv[i+1],1000));
+            xed_engine_verbose = XED_STATIC_CAST(xed_int_t,
+                                                 xed_atoi_general(argv[i+1],1000));
             xed_set_verbosity(xed_engine_verbose);
             i++;
         }
@@ -666,7 +667,8 @@ main(int argc, char** argv)
         else if (strcmp(argv[i],"-set")==0) {
             test_argc(i+1,argc); // need 2 args
             operand = str2xed_operand_enum_t(argv[i+1]);
-            operand_value = xed_atoi_general(argv[i+2],1000);
+            operand_value = XED_STATIC_CAST(xed_uint32_t,
+                                            xed_atoi_general(argv[i+2],1000));
             i += 2;
         }
 #if 0
@@ -771,7 +773,7 @@ main(int argc, char** argv)
     if (filter)
     {
 #if defined(XED_DECODER)
-	retval_okay = disas_filter (&xedd, prefix, &decode_info);
+	retval_okay = disas_filter(&xedd, prefix, &decode_info);
 #endif
     } else
 #endif
@@ -816,14 +818,19 @@ main(int argc, char** argv)
         {
             char const* p = decode_text;
             // 2 bytes per nibble
-            int remaining = XED_STATIC_CAST(int,strlen(decode_text)) / 2; 
+            unsigned int remaining = (unsigned int)strlen(decode_text) / 2; 
             do {
                 unsigned int len;
                 retval_okay = disas_decode(&decode_info, p, &xedd, fake_base);
                 len = xed_decoded_inst_get_length(&xedd);
                 p+=len*2;
-                remaining -= len;
-                init_xedd(&xedd, &decode_info);
+                if (len < remaining) {
+                    remaining -= len;
+                    init_xedd(&xedd, &decode_info);
+                }
+                else {
+                    remaining = 0;
+                }
             }
             while(retval_okay && remaining > 0);
         }

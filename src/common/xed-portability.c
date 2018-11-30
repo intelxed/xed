@@ -59,9 +59,9 @@ void xed_strcat(char* dst, const char* src) {
 #endif
 
 int xed_strncat(char* dst, const char* src, int len) {
-    int dst_len  = xed_strlen(dst);
+    int dst_len  = XED_STATIC_CAST(int,xed_strlen(dst));
     int orig_max = dst_len + len;
-    int new_length =  dst_len + xed_strlen(src) + 1; /* with null */
+    int new_length =  dst_len + XED_STATIC_CAST(int,xed_strlen(src)) + 1; /* with null */
     if (len <= 0)
         return 0;
     /* if our source string with our dest string overflows the buffer, then
@@ -81,7 +81,7 @@ int xed_strncat(char* dst, const char* src, int len) {
 #else
     strncat(dst,src,len);
 #endif
-    return orig_max - xed_strlen(dst);
+    return orig_max - XED_STATIC_CAST(int,xed_strlen(dst));
 }
 
 xed_uint_t xed_strlen(const char* s) {
@@ -106,8 +106,7 @@ int xed_strncpy(char* dst, const char* src,  int len) {
         *pdst++ = *psrc++;
     if (i<len)
         *pdst = 0;
-    return orig_max - xed_strlen(dst);
-
+    return orig_max - XED_STATIC_CAST(int,xed_strlen(dst));
 }
 
 

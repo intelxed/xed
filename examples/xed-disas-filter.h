@@ -16,4 +16,4 @@ Copyright (c) 2018 Intel Corporation
   
 END_LEGAL */
 
-int disas_filter(xed_decoded_inst_t *inst, char *prefix, xed_disas_info_t *di);
+xed_uint_t disas_filter(xed_decoded_inst_t *inst, char *prefix, xed_disas_info_t *di);

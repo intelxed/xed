@@ -608,7 +608,7 @@ xed_operand_values_set_effective_address_width(xed_operand_values_t* p,
 void
 xed_operand_values_set_memory_operand_length(xed_operand_values_t* p,
                                              unsigned int memop_length) {
-    xed3_operand_set_mem_width(p,XED_STATIC_CAST(xed_uint32_t,memop_length));
+    xed3_operand_set_mem_width(p,XED_STATIC_CAST(xed_uint16_t,memop_length));
 }
 
 unsigned int
@@ -640,7 +640,7 @@ xed_operand_values_set_memory_displacement_bits(xed_operand_values_t* p,
     else{
         xed3_operand_set_disp(p,x); 
     }
-    xed3_operand_set_disp_width(p,len);
+    xed3_operand_set_disp_width(p, XED_STATIC_CAST(xed_uint8_t, len));
 }
 
 void
@@ -663,7 +663,7 @@ xed_operand_values_set_branch_displacement_bits(xed_operand_values_t* p,
     else{
         xed3_operand_set_disp(p,x);
     }
-    xed3_operand_set_brdisp_width(p,XED_STATIC_CAST(xed_uint16_t,len));
+    xed3_operand_set_brdisp_width(p,XED_STATIC_CAST(xed_uint8_t,len));
 
 }
 
@@ -703,7 +703,7 @@ void xed_operand_values_set_immediate_unsigned_bits(xed_operand_values_t* p,
         xed3_operand_set_uimm0(p,x);
     }
     
-    xed3_operand_set_imm_width(p,bits);
+    xed3_operand_set_imm_width(p, XED_STATIC_CAST(xed_uint8_t,bits));
     xed3_operand_set_imm0signed(p,0);
 }
 

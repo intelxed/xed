@@ -180,7 +180,8 @@ main(int argc, char** argv)
     unsigned int first_argv;
     unsigned int bytes = 0;
     unsigned char itext[XED_MAX_INSTRUCTION_BYTES];
-    int i;
+    unsigned int i;
+    unsigned int argcu = (unsigned int)argc;
     unsigned int u;
     xed_decoded_inst_t xedd;
 #define BUFLEN  1000
@@ -198,11 +199,11 @@ main(int argc, char** argv)
     xed_state_zero(&dstate);
     xed_set_verbosity( 99 );
 
-    if (argc > 2 && strcmp(argv[1], "-64") == 0) 
+    if (argcu > 2 && strcmp(argv[1], "-64") == 0) 
         long_mode = 1;
-    if (argc > 2 && strcmp(argv[1], "-r") == 0) 
+    if (argcu > 2 && strcmp(argv[1], "-r") == 0) 
         real_mode = 1;
-    if (argc > 2 && strcmp(argv[1], "-16") == 0) 
+    if (argcu > 2 && strcmp(argv[1], "-16") == 0) 
         protected_16 = 1;
 
     if (long_mode) {
@@ -234,7 +235,7 @@ main(int argc, char** argv)
     }
 
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
-    for( i=first_argv ;i < argc; i++)    {
+    for( i=first_argv ;i < argcu; i++)    {
         xed_uint8_t x = (xed_uint8_t)(xed_atoi_hex(argv[i]));
         assert(bytes < XED_MAX_INSTRUCTION_BYTES);
         itext[bytes++] = x;

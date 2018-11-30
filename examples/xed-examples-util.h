@@ -48,7 +48,10 @@ unsigned int xed_convert_ascii_to_hex(const char* src,
                                       unsigned int max_bytes);
 
 #define XED_HEX_BUFLEN 200
-void xed_print_hex_line(char* buf, const xed_uint8_t* array, const int length, const int buflen); 
+void xed_print_hex_line(char* buf,
+                        const xed_uint8_t* array,
+                        const unsigned int length, 
+                        const unsigned int buflen); 
 
 void XED_NORETURN xedex_derror(const char* s);
 void xedex_dwarn(const char* s);
@@ -58,19 +61,19 @@ void xedex_dwarn(const char* s);
 
 typedef struct {
     xed_state_t dstate;
-    int ninst;
-    int decode_only;
-    int sixty_four_bit;
-    int mpx_mode;
-    int cet_mode;
+    xed_uint_t ninst;
+    xed_bool_t decode_only;
+    xed_bool_t sixty_four_bit;
+    xed_bool_t mpx_mode;
+    xed_bool_t cet_mode;
     char* input_file_name;
     char* symbol_search_path;     // for dbghelp symbol caches
     char* target_section;
     xed_bool_t use_binary_mode; 
-    xed_int64_t addr_start;
-    xed_int64_t addr_end;
+    xed_uint64_t addr_start;
+    xed_uint64_t addr_end;
     xed_bool_t xml_format;
-    xed_int64_t fake_base;
+    xed_uint64_t fake_base;
     xed_bool_t resync; /* turn on/off symbol-based resynchronization */
     xed_bool_t line_numbers; /* control for printing file/line info */
     FILE* dot_graph_output;
