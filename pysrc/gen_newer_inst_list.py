@@ -36,16 +36,15 @@ def msgb(b,s=''):
 
 def check(chip, xeddb, chipdb):
     all = []
-    undoc = []
     for inst in xeddb.recs:
         if inst.isa_set in chipdb[chip]:
-            if inst.undocumented:
-                undoc.append(inst)
-            else:
-                all.append(inst)
-    return (all, undoc)
+            all.append(inst)
+    return all
 
 
+def chip_list(chip, xeddb, chip_db):
+    insts = check(chip, xeddb, chip_db)
+    return insts
 
 def work(args):  # main function
     msgb("READING XED DB")
@@ -56,45 +55,48 @@ def work(args):  # main function
                                      args.widths_filename,
                                      args.element_types_filename)
 
+    # base chip instr
+    bi = chip_list(args.basechip, xeddb, chip_db)
+    # newer chip instr
+    ni = chip_list(args.newchip, xeddb, chip_db)
     
-    (insts,undoc) = check(args.chip, xeddb, chip_db)
-    ilist = list(set( [ x.iclass for x in insts ] ))
-    ilist.sort()
-    ulist = list(set( [x.iclass for x in  undoc] ))
-    ulist.sort()
-    if args.otherchip:
-        (insts2,undoc2) = check(args.otherchip, xeddb, chip_db)
-        ilist2 = list(set( [ x.iclass for x in insts2] ))
-        ulist2 = list(set( [ x.iclass for x in  undoc2] ))
-        s1 = set(ilist + ulist)
-        s2 = set(ilist2 + ulist2)
-        d12 = list(s1-s2)
-        d21 = list(s2-s1)
-        d12.sort()
-        d21.sort()
-        both = list(s1&s2)
-        both.sort()
+    missing_new = []
+    for b in bi:
+        found = False
+        for n in ni:
+            if b.iclass == n.iclass:
+                found = True
+                break
+        if not found:
+            missing_new.append(b)
 
-        for i in d12:
-            print("{:20s} IN: {}   NOT IN: {}".format(i, args.chip, args.otherchip))
-        for i in d21:
-            print("{:20s} IN: {}   NOT IN: {}".format(i, args.otherchip, args.chip))
-        for i in both:
-            print("{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip))
-        
-    else:
-        for i in ilist:
-            print(i)
-        for i in ulist:
-            print(i, "UNDOC")
+    missing_old = []
+    for n in ni:
+        found = False
+        for b in bi:
+            if n.iclass == b.iclass:
+                found = True
+                break
+        if not found:
+            missing_old.append(n)
+            
+    missing_old.sort(key=lambda x: x.iclass)
+    missing_new.sort(key=lambda x: x.iclass)
+    
+    for i in missing_old:
+        print("+{}   {}    {} {}".format(i.iclass, i.isa_set, i.space, i.vl))
+    for i in missing_new:
+        print("-{}   {}    {} {}".format(i.iclass, i.isa_set, i.space, i.vl))
     return 0
 
 
 def setup():
     parser = argparse.ArgumentParser(
-        description='Generate instruction counts per chip')
-    parser.add_argument('chip', 
-                        help='Chip name')
+        description='Generate instruction differences between two chips')
+    parser.add_argument('basechip', 
+                        help='First chip name')
+    parser.add_argument('newchip', 
+                        help='Second chip name')
     parser.add_argument('state_bits_filename', 
                         help='Input state bits file')
     parser.add_argument('instructions_filename', 
@@ -105,8 +107,6 @@ def setup():
                         help='Input widths file')
     parser.add_argument('element_types_filename', 
                         help='Input element type file ')
-    parser.add_argument('--otherchip',
-                        help='Other chip name, for computing differences')
 
     args = parser.parse_args()
 
