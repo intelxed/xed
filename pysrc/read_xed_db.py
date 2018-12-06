@@ -453,8 +453,8 @@ class xed_reader_t(object):
         for line in file(fn):
             i = i + 1
             if i > 500:
-                sys.stdout.write(".")
-                sys.stdout.flush()
+                sys.stderr.write(".")
+                #sys.stderr.flush()
                 i = 0
             line = patterns.comment_pattern.sub("",line)
             line=line.strip()
