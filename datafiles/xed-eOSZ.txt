@@ -28,10 +28,10 @@ mode32   66_prefix | EOSZ=1
 mode32 no66_prefix | EOSZ=2
 
 # NOTE this can get overridden later if a DF64 NT shows up.
-mode64   66_prefix norexw_prefix | EOSZ=1
-mode64 no66_prefix norexw_prefix | EOSZ=2
-mode64   66_prefix rexw_prefix   | EOSZ=3
-mode64 no66_prefix rexw_prefix   | EOSZ=3
+mode64   66_prefix REXW=0 | EOSZ=1
+mode64 no66_prefix REXW=0 | EOSZ=2
+mode64   66_prefix REXW=1 | EOSZ=3
+mode64 no66_prefix REXW=1 | EOSZ=3
 
 
 # Things that default to 64b mode invoke this nonterminal once they
@@ -41,27 +41,27 @@ mode64 no66_prefix rexw_prefix   | EOSZ=3
 #
 # Denote the DF64=1 (df64).
 DF64()::
-mode16            |
-mode32            |
-mode64   66_prefix norexw_prefix  | EOSZ=1 df64
-mode64 no66_prefix norexw_prefix  | EOSZ=3 df64
-mode64   66_prefix   rexw_prefix  | EOSZ=3 df64
-mode64 no66_prefix   rexw_prefix  | EOSZ=3 df64
+mode16                     |
+mode32                     |
+mode64   66_prefix REXW=0  | EOSZ=1 df64
+mode64 no66_prefix REXW=0  | EOSZ=3 df64
+mode64   66_prefix REXW=1  | EOSZ=3 df64
+mode64 no66_prefix REXW=1  | EOSZ=3 df64
 
 # if we have a refining OSZ 0x66 prefix, then we must undo the effects
 # of the OSZ_NONTERM(). DF64 is not used with anything that has refining 66 prefixes.
 # We turn off the osze prefix because it is really behaving like a refining prefix for these instructions.
 REFINING66()::
-mode16               | EOSZ=1 no66_prefix
-mode32               | EOSZ=2 no66_prefix
-mode64 norexw_prefix | EOSZ=2 no66_prefix
-mode64 rexw_prefix   | EOSZ=3 no66_prefix
+mode16        | EOSZ=1 no66_prefix
+mode32        | EOSZ=2 no66_prefix
+mode64 REXW=0 | EOSZ=2 no66_prefix
+mode64 REXW=1 | EOSZ=3 no66_prefix
 
 IGNORE66()::
-mode16               | EOSZ=1 no66_prefix
-mode32               | EOSZ=2 no66_prefix
-mode64 norexw_prefix | EOSZ=2 no66_prefix
-mode64 rexw_prefix   | EOSZ=3 no66_prefix
+mode16         | EOSZ=1 no66_prefix
+mode32         | EOSZ=2 no66_prefix
+mode64 REXW=0  | EOSZ=2 no66_prefix
+mode64 REXW=1  | EOSZ=3 no66_prefix
 
 
 # IMMUNE66() is used to make 16b mode behave like 32b mode.
@@ -71,10 +71,10 @@ mode64 rexw_prefix   | EOSZ=3 no66_prefix
 #   BDW adox, adcx.
 #
 IMMUNE66()::
-mode16               | EOSZ=2 no66_prefix
-mode32               | EOSZ=2 no66_prefix
-mode64 norexw_prefix | EOSZ=2 no66_prefix
-mode64 rexw_prefix   | EOSZ=3 no66_prefix
+mode16          | EOSZ=2 no66_prefix
+mode32          | EOSZ=2 no66_prefix
+mode64 REXW=0   | EOSZ=2 no66_prefix
+mode64 REXW=1   | EOSZ=3 no66_prefix
 
 # Used for for CRs and DRs.
 CR_WIDTH():: 
@@ -89,11 +89,11 @@ mode32  |
 mode64  | EOSZ=3 no66_prefix
 
 IMMUNE_REXW()::
-mode16         | 
-mode32         | 
-mode64 no66_prefix             | EOSZ=2 
-mode64 66_prefix rexw_prefix   | EOSZ=2
-mode64 66_prefix norexw_prefix | EOSZ=1
+mode16                   | 
+mode32                   | 
+mode64 no66_prefix       | EOSZ=2 
+mode64 66_prefix REXW=1  | EOSZ=2
+mode64 66_prefix REXW=0  | EOSZ=1
 
 # FORCE64() can only be used with mode64 stuff (else encode does not
 # work).  see IMMUNE66_LOOP64() for something that works in all modes.
