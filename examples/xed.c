@@ -666,7 +666,7 @@ main(int argc, char** argv)
         else if (strcmp(argv[i],"-set")==0) {
             test_argc(i+1,argc); // need 2 args
             operand = str2xed_operand_enum_t(argv[i+1]);
-            operand_value = (xed_uint32_t)xed_atoi_general(argv[i+2],1000);
+            operand_value = xed_atoi_general(argv[i+2],1000);
             i += 2;
         }
 #if 0

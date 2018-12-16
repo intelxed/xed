@@ -299,11 +299,11 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
             unsigned64_disp = convert_ascii_hex_to_int(self->disp);
             self->disp_width_bits = nibbles*4; // nibbles to bits
             switch (self->disp_width_bits){
-              case 8:  self->disp_val = xed_sign_extend8_64((xed_int8_t)unsigned64_disp);
+              case 8:  self->disp_val = xed_sign_extend8_64(unsigned64_disp);
                 break;
-              case 16: self->disp_val = xed_sign_extend16_64((xed_int16_t)unsigned64_disp);
+              case 16: self->disp_val = xed_sign_extend16_64(unsigned64_disp);
                 break;
-              case 32: self->disp_val = xed_sign_extend32_64((xed_int32_t)unsigned64_disp);
+              case 32: self->disp_val = xed_sign_extend32_64(unsigned64_disp);
                 break;
               case 64: self->disp_val = unsigned64_disp;
                 break;
@@ -567,7 +567,7 @@ parse_encode_request(ascii_encode_request_t areq)
         if (imm2.valid) {
             if (imm2.width_bits != 8)
                 xedex_derror("2nd immediate must be just 1 byte long");
-            xed_encoder_request_set_uimm1(&req, (xed_uint8_t)imm2.immed_val);
+            xed_encoder_request_set_uimm1(&req, imm2.immed_val);
             xed_encoder_request_set_operand_order(&req,
                                                   operand_index,
                                                   XED_OPERAND_IMM1);

@@ -181,7 +181,7 @@ public:
             disabled_redirection = true;
 #endif
 
-    file_handle_ = CreateFileA(input_file_name,
+    file_handle_ = CreateFile(input_file_name,
                               GENERIC_READ,
                               FILE_SHARE_READ,
                               NULL,

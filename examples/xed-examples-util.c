@@ -70,7 +70,7 @@ update_histogram(xed_stats_t* p,
 {
     xed_uint32_t bin;
     if (delta  < XED_HISTO_MAX_CYCLES)
-        bin = (xed_uint32_t)(delta / XED_HISTO_CYCLES_PER_BIN);
+        bin = delta / XED_HISTO_CYCLES_PER_BIN;
     else
         bin = XED_HISTO_BINS-1;
     p->histo[bin]++;
@@ -1179,7 +1179,7 @@ void xed_disas_test(xed_disas_info_t* di)
 
         /* if we get near the end of the section, clip the itext length */
         ilim = 15;
-        elim = (int)(di->q - z);
+        elim = di->q - z;
         if (elim < ilim) 
            ilim = elim;
 
