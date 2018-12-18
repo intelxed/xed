@@ -19,11 +19,9 @@ END_LEGAL */
 #if !defined(XED_DISAS_MACHO_H)
 # define XED_DISAS_MACHO_H
 
-# if defined(__APPLE__)
 #  include "xed/xed-interface.h" 
 #  include "xed-examples-util.h" 
 
 void
 xed_disas_macho(xed_disas_info_t* fi);
-# endif
 #endif

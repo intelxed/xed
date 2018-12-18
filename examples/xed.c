@@ -224,6 +224,7 @@ static void usage(char* prog) {
 #elif defined(_WIN32)
       "\t-i input_file             (decode pecoff-format file)",
 #endif
+      "\t-macho input_file         (decode macho-format file)",
       "\t-ir raw_input_file        (decode a raw unformatted binary file)",
       "\t-ih hex_input_file        (decode a raw unformatted ASCII hex file)",
       "\t-d hex-string             (decode one instruction, must be last)",
@@ -383,6 +384,7 @@ main(int argc, char** argv)
     xed_bool_t decode_encode = 0;
     int i,j;
     unsigned int loop_decode = 0;
+    xed_bool_t disas_macho = 0;
     xed_bool_t decode_raw = 0;
     xed_bool_t decode_hex = 0;
     xed_bool_t assemble  = 0;
@@ -475,6 +477,12 @@ main(int argc, char** argv)
         else if (strcmp(argv[i],"-i")==0)        {
             test_argc(i,argc);
             input_file_name = argv[i+1];
+            i++;
+        }
+        else if (strcmp(argv[i],"-macho")==0)        {
+            test_argc(i,argc);
+            input_file_name = argv[i+1];
+            disas_macho = 1;
             i++;
         }
 #if defined(XED_USING_DEBUG_HELP)
@@ -862,7 +870,10 @@ main(int argc, char** argv)
             printf("<XEDDISASM>\n");
             printf("<XEDFORMAT>1</XEDFORMAT>\n");
         }
-        if (decode_raw) {
+        if (disas_macho) {
+            xed_disas_macho(&decode_info);
+        }
+        else if (decode_raw) {
             xed_disas_raw(&decode_info);
         }
         else if (decode_hex) {

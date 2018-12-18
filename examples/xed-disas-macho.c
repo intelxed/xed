@@ -18,13 +18,17 @@ END_LEGAL */
 /// @file xed-disas-macho.cpp
 
 #include "xed/xed-interface.h" // to get defines
-#if defined(__APPLE__) && defined(XED_DECODER)
+#if defined(XED_DECODER)
 
 // mac specific headers
+#ifdef __APPLE__
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
 #include <mach-o/stab.h>
 #include <mach-o/nlist.h>
+#else
+#include "mach-o.h"
+#endif
 
 #include "xed-disas-macho.h"
 #include "xed-examples-util.h"
@@ -118,6 +122,10 @@ process_segment32( xed_uint_t* sectoff,
     xed_uint8_t* start_of_section_data =
         segment_position + sizeof(struct segment_command);
     unsigned int i;
+	
+    (void) vmaddr;
+    (void) bytes;
+	
     // look through the array of section headers for this segment.
     for( i=0; i< sc->nsects;i++)
     {
@@ -164,6 +172,10 @@ process_segment64( xed_uint_t* sectoff,
     xed_uint8_t* start_of_section_data = 
         segment_position + sizeof(struct segment_command_64);
     unsigned int i;
+	
+    (void) vmaddr;
+    (void) bytes;
+	
     /* modify the default dstate values because we were not expecting a
      * 64b binary */
     decode_info->dstate.mmode = XED_MACHINE_MODE_LONG_64;
@@ -216,6 +228,9 @@ void process_symbols32(xed_disas_info_t* decode_info,
     /* xed_uint8_t* stroff_end = stroff + symtab->strsize; */
     xed_uint32_t i;
     struct nlist* p;
+
+    (void) decode_info;
+	
     p = XED_CAST(struct nlist*, symoff);
     for(i=0;i<nsyms;i++) {
         if ((p->n_type & N_STAB) == 0 &&
@@ -240,6 +255,7 @@ void process_symbols64(xed_disas_info_t* decode_info,
                        xed_symbol_table_t* symbol_table) {
     struct symtab_command* symtab  =
         XED_CAST(struct symtab_command*,current_position);
+		
     /* symbols */
     xed_uint32_t nsyms = symtab->nsyms;
     xed_uint8_t* symoff = pos + symtab->symoff;
@@ -248,6 +264,8 @@ void process_symbols64(xed_disas_info_t* decode_info,
     xed_uint32_t i;
     struct nlist_64* p;
     
+    (void) decode_info;
+	
     p = XED_CAST(struct nlist_64*, symoff);
     for(i=0;i<nsyms;i++)
     {
@@ -384,6 +402,8 @@ process_macho(xed_uint8_t* start,
 
     xed_uint32_t lim = 1;
     
+    (void) length;
+	
     // we have one section if not a fat binary.
     if (narch > lim)
         lim = narch;
