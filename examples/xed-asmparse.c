@@ -28,7 +28,6 @@ END_LEGAL */
 
 #include "xed-examples-util.h" // xed_upcase_buf
 #include "xed-asmparse.h"
-#include "xed-util.h"
 
 static int asp_dbg_print_enable = 0;
 
