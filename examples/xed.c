@@ -212,13 +212,12 @@ static void usage(char* prog) {
     unsigned int i;
     static const char* usage_msg[] = {
       "One of the following is required:",
-#if defined(__APPLE__)
-      "\t-i input_file             (decode macho-format file)",
-#elif defined(XED_ELF_READER)
+#if defined(XED_ELF_READER)
       "\t-i input_file             (decode elf-format file)",
 #elif defined(_WIN32)
       "\t-i input_file             (decode pecoff-format file)",
 #endif
+      "\t-macho input_file         (decode macho-format file)",
       "\t-ir raw_input_file        (decode a raw unformatted binary file)",
       "\t-ih hex_input_file        (decode a raw unformatted ASCII hex file)",
       "\t-d hex-string             (decode a sequence of bytes, must be last)",
@@ -384,6 +383,7 @@ main(int argc, char** argv)
     xed_bool_t decode_encode = 0;
     int i,j;
     unsigned int loop_decode = 0;
+    xed_bool_t disas_macho = 0;
     xed_bool_t decode_raw = 0;
     xed_bool_t decode_hex = 0;
     xed_bool_t assemble  = 0;
@@ -481,6 +481,12 @@ main(int argc, char** argv)
         else if (strcmp(argv[i],"-i")==0)        {
             test_argc(i,argc);
             input_file_name = argv[i+1];
+            i++;
+        }
+        else if (strcmp(argv[i],"-macho")==0)        {
+            test_argc(i,argc);
+            input_file_name = argv[i+1];
+            disas_macho = 1;
             i++;
         }
 #if defined(XED_USING_DEBUG_HELP)
@@ -882,7 +888,11 @@ main(int argc, char** argv)
             printf("<XEDDISASM>\n");
             printf("<XEDFORMAT>1</XEDFORMAT>\n");
         }
-        if (decode_raw) {
+        /* Disassemble using specified format. */
+        if (disas_macho) {
+            xed_disas_macho(&decode_info);
+        }
+        else if (decode_raw) {
             xed_disas_raw(&decode_info);
         }
         else if (decode_hex) {
@@ -890,6 +900,8 @@ main(int argc, char** argv)
         }
         else
         {
+            /* Disassemble using default format.  This will differ
+               according to target platform for the xed build. */
 #if defined(__APPLE__)
             xed_disas_macho(&decode_info);
 #elif defined(XED_ELF_READER)

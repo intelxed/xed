@@ -327,7 +327,8 @@ def build_examples(env, work_queue):
     xed_cmdline_files = [ 'xed-disas-raw.c',
                           'avltree.c',
                           'xed-disas-hex.c',
-                          'xed-symbol-table.c']
+                          'xed-symbol-table.c',
+                          'xed-disas-macho.c']
     if env.on_windows() and env['set_copyright']:
         # AUTOMATICALLY UPDATE YEAR IN THE RC FILE
         year = time.strftime("%Y")
@@ -344,9 +345,6 @@ def build_examples(env, work_queue):
             xed_cmdline_files.append('xed-disas-filter.c')
             xed_cmdline_files.append('xed-nm-symtab.c')
             
-        elif env.on_mac():
-            xed_cmdline_files.append('xed-disas-macho.c')
-
         elif env.on_windows():
             xed_cmdline_files.append('xed-disas-pecoff.cpp')
             if ( env['dbghelp'] and 

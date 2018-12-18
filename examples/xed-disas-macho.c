@@ -18,13 +18,17 @@ END_LEGAL */
 /// @file xed-disas-macho.cpp
 
 #include "xed/xed-interface.h" // to get defines
-#if defined(__APPLE__) && defined(XED_DECODER)
+#if defined(XED_DECODER)
 
 // mac specific headers
+#ifdef __APPLE__
 #include <mach-o/fat.h>
 #include <mach-o/loader.h>
 #include <mach-o/stab.h>
 #include <mach-o/nlist.h>
+#else
+#include "mach-o.h"
+#endif
 
 #include "xed-disas-macho.h"
 #include "xed-examples-util.h"
