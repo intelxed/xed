@@ -313,7 +313,7 @@ slash_macro_pattern = re.compile(r'([a-z][/][0-9]{1,2})')
 nonterminal_string = r'([A-Z][a-zA-Z0-9_]*)[(][)]'
 
 parens_to_end_of_line = re.compile(r'[(][)].*::.*$') # with double colon
-lookupfn_w_args_pattern =  re.compile(r'[[][a-z]+]')
+lookupfn_w_args_pattern =  re.compile(r'[\[][a-z]+]')
 #nonterminal_start_pattern=re.compile(r'^' + nonterminal_string + r'\s*::')
 nonterminal_start_pattern=re.compile(r'::')
 nonterminal_pattern=re.compile(nonterminal_string)
@@ -341,7 +341,7 @@ all_lower_case_pattern = re.compile(r'^[a-z]+$')
 
 
 pattern_binding_pattern = re.compile(
-               r'(?P<name>[A-Za-z_0-9]+)[[](?P<bits>[A-Za-z01_]+)]')
+               r'(?P<name>[A-Za-z_0-9]+)[\[](?P<bits>[A-Za-z01_]+)]')
 uppercase_pattern = re.compile(r'[A-Z]')
 
 

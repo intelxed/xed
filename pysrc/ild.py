@@ -46,7 +46,7 @@ import verbosity
 
 op_bin_pattern = re.compile(r'[_10]{2,}$')
 op_hex_pattern = re.compile(r'[0-9a-f]{2}$', flags=re.IGNORECASE)
-reg_binding_pattern = re.compile(r'REG[[](?P<bits>0b[01_]+)]')
+reg_binding_pattern = re.compile(r'REG[\[](?P<bits>0b[01_]+)]')
 mod_eq_pattern = re.compile(r'MOD=(?P<bits>[0123]{1})')
 mod_neq_pattern = re.compile(r'MOD(!=|=!)(?P<bits>[0123]{1})')
 
