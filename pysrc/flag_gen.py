@@ -124,7 +124,7 @@ class flags_rec_t(object):
    valid_flags_semantics_specifiers = ['MAY', 'MUST', 'READONLY' ]
    valid_flags_qualifiers = ['REP', 'NOREP', 'IMM0', 'IMM1', 'IMMx' ]
 
-   _flag_pattern = re.compile(r'\s*(?P<qualifiers>.*)\s+[[](?P<flags>.*)[]]')
+   _flag_pattern = re.compile(r'\s*(?P<qualifiers>.*)\s+[\[](?P<flags>.*)[\]]')
    def __init__(self,input_chunk):
       self.qualifier = None
       self.may_must = None # Could be READONLY, MAY or MUST, REP_MAY
