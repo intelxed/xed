@@ -881,9 +881,14 @@ def init(env):
             if env.on_cygwin() and env['compiler'] in ['ms','icl']:
                 xbc.cdie("Cannot build with cygwin python. " +
                            "Please install win32 python")
-            python_commands = [ 'c:/python27/python.exe',
-                                'c:/python26/python.exe',
-                                'c:/python25/python.exe' ]
+            if mbuild.is_python3():
+                python_commands = [ 'c:/python37/python.exe',
+                                    'c:/python36/python.exe',
+                                    'c:/python35/python.exe' ]
+            else:
+                python_commands = [ 'c:/python27/python.exe',
+                                    'c:/python26/python.exe',
+                                    'c:/python25/python.exe' ]
             python_command = None
             for p in python_commands:
                if os.path.exists(p):
@@ -903,10 +908,12 @@ def init(env):
     if env['shared']:
         env.add_define('XED_DLL')
 
+    # includes
     env.add_include_dir(mbuild.join(env['src_dir'],"include","private"))
-    env.add_include_dir(mbuild.join(env['src_dir'],"include","public"))
+    # this is required for older code that has not been updated to use xed/ on includes
     env.add_include_dir(mbuild.join(env['src_dir'],"include","public",'xed'))
-
+    env.add_include_dir(mbuild.join(env['src_dir'],"include","public"))
+    
     valid_targets = [ 'clean',       'just-prep',
                       'just-gen',    'skip-gen',
                       'install',
@@ -1660,10 +1667,10 @@ def build_examples(env):
     env_ex['xed_lib_dir'] = env['build_dir']
     env_ex['xed_inc_dir'] = env['build_dir']
 
-    env_ex['set_copyright'] = False    
+    env_ex['set_copyright'] = False
     if env.on_windows():
         env_ex['set_copyright'] = env['set_copyright']
-        
+    
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
     except Exception as e:
