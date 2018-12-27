@@ -39,14 +39,17 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* v
     int keep_going = 1;
     int mode_found = 0;
     int first_arg = 1;
-    assert(argc>1);
+    if (argc<=1) {
+        asp_error_printf("Usage: %s <assembly line>\n", argv[0]);
+        exit(1);
+    }
     v->mode = 32;
     while(keep_going) {
         keep_going = 0;
         if (strcmp("-32",argv[first_arg])==0) {
             if (mode_found) {
                 asp_error_printf("Duplicate mode knob: %s\n", argv[first_arg]);
-                assert(0);
+                exit(1);
             }
             mode_found = 1;
             keep_going = 1;
@@ -56,7 +59,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* v
         else if (strcmp("-16",argv[first_arg])==0) {
             if (mode_found) {
                 asp_error_printf("Duplicate mode knob: %s\n", argv[first_arg]);
-                assert(0);
+                exit(1);
             }
             mode_found = 1;
             keep_going = 1;
@@ -66,7 +69,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* v
         else if (strcmp("-64",argv[first_arg])==0) {
             if (mode_found) {
                 asp_error_printf("Duplicate mode knob: %s\n", argv[first_arg]);
-                assert(0);
+                exit(1);
             }
             mode_found = 1;
             keep_going = 1;
@@ -114,7 +117,7 @@ static void set_state(xed_state_t* dstate, xed_enc_line_parsed_t* v) {
     }
     else {
         asp_error_printf("Invalid mode: %d\n", v->mode);
-        assert(0);
+        exit(1);
     }
 
 }
@@ -157,7 +160,7 @@ static void process_prefixes(xed_enc_line_parsed_t* v,
         }
         else {
             asp_error_printf("Unhandled prefix: %s\n", q->s);
-            assert(0);
+            exit(1);
         }
         q = q->next;
     }
@@ -207,7 +210,7 @@ static void process_mem_decorator(slist_t* decos, xed_encoder_operand_t* operand
             asp_error_printf("%s ", d->s);
             d = d->next;
         }
-        assert(0);
+        exit(1);
     }
 }
 
@@ -250,7 +253,7 @@ static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint
     }
 
     asp_error_printf("Unhandled decorator: %s\n",s);
-    assert(0);
+    exit(1);
     return 0;
 }
 
@@ -371,7 +374,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
         xed_reg_enum_t reg = str2xed_reg_enum_t(q->s);
         if (reg == XED_REG_INVALID) {
             asp_error_printf("Bad register: %s\n", q->s);
-            assert(0);
+            exit(1);
         }
         assert(i < ASP_MAX_OPERANDS);
         operands[i++] = xed_reg(reg);
@@ -384,7 +387,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
         }
         else {
             asp_error_printf("Bad decorator: %s\n", q->s);
-            assert(0);
+            exit(1);
         }
     }
     else if (q->type == OPND_IMM) {
@@ -425,7 +428,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
     }
     else {
         asp_error_printf("Bad operand encountered: %s", q->s);
-        assert(0);
+        exit(1);
     }
 
     //Add k-mask decorators as operands.
@@ -460,8 +463,8 @@ static void encode(xed_encoder_instruction_t* inst)
     xed_encoder_request_zero_set_mode(&enc_req, &(inst->mode));
     convert_ok = xed_convert_to_encoder_request(&enc_req, inst);
     if (!convert_ok) {
-        asp_error_printf("conversion to encode request failed\n");
-        assert(0);
+        asp_error_printf("Conversion to encode request failed\n");
+        exit(1);
     }
     xed_error = xed_encode(&enc_req, itext, ilen, &olen);
     if (xed_error != XED_ERROR_NONE) {
@@ -514,7 +517,7 @@ static void process_other_decorator(char const* s,
 
         if (!found)  {
             asp_error_printf("Unhandled decorator: %s\n",s);
-            assert(0);
+            exit(1);
         }
     }
 
@@ -538,7 +541,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     iclass = str2xed_iclass_enum_t(v->iclass);
     if (iclass == XED_ICLASS_INVALID) {
         asp_error_printf("Invalid iclass: %s\n", v->iclass);
-        assert(0);
+        exit(1);
     }
 
     // handle prefixes
