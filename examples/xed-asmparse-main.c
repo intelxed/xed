@@ -468,9 +468,9 @@ static void encode(xed_encoder_instruction_t* inst)
     }
     xed_error = xed_encode(&enc_req, itext, ilen, &olen);
     if (xed_error != XED_ERROR_NONE) {
-        asp_error_printf("ENCODER FAILED: %s\n",
+        asp_error_printf("Failed to encode input: %s\n",
                 xed_error_enum_t2str(xed_error));
-        assert(0);
+        exit(1);
     }
     printf("Result: ");
     for(j=0;j<olen;j++) 
