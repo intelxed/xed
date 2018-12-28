@@ -526,7 +526,7 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
         if (negative)  {
             if ((val >> 63ULL) == 1) {
                 asp_error_printf("Bad immediate operand - too big to be negative: %s\n",s);
-                assert(0);
+                exit(1);
             }
             else {
                 val  = - val;  // FIXME: 2018-11-30 wcvt. error negeating unsigned value...
@@ -598,7 +598,7 @@ static int grab_decorator(char* s, unsigned int pos, char** optr)
                 }
                 else {
                     asp_error_printf("Bad decorator: %s\n", tbuf);
-                    assert(0);
+                    exit(1);
                 }
             }
         }
@@ -611,7 +611,7 @@ static int grab_decorator(char* s, unsigned int pos, char** optr)
     *optr = 0;
     if (start) {  // we started something but didn't finish it.  
         asp_error_printf("Bad decorator: %s\n", tbuf);
-        assert(0);
+        exit(1);
         return -1; //notreached
     }
     return 0;
@@ -639,7 +639,7 @@ static void parse_reg(char* s, opnd_list_t* onode)
         r = grab_decorator(s,i, &d);
 
         if (r<0) {
-            asp_error_printf("DECORATOR PARSING ERROR\n");
+            asp_error_printf("Decorator parsing error\n");
             break;
         }
         i = (unsigned int)r;
@@ -678,20 +678,18 @@ static void parse_decorator(char* s, opnd_list_t* onode)
                 //add_decorator(onode,d);
             }
             else  {
-                asp_error_printf("TOO MANY LONE DECORATORS %s\n",s);
-                assert(0);
+                asp_error_printf("Too many lone decorators %s\n",s);
+                exit(1);
             }
         }
         if (d==0)
             break;
     }
     if (onode->s == 0) {
-        asp_dbg_printf("NO DECORATORS: %s\n",s);
-        assert(0);
+        asp_dbg_printf("No decorators: %s\n",s);
+        exit(1);
     }
 }
-
-
 
 static void parse_memref(char* s, opnd_list_t* onode)
 {
@@ -794,7 +792,7 @@ static void parse_memref(char* s, opnd_list_t* onode)
                     
                 if (!asm_isnumber(q, &r.ndisp, r.minus)) {
                     asp_error_printf("Bad displacement: %s\n", q);
-                    assert(0);
+                    exit(1);
                 }
             }
             else if (last_star && start_digit)
@@ -803,8 +801,10 @@ static void parse_memref(char* s, opnd_list_t* onode)
                 r.base=q;
             else if (r.index==0 && start_digit==0)
                 r.index=q;
-            else
-                assert(0); // FIXME: better error handling
+            else {
+                asp_error_printf("Internal error parsing memory operand\n");
+                exit(1); // FIXME: better error handling
+            }
             i++; // skip over ']'
             break; // done parsing memref
         }
@@ -813,7 +813,8 @@ static void parse_memref(char* s, opnd_list_t* onode)
         }
 
         else {
-            assert(0); // FIXME: better error handling
+            asp_error_printf("Internal error parsing SIB\n");
+            exit(1); // FIXME: better error handling
         }
         // loop bottom
         last_star=0;
@@ -824,7 +825,7 @@ static void parse_memref(char* s, opnd_list_t* onode)
         int rr;
         rr = grab_decorator(stmp,i, &d);
         if (rr<0) {
-            asp_error_printf("DECORATOR PARSING ERROR\n");
+            asp_error_printf("Decorator parsing error\n");
             break;
         }
         i = (unsigned int) rr;
@@ -846,7 +847,7 @@ static void parse_memref(char* s, opnd_list_t* onode)
         }
         if (!found) {
             asp_error_printf("bad scale: %s\n",r.scale);
-            assert(0);
+            exit(1);
         }
     }
 
@@ -891,7 +892,7 @@ static void refine_operand(xed_enc_line_parsed_t* v, char* s)
     }
     else {
         asp_error_printf("Bad operand: %s\n",s);
-        assert(0);
+        exit(1);
     }
     // add onode to list
     onode->next = v->opnds;
