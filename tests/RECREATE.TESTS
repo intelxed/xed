@@ -8,4 +8,4 @@
 ./run-cmd.py --build-dir ../obj/examples --otests tests-xop  -b bulk-tests/amd-xop-bulk-tests.txt
 ./run-cmd.py --build-dir ../obj/examples --otests tests-cet  -b bulk-tests/cet-tests.txt
 ./run-cmd.py --build-dir ../obj/examples --otests tests-via  -b bulk-tests/via-padlock-tests.txt 
-
+./run-cmd.py --build-dir ../obj/examples --otests tests-syntax  -b bulk-tests/syntax-tests.txt
