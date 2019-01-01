@@ -1,0 +1,2 @@
+MODE=32, EOSZ=32
+Result: b8 00 00 00 00

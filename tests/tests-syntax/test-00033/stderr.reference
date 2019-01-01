@@ -1,0 +1,4 @@
+[XED CLIENT ERROR] Only up to nine register operands allowed
+input: xchg eax, ebx, ecx, edx, eax, edx, edx, edx, eax, r12, r13 
+error:                                                   ^
+
