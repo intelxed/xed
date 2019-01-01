@@ -1,0 +1,8 @@
+ENC     ; BUILDDIR/xed-asmparse-main -q nop
+ENC     ; BUILDDIR/xed-asmparse-main -q jmp eax
+ENC     ; BUILDDIR/xed-asmparse-main -q mov eax, 0x00000000
+ENC     ; BUILDDIR/xed-asmparse-main -q mov eax, -0x00001234
+ENC     ; BUILDDIR/xed-asmparse-main -q vaddpd ymm1, ymm2, ymm3
+ENC     ; BUILDDIR/xed-asmparse-main -q xchg eax, ebx, ecx, edx, eax, edx, edx, edx, eax, r12, r13
+ENC     ; BUILDDIR/xed-asmparse-main -q -16 mov ax, dx
+
