@@ -473,9 +473,9 @@ static void encode(xed_encoder_instruction_t* inst)
         exit(1);
     }
     printf("Result: ");
-    for(j=0;j<olen;j++) 
+    for(j=0;j<olen-1;j++) 
         printf("%02x ", itext[j]);
-    printf("\n");
+    printf("%02x\n", itext[olen-1]);
 }
 
 static void process_other_decorator(char const* s,
@@ -595,9 +595,9 @@ int main(int argc, char** argv)
 
     if (verbose)
         asp_print_parsed_line(v);
-    
+
     encode_with_xed(v);
-    
+
     asp_delete_xed_enc_line_parsed_t(v);
     return 0;
 }
