@@ -19,3 +19,4 @@
 XED_ISA_SET_VIA_PADLOCK_RNG:     via_padlock_rng.c0000001.0.edx.2  via_padlock_rng_en.c0000001.0.edx.3
 XED_ISA_SET_VIA_PADLOCK_AES:     via_padlock_aes.c0000001.0.edx.6  via_padlock_aes_en.c0000001.0.edx.7
 XED_ISA_SET_VIA_PADLOCK_SHA:     via_padlock_sha.c0000001.0.edx.10 via_padlock_sha_en.c0000001.0.edx.11
+XED_ISA_SET_VIA_PADLOCK_MONTMUL: via_padlock_pmm.c0000001.0.edx.12 via_padlock_pmm_en.c0000001.0.edx.13

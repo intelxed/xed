@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 #  
 #END_LEGAL
 
-#  VIA CENTAUR CHIPS???
-#VIA:  ALL_OF(P4PRESCOTT) VIA_PADLOCK_RNG VIA_PADLOCK_AES VIA_PADLOCK_SHA
-VIA:  VIA_PADLOCK_RNG VIA_PADLOCK_AES VIA_PADLOCK_SHA VIA_PADLOCK_MONTMUL
-
+#oc2-code    XTYPE     widths...
+pmmsz16     struct       14   
+pmmsz32     struct       24
