@@ -582,7 +582,10 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     q = v->opnds;
     while(q) {
         process_operand(v, q, &noperand, operand_array, &has_imm0, &eosz);
-        assert(noperand < ASP_MAX_OPERANDS);
+        if (noperand >= ASP_MAX_OPERANDS) {
+            asp_error_printf("Too many operands\n");
+            exit(1);
+        }
         q = q->next;
     }
 
