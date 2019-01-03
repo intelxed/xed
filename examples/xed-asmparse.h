@@ -67,7 +67,9 @@ typedef struct {
 } xed_enc_line_parsed_t;
 
 void asp_set_debug(int v); // nonzero activates dbg messages
+void asp_set_quiet(int v); // zero suppresses all messages except encode bytes
 void asp_error_printf(const char* format, ...);
+void asp_printf(const char* format, ...);
 
 
 xed_enc_line_parsed_t* asp_get_xed_enc_node(void);

@@ -30,7 +30,9 @@ END_LEGAL */
 
 #define ASP_MAX_OPERANDS (XED_ENCODER_OPERANDS_MAX+3)
 
-static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* verbose) {
+static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
+                         int* verbose, int* quiet) {
+    const char* usage = "Usage: %s [-16|-32|-64] [-v|-q] <assembly line>\n";
     int i = 0;
     unsigned int len = 0;
     char* s = 0;
@@ -40,7 +42,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* v
     int mode_found = 0;
     int first_arg = 1;
     if (argc<=1) {
-        asp_error_printf("Usage: %s <assembly line>\n", argv[0]);
+        asp_error_printf(usage, argv[0]);
         exit(1);
     }
     v->mode = 32;
@@ -81,6 +83,15 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* v
             *verbose = 1;
             first_arg++;
         }
+        else if (strcmp("-q", argv[first_arg])== 0) {
+            keep_going = 1;
+            *quiet = 1;
+            first_arg++;
+        }
+    }
+    if (*verbose && *quiet) {
+        asp_error_printf("-v and -q cannot be specified at the same time\n");
+        exit(1);
     }
     for(i=first_arg;i<argc;i++) {
         // add one for trailing space or null at end
@@ -97,8 +108,6 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v, int* v
     *p = 0;  // null terminate
     v->input = s;
 }
-
-
 
 static void set_state(xed_state_t* dstate, xed_enc_line_parsed_t* v) {
     xed_state_zero(dstate);
@@ -302,7 +311,7 @@ static void set_eosz(xed_reg_enum_t reg,
             *eosz = 32;
         }
     else if (rc == XED_REG_CLASS_GPR64) {
-        printf("SET EOSZ 64\n");
+        asp_printf("SET EOSZ 64\n");
         *eosz=64;
     }
 }
@@ -350,7 +359,7 @@ static void set_mode_vec(xed_reg_enum_t reg,
         regid = reg - XED_REG_ZMM0;
     }
     if (regid > 7 && *mode != 64) {
-        printf("Forcing mode to 64b based on regs used\n");
+        asp_printf("Forcing mode to 64b based on regs used\n");
         *mode = 64;
     }
 }
@@ -503,7 +512,7 @@ static void encode(xed_encoder_instruction_t* inst)
                 xed_error_enum_t2str(xed_error));
         exit(1);
     }
-    printf("Result: ");
+    asp_printf("Result: ");
     for(j=0;j<olen-1;j++) 
         printf("%02x ", itext[j]);
     printf("%02x\n", itext[olen-1]);
@@ -555,9 +564,6 @@ static void process_other_decorator(char const* s,
     *noperand = i;
 }
 
-
-
-
 static void encode_with_xed(xed_enc_line_parsed_t* v)
 {
     xed_encoder_instruction_t inst;
@@ -575,7 +581,6 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         exit(1);
     }
 
-    // handle prefixes
     process_prefixes(v,&inst);
         
     // handle operands
@@ -602,16 +607,16 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     }
     if (eosz == 0) {
         eosz = 32;
-        printf("Guessing 32b EOSZ\n");
+        asp_printf("Guessing 32b EOSZ\n");
     }
 
     if (eosz == 64) {
         if (v->mode != 64) {
-            printf("Changing to 64b mode\n");
+            asp_printf("Changing to 64b mode\n");
         }
         v->mode = 64;
     }
-    printf("MODE=%d, EOSZ=%d\n", v->mode, eosz);
+    asp_printf("MODE=%d, EOSZ=%d\n", v->mode, eosz);
     set_state(&dstate, v);
     xed_inst(&inst, dstate, iclass, eosz, noperand, operand_array);
     encode(&inst);
@@ -621,11 +626,15 @@ int main(int argc, char** argv)
 {
     xed_tables_init();
     int verbose  = 0;
+    int quiet = 0;
 
     xed_enc_line_parsed_t* v = asp_get_xed_enc_node();
 
-    process_args(argc,argv,v,&verbose);
+    process_args(argc, argv, v, &verbose, &quiet);
     asp_parse_line(v);
+
+    asp_set_debug(verbose);
+    asp_set_quiet(!quiet);
 
     if (verbose)
         asp_print_parsed_line(v);

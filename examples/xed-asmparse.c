@@ -30,11 +30,11 @@ END_LEGAL */
 #include "xed-asmparse.h"
 
 static int asp_dbg_print_enable = 0;
+static int asp_inf_print_enable = 1;
 
 /* PROTOTYPES */
 static char* asp_strdup(const char* s);
 static void asp_dbg_printf(const char* format, ...);
-static void asp_printf(const char* format, ...);
 static void upcase(char* s);
 static void delete_slist_t(slist_t* s);
 static slist_t* get_slist_node(void);
@@ -70,6 +70,11 @@ void asp_set_debug(int v) {
     asp_dbg_print_enable = v;
 }
 
+void asp_set_quiet(int v) {
+    asp_inf_print_enable = v;
+}
+
+
 static void asp_dbg_printf(const char* format, ...) {
     if (asp_dbg_print_enable) {
         va_list args;
@@ -87,7 +92,9 @@ void asp_error_printf(const char* format, ...) {
     va_end(args);
 }
 
-static void asp_printf(const char* format, ...) {
+void asp_printf(const char* format, ...) {
+    if (!asp_inf_print_enable)
+        return;
     va_list args;
     va_start(args, format);
     vprintf(format, args);
