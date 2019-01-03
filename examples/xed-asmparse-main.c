@@ -262,7 +262,6 @@ static xed_uint_t get_nbits_signed(xed_int64_t imm_disp_val) {
     xed_uint_t nbits = 0;
     xed_uint8_t legal_widths = 1|2|4|8;  // bytes
     xed_uint_t nbytes = 0;
-    //nbytes = xed_shortest_width_unsigned(imm_disp_val, legal_widths);
     nbytes = xed_shortest_width_signed(imm_disp_val, legal_widths); 
     nbits = 8 * nbytes;
     return nbits;
@@ -274,7 +273,7 @@ static xed_uint_t get_nbits_signed_disp(xed_int64_t disp_val) {
     xed_uint_t nbits = 0;
     xed_uint8_t legal_widths = 1|4;  // bytes
     xed_uint_t nbytes = 0;
-    if (disp_val == 0) // FIXME: how to force nonzero displacmeent?
+    if (disp_val == 0) // FIXME: how to force nonzero displacement?
         return 0;
     nbytes = xed_shortest_width_signed(disp_val, legal_widths);
     nbits = 8 * nbytes;
@@ -313,7 +312,7 @@ static void set_mode(xed_reg_enum_t reg,
                      int* mode)
 {
     // only set mode if it is set to something too narrow.  Note: instead
-    // we could simpl only infer mode if the mode is not set explicitly
+    // we could simply only infer mode if the mode is not set explicitly
     // (==0) which would facilitate some error checking.
     
     xed_reg_class_enum_t rc = get_gpr_reg_class(reg);
@@ -356,6 +355,29 @@ static void set_mode_vec(xed_reg_enum_t reg,
     }
 }
 
+/* Return true for e.g. strings "0x0123", "-0123"
+   Return false if no padding zeroes */
+static xed_bool_t string_has_padding_zeroes(const char* s)
+{
+    if (*s == '+' || *s == '-') /* skip leading sign */
+        s++;
+    if (*s == '0' && *(s + 1) == 'X') /* skip hexadecimal prefix */
+        s += 2;
+    return (*s == '0');
+}
+
+/* A nibble is a 4 bits wide hexadecimal digit.
+   Note that decimal digits are not nibbles (approx 3.2 bits) but
+   the difference is ignored for the purposes of detecting
+   the literal's width */
+static xed_uint_t count_nibbles(const char *s)
+{
+    if (*s == '+' || *s == '-') /* skip leading sign */
+        s++;
+    if (*s == '0' && *(s + 1) == 'X') /* skip hexadecimal prefix */
+        s += 2;
+    return xed_strlen(s);
+ }
 
 static char const*  const kmasks[] = { "{K0}","{K1}","{K2}","{K3}","{K4}","{K5}","{K6}","{K7}", 0 };
 
@@ -391,7 +413,16 @@ static void process_operand(xed_enc_line_parsed_t* v,
         }
     }
     else if (q->type == OPND_IMM) {
-        xed_uint_t nbits = get_nbits_signed(q->imm);
+		/* If user padded the number with leading zeroes, consider this to be
+           an attempt to precisely control the width of the literal. Otherwise,
+           choose a width that is just wide enough to fit the value */
+        xed_uint_t nbits = 0;
+        if (string_has_padding_zeroes(q->s)) {
+            nbits = 4 * count_nibbles(q->s);
+        }
+        else {
+            nbits = get_nbits_signed(q->imm);
+        }
         if (*has_imm0==0) {
             assert(i < ASP_MAX_OPERANDS);
             operands[i++] = xed_imm0((uint64_t)q->imm, nbits); //FIXME: cast or make imm0 signed?
