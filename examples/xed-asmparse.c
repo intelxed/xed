@@ -29,12 +29,11 @@ END_LEGAL */
 #include "xed-examples-util.h" // xed_upcase_buf
 #include "xed-asmparse.h"
 
-static int asp_dbg_print_enable = 0;
+static int asp_dbg_verbosity = 1;
 
 /* PROTOTYPES */
 static char* asp_strdup(const char* s);
 static void asp_dbg_printf(const char* format, ...);
-static void asp_printf(const char* format, ...);
 static void upcase(char* s);
 static void delete_slist_t(slist_t* s);
 static slist_t* get_slist_node(void);
@@ -66,19 +65,34 @@ static char* asp_strdup(char const* s) {
     return xed_strdup(s);
 }
 
-void asp_set_debug(int v) {
-    asp_dbg_print_enable = v;
+/* Verbosity levels:
+   0 - only errors and end result
+   1 - informational messages about implicit decision made by encoder,
+       such as correction of operand sizes, bitness etc
+   2 - debugging info */
+void asp_set_verbosity(int v) {
+    asp_dbg_verbosity = v;
+}
+
+void asp_printf(const char* format, ...) {
+    if (asp_dbg_verbosity < 1)
+        return;
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
 }
 
 static void asp_dbg_printf(const char* format, ...) {
-    if (asp_dbg_print_enable) {
-        va_list args;
-        va_start(args, format);
-        vprintf(format, args);
-        va_end(args);
-    }
+    if (asp_dbg_verbosity < 2)
+        return;
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args);
+    va_end(args);
 }
 
+/* Errors are always printed to stderr */
 void asp_error_printf(const char* format, ...) {
     va_list args;
     va_start(args, format);
@@ -86,15 +100,6 @@ void asp_error_printf(const char* format, ...) {
     vfprintf(stderr, format, args);
     va_end(args);
 }
-
-static void asp_printf(const char* format, ...) {
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-}
-
-
 
 static void upcase(char* s) {
     (void)xed_upcase_buf(s);

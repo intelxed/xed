@@ -66,8 +66,9 @@ typedef struct {
     opnd_list_t* opnds;
 } xed_enc_line_parsed_t;
 
-void asp_set_debug(int v); // nonzero activates dbg messages
+void asp_set_verbosity(int v);
 void asp_error_printf(const char* format, ...);
+void asp_printf(const char* format, ...);
 
 
 xed_enc_line_parsed_t* asp_get_xed_enc_node(void);
