@@ -214,39 +214,46 @@ static void process_mem_decorator(slist_t* decos, xed_encoder_operand_t* operand
     }
 }
 
+static void check_too_many_operands(int op_pos) {
+    if (op_pos >= ASP_MAX_OPERANDS) {
+        asp_error_printf("Too many operands\n");
+        exit(1);
+    }
+}
+
 static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint_t* pos)
 {
     xed_uint_t i = *pos;
     if (strcmp("{RNE-SAE}",s)==0) {
-        assert(i+1 < ASP_MAX_OPERANDS);
+        check_too_many_operands(i+1);
         operand[i++] = xed_other(XED_OPERAND_ROUNDC,1);
         operand[i++] = xed_other(XED_OPERAND_SAE,1);
         *pos = i;
         return 1;
     }
     else if (strcmp("{RD-SAE}",s)==0) {
-        assert(i+1 < ASP_MAX_OPERANDS);
+        check_too_many_operands(i+1);
         operand[i++] = xed_other(XED_OPERAND_ROUNDC,2);
         operand[i++] = xed_other(XED_OPERAND_SAE,1);
         *pos = i;
         return 1;
     }
     else if (strcmp("{RU-SAE}",s)==0) {
-        assert(i+1 < ASP_MAX_OPERANDS);
+        check_too_many_operands(i+1);
         operand[i++] = xed_other(XED_OPERAND_ROUNDC,3);
         operand[i++] = xed_other(XED_OPERAND_SAE,1);
         *pos = i;
         return 1;
     }
     else if (strcmp("{RZ-SAE}",s)==0) {
-        assert(i+1 < ASP_MAX_OPERANDS);
+        check_too_many_operands(i+1);
         operand[i++] = xed_other(XED_OPERAND_ROUNDC,4);
         operand[i++] = xed_other(XED_OPERAND_SAE,1);
         *pos = i;
         return 1;
     }
     else if (strcmp("{SAE}",s)==0) {
-        assert(i < ASP_MAX_OPERANDS);        
+        check_too_many_operands(i);
         operand[i++] = xed_other(XED_OPERAND_SAE,1);
         *pos = i;
         return 1;
@@ -398,14 +405,14 @@ static void process_operand(xed_enc_line_parsed_t* v,
             asp_error_printf("Bad register: %s\n", q->s);
             exit(1);
         }
-        assert(i < ASP_MAX_OPERANDS);
+        check_too_many_operands(i);
         operands[i++] = xed_reg(reg);
         set_eosz(reg, eosz);
         set_mode_vec(reg, &(v->mode));
     }
     else if (q->type == OPND_DECORATOR) {
         if (process_rc_sae(q->s, operands, &i))  {
-            assert(i < ASP_MAX_OPERANDS);
+            check_too_many_operands(i);
         }
         else {
             asp_error_printf("Bad decorator: %s\n", q->s);
@@ -424,13 +431,17 @@ static void process_operand(xed_enc_line_parsed_t* v,
             nbits = get_nbits_signed(q->imm);
         }
         if (*has_imm0==0) {
-            assert(i < ASP_MAX_OPERANDS);
+            check_too_many_operands(i);
             operands[i++] = xed_imm0((uint64_t)q->imm, nbits); //FIXME: cast or make imm0 signed?
             *has_imm0=1;
         }
         else {
-            assert(nbits == 8);
-            assert(i < ASP_MAX_OPERANDS);
+            if (nbits != 8) {
+                asp_error_printf(
+                    "The second literal constant can only be 8 bit wide\n");
+                exit(1);
+            }
+            check_too_many_operands(i);
             operands[i++] = xed_imm1(XED_STATIC_CAST(xed_uint8_t,q->imm));
         }
     }
@@ -453,7 +464,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
         set_mode(base, &(v->mode));
         set_mode(indx, &(v->mode));
         set_mode_vec(indx, &(v->mode)); // for AVX512 gathers, scatters
-        assert(i < ASP_MAX_OPERANDS);
+        check_too_many_operands(i);
         operands[i++] = xed_mem_gbisd(seg, base, indx, scale, disp, width_bits);
         process_mem_decorator(q->decorators, operands, &i);
     }
@@ -470,7 +481,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
         for(j=0;kmasks[j];j++) {
             if (strcmp(kmasks[j],d->s)==0) {
                 xed_reg_enum_t kreg = XED_REG_K0 + j;
-                assert(i < ASP_MAX_OPERANDS);
+                check_too_many_operands(i);
                 operands[i++] = xed_reg(kreg);
                 found_a_kmask = 1;
                 break;
@@ -522,7 +533,7 @@ static void process_other_decorator(char const* s,
     xed_uint_t i = *noperand;
     
     if (strcmp("{Z}",s) == 0) {
-        assert(i < ASP_MAX_OPERANDS);
+        check_too_many_operands(i);
         operands[i++] = xed_other(XED_OPERAND_ZEROING,1);
     }
     else {
@@ -582,7 +593,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     q = v->opnds;
     while(q) {
         process_operand(v, q, &noperand, operand_array, &has_imm0, &eosz);
-        assert(noperand < ASP_MAX_OPERANDS);
+        check_too_many_operands(noperand);
         q = q->next;
     }
 
@@ -592,7 +603,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         slist_t* r = q->decorators;
         while(r) {
             process_other_decorator(r->s, &noperand, operand_array);
-            assert(noperand < ASP_MAX_OPERANDS);
+            check_too_many_operands(noperand);
             r = r->next;
         }
         q = q->next;
