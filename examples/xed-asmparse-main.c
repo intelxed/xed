@@ -634,8 +634,8 @@ int main(int argc, char** argv)
     xed_enc_line_parsed_t* v = asp_get_xed_enc_node();
 
     process_args(argc, argv, v, &verbose);
-    asp_parse_line(v);
     asp_set_verbosity(verbose);
+    asp_parse_line(v);
 
     if (verbose > 1)
         asp_print_parsed_line(v);
