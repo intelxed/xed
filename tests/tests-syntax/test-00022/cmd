@@ -1,0 +1,1 @@
+ BUILDDIR/xed-asmparse-main -q lock cmpxchg dword ptr [ebx], esi
