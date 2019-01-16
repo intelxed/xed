@@ -544,6 +544,13 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
     return 0;
 }
 
+static unsigned int skip_spaces(char *s, unsigned int offset) {
+    while (s[offset] && isspace(s[offset])) {
+        offset++;
+    }
+    return offset;
+}
+
 static int ismemref(char* s) {  // FIXME include directorators
     if (s) {
         unsigned int i=0,offset=0;
@@ -555,9 +562,13 @@ static int ismemref(char* s) {  // FIXME include directorators
                 break;
             }
         }
-        while(s[offset] && isspace(s[offset])) {
-            offset++;
+        offset = skip_spaces(s, offset);
+        /* skip optional "ptr" part of memref */
+        if (!strncmp(s + offset, "PTR", 3)) {
+            offset += 3;
+            offset = skip_spaces(s, offset);
         }
+
         if (s[offset] == '[') {
             // search backwards from end as there might be some {...} decorators.
             unsigned int len = xed_strlen(s);
@@ -699,7 +710,9 @@ static void parse_decorator(char* s, opnd_list_t* onode)
 static void parse_memref(char* s, opnd_list_t* onode)
 {
     // [ seg:reg + index * [1,2,4,8]  +/- disp ]
-    memparse_rec_t r;
+    memparse_rec_t r = { 0 };
+    r.len = xed_strlen(s);
+    assert(r.len < BLEN);
 
     char tbuf[BLEN];
     char stmp[BLEN];    
@@ -709,20 +722,6 @@ static void parse_memref(char* s, opnd_list_t* onode)
     int plusses=0;
     int last_star=0;
     unsigned int offset=0;
-    r.minus=0;
-    r.seg=0;
-    r.base=0;
-    r.index=0;
-    r.scale=0;
-    r.nscale=0;
-    r.disp=0;
-    r.ndisp=0;
-    r.mem_size = 0;
-    r.mem_bits = 0;
-
-    r.len = xed_strlen(s);
-    assert(r.len < BLEN);
-
 
     for(i=0;mem_size_qualifiers[i];i++) {
         unsigned int len;
@@ -735,6 +734,11 @@ static void parse_memref(char* s, opnd_list_t* onode)
             break;
         }
     }
+    /* skip optional "ptr" part */
+    offset = skip_spaces(s, offset);
+    if (!strncmp(s+offset, "PTR", 3)) {
+        offset += 3;
+    }
 
     // remove spaces -- makes figuring out terminators much easier!
     for(i=0;s[offset+i];i++) {
@@ -745,7 +749,8 @@ static void parse_memref(char* s, opnd_list_t* onode)
     stmp[p]=0;
     p=0;
     r.len=xed_strlen(stmp);
-    
+
+
     for(i=0;i<r.len;i++) {
         if (stmp[i] == '[') {
             assert(i==0);
