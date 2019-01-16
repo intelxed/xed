@@ -9,3 +9,7 @@ ENC     ; BUILDDIR/xed-asmparse-main -q vaddpd ymm1{k3}, ymm2, ymm3
 ENC     ; BUILDDIR/xed-asmparse-main -q vaddpd ymm1{k2}{z}, ymm2, ymm3
 ENC     ; BUILDDIR/xed-asmparse-main -q vaddpd ymm1{k2}{z}, ymm2, ymmword [ebx]
 ENC     ; BUILDDIR/xed-asmparse-main -q vaddpd ymm1{k2}{z}, ymm2, ymmword ptr [ebx]
+ENC     ; BUILDDIR/xed-asmparse-main -q fdiv ST0, ST1
+ENC     ; BUILDDIR/xed-asmparse-main -q fdiv st(0), st(1)
+ENC     ; BUILDDIR/xed-asmparse-main -q cvtpi2pd xmm4, mm3
+ENC     ; BUILDDIR/xed-asmparse-main -q cvtpi2pd xmm4, mmx7
