@@ -393,6 +393,30 @@ static xed_uint_t count_nibbles(const char *s)
 
 static char const*  const kmasks[] = { "{K0}","{K1}","{K2}","{K3}","{K4}","{K5}","{K6}","{K7}", 0 };
 
+/* Recognize cases when Xed register names are unconvential or buggy */
+static xed_reg_enum_t parse_special_register_name(const char * s) {
+    /* ST0-ST7, ST(0) - ST(7) */
+    if (s[0] == 'S' && s[1] == 'T' && s[2] >= '0' && s[2] <= '7' && s[3] == 0) {
+        int i = s[2] - '0';
+        assert(i >= 0 && i <= 7);
+        return XED_REG_ST0 + i;
+    }
+    if (s[0] == 'S' && s[1] == 'T' && s[2] == '(' && 
+        s[3] >= '0' && s[3] <= '7' && s[4] == ')' &&
+        s[5] == 0) {
+        int i = s[3] - '0';
+        assert(i >= 0 && i <= 7);
+        return XED_REG_ST0 + i;
+    }
+    /* MM0 - MM7 */
+    if (s[0] == 'M' && s[1] == 'M' && s[2] >= '0' && s[2] <= '7' && s[3] == 0) {
+        int i = s[2] - '0';
+        assert(i >= 0 && i <= 7);
+        return XED_REG_MMX0 + i;
+    }
+    return XED_REG_INVALID;
+}
+
 static void process_operand(xed_enc_line_parsed_t* v,
                             opnd_list_t* q,
                             xed_uint_t* noperand,
@@ -405,7 +429,15 @@ static void process_operand(xed_enc_line_parsed_t* v,
     
     xed_uint_t i = *noperand;
     if (q->type == OPND_REG) {
-        xed_reg_enum_t reg = str2xed_reg_enum_t(q->s);
+        xed_reg_enum_t reg = XED_REG_INVALID;
+        
+        reg = str2xed_reg_enum_t(q->s);
+
+        if (reg == XED_REG_INVALID) {
+            /* Handle special cases, work around bugs */
+            reg = parse_special_register_name(q->s);
+        }
+
         if (reg == XED_REG_INVALID) {
             asp_error_printf("Bad register: %s\n", q->s);
             exit(1);

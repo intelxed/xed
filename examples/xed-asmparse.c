@@ -415,10 +415,12 @@ static int isreg(char* s) {  // including decorators
         if (isalpha(s[0])) {
             int i;
             for(i=1;s[i];i++)
-                // allow alnum, dash & curlies, else bail
+                // allow alnum, dash, braces & curlies, else bail
                 if ( !isalnum(s[i])  &&
-                     s[i] != '{'     &&
                      s[i] != '-'     &&
+                     s[i] != '('     &&
+                     s[i] != ')'     &&
+                     s[i] != '{'     &&
                      s[i] != '}'      )
                     return 0;
             return 1;
