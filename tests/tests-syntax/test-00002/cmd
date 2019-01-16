@@ -1,1 +1,1 @@
-BUILDDIR/xed-asmparse-main -q mov eax, 0x00000000
+ BUILDDIR/xed-asmparse-main -q mov eax, 0x00000000
