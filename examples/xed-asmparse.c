@@ -33,7 +33,6 @@ static int asp_dbg_verbosity = 1;
 
 /* PROTOTYPES */
 static char* asp_strdup(const char* s);
-static void asp_dbg_printf(const char* format, ...);
 static void upcase(char* s);
 static void delete_slist_t(slist_t* s);
 static slist_t* get_slist_node(void);
@@ -84,7 +83,7 @@ void asp_printf(const char* format, ...) {
     va_end(args);
 }
 
-static void asp_dbg_printf(const char* format, ...) {
+void asp_dbg_printf(const char* format, ...) {
     if (asp_dbg_verbosity < 2)
         return;
     va_list args;
@@ -160,13 +159,7 @@ static void delete_opnd_list_t(opnd_list_t* s) {
 xed_enc_line_parsed_t* asp_get_xed_enc_node(void) {
     xed_enc_line_parsed_t*  v = (xed_enc_line_parsed_t*)
                                   malloc(sizeof(xed_enc_line_parsed_t));
-    v->input = 0;
-    v->iclass = 0;
-    v->valid = 0;
-    v->operands = 0;
-    v->prefixes = 0;
-    v->opnds = 0;
-    v->mode =0;
+    memset(v, 0, sizeof(xed_enc_line_parsed_t));
     return v;
 }
 
@@ -182,21 +175,8 @@ void asp_delete_xed_enc_line_parsed_t(xed_enc_line_parsed_t* v) {
 
 static opnd_list_t* get_opnd_list_node() {
     opnd_list_t* p  = (opnd_list_t*)malloc(sizeof(opnd_list_t));
-    p->next = 0;
-    p->decorators = 0;
+    memset(p, 0, sizeof(opnd_list_t));
     p->type = OPND_INVALID;
-    p->s = 0;
-    p->imm = 0;
-    p->mem.len = 0;
-    p->mem.seg = 0;
-    p->mem.base = 0;
-    p->mem.index = 0;
-    p->mem.scale = 0;
-    p->mem.disp = 0;
-    p->mem.minus = 0;
-    p->mem.mem_size = 0;
-    p->mem.mem_bits = 0;
-    p->mem.ndisp = 0;
     return p;
 }
 
@@ -319,7 +299,8 @@ static void grab_inst(char**p, xed_enc_line_parsed_t* v)
         q++;
     }
     v->iclass = *p;
-    asp_dbg_printf("ICLASS [%s]\n",v->iclass);
+    /* Note that it is not the final iclass as it may require mangling */
+    asp_dbg_printf("MNEMONIC [%s]\n",v->iclass);
     *p = q;
 }
 
@@ -1027,7 +1008,7 @@ void asp_print_parsed_line(xed_enc_line_parsed_t* v) {
     slist_t* p=0;
     opnd_list_t* q=0;
     asp_printf("MODE: %d\n",v->mode);
-    asp_printf("ICLASS: %s\n",v->iclass);
+    asp_printf("MNEMONIC: %s\n",v->iclass);
     asp_printf("PREFIXES: ");
     p = v->prefixes;
     while(p) {
