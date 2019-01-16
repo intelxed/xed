@@ -19,6 +19,8 @@ END_LEGAL */
 #include <stdint.h>
 #include <stdarg.h>
 
+#include "xed/xed-interface.h"
+
 typedef struct slist_s {
     char* s;
     struct slist_s* next;
@@ -73,12 +75,21 @@ typedef struct {
     slist_t* prefixes; // reversed
     slist_t* operands; // reversed
     opnd_list_t* opnds;
+
+    /* parsing state used to resolve ambiguous cases */
+    xed_bool_t seen_repe;
+    xed_bool_t seen_repne;
+    xed_bool_t seen_lock;
+    xed_bool_t seen_cr;
+    xed_bool_t seen_dr;
+    xed_bool_t seen_far_ptr;
+    int deduced_vector_length;
 } xed_enc_line_parsed_t;
 
 void asp_set_verbosity(int v);
 void asp_error_printf(const char* format, ...);
 void asp_printf(const char* format, ...);
-
+void asp_dbg_printf(const char* format, ...);
 
 xed_enc_line_parsed_t* asp_get_xed_enc_node(void);
 void asp_delete_xed_enc_line_parsed_t(xed_enc_line_parsed_t* v);

@@ -134,23 +134,40 @@ static void set_state(xed_state_t* dstate, xed_enc_line_parsed_t* v) {
     }
 
 }
+
+/* Make string p1 + "_" + p2, put it into result
+   Check if matching iclass exists.
+   If it exists, return true, otherwise false */
+static xed_bool_t probe_iclass_string(const char *p1, const char *p2, 
+                                      char *result, int maxlen) {
+    xed_strncpy(result, p1, maxlen);
+    xed_strncat(result, "_", maxlen);
+    xed_strncat(result, p2, maxlen);
+    xed_iclass_enum_t valid_iclass = str2xed_iclass_enum_t(result);
+    return (valid_iclass != XED_ICLASS_INVALID);
+}
+
 static void process_prefixes(xed_enc_line_parsed_t* v,
                              xed_encoder_instruction_t* inst)
 {
     slist_t* q = v->prefixes;
     while(q) {
         if (strcmp(q->s, "LOCK") == 0) {
-            // FIXME: need to change iclass
+            v->seen_lock = 1;
         }
         else if (strcmp(q->s, "REP") == 0 || 
-                 strcmp(q->s, "REPE") == 0 || 
-                 strcmp(q->s, "XRELEASE") == 0) {
-            // FIXME: *may* need to change iclass for rep-string ops
+                 strcmp(q->s, "REPE") == 0) {
+            v->seen_repe = 1;
             xed_rep(inst); 
         }
-        else if (strcmp(q->s, "REPNE") == 0 || 
-                 strcmp(q->s, "XACQUIRE") == 0) {
-            // FIXME: *may* need to change iclass for rep-string ops
+        else if (strcmp(q->s, "XRELEASE") == 0) {
+            xed_rep(inst);
+        }
+        else if (strcmp(q->s, "XACQUIRE") == 0) {
+            xed_repne(inst);
+        }
+        else if (strcmp(q->s, "REPNE") == 0) {
+            v->seen_repne = 1;
             xed_repne(inst); 
         }
         else if (strcmp(q->s, "DATA16") == 0) {
@@ -432,6 +449,15 @@ static void process_operand(xed_enc_line_parsed_t* v,
             asp_error_printf("Bad register: %s\n", q->s);
             exit(1);
         }
+
+        /* Get information used to resolve iclass ambiguities */
+        if (reg >= XED_REG_CR0 && reg <= XED_REG_CR15) {
+            v->seen_cr = 1;
+        }
+        if (reg >= XED_REG_DR0 && reg <= XED_REG_DR7) {
+            v->seen_dr = 1;
+        }
+
         check_too_many_operands(i);
         operands[i++] = xed_reg(reg);
         set_eosz(reg, eosz);
@@ -623,6 +649,101 @@ static void process_other_decorator(char const* s,
     *noperand = i;
 }
 
+/* Change result to alias menmonic that is accepted by xed, return true
+   Otherwise keep it unchanged and return false */
+static xed_bool_t find_jcc_alias(char* result, int maxlen) {
+    typedef struct {
+        const char *from;
+        const char *to;
+    } jcc_aliases_t;
+
+    /* Internally, xed uses only one variant per each alias,
+       others have to be converted to it */
+    const jcc_aliases_t aliases[] = {
+       {"JNAE", "JB"},
+       {"JC", "JB"},
+       {"JNA", "JBE"},
+       {"JNGE", "JL"},
+       {"JNG", "JLE"},
+       {"JAE", "JNB"},
+       {"JNC", "JNB"},
+       {"JA", "JNBE"},
+       {"JGE", "JNL"},
+       {"JG", "JNLE"},
+       {"JPO", "JNP"},
+       {"JNE", "JNZ"},
+       {"JPE", "JP"},
+       {"JE", "JZ"},
+    };
+    const size_t n_aliases = sizeof(aliases) / sizeof(aliases[0]);
+
+    /* Resolve conditional jumps aliases */
+    size_t i = 0;
+    for (i = 0; i < n_aliases; i++) {
+        const char *from = aliases[i].from;
+        const char *to = aliases[i].to;
+        if (!strncmp(result, from, maxlen)) {
+            xed_strncpy(result, to, maxlen);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Try all known suffixes and prefixes with the original mnemonic if 
+   certain operands or prefixes were seen.
+   Put (un)modified iclass string into result */
+static void revise_mnemonic(xed_enc_line_parsed_t *v, char* result, int maxlen) {
+    const char *orig = v->iclass;
+    assert(xed_strlen(orig) > 0);
+
+    /* Try _NEAR and _FAR variants for "call" and "ret" */
+    if (!v->seen_far_ptr && probe_iclass_string(orig, "NEAR", result, maxlen)) {
+        return;
+    }
+    else if (v->seen_far_ptr && probe_iclass_string(orig, "FAR", result, maxlen)) {
+        return;
+    }
+    /* all aliases for conditional jumps start with 'J' */
+    if (orig[0] == 'J' && find_jcc_alias(result, maxlen)) {
+        return;
+    }
+
+    if (v->seen_cr && probe_iclass_string(orig, "CR", result, maxlen)) // mov_cr
+        return;
+    if (v->seen_dr && probe_iclass_string(orig, "DR", result, maxlen)) // mov_dr
+        return;
+
+    /* iclasses contain all three forms: REP_, REPE_ and REPNE_ */
+    if (v->seen_repne && probe_iclass_string("REPNE", orig, result, maxlen)) {
+        return;
+    } 
+    else if (v->seen_repe && probe_iclass_string("REPE", orig, result, maxlen)) {
+        return;
+    }
+    else if (v->seen_repe && probe_iclass_string("REP", orig, result, maxlen)) {
+        return;
+    }
+
+    if (v->seen_lock && probe_iclass_string(orig, "LOCK", result, maxlen)) {
+        return;
+    }
+
+    /* string vs SSE instructions with similar mnemonics */
+    if ((v->deduced_vector_length > 0) 
+        && probe_iclass_string(orig, "XMM", result, maxlen))
+        return;
+
+    /* TODO handle remaining cases:
+        FXRSTOR vs FXRSTOR64 and other *SAVE/ *RSTR(64)
+        PEXTRW PEXTRW_SSE4
+        VPEXTRW VPEXTRW_c5
+        Long NOPs: XED_ICLASS_NOP2 - NOP9 */
+
+    /* Reaching the end of the function means no modifications */
+    xed_strncpy(result, orig, maxlen);
+}
+
 static void encode_with_xed(xed_enc_line_parsed_t* v)
 {
     xed_encoder_instruction_t inst;
@@ -634,13 +755,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     opnd_list_t* q=0;
     xed_uint_t has_imm0 = 0;
     
-    iclass = str2xed_iclass_enum_t(v->iclass);
-    if (iclass == XED_ICLASS_INVALID) {
-        asp_error_printf("Invalid iclass: %s\n", v->iclass);
-        exit(1);
-    }
-
-    process_prefixes(v,&inst);
+    process_prefixes(v, &inst);
         
     // handle operands
     q = v->opnds;
@@ -650,7 +765,21 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         q = q->next;
     }
 
-    // handle other decorators (zeroing, kmasks, broadcast masks)
+    /* Instruction's menmonic is not always unambiguous;
+       iclass is sometimes affected by arguments and prefixes.
+       Use operand knowledge to adjust the mnemonic if needed */
+    char revised_mnemonic[100] = { 0 };
+    revise_mnemonic(v, revised_mnemonic, sizeof(revised_mnemonic));
+    iclass = str2xed_iclass_enum_t(revised_mnemonic);
+    
+    if (iclass == XED_ICLASS_INVALID) {
+        asp_error_printf("Bad instruction name: '%s'\n", revised_mnemonic);
+        exit(1);
+    }
+
+    asp_dbg_printf("ICLASS [%s]\n", xed_iclass_enum_t2str(iclass));
+
+    // handle other operand decorators (zeroing, kmasks, broadcast masks)
     q = v->opnds;
     while(q) {
         slist_t* r = q->decorators;
