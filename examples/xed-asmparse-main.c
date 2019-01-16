@@ -132,17 +132,21 @@ static void process_prefixes(xed_enc_line_parsed_t* v,
     slist_t* q = v->prefixes;
     while(q) {
         if (strcmp(q->s, "LOCK") == 0) {
-            // FIXME: need to change iclass
+            v->seen_lock = 1;
         }
         else if (strcmp(q->s, "REP") == 0 || 
-                 strcmp(q->s, "REPE") == 0 || 
-                 strcmp(q->s, "XRELEASE") == 0) {
-            // FIXME: *may* need to change iclass for rep-string ops
+                 strcmp(q->s, "REPE") == 0) {
+            v->seen_repe = 1;
             xed_rep(inst); 
         }
-        else if (strcmp(q->s, "REPNE") == 0 || 
-                 strcmp(q->s, "XACQUIRE") == 0) {
-            // FIXME: *may* need to change iclass for rep-string ops
+        else if (strcmp(q->s, "XRELEASE") == 0) {
+            xed_rep(inst);
+        }
+        else if (strcmp(q->s, "XACQUIRE") == 0) {
+            xed_repne(inst);
+        }
+        else if (strcmp(q->s, "REPNE") == 0) {
+            v->seen_repne = 1;
             xed_repne(inst); 
         }
         else if (strcmp(q->s, "DATA16") == 0) {
@@ -442,6 +446,15 @@ static void process_operand(xed_enc_line_parsed_t* v,
             asp_error_printf("Bad register: %s\n", q->s);
             exit(1);
         }
+
+        /* Get information used to resolve iclass ambiguities */
+        if (reg >= XED_REG_CR0 && reg <= XED_REG_CR15) {
+            v->seen_cr = 1;
+        }
+        if (reg >= XED_REG_DR0 && reg <= XED_REG_DR7) {
+            v->seen_dr = 1;
+        }
+
         check_too_many_operands(i);
         operands[i++] = xed_reg(reg);
         set_eosz(reg, eosz);
@@ -603,6 +616,266 @@ static void process_other_decorator(char const* s,
     *noperand = i;
 }
 
+/* Return true if an iclass XED_ICLASS_mnem_LOCK exists */
+static xed_bool_t mnemonic_lock_exists(char *mnem, int maxlen) {
+    const char* strings[] = { /* Extracted from xed_iclass_enum_t */
+        "ADC", "ADD", "AND", "BTC", "BTR", "BTS", "CMPXCHG16B", "CMPXCHG8B",
+        "CMPXCHG", "DEC", "INC", "NEG", "NOT", "OR", "SBB", "SUB", "XADD",
+        "XOR"
+    };
+    const int length = sizeof(strings) / sizeof(strings[0]);
+    for (int i = 0; i < length; i++ ) {
+        if (!strncmp(mnem, strings[i], maxlen))
+            return 1;
+    }
+    return 0;
+}
+
+/* The next three functions:
+   Return true if an iclass XED_ICLASS_REP(N)(E)_mnem exists */
+static xed_bool_t repne_mnemonic_exists(char *mnem, int maxlen) {
+    const char* strings[] = { /* Extracted from xed_iclass_enum_t */
+        "CMPSB", "CMPSD", "CMPSQ", "CMPSW", "SCASB", "SCASD", "SCASQ", "SCASW"
+    };
+    const int length = sizeof(strings) / sizeof(strings[0]);
+    for (int i = 0; i < length; i++) {
+        if (!strncmp(mnem, strings[i], maxlen))
+            return 1;
+    }
+    return 0;
+}
+
+static xed_bool_t repe_mnemonic_exists(char *mnem, int maxlen) {
+    const char* strings[] = { /* Extracted from xed_iclass_enum_t */
+        "CMPSB", "CMPSD", "CMPSQ", "CMPSW", "SCASB", "SCASD", "SCASQ", "SCASW"
+    };
+    const int length = sizeof(strings) / sizeof(strings[0]);
+    for (int i = 0; i < length; i++) {
+        if (!strncmp(mnem, strings[i], maxlen))
+            return 1;
+    }
+    return 0;
+}
+
+static xed_bool_t rep_mnemonic_exists(char *mnem, int maxlen) {
+    const char* strings[] = { /* Extracted from xed_iclass_enum_t */
+        "INSB","INSD","INSW","LODSB","LODSD","LODSQ","LODSW","MONTMUL","MOVSB",
+        "MOVSD","MOVSQ","MOVSW","OUTSB","OUTSD","OUTSW","STOSB","STOSD","STOSQ",
+        "STOSW","XCRYPTCBC","XCRYPTCFB","XCRYPTCTR","XCRYPTECB","XCRYPTOFB",
+        "XSHA1","XSHA256","XSTORE"
+    };
+    const int length = sizeof(strings) / sizeof(strings[0]);
+    for (int i = 0; i < length; i++) {
+        if (!strncmp(mnem, strings[i], maxlen))
+            return 1;
+    }
+    return 0;
+}
+
+
+/* Convert important iclasses to category, return invalid for the rest */
+static xed_category_enum_t early_categorize_iclass(xed_iclass_enum_t iclass) {
+
+    switch (iclass) {
+    /* Control flow instructions */
+    case XED_ICLASS_JMP:
+    case XED_ICLASS_JMP_FAR:
+        return XED_CATEGORY_UNCOND_BR;
+        break;
+    case XED_ICLASS_JB:
+    case XED_ICLASS_JBE:
+    case XED_ICLASS_JCXZ:
+    case XED_ICLASS_JECXZ:
+    case XED_ICLASS_JL:
+    case XED_ICLASS_JLE:
+    case XED_ICLASS_JNB:
+    case XED_ICLASS_JNBE:
+    case XED_ICLASS_JNL:
+    case XED_ICLASS_JNLE:
+    case XED_ICLASS_JNO:
+    case XED_ICLASS_JNP:
+    case XED_ICLASS_JNS:
+    case XED_ICLASS_JNZ:
+    case XED_ICLASS_JO:
+    case XED_ICLASS_JP:
+    case XED_ICLASS_JRCXZ:
+    case XED_ICLASS_JS:
+    case XED_ICLASS_JZ:
+    case XED_ICLASS_XBEGIN:
+        return XED_CATEGORY_COND_BR;
+        break;
+    case XED_ICLASS_CALL_FAR:
+    case XED_ICLASS_CALL_NEAR:
+        return XED_CATEGORY_CALL;
+        break;
+    case XED_ICLASS_RET_FAR:
+    case XED_ICLASS_RET_NEAR:
+        return XED_CATEGORY_RET;
+        break;
+        /* String operations */
+    case XED_ICLASS_MOVSD:
+    case XED_ICLASS_REP_MOVSD:
+    case XED_ICLASS_SCASB:
+    case XED_ICLASS_REPE_SCASB:
+    case XED_ICLASS_REPNE_SCASB:
+    case XED_ICLASS_SCASD:
+        /* TODO list all string iclasses */
+        return XED_CATEGORY_STRINGOP;
+        break;
+    default:
+        break;
+    }
+    return XED_CATEGORY_INVALID; /* iclass does not have special treatment */
+}
+
+/* Change result to alias menmonic that is accepted by xed, return true
+   Otherwise keep it unchanged and return false */
+static xed_bool_t find_jcc_alias(char* result, int maxlen) {
+    typedef struct {
+        const char *from;
+        const char *to;
+    } jcc_aliases_t;
+
+    /* Internally, xed uses only one variant per each alias,
+       the rest have to be converted to it */
+    const jcc_aliases_t aliases[] = {
+       {"JNAE", "JB"},
+       {"JC", "JB"},
+       {"JNA", "JBE"},
+       {"JNGE", "JL"},
+       {"JNG", "JLE"},
+       {"JAE", "JNB"},
+       {"JNC", "JNB"},
+       {"JA", "JNBE"},
+       {"JGE", "JNL"},
+       {"JG", "JNLE"},
+       {"JPO", "JNP"},
+       {"JNE", "JNZ"},
+       {"JPE", "JP"},
+       {"JE", "JZ"},
+    };
+    const size_t n_aliases = sizeof(aliases) / sizeof(aliases[0]);
+
+    /* Resolve conditional jumps aliases */
+    int i = 0;
+    for (i = 0; i < n_aliases; i++) {
+        const char *from = aliases[i].from;
+        const char *to = aliases[i].to;
+        if (!strncmp(result, from, maxlen)) {
+            xed_strncpy(result, to, maxlen);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Sometimes prefixes/suffixes are encoded inside iclass.
+   Concatenate them with the original mnemonic */
+static void revise_mnemonic(xed_enc_line_parsed_t *v, char* result, int maxlen) {
+    // the original string cannot be expanded, so operante on a copy
+    xed_strncpy(result, v->iclass, maxlen);
+
+    /* Use _NEAR variants as default iclass for "call" and "ret".
+       They will be substituted with _FAR versions later, if needed */
+    if (!strncmp(result, "CALL", maxlen)
+        || !strncmp(result, "RET", maxlen)) {
+        xed_strncat(result, "_NEAR", maxlen);
+        return;
+    }
+
+    if (result[0] == 'J') {/* all aliases for conditional jumps start with J */
+        if (find_jcc_alias(result, maxlen))
+            return;
+    }
+
+    /* Encode certain pieces as prefixes or suffixes into mnemonic */
+    xed_bool_t has_front_prefix = v->seen_repe || v->seen_repne;
+
+    if (!has_front_prefix && !v->seen_lock)
+        return;
+
+    char tmp[200];
+    xed_assert(sizeof(tmp) > maxlen);
+    tmp[0] = '\0';
+
+    /* iclasses contain all three forms: REP_, REPE_ and REPNE_.
+        To properly form the new mnemonic, classification of
+        original_iclass is needed to tell REP_ from REPE_ 
+        XACQUIRE/XRELEASE do not receive such decorations */
+
+    const char *forward_prefix = NULL;
+    if (v->seen_repne && repne_mnemonic_exists(result, maxlen)) {
+        forward_prefix = "REPNE_";
+    } 
+    else if (v->seen_repe && repe_mnemonic_exists(result, maxlen)) {
+        forward_prefix = "REPE_";
+    }
+    else if (v->seen_repe && rep_mnemonic_exists(result, maxlen)) {
+        forward_prefix = "REP_";
+    }
+    if (forward_prefix)
+        xed_strncpy(tmp, forward_prefix, maxlen);
+
+    /* Insert the middle part of original menmonic */
+    xed_strncat(tmp, result, maxlen);
+
+    /* Only select menmonics may have suffix */
+    if (v->seen_lock && mnemonic_lock_exists(tmp, maxlen)) {
+        const char *post_prefix = "_LOCK";
+        xed_strncat(tmp, post_prefix, maxlen);
+    }
+    xed_strncpy(result, tmp, maxlen); // now result has both prefixes and/or suffixes
+}
+
+/* Resolve naming ambiguities between mnemonics and iclasses */
+static xed_iclass_enum_t handle_ambiguous_iclasses(xed_enc_line_parsed_t *v,
+                                                   xed_iclass_enum_t iclass)
+{
+    xed_iclass_enum_t result = XED_ICLASS_INVALID;
+
+    switch (iclass) {
+    case XED_ICLASS_MOV: /* includes moves to control/debug registers */
+        if (v->seen_cr)
+            result = XED_ICLASS_MOV_CR;
+        else if (v->seen_dr)
+            result = XED_ICLASS_MOV_DR;
+        break;
+    case XED_ICLASS_MOVSD: /* string vs SSE instructions */
+        if (v->deduced_vector_length > 0) /* There are vector operands */
+            result = XED_ICLASS_MOVSD_XMM;
+        break;
+    case XED_ICLASS_CMPSD: /* string vs SSE instructions */
+        if (v->deduced_vector_length > 0) /* There are vector operands */
+            result = XED_ICLASS_CMPSD_XMM;
+        break;
+    case XED_ICLASS_CALL_NEAR: /* convert near to far if operands hint that */
+        if (v->seen_far_ptr)
+            result = XED_ICLASS_CALL_FAR;
+        break;
+    case XED_ICLASS_RET_NEAR:
+        if (v->seen_far_ptr)
+            result = XED_ICLASS_RET_FAR;
+        break;
+    case XED_ICLASS_JMP:
+        if (v->seen_far_ptr)
+            result = XED_ICLASS_JMP_FAR;
+        break;
+        /* TODO handle also cases:
+            FXRSTOR vs FXRSTOR64 and other *SAVE/ *RSTR(64)
+            PEXTRW PEXTRW_SSE4
+            VPEXTRW VPEXTRW_c5
+            Long NOPs: XED_ICLASS_NOP2 - NOP9*/
+    default:
+        break;
+    }
+
+    if (result != XED_ICLASS_INVALID)
+        return result;
+    else
+        return iclass; // no modifications needed
+}
+
+
 static void encode_with_xed(xed_enc_line_parsed_t* v)
 {
     xed_encoder_instruction_t inst;
@@ -614,13 +887,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     opnd_list_t* q=0;
     xed_uint_t has_imm0 = 0;
     
-    iclass = str2xed_iclass_enum_t(v->iclass);
-    if (iclass == XED_ICLASS_INVALID) {
-        asp_error_printf("Invalid iclass: %s\n", v->iclass);
-        exit(1);
-    }
-
-    process_prefixes(v,&inst);
+    process_prefixes(v, &inst);
         
     // handle operands
     q = v->opnds;
@@ -630,7 +897,30 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         q = q->next;
     }
 
-    // handle other decorators (zeroing, kmasks, broadcast masks)
+    /* Instruction's menmonic is not always unambiguous;
+       iclass is often affected by arguments and prefixes.
+       First, refine input opcode string;
+       Then, use xed's internal conversion function to get enum value
+       Third, use operand knowledge to adjust enum value
+     */
+    char revised_mnemonic[100] = { 0 };
+    revise_mnemonic(v, revised_mnemonic, sizeof revised_mnemonic);
+    iclass = str2xed_iclass_enum_t(revised_mnemonic);
+    
+    if (iclass == XED_ICLASS_INVALID) {
+        if (v->seen_repne|| v->seen_repe || v->seen_lock)
+            asp_error_printf("Bad instruction name or incompatible"
+                             " prefixes: '%s'\n", revised_mnemonic);
+        else
+            asp_error_printf("Bad instruction name: '%s'\n", revised_mnemonic);
+        exit(1);
+    }
+    v->early_category = early_categorize_iclass(iclass);
+
+    iclass = handle_ambiguous_iclasses(v, iclass);
+    asp_dbg_printf("ICLASS [%s]\n", xed_iclass_enum_t2str(iclass));
+
+    // handle other operand decorators (zeroing, kmasks, broadcast masks)
     q = v->opnds;
     while(q) {
         slist_t* r = q->decorators;
