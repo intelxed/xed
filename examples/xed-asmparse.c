@@ -234,9 +234,9 @@ static char const* mem_size_qualifiers[] = {
     "WORD",
     "DWORD",
     "QWORD",
-    "XWORD",
-    "YWORD",
-    "ZWORD",
+    "XMMWORD",
+    "YMMWORD",
+    "ZMMWORD",
     0
 };
 
