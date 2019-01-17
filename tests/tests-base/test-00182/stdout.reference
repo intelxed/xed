@@ -12,8 +12,8 @@ iclass-max-iform-dispatch 1
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0            REG0=st(0)   IMPLICIT  CW       F80   80    10     1     80 LONGDOUBLE        X87
-1   REG1            REG1=st(0)   EXPLICIT   R       F80   80    10     1     80 LONGDOUBLE        X87
+0   REG0            REG0=ST(0)   IMPLICIT  CW       F80   80    10     1     80 LONGDOUBLE        X87
+1   REG1            REG1=ST(0)   EXPLICIT   R       F80   80    10     1     80 LONGDOUBLE        X87
 2   REG2        REG2=X87STATUS SUPPRESSED   W    PSEUDO    0     0     1      0        INT  PSEUDOX87
 3   REG3           REG3=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
 Memory Operands
