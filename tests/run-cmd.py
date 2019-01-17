@@ -134,6 +134,16 @@ def all_codes_present(specified_codes, test_codes):
             return False
     return True 
 
+def _prep_stream(strm,name):
+    if len(strm) == 1:
+        strm= strm[0].split("\n")
+    if len(strm) == 1 and strm[0] == '':
+        strm = []
+    if len(strm) > 0 and len(strm[-1]) == 0:
+        strm.pop()
+    for line in strm:
+        print("[{}] {} {}".format(name,len(line),line))
+
 def one_test(env,test_dir):
 
     cmd_fn = os.path.join(test_dir,"cmd")
@@ -148,21 +158,9 @@ def one_test(env,test_dir):
     (retcode, stdout,stderr) = mbuild.run_command(cmd2,separate_stderr=True)
     print("Retcode %s" % (str(retcode)))
     if stdout:
-        if len(stdout) == 1:
-            stdout= stdout[0].split("\n")
-        if len(stdout) == 1 and stdout[0] == '':
-            stdout = []
-        if len(stdout) > 0 and len(stdout[-1]) == 0:
-            stdout.pop()
-        for line in stdout:
-            print("[STDOUT] %d %s" % (len(line),line))
+        _prep_stream(stdout,"STDOUT")
     if stderr:
-        if len(stderr) == 1:
-            stderr= stderr[0].split("\n")
-        if len(stderr) == 1 and stderr[0] == '':
-            stderr = []
-        for line in stderr:
-            print("[STDERR] %s" % (line))
+        _prep_stream(stderr,"STDERR")
 
 
 
