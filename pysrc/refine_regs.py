@@ -34,7 +34,7 @@ class reg_info_t(object):
                 display_str=None):
       self.name = name.upper()
       if display_str:
-          self.display_str = display_str
+          self.display_str = display_str.upper()
       else:
           self.display_str = self.name
       self.type = type.upper()
