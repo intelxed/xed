@@ -13,3 +13,12 @@ ENC     ; BUILDDIR/xed-asmparse-main -q fdiv ST0, ST1
 ENC     ; BUILDDIR/xed-asmparse-main -q fdiv st(0), st(1)
 ENC     ; BUILDDIR/xed-asmparse-main -q cvtpi2pd xmm4, mm3
 ENC     ; BUILDDIR/xed-asmparse-main -q cvtpi2pd xmm4, mmx7
+ENC     ; BUILDDIR/xed-asmparse-main -q -64 mov cr0, rbx
+ENC     ; BUILDDIR/xed-asmparse-main -q mov ebx, dr1
+ENC     ; BUILDDIR/xed-asmparse-main -q call_near eax
+ENC     ; BUILDDIR/xed-asmparse-main -q call eax
+ENC     ; BUILDDIR/xed-asmparse-main -q jmp eax
+ENC     ; BUILDDIR/xed-asmparse-main -q rep cmpsb
+ENC     ; BUILDDIR/xed-asmparse-main -q repe cmpsb
+ENC     ; BUILDDIR/xed-asmparse-main -q repne cmpsb
+ENC     ; BUILDDIR/xed-asmparse-main -q lock  adc  dword [ebx], eax
