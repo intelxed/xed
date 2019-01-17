@@ -757,7 +757,7 @@ static xed_bool_t find_jcc_alias(char* result, int maxlen) {
     const size_t n_aliases = sizeof(aliases) / sizeof(aliases[0]);
 
     /* Resolve conditional jumps aliases */
-    int i = 0;
+    size_t i = 0;
     for (i = 0; i < n_aliases; i++) {
         const char *from = aliases[i].from;
         const char *to = aliases[i].to;
