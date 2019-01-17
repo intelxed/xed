@@ -48,6 +48,8 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
     v->mode = 32;
     while(keep_going) {
         keep_going = 0;
+        if (first_arg >= argc)
+            break;
         if (strcmp("-32",argv[first_arg])==0) {
             if (mode_found) {
                 asp_error_printf("Duplicate mode knob: %s\n", argv[first_arg]);
@@ -93,6 +95,12 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
         // add one for trailing space or null at end
         len = len + xed_strlen(argv[i]) + 1;
     }
+    
+    if (len == 0) {
+        asp_error_printf("Need a command line to parse\n");
+        exit(1);
+    }
+
     p = s = (char*) malloc(len);
     for(i=first_arg;i<argc;i++) {
         if (i>first_arg) // spaces between secondary args
