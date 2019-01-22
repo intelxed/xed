@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2018-2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ static void parse_decorator(char* s, opnd_list_t* onode);
 static void parse_memref(char* s, opnd_list_t* onode);
 static void refine_operand(xed_enc_line_parsed_t* v, char* s);
 static void refine_operands(xed_enc_line_parsed_t* v);
+static unsigned int skip_spaces(char *s, unsigned int offset);
 
 /////////////////////////
 
@@ -444,6 +445,35 @@ static int isdecorator(char* s) {
     return 0;
 }
 
+/* Return true if s matches pattern "num:num" */
+static int islongptr(char *s) {
+    if (!s)
+        return 0;
+    /* skip optional "far" */
+    if (s[0] == 'F' && s[1] == 'A' && s[2] == 'R') {
+        s += 3;
+        s += skip_spaces(s, 0);
+    }
+    
+    int column_pos = -1;
+    for (int i = 0; s[i]; i++) {
+        if (s[i] == ':') {
+            column_pos = i;
+            break;
+        }
+    }
+    if (column_pos < 0)
+        return 0;
+    char *first = s;
+    char *second = s + column_pos + 1;
+    s[column_pos] = '\0'; // temporarily split the string
+    int64_t unused = 0;
+    int res = asm_isnumber(first, &unused, 0) 
+              && asm_isnumber(second, &unused, 0); // both parts are numbers
+    s[column_pos] = ':'; // restore the separator
+    return res;
+}
+
 static int64_t letter_cvt(char a, char base) {
     return (int64_t)(a-base);
 }
@@ -458,7 +488,7 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
     // when parsing displacements where the minus sign was already eaten by
     // the parser and I didn't want to reallocate the string just to
     // reassociate the minus sign with the number. So for that case, I
-    // added a arg_negative to allow me to force the numbre to be negative
+    // added a arg_negative to allow me to force the number to be negative
     // without there being an actual leading minus sign present.
     
     
@@ -877,6 +907,37 @@ static void parse_memref(char* s, opnd_list_t* onode)
     onode->mem = r;
 }
 
+/* Extract semantic values from string: "far number:number" */
+static void parse_long_pointer(char* s, opnd_list_t* onode)
+{
+    /* skip optional "far" part */
+    if (s[0] == 'F' && s[1] == 'A' && s[2] == 'R') {
+        s += 3;
+        s += skip_spaces(s, 0);
+    }
+
+    int column_pos = -1;
+    for (int i = 0; s[i]; i++) {
+        if (s[i] == ':') {
+            column_pos = i;
+            break;
+        }
+    }
+    assert(column_pos >= 0);
+    char *first = s;
+    char *second = s + column_pos + 1;
+    s[column_pos] = '\0'; // split the string
+    int64_t first_num, second_num;
+    asm_isnumber(first, &first_num, 0);
+    asm_isnumber(second, &second_num, 0);
+
+    onode->farptr.seg = s;
+    onode->farptr.offset = s + column_pos + 1;
+    onode->farptr.seg_value = first_num;
+    onode->farptr.offset_value = second_num;
+    onode->type = OPND_FARPTR;
+}
+
 static void refine_operand(xed_enc_line_parsed_t* v, char* s)
 {
     opnd_list_t* onode = get_opnd_list_node();
@@ -901,6 +962,11 @@ static void refine_operand(xed_enc_line_parsed_t* v, char* s)
     else if (isdecorator(s)) {
         asp_dbg_printf("LONE DECORATOR\n");
         parse_decorator(s,onode);
+    }
+    else if (islongptr(s)) {
+        asp_dbg_printf("LONG POINTER\n");
+        v->seen_far_ptr = 1;
+        parse_long_pointer(s,onode);
     }
     else {
         asp_error_printf("Bad operand: %s\n",s);
@@ -985,21 +1051,30 @@ void asp_print_parsed_line(xed_enc_line_parsed_t* v) {
         slist_t* d = 0;
         asp_printf("\t");
         if (q->s) asp_printf("%s ", q->s);
-        if (q->type == OPND_REG) asp_printf("REG ");
-        if (q->type == OPND_IMM) asp_printf("IMM 0x%016llx  ",q->imm);
-        if (q->type == OPND_MEM) asp_printf("MEM  ");
-        if (q->type == OPND_DECORATOR) asp_printf("DECORATOR  ");
-        if (q->type == OPND_INVALID) asp_printf("INVALID  ");
-        if (q->type == OPND_MEM) {
-            asp_printf ("%d %s [%s:%s + %s*%s %s %s] ",
-                    q->mem.len,
-                    (q->mem.mem_size ? q->mem.mem_size : "n/a"),
-                    (q->mem.seg ? q->mem.seg : "n/a"),
-                    (q->mem.base ? q->mem.base : "n/a"),
-                    (q->mem.index ? q->mem.index : "n/a"),                    
-                    q->mem.scale,
-                    (q->mem.minus ? "-" : "+"),
-                    (q->mem.disp ? q->mem.disp : "n/a"));
+
+        switch (q->type) {
+        case OPND_REG: asp_printf("REG "); break;
+        case OPND_IMM: asp_printf("IMM 0x%016llx  ", q->imm); break;
+        case OPND_DECORATOR: asp_printf("DECORATOR  "); break;
+        case OPND_INVALID: asp_printf("INVALID  "); break;
+        case OPND_MEM: 
+            asp_printf("MEM  "); break;
+            asp_printf("%d %s [%s:%s + %s*%s %s %s] ",
+                q->mem.len,
+                (q->mem.mem_size ? q->mem.mem_size : "n/a"),
+                (q->mem.seg ? q->mem.seg : "n/a"),
+                (q->mem.base ? q->mem.base : "n/a"),
+                (q->mem.index ? q->mem.index : "n/a"),
+                q->mem.scale,
+                (q->mem.minus ? "-" : "+"),
+                (q->mem.disp ? q->mem.disp : "n/a"));
+            break;
+        case OPND_FARPTR:
+            asp_printf("FAR PTR %s:%s", q->farptr.seg, q->farptr.offset);
+            break;
+        default:
+            assert(0 && "Unhandled operand type");
+            break;
         }
         d = q->decorators;
         while(d) {

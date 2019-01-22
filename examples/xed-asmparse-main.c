@@ -401,6 +401,18 @@ static xed_uint_t count_nibbles(const char *s)
 
 static char const*  const kmasks[] = { "{K0}","{K1}","{K2}","{K3}","{K4}","{K5}","{K6}","{K7}", 0 };
 
+/* If user padded the number with leading zeroes, consider this to be
+   an attempt to precisely control the width of the literal. Otherwise,
+   choose a width that is just wide enough to fit the value */
+static int get_constant_width(char *text, int64_t val) {
+    if (string_has_padding_zeroes(text)) {
+        return 4 * count_nibbles(text);
+    }
+    else {
+        return get_nbits_signed(val);
+    }
+}
+
 static void process_operand(xed_enc_line_parsed_t* v,
                             opnd_list_t* q,
                             xed_uint_t* noperand,
@@ -412,7 +424,9 @@ static void process_operand(xed_enc_line_parsed_t* v,
     int found_a_kmask = 0;
     
     xed_uint_t i = *noperand;
-    if (q->type == OPND_REG) {
+
+    switch (q->type) {
+    case OPND_REG: {
         xed_reg_enum_t reg = str2xed_reg_enum_t(q->s);
         if (reg == XED_REG_INVALID) {
             asp_error_printf("Bad register: %s\n", q->s);
@@ -423,7 +437,8 @@ static void process_operand(xed_enc_line_parsed_t* v,
         set_eosz(reg, eosz);
         set_mode_vec(reg, &(v->mode));
     }
-    else if (q->type == OPND_DECORATOR) {
+        break;
+    case OPND_DECORATOR: {
         if (process_rc_sae(q->s, operands, &i))  {
             check_too_many_operands(i);
         }
@@ -432,17 +447,9 @@ static void process_operand(xed_enc_line_parsed_t* v,
             exit(1);
         }
     }
-    else if (q->type == OPND_IMM) {
-        /* If user padded the number with leading zeroes, consider this to be
-           an attempt to precisely control the width of the literal. Otherwise,
-           choose a width that is just wide enough to fit the value */
-        xed_uint_t nbits = 0;
-        if (string_has_padding_zeroes(q->s)) {
-            nbits = 4 * count_nibbles(q->s);
-        }
-        else {
-            nbits = get_nbits_signed(q->imm);
-        }
+        break;
+    case OPND_IMM: {
+        xed_uint_t nbits = get_constant_width(q->s, q->imm);
         if (*has_imm0==0) {
             check_too_many_operands(i);
             operands[i++] = xed_imm0((uint64_t)q->imm, nbits); //FIXME: cast or make imm0 signed?
@@ -458,7 +465,8 @@ static void process_operand(xed_enc_line_parsed_t* v,
             operands[i++] = xed_imm1(XED_STATIC_CAST(xed_uint8_t,q->imm));
         }
     }
-    else if (q->type == OPND_MEM) {
+        break;
+    case OPND_MEM: {
         xed_reg_enum_t seg = XED_REG_INVALID;
         xed_reg_enum_t base = XED_REG_INVALID;
         xed_reg_enum_t indx = XED_REG_INVALID;
@@ -481,10 +489,46 @@ static void process_operand(xed_enc_line_parsed_t* v,
         operands[i++] = xed_mem_gbisd(seg, base, indx, scale, disp, width_bits);
         process_mem_decorator(q->decorators, operands, &i);
     }
-    else {
+        break;
+    case OPND_FARPTR: {
+        if (*has_imm0) {
+            asp_error_printf(
+                "Long pointer cannot follow immediate operand\n");
+            exit(1);
+        }
+        xed_uint16_t seg = (xed_uint16_t)q->farptr.seg_value;
+        xed_uint32_t offset = (xed_uint32_t)q->farptr.offset_value;
+        xed_uint_t seg_bits = get_constant_width(q->farptr.seg,
+                                                 q->farptr.seg_value);
+        xed_uint_t offset_bits = get_constant_width(q->farptr.offset,
+                                                    q->farptr.offset_value);
+
+        seg_bits = seg_bits < 16 ? 16 : seg_bits;
+        if (seg_bits != 16) {
+            asp_error_printf(
+                "Segment value in far pointer must be 16 bits\n");
+            exit(1);
+        }
+        if (offset_bits > 32) {
+            asp_error_printf(
+                "Far pointer offset must be either 16 or 32 bits");
+            exit(1);
+        }
+        offset_bits = offset_bits < 16 ? 16 : 32;
+
+        check_too_many_operands(i);
+        operands[i++] = xed_ptr(offset, offset_bits);
+
+        /* segment is encoded as immediate and must follow offset */
+        check_too_many_operands(i);
+        operands[i++] = xed_imm0(seg, seg_bits);
+        *has_imm0 = 1;
+    }
+        break;
+    default:
         asp_error_printf("Bad operand encountered: %s", q->s);
         exit(1);
-    }
+    } // switch (q->type)
 
     //Add k-mask decorators as operands.
     //Not checking for multiple k-masks - Let XED do it; that would not encode.

@@ -29,7 +29,8 @@ typedef enum {
     OPND_REG,
     OPND_IMM,
     OPND_MEM,
-    OPND_DECORATOR
+    OPND_DECORATOR,
+    OPND_FARPTR
 } opnd_type_t;
 
 typedef struct {
@@ -46,10 +47,18 @@ typedef struct {
     uint32_t mem_bits;  // mem_size converted to bits
 } memparse_rec_t;
 
+typedef struct {
+    char* seg;
+    char* offset;
+    int64_t seg_value;
+    int64_t offset_value;
+} farptr_rec_t;
+
 typedef struct opnd_list_s {
     char* s;
     opnd_type_t type;
     memparse_rec_t mem;
+    farptr_rec_t farptr;
     slist_t* decorators;
     int64_t imm;
     struct opnd_list_s* next;
