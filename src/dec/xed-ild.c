@@ -1576,18 +1576,17 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     if (xed3_operand_get_out_of_bytes(ild)) 
         return;
     vex_scanner(ild);
+    if (xed3_operand_get_error(ild))
+        return;
 #endif
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
-    if (!xed3_operand_get_vexvalid(ild)) {  
-        if (xed3_operand_get_out_of_bytes(ild))
-            return;
+    if (!xed3_operand_get_vexvalid(ild)) 
         evex_scanner(ild);
-    }
 #endif
 
-    if (xed3_operand_get_out_of_bytes(ild)) 
+    if (xed3_operand_get_error(ild))
         return;
 #if defined(XED_AVX)
     // vex/xop prefixes also eat the vex/xop opcode
@@ -1627,13 +1626,8 @@ xed_ild_decode(xed_decoded_inst_t* xedd,
         tbytes = XED_MAX_INSTRUCTION_BYTES;
     xed3_operand_set_max_bytes(xedd, tbytes);
     xed_instruction_length_decode(xedd);
-    
-    if (xed3_operand_get_out_of_bytes(xedd))
-        return XED_ERROR_BUFFER_TOO_SHORT;
-    if (xed3_operand_get_map(xedd) == XED_ILD_MAP_INVALID)
-        return XED_ERROR_GENERAL_ERROR;
 
-    return XED_ERROR_NONE;
+    return xed3_operand_get_error(xedd);
 }
 
 
