@@ -402,6 +402,7 @@ def build_examples(env, work_queue):
                             'xed-ex8.c',
                             'xed-ex-cpuid.c',
                             'xed-tables.c',
+                            'xed-find-special.c',                            
                             'xed-dll-discovery.c']
 
     # compile & link other_c_examples
