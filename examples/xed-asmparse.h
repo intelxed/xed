@@ -29,7 +29,7 @@ typedef struct slist_s {
 typedef enum {
     OPND_INVALID,
     OPND_REG,
-    OPND_IMM,
+    OPND_IMM, /* Literal that corresponds to immediate or displacement */
     OPND_MEM,
     OPND_DECORATOR,
     OPND_FARPTR
