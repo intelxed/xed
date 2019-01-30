@@ -30,6 +30,9 @@ END_LEGAL */
 
 #define ASP_MAX_OPERANDS (XED_ENCODER_OPERANDS_MAX+3)
 
+static xed_bool_t check_property_of_mnemonic(const char *mnem, xed_bool_t test_fn(const xed_inst_t* p));
+static xed_bool_t test_has_relbr(const xed_inst_t* p);
+
 static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
                          int* verbose) {
     const char* usage = "Usage: %s [-16|-32|-64] [-v|-q] <assembly line>\n";
@@ -476,19 +479,31 @@ static void process_operand(xed_enc_line_parsed_t* v,
         break;
     case OPND_IMM: {
         xed_uint_t nbits = get_constant_width(q->s, q->imm);
-        if (*has_imm0==0) {
+        uint64_t literal_val = (uint64_t)q->imm;
+
+        /* Resolve cyclic dependency between mnemonics, iclasses and literals.
+           Testing of mnemonic is done to check if any iform 
+           corresponding to it accepts literals as relative displacements */
+        if (check_property_of_mnemonic(v->iclass, test_has_relbr)) {
+            asp_dbg_printf("The literal is treated as relbranch\n");
             check_too_many_operands(i);
-            operands[i++] = xed_imm0((uint64_t)q->imm, nbits); //FIXME: cast or make imm0 signed?
-            *has_imm0=1;
+            operands[i++] = xed_relbr(literal_val, nbits);
         }
-        else {
-            if (nbits != 8) {
-                asp_error_printf(
-                    "The second literal constant can only be 8 bit wide\n");
-                exit(1);
+        else { // literal immediate
+            if (*has_imm0 == 0) {
+                check_too_many_operands(i);
+                operands[i++] = xed_imm0(literal_val, nbits); //FIXME: cast or make imm0 signed?
+                *has_imm0 = 1;
             }
-            check_too_many_operands(i);
-            operands[i++] = xed_imm1(XED_STATIC_CAST(xed_uint8_t,q->imm));
+            else {
+                if (nbits != 8) {
+                    asp_error_printf(
+                        "The second literal constant can only be 8 bit wide\n");
+                    exit(1);
+                }
+                check_too_many_operands(i);
+                operands[i++] = xed_imm1(XED_STATIC_CAST(xed_uint8_t, q->imm));
+            }
         }
     }
         break;
@@ -608,7 +623,7 @@ static void process_other_decorator(char const* s,
                                     xed_encoder_operand_t* operands)
 {
     // handle zeroing.
-    // allow but ignore k-masks and broadcasts decrorators.
+    // allow but ignore k-masks and broadcasts decorators.
     
     // rounding/sae indicators are required to be indepdent operands (at
     // least for now)
@@ -649,7 +664,7 @@ static void process_other_decorator(char const* s,
     *noperand = i;
 }
 
-/* Change result to alias menmonic that is accepted by xed, return true
+/* Change result to alias mnemonic that is accepted by xed, return true
    Otherwise keep it unchanged and return false */
 static xed_bool_t find_jcc_alias(char* result, int maxlen) {
     typedef struct {
@@ -756,7 +771,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     xed_uint_t has_imm0 = 0;
     
     process_prefixes(v, &inst);
-        
+    
     // handle operands
     q = v->opnds;
     while(q) {
@@ -765,7 +780,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         q = q->next;
     }
 
-    /* Instruction's menmonic is not always unambiguous;
+    /* Instruction's mnemonic is not always unambiguous;
        iclass is sometimes affected by arguments and prefixes.
        Use operand knowledge to adjust the mnemonic if needed */
     char revised_mnemonic[100] = { 0 };
@@ -807,9 +822,40 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     encode(&inst);
 }
 
+/* Return true if the instruction accepts relative branch as an operand */
+static xed_bool_t test_has_relbr(const xed_inst_t* p) {
+    const unsigned noperands = xed_inst_noperands(p);
+    for (unsigned i = 0; i < noperands; i++) {
+        const xed_operand_t* o = xed_inst_operand(p, i);
+        if (xed_operand_name(o) == XED_OPERAND_RELBR) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Return true if at least one iform has property checked by test_fn */
+static xed_bool_t check_property_of_mnemonic(const char *mnem,
+                                    xed_bool_t test_fn(const xed_inst_t* p)) {
+    for (unsigned i = 0; i < XED_MAX_INST_TABLE_NODES; i++) {
+        const xed_inst_t *iform = xed_inst_table_base() + i;
+        xed_iclass_enum_t ic = xed_inst_iclass(iform);
+        const char *iclass_mnem = xed_iclass_enum_t2str(ic);
+        /* If mnem is prefix to iclass_mnem consider it for further examination */
+        // TODO handle Jcc aliases which do not have associated iclasses
+        int len = xed_strlen(mnem);
+        if (strncmp(mnem, iclass_mnem, len))
+            continue;
+        if (test_fn(iform)) /* At least one match */
+            return 1;
+    }
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     xed_tables_init();
+
     int verbose  = 1;
 
     xed_enc_line_parsed_t* v = asp_get_xed_enc_node();
@@ -817,7 +863,6 @@ int main(int argc, char** argv)
     process_args(argc, argv, v, &verbose);
     asp_set_verbosity(verbose);
     asp_parse_line(v);
-
 
     if (verbose > 1)
         asp_print_parsed_line(v);
