@@ -27,3 +27,9 @@ ENC     ; BUILDDIR/xed-asmparse-main -q lock mov edi, dword ptr [ecx]
 ENC     ; BUILDDIR/xed-asmparse-main -q call far 0x1234:0x10dedead
 ENC     ; BUILDDIR/xed-asmparse-main -q call 0x1234:0x10dedead
 ENC     ; BUILDDIR/xed-asmparse-main -q -16 call 0x123:0x200
+ENC     ; BUILDDIR/xed-asmparse-main -q call 0x12345678
+ENC     ; BUILDDIR/xed-asmparse-main -q jnz 0x70
+ENC     ; BUILDDIR/xed-asmparse-main -q jmp 0x70
+ENC     ; BUILDDIR/xed-asmparse-main -q jmp 0x1000000
+ENC     ; BUILDDIR/xed-asmparse-main -q -64 jz +0x10000000
+ENC     ; BUILDDIR/xed-asmparse-main -q xbegin -0x00000010
