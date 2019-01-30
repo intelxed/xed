@@ -489,6 +489,9 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
         negative = 1;
         i++;
     }
+    if (s[0] == '+') {
+        i++;
+    }
     
     if (i < len && isdigit(s[i]))  {  //first digit
         if (s[i]=='0' && i+1 < len) {
@@ -930,7 +933,8 @@ static void refine_operand(xed_enc_line_parsed_t* v, char* s)
         parse_reg(s,onode);
     }
     else if (asm_isnumber(s,&num,0)) {
-        asp_dbg_printf("Immediate: %s\n",s);
+        /* Actual meaning depends on opcode */
+        asp_dbg_printf("Immediate or displacement: %s\n",s);
         onode->type = OPND_IMM;
         onode->s = asp_strdup(s);
         onode->imm = num;
