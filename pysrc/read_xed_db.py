@@ -242,6 +242,8 @@ class xed_reader_t(object):
         reg_required = re.compile(r'REG[[](?P<reg>[b01]+)]')
         mod_required = re.compile(r'MOD[[](?P<mod>[b01]+)]')
         mod_mem_required = re.compile(r'MOD!=3')
+        mod_reg_required = re.compile(r'MOD=3')
+        rm_val_required = re.compile(r'RM=(?P<rm>[0-9]+)')
         rm_required  = re.compile(r'RM[[](?P<rm>[b01]+)]')
         mode_pattern = re.compile(r' MODE=(?P<mode>[012]+)')
         not64_pattern = re.compile(r' MODE!=2')
@@ -337,6 +339,10 @@ class xed_reader_t(object):
             rm = rm_required.search(v.pattern)
             if rm:
                 v.rm_required = genutil.make_numeric(rm.group('rm'))
+            rm = rm_val_required.search(v.pattern)
+            if rm:
+                v.rm_required = genutil.make_numeric(rm.group('rm'))
+            
 
             v.mod_required = 'unspecified'
             mod = mod_required.search(v.pattern)
@@ -345,6 +351,9 @@ class xed_reader_t(object):
             mod = mod_mem_required.search(v.pattern)
             if mod:
                 v.mod_required = '00/01/10'
+            mod = mod_reg_required.search(v.pattern)
+            if mod:
+                v.mod_required = '3'
 
             # 16/32/64b mode restrictions
             v.mode_restriction = 'unspecified'
@@ -360,6 +369,8 @@ class xed_reader_t(object):
                 v.attributes = v.attributes.upper()
                 if 'SCALAR' in v.attributes:
                     v.scalar = True
+            else:
+                v.attributes = ''
 
 
             if opcode.startswith('0x'):
