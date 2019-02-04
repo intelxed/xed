@@ -61,10 +61,6 @@ Table of Contents
 XED is stored in an GIT repository. Request access from
 me if you want to build XED.
 
-It is a good idea to set up an ssh-agent and cache your private keys
-so you do not have to repeatedly type your ssh passphrase when doing the
-git clone operations.
-
 Here's how to check out XED and mbuild, as sibling directories:
 
 @if  (EXTERNAL)
