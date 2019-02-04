@@ -450,6 +450,8 @@ def header_tag_files(env, files, legal_header, script_files=False):
 def doxygen_subs(env,api_ref=True):
    subs = {}
    subs['XED_TOPSRCDIR']   = aq(env['src_dir'])
+   if not env['install_dir']:
+       xbc.cdie("Need to do include 'install' target when building docs.")
    subs['XED_KITDIR']      = aq(env['install_dir'])
    subs['XED_GENDOC']      = aq(env['doxygen_install'])
    if api_ref:
@@ -482,7 +484,7 @@ def make_doxygen_build(env, work_queue):
                                                        'Doxyfile.build'))
 
     subs = doxygen_subs(e2,api_ref=False)
-    e2['doxygen_top_src'] = subs['XED_INPUT_TOP'] 
+    e2['doxygen_top_src'] = subs['XED_INPUT_TOP']
     inputs = [ subs['XED_INPUT_TOP'] ]
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-build')
@@ -1121,7 +1123,7 @@ def _parse_extf_files_new(env, gc):
                     gc.add_file(ptype, fname, priority)
                 else: # default is to add "keytype: file" (optional priority)
                     if len(wrds) not in [2,3]:
-                        xbc.die('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
+                        xbc.cdie('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
                     ptype = _get_check(wrds,0)
                     fname = _fn_expand(env, edir, _get_check(wrds,1))
                     priority =  int(_get_check(wrds,2, default=1))
