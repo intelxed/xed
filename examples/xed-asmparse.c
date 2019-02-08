@@ -314,9 +314,9 @@ static void grab_inst(char**p, xed_enc_line_parsed_t* v)
         }
         q++;
     }
-    v->iclass = *p;
+    v->iclass_str = *p;
     /* Note that it is not the final iclass as it may require mangling */
-    asp_dbg_printf("MNEMONIC [%s]\n",v->iclass);
+    asp_dbg_printf("MNEMONIC [%s]\n",v->iclass_str);
     *p = q;
 }
 
@@ -1039,7 +1039,7 @@ void asp_print_parsed_line(xed_enc_line_parsed_t* v) {
     slist_t* p=0;
     opnd_list_t* q=0;
     asp_printf("MODE: %d\n",v->mode);
-    asp_printf("MNEMONIC: %s\n",v->iclass);
+    asp_printf("MNEMONIC: %s\n",v->iclass_str);
     asp_printf("PREFIXES: ");
     p = v->prefixes;
     while(p) {
