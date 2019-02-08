@@ -41,6 +41,7 @@ static void delete_opnd_list_t(opnd_list_t* s);
 static opnd_list_t* get_opnd_list_node(void);
 static void add_decorator(opnd_list_t* onode, char* d);
 static void grab_prefixes(char**p, xed_enc_line_parsed_t* v);
+static void study_prefixes(xed_enc_line_parsed_t* v);
 static void grab_inst(char**p, xed_enc_line_parsed_t* v);
 static void grab_operand(char**p, xed_enc_line_parsed_t* v);
 //static slist_t* reverse_list(slist_t* head);
@@ -51,7 +52,7 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative);
 static int ismemref(char* s);
 static int valid_decorator(char const* s);
 static int grab_decorator(char* s, unsigned int pos, char** optr);
-static void parse_reg(char* s, opnd_list_t* onode);
+static void parse_reg(xed_enc_line_parsed_t* v, char* s, opnd_list_t* onode);
 static void parse_decorator(char* s, opnd_list_t* onode);
 static void parse_memref(char* s, opnd_list_t* onode);
 static void refine_operand(xed_enc_line_parsed_t* v, char* s);
@@ -228,6 +229,21 @@ static char const* scales[] = {
     "8",
     0
 };
+
+static void study_prefixes(xed_enc_line_parsed_t* v) {
+    slist_t* p = v->prefixes;
+    while(p) {
+        if (strcmp("REPNE",p->s) == 0) 
+            v->seen_repne = 1;
+        else if (strcmp("REPE",p->s) == 0) 
+            v->seen_repe = 1;
+        else if (strcmp("REP",p->s) == 0) 
+            v->seen_repe = 1;
+        else if (strcmp("LOCK",p->s) == 0) 
+            v->seen_lock = 1;
+        p = p->next;
+    }
+}
 
 static void grab_prefixes(char**p, xed_enc_line_parsed_t* v)
 {
@@ -649,7 +665,7 @@ static int grab_decorator(char* s, unsigned int pos, char** optr)
     return 0;
 }
 
-static void parse_reg(char* s, opnd_list_t* onode)
+static void parse_reg(xed_enc_line_parsed_t* v, char* s, opnd_list_t* onode)
 {
     char tbuf[BLEN];
     unsigned int i=0;
@@ -665,6 +681,16 @@ static void parse_reg(char* s, opnd_list_t* onode)
     asp_dbg_printf("REGISTER: %s\n",tbuf);
     onode->s = asp_strdup(tbuf);
     onode->type = OPND_REG;
+    onode->reg = str2xed_reg_enum_t(onode->s);
+
+    if (onode->reg >= XED_REG_CR0 && onode->reg <= XED_REG_CR15) {
+        v->seen_cr = 1;
+    }
+    if (onode->reg >= XED_REG_DR0 && onode->reg <= XED_REG_DR7) {
+        v->seen_dr = 1;
+    }
+    
+    
     while (i<len && s[i] == '{') {
         char* d = 0;
         int r;
@@ -930,7 +956,7 @@ static void refine_operand(xed_enc_line_parsed_t* v, char* s)
     asp_dbg_printf("REFINE OPERAND [%s]\n", s);
     if (isreg(s)) {
         asp_dbg_printf("REGISTER-ish: %s\n",s);
-        parse_reg(s,onode);
+        parse_reg(v,s,onode);
     }
     else if (asm_isnumber(s,&num,0)) {
         /* Actual meaning depends on opcode */
@@ -988,6 +1014,7 @@ void asp_parse_line(xed_enc_line_parsed_t* v)
         }
         if (prefixes==0) {
             grab_prefixes(&p,v);
+            study_prefixes(v);
             prefixes = 1;
             continue;
         }
