@@ -72,7 +72,7 @@ typedef struct {
     char* input;
     int valid;
     int mode; // 16/32/64
-    char* iclass;
+    char* iclass_str;
     xed_iclass_enum_t iclass_e;
     slist_t* prefixes; // reversed
     slist_t* operands; // reversed

@@ -710,7 +710,7 @@ static xed_bool_t find_jcc_alias(char* result, int maxlen) {
    certain operands or prefixes were seen.
    Put (un)modified iclass string into result */
 static void revise_mnemonic(xed_enc_line_parsed_t *v, char* result, int maxlen) {
-    const char *orig = v->iclass;
+    const char *orig = v->iclass_str;
     assert(xed_strlen(orig) > 0);
 
     /* Try _NEAR and _FAR variants for "call" and "ret" */
