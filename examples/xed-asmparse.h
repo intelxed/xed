@@ -63,6 +63,7 @@ typedef struct opnd_list_s {
     farptr_rec_t farptr;
     slist_t* decorators;
     int64_t imm;
+    xed_reg_enum_t reg;
     struct opnd_list_s* next;
 } opnd_list_t;
 
@@ -72,6 +73,7 @@ typedef struct {
     int valid;
     int mode; // 16/32/64
     char* iclass;
+    xed_iclass_enum_t iclass_e;
     slist_t* prefixes; // reversed
     slist_t* operands; // reversed
     opnd_list_t* opnds;

@@ -30,8 +30,9 @@ END_LEGAL */
 
 #define ASP_MAX_OPERANDS (XED_ENCODER_OPERANDS_MAX+3)
 
-static xed_bool_t check_property_of_mnemonic(const char *mnem, xed_bool_t test_fn(const xed_inst_t* p));
+//static xed_bool_t check_property_of_mnemonic(const char *mnem, xed_bool_t test_fn(const xed_inst_t* p));
 static xed_bool_t test_has_relbr(const xed_inst_t* p);
+static xed_bool_t has_relbr(xed_iclass_enum_t iclass);
 
 static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
                          int* verbose) {
@@ -156,11 +157,10 @@ static void process_prefixes(xed_enc_line_parsed_t* v,
     slist_t* q = v->prefixes;
     while(q) {
         if (strcmp(q->s, "LOCK") == 0) {
-            v->seen_lock = 1;
+            /* nothing required */
         }
         else if (strcmp(q->s, "REP") == 0 || 
                  strcmp(q->s, "REPE") == 0) {
-            v->seen_repe = 1;
             xed_rep(inst); 
         }
         else if (strcmp(q->s, "XRELEASE") == 0) {
@@ -170,7 +170,6 @@ static void process_prefixes(xed_enc_line_parsed_t* v,
             xed_repne(inst);
         }
         else if (strcmp(q->s, "REPNE") == 0) {
-            v->seen_repne = 1;
             xed_repne(inst); 
         }
         else if (strcmp(q->s, "DATA16") == 0) {
@@ -447,18 +446,10 @@ static void process_operand(xed_enc_line_parsed_t* v,
 
     switch (q->type) {
     case OPND_REG: {
-        xed_reg_enum_t reg = str2xed_reg_enum_t(q->s);
+        xed_reg_enum_t reg = q->reg;
         if (reg == XED_REG_INVALID) {
             asp_error_printf("Bad register: %s\n", q->s);
             exit(1);
-        }
-
-        /* Get information used to resolve iclass ambiguities */
-        if (reg >= XED_REG_CR0 && reg <= XED_REG_CR15) {
-            v->seen_cr = 1;
-        }
-        if (reg >= XED_REG_DR0 && reg <= XED_REG_DR7) {
-            v->seen_dr = 1;
         }
 
         check_too_many_operands(i);
@@ -481,10 +472,7 @@ static void process_operand(xed_enc_line_parsed_t* v,
         xed_uint_t nbits = get_constant_width(q->s, q->imm);
         uint64_t literal_val = (uint64_t)q->imm;
 
-        /* Resolve cyclic dependency between mnemonics, iclasses and literals.
-           Testing of mnemonic is done to check if any iform 
-           corresponding to it accepts literals as relative displacements */
-        if (check_property_of_mnemonic(v->iclass, test_has_relbr)) {
+        if (has_relbr(v->iclass_e)) {
             asp_dbg_printf("The literal is treated as relbranch\n");
             check_too_many_operands(i);
             operands[i++] = xed_relbr(literal_val, nbits);
@@ -550,13 +538,19 @@ static void process_operand(xed_enc_line_parsed_t* v,
                 "Segment value in far pointer must be 16 bits\n");
             exit(1);
         }
+        
         if (offset_bits > 32) {
             asp_error_printf(
                 "Far pointer offset must be either 16 or 32 bits");
             exit(1);
         }
-        offset_bits = offset_bits < 16 ? 16 : 32;
 
+        if (offset_bits <= 16) 
+            offset_bits = 16;
+        else 
+            offset_bits = 32;
+        *eosz = offset_bits;
+        
         check_too_many_operands(i);
         operands[i++] = xed_ptr(offset, offset_bits);
 
@@ -763,7 +757,6 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
 {
     xed_encoder_instruction_t inst;
     xed_state_t dstate;
-    xed_iclass_enum_t iclass=XED_ICLASS_INVALID;
     xed_uint_t eosz=0; 
     xed_uint_t noperand=0;
     xed_encoder_operand_t operand_array[ASP_MAX_OPERANDS];
@@ -771,7 +764,14 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     xed_uint_t has_imm0 = 0;
     
     process_prefixes(v, &inst);
-    
+
+    /* Instruction's mnemonic is not always unambiguous;
+       iclass is sometimes affected by arguments and prefixes.
+       Use operand knowledge to adjust the mnemonic if needed */
+    char revised_mnemonic[100] = { 0 };
+    revise_mnemonic(v, revised_mnemonic, sizeof(revised_mnemonic));
+    v->iclass_e = str2xed_iclass_enum_t(revised_mnemonic);
+
     // handle operands
     q = v->opnds;
     while(q) {
@@ -780,19 +780,12 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         q = q->next;
     }
 
-    /* Instruction's mnemonic is not always unambiguous;
-       iclass is sometimes affected by arguments and prefixes.
-       Use operand knowledge to adjust the mnemonic if needed */
-    char revised_mnemonic[100] = { 0 };
-    revise_mnemonic(v, revised_mnemonic, sizeof(revised_mnemonic));
-    iclass = str2xed_iclass_enum_t(revised_mnemonic);
-    
-    if (iclass == XED_ICLASS_INVALID) {
+    if (v->iclass_e == XED_ICLASS_INVALID) {
         asp_error_printf("Bad instruction name: '%s'\n", revised_mnemonic);
         exit(1);
     }
 
-    asp_dbg_printf("ICLASS [%s]\n", xed_iclass_enum_t2str(iclass));
+    asp_dbg_printf("ICLASS [%s]\n", xed_iclass_enum_t2str(v->iclass_e));
 
     // handle other operand decorators (zeroing, kmasks, broadcast masks)
     q = v->opnds;
@@ -818,7 +811,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     }
     asp_printf("MODE=%d, EOSZ=%d\n", v->mode, eosz);
     set_state(&dstate, v);
-    xed_inst(&inst, dstate, iclass, eosz, noperand, operand_array);
+    xed_inst(&inst, dstate, v->iclass_e, eosz, noperand, operand_array);
     encode(&inst);
 }
 
@@ -834,31 +827,34 @@ static xed_bool_t test_has_relbr(const xed_inst_t* p) {
     return 0;
 }
 
-/* Return true if at least one iform has property checked by test_fn */
-static xed_bool_t check_property_of_mnemonic(const char *mnem,
-                                    xed_bool_t test_fn(const xed_inst_t* p)) {
+/* relbr_table is an array initialized at startup that tells us if we have
+ * a relative branch displacement */
+static xed_bool_t relbr_table[XED_ICLASS_LAST];
+
+static xed_bool_t has_relbr(xed_iclass_enum_t iclass) {
+    assert(iclass < XED_ICLASS_LAST);
+    return relbr_table[iclass];
+}
+static void setup(void) {
+    memset(relbr_table, 0, sizeof(xed_bool_t)*XED_ICLASS_LAST);
+    
     for (unsigned i = 0; i < XED_MAX_INST_TABLE_NODES; i++) {
-        const xed_inst_t *iform = xed_inst_table_base() + i;
-        xed_iclass_enum_t ic = xed_inst_iclass(iform);
-        const char *iclass_mnem = xed_iclass_enum_t2str(ic);
-        /* If mnem is prefix to iclass_mnem consider it for further examination */
-        // TODO handle Jcc aliases which do not have associated iclasses
-        int len = xed_strlen(mnem);
-        if (strncmp(mnem, iclass_mnem, len))
-            continue;
-        if (test_fn(iform)) /* At least one match */
-            return 1;
+        const xed_inst_t *inst = xed_inst_table_base() + i;
+        xed_iclass_enum_t ic = xed_inst_iclass(inst);
+        assert(ic < XED_ICLASS_LAST);
+        relbr_table[ic] =  test_has_relbr(inst);
     }
-    return 0;
 }
 
 int main(int argc, char** argv)
 {
+    int verbose  = 1;
+    xed_enc_line_parsed_t* v = 0;
+    
+    setup();
     xed_tables_init();
 
-    int verbose  = 1;
-
-    xed_enc_line_parsed_t* v = asp_get_xed_enc_node();
+    v = asp_get_xed_enc_node();
 
     process_args(argc, argv, v, &verbose);
     asp_set_verbosity(verbose);
