@@ -539,24 +539,17 @@ static void process_operand(xed_enc_line_parsed_t* v,
             exit(1);
         }
         
-        if (v->mode != 64 && offset_bits > 32) {
+        if (offset_bits > 32) {
             asp_error_printf(
-                "Far pointer offset must be either 16 or 32 bits outside of 64b-mode");
+                "Far pointer offset must be either 16 or 32 bits");
             exit(1);
         }
 
-        if (offset_bits <= 16) {
+        if (offset_bits <= 16) 
             offset_bits = 16;
-            *eosz = 16;
-        }
-        else if (offset_bits <= 32)  {
+        else 
             offset_bits = 32;
-            *eosz = 32;
-        }
-        else {
-            offset_bits = 64;
-            *eosz = 64;
-        }
+        *eosz = offset_bits;
         
         check_too_many_operands(i);
         operands[i++] = xed_ptr(offset, offset_bits);
