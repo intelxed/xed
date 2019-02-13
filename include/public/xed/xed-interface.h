@@ -78,7 +78,8 @@ END_LEGAL */
 
 
 #include "xed-agen.h"
-#include "xed-cpuid-rec.h"  
+#include "xed-cpuid-rec.h"
+#include "xed-isa-set.h"  
 
 
 #endif
