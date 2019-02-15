@@ -462,6 +462,11 @@ def doxygen_subs(env,api_ref=True):
                                                             'xed-build.txt')))
    #subs['XED_HTML_HEADER'] = aq(env.src_dir_join(mbuild.join('docsrc',
    #                                                 'xed-doxygen-header.txt')))
+   if env['doxygen_internal']:
+       subs['XED_EXTERNAL'] = ''
+   else:
+       subs['XED_EXTERNAL'] = 'EXTERNAL'
+
    return subs
 
 def make_doxygen_build(env, work_queue):
@@ -523,6 +528,7 @@ def mkenv():
     env = mbuild.env_t()
     standard_defaults = dict(    doxygen_install='',
                                  doxygen='',
+                                 doxygen_internal=False,
                                  clean=False,
                                  die_on_errors=True,
                                  xed_messages=False,
@@ -623,6 +629,10 @@ def xed_args(env):
                           dest="doxygen", 
                           action="store",
                           help="Doxygen command name")
+    env.parser.add_option("--doxygen-internal", 
+                          dest="doxygen_internal", 
+                          action="store_true",
+                          help="Create internal version of build documentation (just changes paths for git repos)")
     env.parser.add_option("-c","--clean", 
                           dest="clean", 
                           action="store_true",
