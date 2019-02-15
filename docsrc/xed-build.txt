@@ -20,11 +20,15 @@
 
 
 // ========================================================================================  
-/*! 
-@mainpage XED Build Guide
+/*!
+@if  (EXTERNAL)
+@mainpage *EXTERNAL* XED Build Guide
+@else
+@mainpage *INTERNAL* XED Build Guide
+@endif
 by Mark Charney
 
-2019-02-04
+2019-02-15
 
 @section INTRO Introduction
 
@@ -70,8 +74,8 @@ git clone https://github.com/intelxed/mbuild.git mbuild
 @endcode
 @else
 @code
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-xed xed
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-mbuild mbuild
+git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 @endcode
 @endif
 
@@ -140,8 +144,8 @@ C:/Python27/python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-xed xed
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-mbuild mbuild
+git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 mkdir test
 cd test
 C:/Python27/python ../xed/mfile.py examples install zip
@@ -162,8 +166,8 @@ python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-xed xed
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-mbuild mbuild
+git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 mkdir test
 cd test
 python ../xed/mfile.py examples install zip

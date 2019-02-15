@@ -15,7 +15,7 @@ http://mjc.intel.com
 https://github.com/intelxed/xed/issues/new
        
 
-## Abbreviated building instructions:
+## Abbreviated *GITHUB* building instructions:
 
 ```shell
 git clone https://github.com/intelxed/xed.git xed
