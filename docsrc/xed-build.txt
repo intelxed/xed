@@ -74,8 +74,8 @@ git clone https://github.com/intelxed/mbuild.git mbuild
 @endcode
 @else
 @code
-git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
-git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 @endcode
 @endif
 
@@ -144,8 +144,8 @@ C:/Python27/python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
-git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 mkdir test
 cd test
 C:/Python27/python ../xed/mfile.py examples install zip
@@ -166,8 +166,8 @@ python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
-git clone sshh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 mkdir test
 cd test
 python ../xed/mfile.py examples install zip
