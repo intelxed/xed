@@ -34,7 +34,7 @@ EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
 PATTERN:    0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]   f3_refining_prefix     MODRM() 
-OPERANDS:    MEM0:w:q:u64
+OPERANDS:    MEM0:rw:q:u64
 IFORM:       CLRSSBSY_MEMu64
 }
 
