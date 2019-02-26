@@ -45,36 +45,23 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
     if (xed3_operand_get_mem0(d)) {
         xed_decoded_inst_cache_memory_operand_length(d);
 
-
         if (xed_operand_values_has_memory_displacement(d)  &&
             xed3_operand_get_disp_width(d) == 8 &&
-            xed3_operand_get_nelem(d)  &&  // proxy for evex
+            xed3_operand_get_nelem(d)  &&  // proxy for evex 
             !xed_decoded_inst_get_attribute(d, XED_ATTRIBUTE_MASKOP_EVEX) )
         {
             // if we are an evex masked op, we'll always be re-encoded in
-            // evex space; no need to scale the disp8 and use disp32.  We
-            // only need to scale the disp8 and use disp32 if there is a
+            // evex space; no need force the use of avx512 (or to scale the
+            // disp8 and use disp32).  We only need to force the use of
+            // avx512 (or scale the disp8 and use disp32) if there is a
             // chance the instruction will be re-encoded in the vex space.
 
             // (if we ever remove that deficiency in the encoder (evex
             // masked ops always re-encode into eve space) we'll have to
-            // find another solution to this problem.)
+            // remove last test condition above)
 
-            // get scaled value and jam it in to the disp field
-            xed_int64_t disp = xed_operand_values_get_memory_displacement_int64(d);
-            xed3_operand_set_disp(d,disp);
-            xed3_operand_set_nelem(d,0);
-            
-            // in 16b addressing (in 16b mode or 32b mode with 67 prefix),
-            // we only expand to 16b displacements as our safety.
-
-            // the most we scale by is 64 so 16b will always work.
-            if (xed3_operand_get_easz(d) == 1)
-                xed3_operand_set_disp_width(d,16);
-            else
-                xed3_operand_set_disp_width(d,32);
+            xed3_operand_set_must_use_evex(d,1);
         }
-
     }
     
     
