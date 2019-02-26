@@ -169,7 +169,7 @@ class instructions_group_t(object):
         return len(self.groups)
     
     def get_iclass2group(self):
-        ''' return a dic of iclass to it group Id'''
+        ''' return a dict of iclass to it group Id'''
         return self.iclass2group
         
     def get_iclass2index_in_group(self):

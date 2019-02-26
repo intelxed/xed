@@ -1085,14 +1085,22 @@ class iform_t(object):
         self.enc_conditions = enc_conditions # [ operand_t ]
         self.enc_actions = enc_actions  # [ blot_t ]
         self.modal_patterns = modal_patterns # [ string ]
-        self.rule = self.make_rule()
-        
+
         #the emit phase action pattern
         self.emit_actions = None
         
         #the FB actions pattern
         self.fb_ptrn = None
-
+        
+        self._fixup_vex_conditions()
+        self.rule = self.make_rule()
+        
+    def _fixup_vex_conditions(self):
+        """if action has VEXVALID=1, add modal_pattern MUST_USE_AVX512=0. 
+           The modal_patterns become conditions later on."""
+        for act in self.enc_actions:
+            if act.field_name == 'VEXVALID' and act.value == 1:
+                self.modal_patterns.append( "MUST_USE_EVEX=0" )
     
     def make_operand_name_list(self):
         """Make an ordered list of operand storage field names that
@@ -2030,26 +2038,22 @@ class encoder_configuration_t(object):
         @param pattern_str: decode pattern (bits, nts, ods, etc.)
         
         @rtype: tuple
-        @return: (list operands/conditions as operand_t's, \
-                  list patterns/actions as blot_t's \
-                  list of modal patterns strings that should become condition_t objs)
+        @return: (list decode-operands/encode-conditions as operand_t's, \
+                  list decode-patterns/encode-actions as blot_t's \
+                  list of modal patterns strings that should become encode condition_t objs)
         """
-        # We move the special_attributes from the decode operands to
-        # the encode actions because they are not relevant at this
-        # point in the processing.
-
-        # decode patterns are the encode actions: hex bytes or binary
-        # strings to emit, or reverse-operand-deciders. (Things that
-        # were ODs for decode now are binding actions for encode).
-
-
-        # parse up the patterns and collect some extra bindings that
-        # become decode-operands (encode-conditions).
+        # generally:
         #
-        # Some of the decode patterns (encode actions) need to become
-        # encode conditions. We move some decode patterns to encode
-        # actions here by storing them in the list of modal_patterns
-
+        #  decode-pattern  --become--> encode-action
+        #  decode-operands --become--> encode-condition
+        #
+        # but there are special cases:
+        #
+        #  1) Some decode-pattern stuff needs to become encode-conditions
+        #     as they are encoder inputs
+        #  2) Some decode-operand stuff needs to become encode-actions
+        #     as they are encoder outputs
+        
         global storage_fields
         patterns = []
 
@@ -2059,15 +2063,17 @@ class encoder_configuration_t(object):
         # new (decode) operands (which then become encode conditions).
         extra_bindings = []
 
-        # Decode patterns that do not become encode actions, instead
-        # they become encode conditions. (This stuff that was on the
-        # LHS in decode-land stays on the LHS in encode land.) These
-        # are the fields that are listed as "EI" (encoder inputs) in
-        # the "fields description" file.
+        # Some decode patterns become encode conditions.  These are
+        # the fields that are listed as "EI" (encoder inputs) in the
+        # "fields description" file.
         modal_patterns = []
-        
-        for p in pattern_str.split(): # the decode-patterns or encode-actions
+
+        # decode-patterns *mostly* become encode-actions, except for
+        # fields that are encoder inputs.
+        for p in pattern_str.split(): 
             p_short = rhs_pattern.sub('', p)  # grab the lhs
+
+            # special cases
             if (p_short in storage_fields and 
                      storage_fields[p_short].encoder_input):
                 if voperand():
@@ -2089,7 +2095,9 @@ class encoder_configuration_t(object):
             # The extra bindings are for MOD[mm] (etc.) that do
             # field captures in the pattern. We use them to create
             # new operands.
-            _vmsgb("MAKING DECODE PATTERNS", str(p))
+            _vmsgb("PARSING DECODE PATTERN", str(p))
+            # pattern_list is a list of blot_t
+            # extra_bindings is list list of tuples (name,bits)
             (pattern_list, extra_bindings_list) = self.make_decode_patterns(p) 
             s = []
             for p in pattern_list:
@@ -2100,13 +2108,12 @@ class encoder_configuration_t(object):
             extra_bindings.extend(extra_bindings_list)
             
         # Decode operands are type:rw:[lencode|SUPP|IMPL|EXPL|ECOND]
-        # where type could be X=y or MEM0.  Decode operands become
-        # encode conditions.
-
-        # Collect up the decode operands. Some of them get converted
-        # in to extra encode actions.
-        operands = []
-        extra_actions = []
+        # where type could be X=y or MEM0.  Most decode operands
+        # become encode conditions, but some of them get converted in
+        # to extra encode actions.
+        
+        operands = []  # to become encoder inputs, conditions
+        extra_actions = [] # to become encoder outputs
         for x in operand_str.split(): # the encode conditions (decode operands)
             x_short = rhs_pattern.sub('', x) # grab the lhs
 
@@ -2114,33 +2121,28 @@ class encoder_configuration_t(object):
             # are also side effects of encode and so we move them to
             # the list of actions.
             
-            if voperand():
-                msgb("ENCODER FIELD CHECK", x_short)
-            special = False
+            special_encode_action = False 
             try:
                 # Move some decode operands (the ones that are not
                 # encoder inputs) to the extra encode actions.
-                if storage_fields[x_short].encoder_input == False:
+                if storage_fields[x_short].encoder_input== False:
                     if voperand():
                         msgb("ENCODER OUTPUT FIELD", x_short)
-                    special = True
+                    special_encode_action = True
             except:
                 pass
 
-            if special:
+            if special_encode_action:
                 if voperand():
-                    msgb("SPECIAL ATTRIBUTE", x)
+                    msgb("SPECIAL_ENCODE_ACTION ATTRIBUTE", x)
                 extra_actions.append(x)
             else:
                 if voperand():
                     msgb("MAKING A DECODE-OPERAND/ENC-ACTION FROM", x)
                 operands.append(operand_t(x))
 
-        # Some of the decode-patterns (encode-actions) really become
-        # encoder-conditions as well. They are modal or inputs to
-        # encoding. The modal_patterns skip the operands step and can
-        # be made right in to condition_t objects.
-            
+
+                
         # Add the extra encode conditions (decode-operands) implied
         # from the instruction decode patterns (MOD[mm] etc.). We
         # ignore the ones for constant bindings!
@@ -2153,9 +2155,8 @@ class encoder_configuration_t(object):
                 _vmsgb("EXTRA BINDING", "%s=%s:SUPP" % (field_name, value))
                 operands.append(extra_operand)
 
-        # Add the extra actions (from the special attributes) --
-        # things that were part of the decode operands as side-effects
-        # but are really side-effects of encode too.
+        # Add the extra_actions were part of the decode operands as
+        # side-effects but are really side-effects of encode too.
         for raw_action in extra_actions:
             okay = False
             equals = equals_pattern.match(raw_action)
@@ -2172,7 +2173,6 @@ class encoder_configuration_t(object):
                 die("Bad extra action: %s" % raw_action)
             #msgerr("NEW BLOT: %s" % str(new_blot))
             patterns.append(new_blot)
-
 
 
         # return:  (decode-operands are encode-conditions,
