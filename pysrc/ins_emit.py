@@ -50,32 +50,12 @@ def sort_field_bindings(a,b):
 def key_iform_by_bind_ptrn(x):
     return x.bind_ptrn
 
-def cmp_iforms_by_bind_ptrn(a,b):  # FIXME:2017-06-10: PY3 port, no longer used
-    if a.bind_ptrn > b.bind_ptrn:
-        return 1
-    elif a.bind_ptrn < b.bind_ptrn:
-        return -1
-    return 0
-
-def key_priority(x):
+ # priority assigned during initial read (see read_encfile.py)
+def key_priority(x): 
     return x.priority
+
 def key_rule_length(x):
     return len(x.rule.get_all_emits() + x.rule.get_all_nts())
-
-def cmp_iform_len(a,b): # FIXME:2017-06-10: PY3 port, no longer used
-    if a.priority >  b.priority:
-        return 1
-    elif a.priority <  b.priority:
-        return -1
-
-    alen = len(a.rule.get_all_emits() + a.rule.get_all_nts())
-    blen = len(b.rule.get_all_emits() + b.rule.get_all_nts())
-    if alen > blen:
-        return 1
-    elif alen < blen:
-        return -1
-    return cmp_iforms_by_bind_ptrn(a,b)
-
 
 class instructions_group_t(object):
     ''' each encoding iform has:
@@ -238,13 +218,15 @@ class ins_group_t(object):
             values = ''
             iforms_sorted_by_length = self.iclass2iforms[iclass]
 
+            # This determines the order in which encoding options are
+            # evaluated by the encoder.
             iforms_sorted_by_length.sort(key=key_iform_by_bind_ptrn)
             iforms_sorted_by_length.sort(key=key_rule_length)
             iforms_sorted_by_length.sort(key=key_priority)
             
             for iform in iforms_sorted_by_length:
-                values += '%4d,' % iform.rule.iform_id
-            line = "/*%10s*/    {%s}," % (iclass,values)
+                values += '{:4},'.format(iform.rule.iform_id)
+            line = "/*{:14}*/    {{{}}},".format(iclass,values)
             table.extend([ line ])
             
         return table
