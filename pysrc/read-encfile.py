@@ -628,7 +628,8 @@ class conditions_t(object):
             # no conditions. that's okay. encoder's job is simple in this case...
             s.append('1')
             emitted = True
-        elif len(self.and_conditions) == 1 and self.and_conditions[0].field_name == 'ENCODER_PREFERRED':
+        elif (len(self.and_conditions) == 1 and
+              self.and_conditions[0].field_name == 'ENCODER_PREFERRED'):
             s.append('1')
             emitted = True
         else:
@@ -646,7 +647,8 @@ class conditions_t(object):
                         emitted = True
                         s.append( t )
                 except:
-                    die("Could not emit code for condition %s of %s" % ( str(and_cond), str(self)))
+                    die("Could not emit code for condition %s of %s" % 
+                        (str(and_cond), str(self))  )
         if not emitted:
             s.append('1')
             
@@ -820,10 +822,8 @@ class rule_t(object):
         ''' emit code for INSTRUCTION's rule:
             1. conditions.
             2. set of the encoders iform index.
-            3. call the field binding pattern function to set values to flieds. 
+            3. call the field binding pattern function to set values to fields. 
             4. nonterminal action type.
-            
-              
         '''
         lines = []
         # 1.
@@ -2400,11 +2400,16 @@ class encoder_configuration_t(object):
         self.decoder_nonterminals.update(nts)
         self.decoder_ntlufs.update(ntlufs)
 
-    def make_isa_encode_group(self, group_index,ins_group):
-        """Make the function object for encoding one group.
-        
+    def make_isa_encode_group(self, group_index, ins_group):
+        """Make the function object for encoding one group.  The generated
+        function tests operand order and type, then more detailed
+        conditions. Once conditions_satisfied is true, we attempt to
+        do more detailed bindings operations for the nonterminals in
+        the pattern.
+
         @rtype: function_object_t
         @returns: an encoder function object that encodes group
+
         """
         if vencode():
             msgb("ENCODING GROUP", " %s  -- %s" % (group_index, ins_group))
@@ -2557,7 +2562,7 @@ class encoder_configuration_t(object):
         fe.close()
         output_file_emitters.append(fe)
                 
-    def make_isa_encode_functions(self, iarray):
+    def make_isa_encode_functions(self):
         # each iarray dictionary entry is a list: of iform_t objects
         
         ins_code_gen = ins_emit.instruction_codegen_t(self.all_iforms, 
@@ -2565,7 +2570,9 @@ class encoder_configuration_t(object):
                                                       self.gendir,
                                                       self.amd_enabled)
         ins_code_gen.work()
-        ins_code_gen.get_values(self)
+        
+        # copy stuff back to this class's members vars
+        ins_code_gen.get_values(self) 
         
         i=0
         group_fos = []
@@ -2744,7 +2751,7 @@ class encoder_configuration_t(object):
 
         self.make_encode_order_tables()# FIXME  too early?
         # emit the per instruction bind & emit functions
-        self.make_isa_encode_functions(self.iarray)
+        self.make_isa_encode_functions()
         self.emit_group_encode_functions()
         
         self.emit_lu_tables()
