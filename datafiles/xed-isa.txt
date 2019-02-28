@@ -12120,16 +12120,16 @@ EXTENSION : VTX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 
 PATTERN   : 0x0F 0x78 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64   MODRM() CR_WIDTH()
-OPERANDS  : MEM0:rw:q REG0=GPR64_R():r
+OPERANDS  : MEM0:w:q REG0=GPR64_R():r
 
 PATTERN   : 0x0F 0x78 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] mode64 CR_WIDTH()
-OPERANDS  : REG0=GPR64_B():rw REG1=GPR64_R():r
+OPERANDS  : REG0=GPR64_B():w REG1=GPR64_R():r
 
 PATTERN   : 0x0F 0x78 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] not64  MODRM() CR_WIDTH()
-OPERANDS  : MEM0:rw:d REG0=GPR32_R():r
+OPERANDS  : MEM0:w:d REG0=GPR32_R():r
 
 PATTERN   : 0x0F 0x78 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] not64 CR_WIDTH()
-OPERANDS  : REG0=GPR32_B():rw REG1=GPR32_R():r
+OPERANDS  : REG0=GPR32_B():w REG1=GPR32_R():r
 }
 {
 ICLASS    : VMWRITE
