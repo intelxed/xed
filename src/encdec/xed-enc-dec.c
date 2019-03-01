@@ -44,7 +44,7 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
 
     if (xed3_operand_get_mem0(d)) {
         xed_decoded_inst_cache_memory_operand_length(d);
-
+#if defined(XED_SUPPORTS_AVX512)
         if (xed_operand_values_has_memory_displacement(d)  &&
             xed3_operand_get_disp_width(d) == 8 &&
             xed3_operand_get_nelem(d)  &&  // proxy for evex 
@@ -62,6 +62,7 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
 
             xed3_operand_set_must_use_evex(d,1);
         }
+#endif
     }
     
     

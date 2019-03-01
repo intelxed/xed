@@ -255,6 +255,7 @@ static void check_too_many_operands(int op_pos) {
 
 static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint_t* pos)
 {
+#if defined(XED_SUPPORTS_AVX512)
     xed_uint_t i = *pos;
     if (strcmp("{RNE-SAE}",s)==0) {
         check_too_many_operands(i+1);
@@ -290,10 +291,11 @@ static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint
         *pos = i;
         return 1;
     }
-
+#endif
     asp_error_printf("Unhandled decorator: %s\n",s);
     exit(1);
     return 0;
+    (void) operand; (void) pos;
 }
 
 
@@ -385,9 +387,11 @@ static void set_mode_vec(xed_reg_enum_t reg,
     else if (rc == XED_REG_CLASS_YMM) {
         regid = reg - XED_REG_YMM0;
     }
+#if defined(XED_SUPPORTS_AVX512)
     else if (rc == XED_REG_CLASS_ZMM) {
         regid = reg - XED_REG_ZMM0;
     }
+#endif
     if (regid > 7 && *mode != 64) {
         asp_printf("Forcing mode to 64b based on regs used\n");
         *mode = 64;
@@ -615,13 +619,15 @@ static void encode(xed_encoder_instruction_t* inst)
 static void process_other_decorator(char const* s,
                                     xed_uint_t* noperand,
                                     xed_encoder_operand_t* operands)
+
 {
     // handle zeroing.
     // allow but ignore k-masks and broadcasts decorators.
     
     // rounding/sae indicators are required to be indepdent operands (at
     // least for now)
-    
+
+#if defined(XED_SUPPORTS_AVX512)
     xed_uint_t i = *noperand;
     
     if (strcmp("{Z}",s) == 0) {
@@ -656,6 +662,10 @@ static void process_other_decorator(char const* s,
     }
 
     *noperand = i;
+#else
+    (void) s; (void) noperand; (void)operands;    
+#endif
+
 }
 
 /* Change result to alias mnemonic that is accepted by xed, return true
