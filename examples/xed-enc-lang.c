@@ -317,8 +317,10 @@ static void find_vl(xed_reg_enum_t reg, xed_int_t* vl)
         *vl = 0;
     else if (rc == XED_REG_CLASS_YMM && nvl < 1) // not set, set to xmm and then see ymm
         *vl = 1;
+#if defined(XED_SUPPORTS_AVX512)
     else if (rc == XED_REG_CLASS_ZMM && nvl < 2) // not set, set to xmm or ymm and then see zmm
         *vl = 2;
+#endif
 }
 
 

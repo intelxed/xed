@@ -94,7 +94,8 @@ def make_bulk_tests(env):
     for bulk_test_file in  env['bulk_tests']:
         print("[READING BULK TESTS] %s" % (bulk_test_file))
         tests = open(bulk_test_file,'r').readlines()
-        tests = [ x.strip() for x in tests]
+        tests = [ re.sub(r"#.*",'',x) for x in tests] # remove comments
+        tests = [ x.strip() for x in tests]  # remove leading/trailing whitespace, newlines
         for test in tests:
             if test:
                 si = mbuild.join(env['otests'],"test-%05d" % (i))
