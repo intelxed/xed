@@ -239,12 +239,12 @@ class xed_reader_t(object):
         osz_prefix  = re.compile(r'OSZ=(?P<prefix>[01])')
         no_prefix   = re.compile(r'REP=0 OSZ=0')
         rexw_prefix = re.compile(r'REXW=(?P<rexw>[01])')
-        reg_required = re.compile(r'REG[[](?P<reg>[b01]+)]')
-        mod_required = re.compile(r'MOD[[](?P<mod>[b01]+)]')
+        reg_required = re.compile(r'REG[\[](?P<reg>[b01]+)]')
+        mod_required = re.compile(r'MOD[\[](?P<mod>[b01]+)]')
         mod_mem_required = re.compile(r'MOD!=3')
         mod_reg_required = re.compile(r'MOD=3')
         rm_val_required = re.compile(r'RM=(?P<rm>[0-9]+)')
-        rm_required  = re.compile(r'RM[[](?P<rm>[b01]+)]')
+        rm_required  = re.compile(r'RM[\[](?P<rm>[b01]+)]')
         mode_pattern = re.compile(r' MODE=(?P<mode>[012]+)')
         not64_pattern = re.compile(r' MODE!=2')
 
@@ -461,7 +461,8 @@ class xed_reader_t(object):
         recs = []
         nt_name = "Unknown"
         i = 0
-        for line in file(fn):
+        f = open(fn)
+        for line in f:
             i = i + 1
             if i > 500:
                 sys.stderr.write(".")
