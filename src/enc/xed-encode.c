@@ -535,8 +535,11 @@ static void xed_encode_precondition_vl(xed_encoder_request_t* req)
                 break;
             set_vl(r,&vl);
         }
-
+#if !defined(XED_SUPPORTS_KNC)
+        // Exclude for KNC which has vex-encoded prefetches of 64 bytes.
+        
         // FIXME: ONLY SET FOR THINGS WITH SIMD (OR K-MASK FOR FPCLASS, VCMP) REGISTERS
+        
         if (xed3_operand_get_mem0(req)) {
             xed_uint_t bytes = xed3_operand_get_mem_width(req);
             if (bytes == 32) {
@@ -547,7 +550,7 @@ static void xed_encode_precondition_vl(xed_encoder_request_t* req)
                 vl = 2;
             }
         }
-            
+#endif       
         
         xed3_operand_set_vl(req,vl);
     }
