@@ -1,3 +1,8 @@
 65A6
-ICLASS: CMPSB   CATEGORY: STRINGOP   EXTENSION: BASE  IFORM: CMPSB   ISA_SET: I86
-SHORT: cmpsb byte ptr gs:[esi], byte ptr [edi]
+ICLASS:     CMPSB
+CATEGORY:   STRINGOP
+EXTENSION:  BASE
+IFORM:      CMPSB
+ISA_SET:    I86
+ATTRIBUTES: BYTEOP FIXED_BASE0 FIXED_BASE1 
+SHORT:      cmpsb byte ptr gs:[esi], byte ptr [edi]
