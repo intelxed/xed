@@ -1,5 +1,10 @@
 F3A6
-ICLASS: REPE_CMPSB   CATEGORY: STRINGOP   EXTENSION: BASE  IFORM: REPE_CMPSB   ISA_SET: I86
-SHORT: rep cmpsb byte ptr [esi], byte ptr [edi]
+ICLASS:     REPE_CMPSB
+CATEGORY:   STRINGOP
+EXTENSION:  BASE
+IFORM:      REPE_CMPSB
+ISA_SET:    I86
+ATTRIBUTES: BYTEOP FIXED_BASE0 FIXED_BASE1 REP 
+SHORT:      rep cmpsb byte ptr [esi], byte ptr [edi]
 Encodable! F3A6
 Identical re-encoding

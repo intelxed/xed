@@ -1,3 +1,8 @@
 65A4
-ICLASS: MOVSB   CATEGORY: STRINGOP   EXTENSION: BASE  IFORM: MOVSB   ISA_SET: I86
-SHORT: movsb byte ptr [edi], byte ptr gs:[esi]
+ICLASS:     MOVSB
+CATEGORY:   STRINGOP
+EXTENSION:  BASE
+IFORM:      MOVSB
+ISA_SET:    I86
+ATTRIBUTES: BYTEOP FIXED_BASE0 FIXED_BASE1 
+SHORT:      movsb byte ptr [edi], byte ptr gs:[esi]
