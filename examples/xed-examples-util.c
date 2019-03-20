@@ -585,6 +585,23 @@ print_hex_line(const xed_uint8_t* p,
         printf("%s\n", buf);
 }
 
+static void 
+print_attributes(xed_decoded_inst_t* xedd) {
+    /* Walk the attributes. Generally, you'll know the one you want to
+     * query and just access that one directly. */
+
+    const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
+
+    unsigned int i, nattributes  =  xed_attribute_max();
+
+    printf("ATTRIBUTES: ");
+    for(i=0;i<nattributes;i++) {
+        xed_attribute_enum_t attr = xed_attribute(i);
+        if (xed_inst_get_attribute(xi,attr))
+            printf("%s ", xed_attribute_enum_t2str(attr));
+    }
+    printf("\n");
+}
 
 
 xed_uint_t
@@ -629,16 +646,20 @@ disas_decode_binary(xed_disas_info_t* di,
             char buf[XED_TMP_BUF_LEN];
             if (xed_decoded_inst_valid(xedd)) 
             {
-                printf( "ICLASS: %s   CATEGORY: %s   EXTENSION: %s  IFORM: %s"
-                        "   ISA_SET: %s\n", 
-                xed_iclass_enum_t2str(xed_decoded_inst_get_iclass(xedd)),
-                xed_category_enum_t2str(xed_decoded_inst_get_category(xedd)),
-                xed_extension_enum_t2str(xed_decoded_inst_get_extension(xedd)),
-                xed_iform_enum_t2str(xed_decoded_inst_get_iform_enum(xedd)),
-                xed_isa_set_enum_t2str(xed_decoded_inst_get_isa_set(xedd)));
+                printf( "ICLASS:     %s\n"
+                        "CATEGORY:   %s\n"
+                        "EXTENSION:  %s\n"
+                        "IFORM:      %s\n"
+                        "ISA_SET:    %s\n", 
+                        xed_iclass_enum_t2str(xed_decoded_inst_get_iclass(xedd)),
+                        xed_category_enum_t2str(xed_decoded_inst_get_category(xedd)),
+                        xed_extension_enum_t2str(xed_decoded_inst_get_extension(xedd)),
+                        xed_iform_enum_t2str(xed_decoded_inst_get_iform_enum(xedd)),
+                        xed_isa_set_enum_t2str(xed_decoded_inst_get_isa_set(xedd)));
+                print_attributes(xedd);
             }
             disassemble(di, buf,XED_TMP_BUF_LEN, xedd, runtime_address,0);
-            printf("SHORT: %s\n", buf);
+            printf("SHORT:      %s\n", buf);
         }
         return 1;
     }
