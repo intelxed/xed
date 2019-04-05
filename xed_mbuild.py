@@ -552,6 +552,7 @@ def mkenv():
                                  skl=True,
                                  skx=True,
                                  clx=True,
+                                 cpx=True,
                                  cnl=True,
                                  icl=True,
                                  future=True,
@@ -742,6 +743,10 @@ def xed_args(env):
                           action="store_false", 
                           dest="clx", 
                           help="Do not include CLX (Cascade Lake Server).")
+    env.parser.add_option("--no-cpx",
+                          action="store_false", 
+                          dest="cpx", 
+                          help="Do not include CPX (Cooper Lake Server).")
     env.parser.add_option("--no-cnl",
                           action="store_false", 
                           dest="cnl", 
@@ -1174,7 +1179,7 @@ def _configure_libxed_extensions(env):
     if env['avx']:
         env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cnl', 'icl']):
+    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['knc']:
         env.add_define('XED_SUPPORTS_KNC')
@@ -1293,6 +1298,9 @@ def _configure_libxed_extensions(env):
         if env['clx']:
             _add_normal_ext(env,'clx')
             _add_normal_ext(env,'vnni')
+        if env['cpx']:
+            _add_normal_ext(env,'cpx')
+            _add_normal_ext(env,'bf16')
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
@@ -2256,13 +2264,14 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CNL, ICL, KNL, KNM Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, KNL, KNM Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
         env['skl'] = False
         env['skx'] = False
         env['clx'] = False
+        env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
         env['knl'] = False
@@ -2279,6 +2288,7 @@ def verify_args(env):
     if not env['avx512']:
         env['skx'] = False
         env['clx'] = False
+        env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
         env['knl'] = False
@@ -2297,6 +2307,7 @@ def verify_args(env):
     if not env['skx']:
         env['cnl'] = False
         env['clx'] = False
+        env['cpx'] = False        
     if not env['cnl']:
         env['icl'] = False
     if not env['icl']:
@@ -2308,6 +2319,7 @@ def verify_args(env):
         env['knm'] = False
         env['skx'] = False
         env['clx'] = False
+        env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
         env['future'] = False
