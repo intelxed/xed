@@ -56,22 +56,21 @@ def work(args):  # main function
 
     return 0
 
-
 def setup():
     parser = argparse.ArgumentParser(
-        description='Generate cpuid bit list per instruction')
-    parser.add_argument('state_bits_filename', 
-                        help='Input state bits file')
-    parser.add_argument('instructions_filename', 
-                        help='Input instructions file')
-    parser.add_argument('widths_filename', 
-                        help='Input chip file')
-    parser.add_argument('element_types_filename', 
-                        help='Input chip file')
-    parser.add_argument('cpuid_filename', 
-                        help='Input cpuid file')
+        description='Dump instruction fields')
+    parser.add_argument('prefix', 
+                        help='Path to obj/dgen directory')
     args = parser.parse_args()
+
+    args.state_bits_filename    = args.prefix + '/all-state.txt'
+    args.cpuid_filename         = args.prefix + '/all-cpuid.txt'
+    args.instructions_filename  = args.prefix + '/all-dec-instructions.txt'
+    args.chip_filename          = args.prefix + '/all-chip-models.txt'
+    args.widths_filename        = args.prefix + '/all-widths.txt'
+    args.element_types_filename = args.prefix + '/all-element-types.txt'
     return args
+
 
 if __name__ == "__main__":
     args = setup()
