@@ -236,7 +236,7 @@ class xed_reader_t(object):
         map_pattern = re.compile(r'MAP=(?P<map>[0-6])')
         vex_prefix  = re.compile(r'VEX_PREFIX=(?P<prefix>[0-9])')
         rep_prefix  = re.compile(r'REP=(?P<prefix>[0-3])')
-        osz_prefix  = re.compile(r'OSZ=(?P<prefix>[01])')
+        osz_prefix  = re.compile(r' OSZ=(?P<prefix>[01])')
         no_prefix   = re.compile(r'REP=0 OSZ=0')
         rexw_prefix = re.compile(r'REXW=(?P<rexw>[01])')
         reg_required = re.compile(r'REG[\[](?P<reg>[b01]+)]')
