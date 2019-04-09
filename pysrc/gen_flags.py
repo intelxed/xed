@@ -25,6 +25,7 @@ import re
 import collections
 
 import read_xed_db
+import gen_setup
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
@@ -61,22 +62,9 @@ def work(args):  # main function
     return 0
 
 
-def setup():
-    parser = argparse.ArgumentParser(
-        description='Generate EFLAGS flags report')
-    parser.add_argument('state_bits_filename', 
-                        help='Input state bits file')
-    parser.add_argument('instructions_filename', 
-                        help='Input instructions file')
-    parser.add_argument('widths_filename', 
-                        help='Input chip file')
-    parser.add_argument('element_types_filename', 
-                        help='Input chip file')
-    args = parser.parse_args()
-    return args
 
 if __name__ == "__main__":
-    args = setup()
+    args = gen_setup.setup('Generate EFLAGS report')
     r = work(args)
     sys.exit(r)
 

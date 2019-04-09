@@ -28,18 +28,20 @@ import re
 import collections
 
 import read_xed_db
+import gen_setup
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
     sys.exit(1)
 def msgb(b,s=''):
     sys.stdout.write("[{0}] {1}\n".format(b,s))
+def msge(b,s=''):
+    sys.stderr.write("[{0}] {1}\n".format(b,s))
 
 
 
 def work(args):  # main function
-    msgb("READING XED DB")
-
+    msge("READING XED DB")
 
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
                                      args.instructions_filename,
@@ -56,24 +58,8 @@ def work(args):  # main function
 
     return 0
 
-def setup():
-    parser = argparse.ArgumentParser(
-        description='Dump instruction fields')
-    parser.add_argument('prefix', 
-                        help='Path to obj/dgen directory')
-    args = parser.parse_args()
-
-    args.state_bits_filename    = args.prefix + '/all-state.txt'
-    args.cpuid_filename         = args.prefix + '/all-cpuid.txt'
-    args.instructions_filename  = args.prefix + '/all-dec-instructions.txt'
-    args.chip_filename          = args.prefix + '/all-chip-models.txt'
-    args.widths_filename        = args.prefix + '/all-widths.txt'
-    args.element_types_filename = args.prefix + '/all-element-types.txt'
-    return args
-
-
 if __name__ == "__main__":
-    args = setup()
+    args = gen_setup.setup("Dump all instructions and fields")
     r = work(args)
     sys.exit(r)
 
