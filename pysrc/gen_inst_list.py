@@ -25,6 +25,7 @@ import re
 import collections
 
 import read_xed_db
+import gen_setup
 import chipmodel
 
 def die(s):
@@ -91,25 +92,14 @@ def work(args):  # main function
 
 
 def setup():
-    parser = argparse.ArgumentParser(
-        description='Generate instruction counts per chip')
-    parser.add_argument('chip', 
+    parser = gen_setup.create('Generate instruction counts per chip')
+    
+    parser.add_argument('--chip', 
                         help='Chip name')
-    parser.add_argument('state_bits_filename', 
-                        help='Input state bits file')
-    parser.add_argument('instructions_filename', 
-                        help='Input instructions file')
-    parser.add_argument('chip_filename', 
-                        help='Input chip file')
-    parser.add_argument('widths_filename', 
-                        help='Input widths file')
-    parser.add_argument('element_types_filename', 
-                        help='Input element type file ')
     parser.add_argument('--otherchip',
                         help='Other chip name, for computing differences')
 
-    args = parser.parse_args()
-
+    args = gen_setup.parse(parser)
     return args
 
 if __name__ == "__main__":
