@@ -28,7 +28,6 @@ END_LEGAL */
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 
-#define ASP_MAX_OPERANDS (XED_ENCODER_OPERANDS_MAX+3)
 
 //static xed_bool_t check_property_of_mnemonic(const char *mnem, xed_bool_t test_fn(const xed_inst_t* p));
 static xed_bool_t test_has_relbr(const xed_inst_t* p);
@@ -247,7 +246,7 @@ static void process_mem_decorator(slist_t* decos, xed_encoder_operand_t* operand
 }
 
 static void check_too_many_operands(int op_pos) {
-    if (op_pos >= ASP_MAX_OPERANDS) {
+    if (op_pos >= XED_ENCODER_OPERANDS_MAX) {
         asp_error_printf("Too many operands\n");
         exit(1);
     }
@@ -769,7 +768,7 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     xed_state_t dstate;
     xed_uint_t eosz=0; 
     xed_uint_t noperand=0;
-    xed_encoder_operand_t operand_array[ASP_MAX_OPERANDS];
+    xed_encoder_operand_t operand_array[XED_ENCODER_OPERANDS_MAX];
     opnd_list_t* q=0;
     xed_uint_t has_imm0 = 0;
     
