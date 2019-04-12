@@ -165,9 +165,11 @@ xed_enc_line_parsed_t* asp_get_xed_enc_node(void) {
 }
 
 void asp_delete_xed_enc_line_parsed_t(xed_enc_line_parsed_t* v) {
-    // iclass not allocated
-    if (v->input)
+    if (v->iclass_str)
+        free(v->iclass_str);
+    if (v->input) 
         free(v->input);
+
     delete_slist_t(v->operands);
     delete_slist_t(v->prefixes);
     delete_opnd_list_t(v->opnds);
@@ -314,7 +316,7 @@ static void grab_inst(char**p, xed_enc_line_parsed_t* v)
         }
         q++;
     }
-    v->iclass_str = *p;
+    v->iclass_str = asp_strdup(*p);
     /* Note that it is not the final iclass as it may require mangling */
     asp_dbg_printf("MNEMONIC [%s]\n",v->iclass_str);
     *p = q;
@@ -1005,6 +1007,7 @@ static void refine_operands(xed_enc_line_parsed_t* v)
 void asp_parse_line(xed_enc_line_parsed_t* v)
 {
     char* p  = asp_strdup(v->input);
+    char* q  = p; // for deletion
     int inst = 0;
     int prefixes = 0;
     upcase(p);
@@ -1032,6 +1035,7 @@ void asp_parse_line(xed_enc_line_parsed_t* v)
     }
 
     refine_operands(v);
+    free(q);
 }
 
 

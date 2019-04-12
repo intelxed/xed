@@ -389,7 +389,7 @@ typedef union {
     xed_uint32_t i;
 }  xed_encoder_prefixes_t;
 
-#define XED_ENCODER_OPERANDS_MAX 5 /* FIXME */
+#define XED_ENCODER_OPERANDS_MAX 8 /* FIXME */
 typedef struct {
     xed_state_t mode;
     xed_iclass_enum_t iclass; /*FIXME: use iform instead? or allow either */
