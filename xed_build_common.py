@@ -213,13 +213,6 @@ def set_env_gnu(env):
     #flags += ' -Wconversion'
     #flags += ' -Wsign-conversion'
 
-    # 2014-06-23: tried out address sanitizer. it did not find any
-    # issues.
-    if 0:
-        address_santizer = ' -fsanitize=address -g'
-        flags += address_santizer
-        env['LINKFLAGS'] += address_santizer
-        
     if env['use_werror']:
         flags += ' -Werror'
     if env['compiler'] != 'icc':
