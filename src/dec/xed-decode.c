@@ -96,7 +96,7 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
      mess up subsequent encodes if the iclass or operands get changed by
      the user. */
 
-#if 0 // FIXME: DO NOT COMMIT
+#if 0 // FIXME: Do we want this?
     if (xed3_operand_get_rep(xds) &&
         !xed_decoded_inst_get_attribute(xds,XED_ATTRIBUTE_REP))
     {
