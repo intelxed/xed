@@ -876,9 +876,13 @@ def xed_args(env):
                           action="store_true",
                           dest="set_copyright",
                           help="Set the Intel copyright on Windows XED executable")
+    env.parser.add_option("--asan", 
+                          action="store_true",
+                          dest="asan",
+                          help="Use Address Sanitizer (on linux)")
 
     env.parse_args(env['xed_defaults'])
-    
+
 def init_once(env):
     xbc.init_once(env)
     if 'doc' in env['targets']:
@@ -2331,11 +2335,19 @@ def verify_args(env):
        env['use_elf_dwarf'] = True
        
 
+def macro_args(env):
+    if env.on_linux() and env['asan']:
+        fcmd = '-fsanitize=address'
+        env.add_to_var('CXXFLAGS', fcmd)
+        env.add_to_var('CCFLAGS', fcmd)
+        env.add_to_var('LINKFLAGS', fcmd)
+
 def work(env):
     """External entry point for non-command line invocations.
     Initialize the environment, build libxed, the examples, the kit
     and run the tests"""
 
+    macro_args(env)
     xbc.prep(env)
     env['xed_dir'] = env['src_dir']
     verify_args(env)
