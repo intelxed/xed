@@ -33,3 +33,4 @@ ENC     ; BUILDDIR/xed-asmparse-main -q jmp 0x70
 ENC     ; BUILDDIR/xed-asmparse-main -q jmp 0x1000000
 ENC     ; BUILDDIR/xed-asmparse-main -q -64 jz +0x10000000
 ENC     ; BUILDDIR/xed-asmparse-main -q xbegin -0x00000010
+ENC AVX512X ; BUILDDIR/xed-asmparse-main -q vaddps zmm0{k1}{z}, zmm1, [rax], {rne-sae}
