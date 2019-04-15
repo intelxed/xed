@@ -591,6 +591,7 @@ def mkenv():
                                  pin_crt='',
                                  static_stripped=False,
                                  set_copyright=False,
+                                 asan=False,
                                  first_lib=None,
                                  last_lib=None)
 
