@@ -89,6 +89,9 @@ extern  FILE* xed_log_file;
         }                                                       \
     } while(0)
 
+// Example usage:
+//     XED2DIE((xed_log_file,"%s\n", msg));
+
 #define XED2DIE(x)                                              \
     do {                                                        \
         if (XED_EMIT_MESSAGES) {                                \
