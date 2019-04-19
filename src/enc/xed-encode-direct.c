@@ -76,32 +76,32 @@ typedef union {
 
 
 static XED_INLINE void set_disp32(xed_enc2_req_t* r, xed_int32_t disp) {
-    r->has_disp32 = 1;
-    r->disp.i64 = disp;
+    r->s.has_disp32 = 1;
+    r->s.disp.i64 = disp;
 }
 static XED_INLINE xed_int32_t get_disp32(xed_enc2_req_t* r) {
-    return r->disp.s_dword[0];
+    return r->s.disp.s_dword[0];
 }
 static XED_INLINE void set_disp8(xed_enc2_req_t* r, xed_int8_t disp) {
-    r->has_disp8 = 1;
-    r->disp.i64 = disp;
+    r->s.has_disp8 = 1;
+    r->s.disp.i64 = disp;
 }
 static XED_INLINE xed_int8_t get_disp8(xed_enc2_req_t* r) {
-    return r->disp.s_byte[0];
+    return r->s.disp.s_byte[0];
 }
 
 static XED_INLINE void set_disp16(xed_enc2_req_t* r, xed_int16_t disp) {
-    r->has_disp16 = 1;b
-    r->disp.i64 = disp;
+    r->s.has_disp16 = 1;
+    r->s.disp.i64 = disp;
 }
 static XED_INLINE xed_int8_t get_disp16(xed_enc2_req_t* r) {
-    return r->disp.s_word[0];
+    return r->s.disp.s_word[0];
 }
 static XED_INLINE void set_disp64(xed_enc2_req_t* r, xed_int64_t disp) {
-    r->disp.i64 = disp;
+    r->s.disp.i64 = disp;
 }
 static XED_INLINE xed_int64_t get_disp64(xed_enc2_req_t* r) {
-    return r->disp.i64;
+    return r->s.disp.i64;
 }
 
 
@@ -246,13 +246,6 @@ static XED_INLINE xed_uint_t get_evexvv(xed_enc2_req_t* r) {
 
 
 
-static XED_INLINE void set_evexvv(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexvv = v;
-}
-static XED_INLINE xed_uint_t get_evexvv(xed_enc2_req_t* r) {
-    return r->s.evexvv;
-}
-
 
 
 static XED_INLINE void set_evexz(xed_enc2_req_t* r, xed_uint_t v) {
@@ -284,7 +277,7 @@ void xed_enc2_req_t_init(xed_enc2_req_t* r) {
 }
 
 static void emit(xed_enc2_req_t* r, xed_uint8_t b) {
-    r->s.itext[r->s.cursor++] = v;
+    r->s.itext[r->s.cursor++] = b;
 }
 
 static void emit_modrm(xed_enc2_req_t* r) {
@@ -292,15 +285,15 @@ static void emit_modrm(xed_enc2_req_t* r) {
     emit(r,v);
 }
 static void emit_sib(xed_enc2_req_t* r) {
-    xed_uint8_t v = (get_sibsale(r)<<6) | (get_sibindex(r)<<3) | get_sibbase(r);
+    xed_uint8_t v = (get_sibscale(r)<<6) | (get_sibindex(r)<<3) | get_sibbase(r);
     emit(r,v);
 }
 static void emit_rex(xed_enc2_req_t* r) {
-    xed_uint8_t v = 0x40 | (get_rew(r)<<3) | (get_rexr(r)<<2)| (get_rexx(r)<<1) | get_rexb(r);
+    xed_uint8_t v = 0x40 | (get_rexw(r)<<3) | (get_rexr(r)<<2)| (get_rexx(r)<<1) | get_rexb(r);
     emit(r,v);
 }
 static void emit_rex_if_needed(xed_enc2_req_t* r) {
-    if (r.s.u.rex)
+    if (r->s.u.rex)
         emit_rex(r);
 }
 static void emit_disp8(xed_enc2_req_t* r) {
@@ -362,11 +355,11 @@ static void emit_evex(xed_enc2_req_t* r) {
     emit(r,v1);
     v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (1 << 2) | get_vexpp(r);
     emit(r,v2);
-    v3 = (get_evexz(r) << 7) | (get_evexll(r) << 5) | (get_evexb(r)<< 4) | (get_evex_vv(r) <<3) | get_evexaaa(r);
+    v3 = (get_evexz(r) << 7) | (get_evexll(r) << 5) | (get_evexb(r)<< 4) | (get_evexvv(r) <<3) | get_evexaaa(r);
     emit(r,v3);
 }
 
-
+#if 0
 void encode_legacy_rr(xed_enc2_req_t* r) {
     if (r->f2_prefix)
         emit(r,0xF2);
@@ -374,7 +367,7 @@ void encode_legacy_rr(xed_enc2_req_t* r) {
         emit(r,0xF3);
     //...
 }
-
+#endif
 
 void encode_modrm_a64(xed_enc2_req_t* r,
                       xed_reg_enum_t base,
@@ -388,7 +381,7 @@ void encode_modrm_a64(xed_enc2_req_t* r,
 void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
                        xed_reg_enum_t dst) {
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
-    xed_uint_t offset =  r-XED_REG_GPR16_FIRST;
+    xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r,offset >= 8);
 }
@@ -396,7 +389,7 @@ void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
 void enc_modrm_rm_gpr16(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     /* encode modrm.rm with a register */
-    xed_uint_t offset =  r-XED_REG_GPR16_FIRST;
+    xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
     set_mod(r, 3);
     set_rm(r, offset & 7);
     set_rexb(r, offset >= 8);
@@ -409,7 +402,7 @@ void enc_modrm_rm_gpr16(xed_enc2_req_t* r,
 void enc_modrm_reg_gpr32(xed_enc2_req_t* r,
                        xed_reg_enum_t dst) {
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
-    xed_uint_t offset =  r-XED_REG_GPR32_FIRST;
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r,offset >= 8);
 }
@@ -417,7 +410,7 @@ void enc_modrm_reg_gpr32(xed_enc2_req_t* r,
 void enc_modrm_rm_gpr32(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     /* encode modrm.rm with a register */
-    xed_uint_t offset =  r-XED_REG_GPR32_FIRST;
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_mod(r, 3);
     set_rm(r, offset & 7);
     set_rexb(r, offset >= 8);
@@ -428,15 +421,15 @@ void enc_modrm_rm_gpr32(xed_enc2_req_t* r,
 void enc_modrm_reg_gpr64(xed_enc2_req_t* r,
                        xed_reg_enum_t dst) {
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
-    xed_uint_t offset =  r-XED_REG_GPR64_FIRST;
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r,offset >= 8);
 }
     
 void enc_modrm_rm_gpr32(xed_enc2_req_t* r,
-                      xed_reg_enum_t dst) {
+                        xed_reg_enum_t dst) {
     /* encode modrm.rm with a register */
-    xed_uint_t offset =  r-XED_REG_GPR64_FIRST;
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_mod(r, 3);
     set_rm(r, offset & 7);
     set_rexb(r, offset >= 8);
@@ -454,7 +447,7 @@ static void emit_modrm_sib_disp(xed_enc2_req_t* r) {
     }
 }
 
-void enc_error(xed_enc2_req_t* r, char* msg) {
+void enc_error(xed_enc2_req_t* r, char const* msg) {
     // FIXME
 }
 
@@ -569,7 +562,7 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
 static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
                                                  xed_reg_enum_t base,
                                                  xed_reg_enum_t indx)
-
+{
     // this has no disp, except for the no-base-or-index case (MOD=00)
     switch(base) {
       case XED_REG_BX:
@@ -622,6 +615,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
 static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
                                                xed_reg_enum_t base,
                                                xed_reg_enum_t indx)
+{
    // this has a disp8 or disp16 (MOD=1 or 2)
     
     switch(base) {
@@ -746,7 +740,7 @@ void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
     enc_modrm_reg_gpr32(r,dst);
 
     // FIXME: copies disp32 twice unnecessarily... could just emit it
-    enc_modrm_rm_mem_disp32_a32(r,base,indx,scale,disp32);  
+    enc_modrm_rm_mem_disp32_a32(r,base,indx,scale,disp);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
     emit_modrm(r);
