@@ -25,6 +25,9 @@ END_LEGAL */
 #include "xed-operand-accessors.h"
 #include "xed-reg-class.h"
 
+// Turn off unused-function warning for this file while we are doing early development
+#pragma GCC diagnostic ignored "-Wunused-function"
+
 typedef struct {
     xed_uint8_t itext[XED_MAX_INSTRUCTION_BYTES];
     xed_uint32_t cursor;
@@ -426,7 +429,7 @@ void enc_modrm_reg_gpr64(xed_enc2_req_t* r,
     set_rexr(r,offset >= 8);
 }
     
-void enc_modrm_rm_gpr32(xed_enc2_req_t* r,
+void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
                         xed_reg_enum_t dst) {
     /* encode modrm.rm with a register */
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
@@ -672,7 +675,7 @@ void enc_modrm_rm_mem_disp8_a16(xed_enc2_req_t* r,
                                  xed_int8_t disp8)
 {
     set_mod(r,1);
-    enc_modrm_rm_mem_a16_internal(r,base,indx);
+    enc_modrm_rm_mem_a16_disp_internal(r,base,indx);
     set_disp8(r,disp8);
 }
 void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
@@ -681,7 +684,7 @@ void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
                                  xed_int16_t disp16)
 {
     set_mod(r,2);
-    enc_modrm_rm_mem_a16_internal(r,base,indx);
+    enc_modrm_rm_mem_a16_disp_internal(r,base,indx);
     set_disp16(r,disp16);
 }
 
