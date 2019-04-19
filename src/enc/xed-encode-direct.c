@@ -24,361 +24,10 @@ END_LEGAL */
 #include "xed-encode-private.h"
 #include "xed-operand-accessors.h"
 #include "xed-reg-class.h"
+#include "xed-encode-direct.h"
 
 // Turn off unused-function warning for this file while we are doing early development
 #pragma GCC diagnostic ignored "-Wunused-function"
-
-typedef struct {
-    xed_uint8_t itext[XED_MAX_INSTRUCTION_BYTES];
-    xed_uint32_t cursor;
-
-    xed_uint32_t has_sib:1;
-    xed_uint32_t has_disp8:1;
-    xed_uint32_t has_disp16:1;
-    xed_uint32_t has_disp32:1;
-
-    union {
-        struct {
-            xed_uint32_t rexw:1; // and vex, evex
-            xed_uint32_t rexr:1; // and vex, evex
-            xed_uint32_t rexx:1; // and vex, evex
-            xed_uint32_t rexb:1; // and vex, evex
-        } s;
-        xed_uint32_t rex;
-    } u;
-    
-    xed_uint32_t evexrr:1;
-    xed_uint32_t vvvv:4;
-    xed_uint32_t map:3;
-    xed_uint32_t vexpp:3; // and evex
-    xed_uint32_t vexl:1; 
-    xed_uint32_t evexll:2; // also rc bits in some case
-    xed_uint32_t evexb:1;  // also sae enabler for reg-only & vl=512
-    xed_uint32_t evexvv:1;
-    xed_uint32_t evexz:1;
-    xed_uint32_t evexaaa:3;
-
-    xed_uint32_t mod:2;
-    xed_uint32_t reg:3;
-    xed_uint32_t rm:3;
-    xed_uint32_t sibscale:2;
-    xed_uint32_t sibindex:3;
-    xed_uint32_t sibbase:3;
-
-    xed_union32_t imm;
-    xed_uint8_t  imm2; // for ENTER
-    xed_union64_t disp;
-} xed_enc2_req_payload_t;
-
-
-
-typedef union {
-    xed_enc2_req_payload_t s;
-    xed_uint32_t flat[sizeof(xed_enc2_req_payload_t)/sizeof(xed_uint32_t)];
-} xed_enc2_req_t;
-
-
-static XED_INLINE void set_disp32(xed_enc2_req_t* r, xed_int32_t disp) {
-    r->s.has_disp32 = 1;
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int32_t get_disp32(xed_enc2_req_t* r) {
-    return r->s.disp.s_dword[0];
-}
-static XED_INLINE void set_disp8(xed_enc2_req_t* r, xed_int8_t disp) {
-    r->s.has_disp8 = 1;
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int8_t get_disp8(xed_enc2_req_t* r) {
-    return r->s.disp.s_byte[0];
-}
-
-static XED_INLINE void set_disp16(xed_enc2_req_t* r, xed_int16_t disp) {
-    r->s.has_disp16 = 1;
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int8_t get_disp16(xed_enc2_req_t* r) {
-    return r->s.disp.s_word[0];
-}
-static XED_INLINE void set_disp64(xed_enc2_req_t* r, xed_int64_t disp) {
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int64_t get_disp64(xed_enc2_req_t* r) {
-    return r->s.disp.i64;
-}
-
-
-
-
-
-static XED_INLINE void set_rexw(xed_enc2_req_t* r) {
-    r->s.u.s.rexw = 1;
-}
-static XED_INLINE void set_rexr(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.u.s.rexr = v;
-}
-static XED_INLINE void set_rexb(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.u.s.rexb = v;
-}
-static XED_INLINE void set_rexx(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.u.s.rexx = v;
-}
-static XED_INLINE xed_uint_t get_rexw(xed_enc2_req_t* r) {
-    return r->s.u.s.rexw;
-}
-static XED_INLINE xed_uint_t get_rexx(xed_enc2_req_t* r) {
-    return r->s.u.s.rexx;
-}
-static XED_INLINE xed_uint_t get_rexr(xed_enc2_req_t* r) {
-    return r->s.u.s.rexr;
-}
-static XED_INLINE xed_uint_t get_rexb(xed_enc2_req_t* r) {
-    return r->s.u.s.rexb;
-}
-
-static XED_INLINE void set_mod(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.mod = v;
-}
-static XED_INLINE xed_uint_t get_mod(xed_enc2_req_t* r) {
-    return r->s.mod;
-}
-
-static XED_INLINE void set_reg(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.reg = v;
-}
-static XED_INLINE xed_uint_t get_reg(xed_enc2_req_t* r) {
-    return r->s.reg;
-}
-
-static XED_INLINE void set_rm(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.rm = v;
-}
-static XED_INLINE xed_uint_t get_rm(xed_enc2_req_t* r) {
-    return r->s.rm;
-}
-
-
-static XED_INLINE void set_has_sib(xed_enc2_req_t* r) {
-     r->s.has_sib = 1;
-}
-static XED_INLINE xed_uint_t get_has_sib(xed_enc2_req_t* r) {
-    return r->s.has_sib;
-}
-
-static XED_INLINE void set_sibbase(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.sibbase = v;
-}
-static XED_INLINE xed_uint_t get_sibbase(xed_enc2_req_t* r) {
-    return r->s.sibbase;
-}
-
-static XED_INLINE void set_sibscale(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.sibscale = v;
-}
-static XED_INLINE xed_uint_t get_sibscale(xed_enc2_req_t* r) {
-    return r->s.sibscale;
-}
-
-static XED_INLINE void set_sibindex(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.sibindex = v;
-}
-static XED_INLINE xed_uint_t get_sibindex(xed_enc2_req_t* r) {
-    return r->s.sibindex;
-}
-
-
-static XED_INLINE void set_evexrr(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexrr = v;
-}
-static XED_INLINE xed_uint_t get_evexrr(xed_enc2_req_t* r) {
-    return r->s.evexrr;
-}
-
-static XED_INLINE void set_vvvv(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.vvvv = v;
-}
-static XED_INLINE xed_uint_t get_vvvv(xed_enc2_req_t* r) {
-    return r->s.vvvv;
-}
-
-static XED_INLINE void set_map(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.map = v;
-}
-static XED_INLINE xed_uint_t get_map(xed_enc2_req_t* r) {
-    return r->s.map;
-}
-
-static XED_INLINE void set_vexpp(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.vexpp = v;
-}
-static XED_INLINE xed_uint_t get_vexpp(xed_enc2_req_t* r) {
-    return r->s.vexpp;
-}
-
-
-static XED_INLINE void set_vexl(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.vexl = v;
-}
-static XED_INLINE xed_uint_t get_vexl(xed_enc2_req_t* r) {
-    return r->s.vexl;
-}
-
-
-static XED_INLINE void set_evexll(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexll = v;
-}
-static XED_INLINE xed_uint_t get_evexll(xed_enc2_req_t* r) {
-    return r->s.evexll;
-}
-
-
-static XED_INLINE void set_evexb(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexb = v;
-}
-static XED_INLINE xed_uint_t get_evexb(xed_enc2_req_t* r) {
-    return r->s.evexb;
-}
-
-
-static XED_INLINE void set_evexvv(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexvv = v;
-}
-static XED_INLINE xed_uint_t get_evexvv(xed_enc2_req_t* r) {
-    return r->s.evexvv;
-}
-
-
-
-
-
-static XED_INLINE void set_evexz(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexz = v;
-}
-static XED_INLINE xed_uint_t get_evexz(xed_enc2_req_t* r) {
-    return r->s.evexz;
-}
-
-
-
-
-static XED_INLINE void set_evexaaa(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexaaa = v;
-}
-static XED_INLINE xed_uint_t get_evexaaa(xed_enc2_req_t* r) {
-    return r->s.evexaaa;
-}
-
-
-
-///
-
-
-void xed_enc2_req_t_init(xed_enc2_req_t* r) {
-    xed_uint32_t i;
-    for(i=0;i<sizeof(xed_enc2_req_t)/sizeof(xed_uint32_t);i++)
-        r->flat[i] = 0;
-}
-
-static void emit(xed_enc2_req_t* r, xed_uint8_t b) {
-    r->s.itext[r->s.cursor++] = b;
-}
-
-static void emit_modrm(xed_enc2_req_t* r) {
-    xed_uint8_t v = (get_mod(r)<<6) | (get_reg(r)<<3) | get_rm(r);
-    emit(r,v);
-}
-static void emit_sib(xed_enc2_req_t* r) {
-    xed_uint8_t v = (get_sibscale(r)<<6) | (get_sibindex(r)<<3) | get_sibbase(r);
-    emit(r,v);
-}
-static void emit_rex(xed_enc2_req_t* r) {
-    xed_uint8_t v = 0x40 | (get_rexw(r)<<3) | (get_rexr(r)<<2)| (get_rexx(r)<<1) | get_rexb(r);
-    emit(r,v);
-}
-static void emit_rex_if_needed(xed_enc2_req_t* r) {
-    if (r->s.u.rex)
-        emit_rex(r);
-}
-static void emit_disp8(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[0]);
-}
-static void emit_disp16(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[1]);
-    emit(r,r->s.disp.byte[0]);
-}
-static void emit_disp32(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[3]);
-    emit(r,r->s.disp.byte[2]);
-    emit(r,r->s.disp.byte[1]);
-    emit(r,r->s.disp.byte[0]);
-}
-static void emit_disp64(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[7]);
-    emit(r,r->s.disp.byte[6]);
-    emit(r,r->s.disp.byte[5]);
-    emit(r,r->s.disp.byte[4]);
-    emit(r,r->s.disp.byte[3]);
-    emit(r,r->s.disp.byte[2]);
-    emit(r,r->s.disp.byte[1]);
-    emit(r,r->s.disp.byte[0]);
-}
-
-static void emit_imm8(xed_enc2_req_t* r) {
-    emit(r,r->s.imm.byte[0]);
-}
-static void emit_imm16(xed_enc2_req_t* r) {
-    emit(r,r->s.imm.byte[1]);
-    emit(r,r->s.imm.byte[0]);
-}
-static void emit_imm32(xed_enc2_req_t* r) {
-    emit(r,r->s.imm.byte[3]);
-    emit(r,r->s.imm.byte[2]);
-    emit(r,r->s.imm.byte[1]);
-    emit(r,r->s.imm.byte[0]);
-}
-
-static void emit_vex_c5(xed_enc2_req_t* r) {
-    xed_uint8_t v = (get_rexr(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r)<<2) | get_vexpp(r);
-    emit(r,0xC5);
-    emit(r,v);
-}
-static void emit_vex_c4(xed_enc2_req_t* r) {
-    xed_uint8_t v1 = (get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | get_map(r);
-    xed_uint8_t v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r) << 2) | get_vexpp(r);
-    emit(r,0xC4);
-    emit(r,v1);
-    emit(r,v2);
-}
-
-
-static void emit_evex(xed_enc2_req_t* r) {
-    xed_uint8_t v1,v2,v3;
-    emit(r,0x62);
-    v1 = (get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | (get_evexrr(r) << 4) | get_map(r);
-    emit(r,v1);
-    v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (1 << 2) | get_vexpp(r);
-    emit(r,v2);
-    v3 = (get_evexz(r) << 7) | (get_evexll(r) << 5) | (get_evexb(r)<< 4) | (get_evexvv(r) <<3) | get_evexaaa(r);
-    emit(r,v3);
-}
-
-#if 0
-void encode_legacy_rr(xed_enc2_req_t* r) {
-    if (r->f2_prefix)
-        emit(r,0xF2);
-    if (r->f3_prefix)
-        emit(r,0xF3);
-    //...
-}
-#endif
-
-void encode_modrm_a64(xed_enc2_req_t* r,
-                      xed_reg_enum_t base,
-                      xed_reg_enum_t indx,
-                      xed_uint_t scale,
-                      xed_uint32_t disp) {
-    //modrm.reg filled in earlier
-}
 
 
 void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
@@ -438,7 +87,7 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
     set_rexb(r, offset >= 8);
 }
 
-static void emit_modrm_sib_disp(xed_enc2_req_t* r) {
+void emit_modrm_sib_disp(xed_enc2_req_t* r) {
     emit_modrm(r);
     // some base reg encodings require sib and some of those require modrm
     if (r->s.has_sib) {
@@ -451,7 +100,9 @@ static void emit_modrm_sib_disp(xed_enc2_req_t* r) {
 }
 
 void enc_error(xed_enc2_req_t* r, char const* msg) {
-    // FIXME
+    // requires compilation with --messages --asserts
+    XED2DIE((xed_log_file,"%s\n", msg));
+    xed_assert(0);
 }
 
 void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
@@ -520,7 +171,7 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
     //a32  (32b mode or 64b mode)
     // FIXME: better not have rex.b or rex.x set in 32b mode
     // FIXME: range test base & index for GPR32 + INVALID
-    xed_uint_t offset = base - XED_REG_GPR64_FIRST;
+    xed_uint_t offset = base - XED_REG_GPR32_FIRST;
 
     if (base == XED_REG_INVALID ||
         base == XED_REG_ESP ||
@@ -530,6 +181,7 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
         set_mod(r,2); // disp32
         // need sib
         set_has_sib(r);
+        set_rm(r,4);
         if (base == XED_REG_INVALID) {
             set_sibbase(r,5);
         }
@@ -542,6 +194,7 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
             set_sibindex(r,4);
         }
         else {
+            static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
             offset_indx = indx - XED_REG_GPR32_FIRST;
             if (indx == XED_REG_ESP)
                 enc_error(r, "bad index register == ESP");
@@ -549,7 +202,10 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
             set_rexx(r,offset_indx >= 8);
 
             //FIXME: test for 1,2,4,8
-            set_sibscale(r, scale);
+            if (scale > 8 || scale_encode[scale] > 8)
+                enc_error(r, "bad scale value");
+            
+            set_sibscale(r, scale_encode[scale]);
         }
     }
     else { // reasonable base, no index
@@ -702,7 +358,7 @@ void encode_mov16_reg_reg(xed_enc2_req_t* r,
     enc_modrm_rm_gpr16(r,src);  // might also set rex bits
     emit(r,0x66);
     emit_rex_if_needed(r);
-    emit(r,0x88);
+    emit(r,0x8B);
     emit_modrm(r);
 }
 void encode_mov32_reg_reg(xed_enc2_req_t* r,
@@ -713,7 +369,7 @@ void encode_mov32_reg_reg(xed_enc2_req_t* r,
     enc_modrm_reg_gpr32(r,dst); // might also set rex bits
     enc_modrm_rm_gpr32(r,src);  // might also set rex bits
     emit_rex_if_needed(r);
-    emit(r,0x88);
+    emit(r,0x8B);
     emit_modrm(r);
 }
 void encode_mov64_reg_reg(xed_enc2_req_t* r,
@@ -724,7 +380,7 @@ void encode_mov64_reg_reg(xed_enc2_req_t* r,
     enc_modrm_reg_gpr64(r,dst); // might also set rex bits
     enc_modrm_rm_gpr64(r,src);  // might also set rex bits
     emit_rex(r);
-    emit(r,0x88);
+    emit(r,0x8B);
     emit_modrm(r);
 }
 
@@ -746,5 +402,5 @@ void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
     enc_modrm_rm_mem_disp32_a32(r,base,indx,scale,disp);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
-    emit_modrm(r);
+    emit_modrm_sib_disp(r);
 }
