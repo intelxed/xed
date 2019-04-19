@@ -400,6 +400,7 @@ def build_examples(env, work_queue):
                             'xed-ex-agen.c',
                             'xed-ex7.c',
                             'xed-ex8.c',
+                            'xed-enc-dir.c',
                             'xed-ex-cpuid.c',
                             'xed-tables.c',
                             'xed-find-special.c',                            
