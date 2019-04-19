@@ -29,6 +29,7 @@ END_LEGAL */
 // Turn off unused-function warning for this file while we are doing early development
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
 
 void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
                        xed_reg_enum_t dst) {
@@ -90,13 +91,13 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
 void emit_modrm_sib_disp(xed_enc2_req_t* r) {
     emit_modrm(r);
     // some base reg encodings require sib and some of those require modrm
-    if (r->s.has_sib) {
+    // some base reg encodings require disp (rip-rel)
+    if (get_has_sib(r))
         emit_sib(r);
-        if (r->s.has_disp8)
-            emit_disp8(r);
-        else if (r->s.has_disp32)
-            emit_disp32(r);
-    }
+    if (get_has_disp8(r))
+        emit_disp8(r);
+    else if (get_has_disp32(r))
+        emit_disp32(r);
 }
 
 void enc_error(xed_enc2_req_t* r, char const* msg) {
@@ -105,17 +106,29 @@ void enc_error(xed_enc2_req_t* r, char const* msg) {
     xed_assert(0);
 }
 
-void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
-                                 xed_reg_enum_t base,
-                                 xed_reg_enum_t indx,
-                                 xed_uint_t scale,
-                                 xed_int32_t disp32)
+
+static void scale_test_and_set(xed_enc2_req_t* r, xed_uint_t scale) {
+    xed_uint8_t e = scale_encode[scale];
+    if (scale > 8 || e > 8)
+        enc_error(r, "bad scale value");
+    set_sibscale(r, e);
+}
+
+
+// 64b addressing
+
+static void enc_modrm_rm_mem_disp_a64_internal(xed_enc2_req_t* r,
+                                               xed_reg_enum_t base,
+                                               xed_reg_enum_t indx,
+                                               xed_uint_t scale)
 {
     //a64 = address size 64
     // FIXME: range test base & index for GPR64 + INVALID
     xed_uint_t offset = base - XED_REG_GPR64_FIRST;
 
     if (base == XED_REG_RIP) {
+        if (get_mod(r) == 1)
+            enc_error(r,"Wrong size displacement for RIP relative addressing");
         set_mod(r,0); // disp32 for RIP-rel
         set_rm(r,5);
         if (indx != XED_REG_INVALID)
@@ -124,17 +137,78 @@ void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
     else if (base == XED_REG_INVALID ||
              base == XED_REG_RSP ||
              base == XED_REG_R12 ||
-             indx != XED_REG_INVALID) {
+             indx != XED_REG_INVALID) {         // need sib
         xed_uint_t offset_indx;
-        set_mod(r,2); // disp32
-        // need sib
         set_has_sib(r);
+        set_rm(r,4);
+
         if (base == XED_REG_INVALID) {
             set_sibbase(r,5);
         }
         else { 
             set_sibbase(r, offset & 7);
             set_rexb(r, offset >= 8);
+        }
+        
+        // nothing speical required if base == XED_REG_RBP or XED_REG_R13
+        // since we already have a displacment; the mod field will be set
+        // to 1 or 2.
+
+        if (indx == XED_REG_INVALID) {
+            set_sibindex(r,4);
+        }
+        else {
+            offset_indx = indx - XED_REG_GPR64_FIRST;
+            if (indx == XED_REG_RSP)
+                enc_error(r, "bad index register == RSP");
+            set_sibindex(r,offset_indx & 7);
+            set_rexx(r,offset_indx >= 8);
+
+            scale_test_and_set(r, scale);
+        }
+    }
+    else { // reasonable base, no index
+        set_rm(r, offset & 7);
+        set_rexb(r, offset >= 8);
+    }
+}
+static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
+                                                 xed_reg_enum_t base,
+                                                 xed_reg_enum_t indx,
+                                                 xed_uint_t scale)
+{
+    //a64 = address size 64
+    // FIXME: range test base & index for GPR64 + INVALID
+    xed_uint_t offset = base - XED_REG_GPR64_FIRST;
+
+    if (base == XED_REG_RIP) {
+        set_disp32(r,0); // supply a fake zero valued disp
+        set_rm(r,5);
+        if (indx != XED_REG_INVALID)
+            enc_error(r, "cannot have index register with RIP as base");
+    }
+    else if (base == XED_REG_INVALID ||
+             base == XED_REG_RSP ||
+             base == XED_REG_R12 ||
+             base == XED_REG_RBP ||
+             base == XED_REG_R13 ||
+             indx != XED_REG_INVALID) {        // need sib
+        xed_uint_t offset_indx;
+     
+        set_has_sib(r);
+        set_rm(r,4);
+
+        if (base == XED_REG_INVALID) {
+            set_sibbase(r,5);
+        }
+        else { 
+            set_sibbase(r, offset & 7);
+            set_rexb(r, offset >= 8);
+        }
+        
+        if ( base == XED_REG_RBP || base == XED_REG_R13  ) {
+            set_mod(r,1);              // potentially overwriting earlier setting
+            set_disp8(r,0);            // force a disp8 with value 0.
         }
 
         if (indx == XED_REG_INVALID) {
@@ -147,28 +221,54 @@ void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
             set_sibindex(r,offset_indx & 7);
             set_rexx(r,offset_indx >= 8);
 
-            //FIXME: test for 1,2,4,8
-            set_sibscale(r, scale);
+            scale_test_and_set(r, scale);
         }
     }
     else { // reasonable base, no index
-        set_mod(r,2); // disp32
-        set_rm(r,offset);
+        set_rm(r,offset & 7);
         set_rexb(r, offset >= 8);
     }
-
-    set_disp32(r,disp32);
 }
 
-
-
-void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx,
                                  xed_uint_t scale,
                                  xed_int32_t disp32)
 {
-    //a32  (32b mode or 64b mode)
+    set_mod(r,2); 
+    enc_modrm_rm_mem_disp_a64_internal(r,base,indx,scale);
+    set_disp32(r,disp32);
+}
+void enc_modrm_rm_mem_disp8_a64(xed_enc2_req_t* r,
+                                xed_reg_enum_t base,
+                                xed_reg_enum_t indx,
+                                xed_uint_t scale,
+                                xed_int8_t disp8)
+{
+    set_mod(r,1); 
+    enc_modrm_rm_mem_disp_a64_internal(r,base,indx,scale);
+    set_disp8(r,disp8);
+}
+void enc_modrm_rm_mem_nodisp_a64(xed_enc2_req_t* r,
+                                 xed_reg_enum_t base,
+                                 xed_reg_enum_t indx,
+                                 xed_uint_t scale)
+{
+    set_mod(r,0); // no-disp (may be overwritten if funky base specified)
+    enc_modrm_rm_mem_nodisp_a64_internal(r,base,indx,scale);
+}
+
+
+
+/// 32b addressing
+
+static void enc_modrm_rm_mem_disp_a32_internal(xed_enc2_req_t* r,
+                                               xed_reg_enum_t base,
+                                               xed_reg_enum_t indx,
+                                               xed_uint_t scale)
+{
+    //a32  (32b mode or 64b mode)  for MOD=1 (disp8) or MOD=2 (disp32)
     // FIXME: better not have rex.b or rex.x set in 32b mode
     // FIXME: range test base & index for GPR32 + INVALID
     xed_uint_t offset = base - XED_REG_GPR32_FIRST;
@@ -178,7 +278,6 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
         base == XED_REG_R12D ||
         indx != XED_REG_INVALID) {
         xed_uint_t offset_indx;
-        set_mod(r,2); // disp32
         // need sib
         set_has_sib(r);
         set_rm(r,4);
@@ -194,30 +293,110 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
             set_sibindex(r,4);
         }
         else {
-            static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
             offset_indx = indx - XED_REG_GPR32_FIRST;
             if (indx == XED_REG_ESP)
                 enc_error(r, "bad index register == ESP");
             set_sibindex(r,offset_indx & 7);
             set_rexx(r,offset_indx >= 8);
 
-            //FIXME: test for 1,2,4,8
-            if (scale > 8 || scale_encode[scale] > 8)
-                enc_error(r, "bad scale value");
-            
-            set_sibscale(r, scale_encode[scale]);
+            scale_test_and_set(r, scale);
         }
     }
     else { // reasonable base, no index
-        set_mod(r,2); // disp32
-        set_rm(r,offset);
+        set_rm(r,offset & 7);
         set_rexb(r, offset >= 8);
     }
-
-    set_disp32(r,disp32);
 }
 
-// FIXME: 16b addressing
+static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
+                                                 xed_reg_enum_t base,
+                                                 xed_reg_enum_t indx,
+                                                 xed_uint_t scale)
+{
+    //a32  (32b mode or 64b mode)
+    // FIXME: better not have rex.b or rex.x set in 32b mode
+    // FIXME: range test base & index for GPR32 + INVALID
+    
+    // Note: using EBP or R13 as a base register requires that we add a
+    // displacement. We add a disp8 with the value 0.
+    
+    xed_uint_t offset = base - XED_REG_GPR32_FIRST;
+
+    if (base == XED_REG_INVALID ||
+        base == XED_REG_ESP     ||
+        base == XED_REG_R12D    ||
+        base == XED_REG_EBP     ||
+        base == XED_REG_R13D    ||
+        indx != XED_REG_INVALID  ) {         // need sib
+        xed_uint_t offset_indx;
+
+        set_has_sib(r);
+        set_rm(r,4);
+        if (base == XED_REG_INVALID) {
+            set_sibbase(r,5);
+        }
+        else { 
+            set_sibbase(r, offset & 7);
+            set_rexb(r, offset >= 8); 
+        }
+        if ( base == XED_REG_EBP || base == XED_REG_R13D  ) {
+            set_mod(r,1);              // potentially overwriting earlier setting
+            set_disp8(r,0);            // force a disp8 with value 0.
+        }
+
+        if (indx == XED_REG_INVALID) {
+            set_sibindex(r,4);
+        }
+        else {
+            offset_indx = indx - XED_REG_GPR32_FIRST;
+            if (indx == XED_REG_ESP)
+                enc_error(r, "bad index register == ESP");
+            set_sibindex(r,offset_indx & 7);
+            set_rexx(r,offset_indx >= 8);
+                           
+            scale_test_and_set(r, scale);
+        }
+    }
+    else { // reasonable base, no index
+        set_rm(r,offset & 7);
+        set_rexb(r, offset >= 8);
+    }
+}
+
+
+
+void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
+                                 xed_reg_enum_t base,
+                                 xed_reg_enum_t indx,
+                                 xed_uint_t scale,
+                                 xed_int32_t disp32)
+{
+    set_mod(r,2); // disp32
+    enc_modrm_rm_mem_disp_a32_internal(r,base,indx,scale);
+    set_disp32(r,disp32);
+}
+void enc_modrm_rm_mem_disp8_a32(xed_enc2_req_t* r,
+                                xed_reg_enum_t base,
+                                xed_reg_enum_t indx,
+                                xed_uint_t scale,
+                                xed_int8_t disp8)
+{
+    set_mod(r,1); // disp8
+    enc_modrm_rm_mem_disp_a32_internal(r,base,indx,scale);
+    set_disp8(r,disp8);
+}
+void enc_modrm_rm_mem_nodisp_a32(xed_enc2_req_t* r,
+                                 xed_reg_enum_t base,
+                                 xed_reg_enum_t indx,
+                                 xed_uint_t scale)
+{
+    set_mod(r,0); // no-disp (may be overwritten if EBP/R13D used as base)
+    enc_modrm_rm_mem_nodisp_a32_internal(r,base,indx,scale);
+}
+
+
+// 16b addressing
+
 static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
                                                  xed_reg_enum_t base,
                                                  xed_reg_enum_t indx)
@@ -325,6 +504,13 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
     }
 }
 
+void enc_modrm_rm_mem_nodisp_a16(xed_enc2_req_t* r,
+                                 xed_reg_enum_t base,
+                                 xed_reg_enum_t indx)
+{
+    set_mod(r,0);
+    enc_modrm_rm_mem_nodisp_a16_internal(r,base,indx);
+}
 void enc_modrm_rm_mem_disp8_a16(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx,
@@ -345,6 +531,9 @@ void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+// INSTRUCTIONS
 
 // FIXME: what about 16b moves in 16b mode?
 //    add _osz{16,32,64}? assumes a mode...
@@ -386,7 +575,7 @@ void encode_mov64_reg_reg(xed_enc2_req_t* r,
 
 
 
-/// what about disp8
+
 void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
                                      xed_reg_enum_t dst,
                                      xed_reg_enum_t base,
@@ -404,3 +593,92 @@ void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
     emit(r,0x8B);
     emit_modrm_sib_disp(r);
 }
+void encode_mov32_reg_mem_disp8_a32(xed_enc2_req_t* r,
+                                    xed_reg_enum_t dst,
+                                    xed_reg_enum_t base,
+                                    xed_reg_enum_t indx,
+                                    xed_uint_t scale,
+                                    xed_int8_t disp) 
+
+{  // this works for 32b moves in 32b mode. 
+
+    enc_modrm_reg_gpr32(r,dst);
+
+    // FIXME: copies disp32 twice unnecessarily... could just emit it
+    enc_modrm_rm_mem_disp8_a32(r,base,indx,scale,disp);  
+    emit_rex_if_needed(r);
+    emit(r,0x8B);
+    emit_modrm_sib_disp(r);
+}
+void encode_mov32_reg_mem_nodisp_a32(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst,
+                                     xed_reg_enum_t base,
+                                     xed_reg_enum_t indx,
+                                     xed_uint_t scale)
+{  // this works for 32b moves in 32b mode. 
+
+    enc_modrm_reg_gpr32(r,dst);
+
+    // if the user specifies EBP or R13D as a base, we add a zero-valued
+    // disp8.
+    
+    enc_modrm_rm_mem_nodisp_a32(r,base,indx,scale);  
+    emit_rex_if_needed(r);
+    emit(r,0x8B);
+    emit_modrm_sib_disp(r);
+}
+
+
+
+
+
+void encode_mov64_reg_mem_nodisp_a64(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst,
+                                     xed_reg_enum_t base,
+                                     xed_reg_enum_t indx,
+                                     xed_uint_t scale)
+{   // this works for 64b moves in 64b mode. 
+    set_rexw(r); //64b operation
+    enc_modrm_reg_gpr64(r,dst);
+
+    // if the user specifies RSP, RBP, R12, R13 as a base, we add a
+    // zero-valued disp8.
+    
+    enc_modrm_rm_mem_nodisp_a64(r,base,indx,scale);  
+    emit_rex(r);
+    emit(r,0x8B);
+    emit_modrm_sib_disp(r);
+}
+
+void encode_mov64_reg_mem_disp32_a64(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst,
+                                     xed_reg_enum_t base,
+                                     xed_reg_enum_t indx,
+                                     xed_uint_t scale,
+                                     xed_int32_t disp)
+{   // this works for 64b moves in 64b mode. 
+    set_rexw(r); //64b operation
+    enc_modrm_reg_gpr64(r,dst);
+
+    enc_modrm_rm_mem_disp32_a64(r,base,indx,scale,disp);  
+    emit_rex(r);
+    emit(r,0x8B);
+    emit_modrm_sib_disp(r);
+}
+
+void encode_mov64_reg_mem_disp8_a64(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst,
+                                     xed_reg_enum_t base,
+                                     xed_reg_enum_t indx,
+                                     xed_uint_t scale,
+                                     xed_int8_t disp)
+{   // this works for 64b moves in 64b mode. 
+    set_rexw(r); //64b operation
+    enc_modrm_reg_gpr64(r,dst);
+
+    enc_modrm_rm_mem_disp8_a64(r,base,indx,scale,disp);  
+    emit_rex(r);
+    emit(r,0x8B);
+    emit_modrm_sib_disp(r);
+}
+
