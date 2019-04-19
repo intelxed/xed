@@ -85,7 +85,7 @@ try:
    import mbuild
 except:
    sys.stderr.write("\nERROR(generator.py): Could not find mbuild. " +
-                    "Should be a sibling of the xed2 directory.\n\n")
+                    "Should be a sibling of the xed directory.\n\n")
    sys.exit(1)
 
 xed2_src_path = os.path.join(os.path.dirname(sys.argv[0]))
@@ -119,6 +119,7 @@ import ctables
 import ild
 import refine_regs
 import classifier
+import encgen
 
 #####################################################################
 ## OPTIONS
@@ -5219,6 +5220,9 @@ class all_generator_info_t(object):
              self.src_files.append(f)
 
    def dump_generated_files(self):
+       """For mbuild dependence checking, we need an accurate list of the
+          files the generator created. This file is read by xed_mbuild.py"""
+       
        output_file_list = mbuild.join(self.common.options.gendir, 
                                       "DECGEN-OUTPUT-FILES.txt")
        f = base_open_file(output_file_list,"w")
@@ -6392,20 +6396,16 @@ def main():
    if not os.path.exists(agi.common.options.gendir):
       die("Need a subdirectory called " + agi.common.options.gendir)
    
-   print_resource_usage('main.1')
    gen_operand_storage_fields(options,agi)
    
-   print_resource_usage('main.2')
    gen_regs(options,agi)
 
-   print_resource_usage('main.2.5')
    gen_widths(options,agi) # writes agi.widths_list and agi.widths_dict
    gen_extra_widths(agi) # writes agi.extra_widths_nt and agi.exta_widths_reg
    gen_element_types_base(agi) 
    gen_element_types(agi) # write agi.xtypes dict, agi.xtypes
    gen_pointer_names(options,agi)
    
-   print_resource_usage('main.3')
    
    # this reads the pattern input, builds a graph, emits the decoder
    # graph and the itable, emits the extractor functions, computes the
@@ -6416,13 +6416,12 @@ def main():
    # emit functions to identify AVX and AVX512 instruction groups
    classifier.work(agi) 
    
-   print_resource_usage('main.4')
    gen_ild(agi)
-   gen_cpuid_map(agi) 
+   gen_cpuid_map(agi)
 
-   print_resource_usage('main.5')
+   encgen.work(agi)
+   
    agi.close_output_files()
-   print_resource_usage('main.6')
    agi.dump_generated_files()
 
 ################################################
