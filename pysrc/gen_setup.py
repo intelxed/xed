@@ -42,19 +42,22 @@ def create(help_string=''):
     parser.add_argument('prefix', 
                         help='Path to obj/dgen directory')
     return parser
-    
-def parse(parser):
+
+def make_paths(args):
     def _check_jn(x,y):
         return check_exist(os.path.join(x,y))
-
-    args = parser.parse_args()
-
+    
     args.state_bits_filename    = _check_jn(args.prefix, 'all-state.txt')
     args.cpuid_filename         = _check_jn(args.prefix, 'all-cpuid.txt')
     args.instructions_filename  = _check_jn(args.prefix, 'all-dec-instructions.txt')
     args.chip_filename          = _check_jn(args.prefix, 'all-chip-models.txt')
     args.widths_filename        = _check_jn(args.prefix, 'all-widths.txt')
     args.element_types_filename = _check_jn(args.prefix, 'all-element-types.txt')
+
+def parse(parser):
+
+    args = parser.parse_args()
+    make_paths(args)
     return args
 
 def setup(help_string=''):
