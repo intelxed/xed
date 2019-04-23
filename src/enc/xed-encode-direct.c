@@ -401,6 +401,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
                                                  xed_reg_enum_t base,
                                                  xed_reg_enum_t indx)
 {
+    //FIXME: replace with a table.
     // this has no disp, except for the no-base-or-index case (MOD=00)
     switch(base) {
       case XED_REG_BX:
@@ -454,8 +455,8 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
                                                xed_reg_enum_t base,
                                                xed_reg_enum_t indx)
 {
-   // this has a disp8 or disp16 (MOD=1 or 2)
-    
+    //FIXME: replace with a table.
+    // this has a disp8 or disp16 (MOD=1 or 2)
     switch(base) {
       case XED_REG_BX:
         switch(indx) {
