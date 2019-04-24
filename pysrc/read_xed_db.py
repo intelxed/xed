@@ -90,6 +90,7 @@ class xed_reader_t(object):
         self._fix_real_opcode()
         self._generate_explicit_operands()
         self._parse_operands()
+        self._summarize_operands()
         
         self.cpuid_map = {}
         if cpuid_filename:
@@ -209,7 +210,17 @@ class xed_reader_t(object):
                 v.vl = _get_vl(v.iclass, v.space, v.pattern)
             else:
                 v.vl = 'n/a'
-            
+                
+    def _summarize_operands(self):
+        for v in self.recs:
+            v.has_imm8 = False
+            v.has_imm8_2 = False
+            for op in v.parsed_operands:
+                if op.name == 'IMM0':
+                    v.has_imm8 = True
+                elif op.name == 'IMM1':
+                    v.has_imm8_2 = True
+
     def _parse_operands(self):
         '''set v.parsed_operands with list of operand_info_t objects (see opnds.py).'''
         for v in self.recs:
@@ -388,7 +399,11 @@ class xed_reader_t(object):
                     eosz = 'osznot16'
                 elif 'EOSZ!=3' in v.pattern:
                     eosz = 'osznot64'
-            v.eosz = eosz         
+            v.eosz = eosz
+
+            v.default_64b = False
+            if 'DF64()' in v.pattern:
+                v.default_64b = True
 
             v.scalar = False
             if hasattr(v,'attributes'):
