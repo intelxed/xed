@@ -180,6 +180,12 @@ def one_x87_reg(ii):
         if op_reg(op) and op_x87(op):
             n = n + 1
     return n==1
+def zero_operands(ii):
+    n = 0
+    for op in _gen_opnds(ii):
+        n = n + 1
+    return n == 0
+
     
 def two_gpr8_regs(ii):
     n = 0
@@ -233,7 +239,96 @@ def emit_required_legacy_map_escapes(ii,fo):
     elif ii.map == 3:
         fo.add_code_eol('emit(r,0x0F)')
         fo.add_code_eol('emit(r,0x3A)')
+
+def create_legacy_no_operands(env,ii):
+    global enc_fn_prefix, arg_request
+    
+    if env.mode == 64 and ii.easz == 'a16':
+        ii.encoder_skipped = True
+        return
+    
+    fname = "{}_{}".format(enc_fn_prefix,
+                           ii.iclass.lower())
+    if ii.easz in ['a16','a32','a64']:
+        fname = fname + '_' + ii.easz
+    if ii.eosz in ['o16','o32','o64']:
+        fname = fname + '_' + ii.eosz
         
+    fo = codegen.function_object_t(fname, 'void')
+    fo.add_arg(arg_request)
+
+    mod,reg,rm = 0,0,0
+    modrm_required = False
+    if ii.mod_required:
+        if ii.mod_required in ['unspecified']:
+            pass
+        elif ii.mod_required in ['00/01/10']:
+            modrm_requried = True
+        else:
+            mod = ii.mod_required
+            modrm_required = True
+    if ii.reg_required:
+        if ii.reg_required in ['unspecified']:
+            pass
+        else:
+            reg = ii.reg_required
+            modrm_required = True
+    if ii.rm_required:
+        if ii.rm_required in ['unspecified']:
+            pass
+        else:
+            rm = ii.rm_required
+            modrm_required = True
+    if modrm_required:
+        modrm = (mod << 6) | (reg<<3) | rm
+        fo.add_comment('MODRM = 0x{:02x}'.format(modrm))
+        fo.add_code_eol('set_mod(r,{})'.format(mod))
+        fo.add_code_eol('set_reg(r,{})'.format(reg))
+        fo.add_code_eol('set_rm(r,{})'.format(rm))
+
+    # twiddle ASZ if specified
+    if env.mode == 64 and ii.easz == 'a32':
+        fo.add_code_eol('emit(r,0x67)')
+    elif env.mode == 32 and ii.easz == 'a16':
+        fo.add_code_eol('emit(r,0x67)')
+    elif env.mode == 16 and ii.easz == 'a32':
+        fo.add_code_eol('emit(r,0x67)')
+
+    # twiddle OSZ ... FIXME: might need to do something for oszall
+    if not ii.osz_required:
+        if env.mode == 64 and ii.eosz == 'o16':
+            fo.add_code_eol('emit(r,0x66)')
+        elif env.mode == 64 and ii.eosz == 'o64' and ii.default_64b == False:
+            fo.add_code_eol('set_rexw()')
+        elif env.mode == 32 and ii.eosz == 'o16':
+            fo.add_code_eol('emit(r,0x66)')
+        elif env.mode == 16 and ii.eosz == 'o16':
+            fo.add_code_eol('emit(r,0x66)')
+        elif ii.eosz in ['osznot16', 'osznot64']:  #FIXME
+            fo.add_comment("Check handling of {}".format(ii.eosz))
+            genutil.warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
+        elif ii.eosz in ['oszall']:  # FIXME
+            fo.add_comment("Check handling of oszall.")
+            genutil.warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
+            
+
+    emit_required_legacy_prefixes(ii,fo)
+
+    emit_required_legacy_map_escapes(ii,fo)
+    if ii.partial_opcode:
+        genutil.warn("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
+        ii.encoder_skipped = True
+        return
+    else:
+        fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
+        if modrm_required:
+            fo.add_code_eol('emit_modrm(r)')
+    print(fo.emit())
+    ii.encoder_functions.append(fo)
+
+        
+    
+    
 def create_legacy_two_scalable_regs(env, ii, osz_list):
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
     
@@ -274,7 +369,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
             fo.add_code_eol('emit_rex_if_needed(r)')
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
-            genutil.die("NOT HANDLING PARTIAL OPCODES YET")
+            genutil.die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
         else:
             fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
             fo.add_code_eol('emit_modrm(r)')
@@ -305,7 +400,7 @@ def create_legacy_two_gpr8_regs(env, ii):
     emit_required_legacy_map_escapes(ii,fo)
 
     if ii.partial_opcode:
-        genutil.die("NOT HANDLING PARTIAL OPCODES YET")
+        genutil.die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
     else:
         fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
         fo.add_code_eol('emit_modrm(r)')
@@ -402,9 +497,11 @@ def create_legacy_one_x87_reg(env,ii):
 
     
 def _enc_legacy(agi,env,ii):
+    if zero_operands(ii):
+        create_legacy_no_operands(env,ii)
     if two_gpr8_regs(ii):
         create_legacy_two_gpr8_regs(env,ii)
-    if two_scalable_regs(ii):
+    elif two_scalable_regs(ii):
         create_legacy_two_scalable_regs(env,ii,[16,32,64])
     elif two_xmm_regs(ii):
         create_legacy_two_xmm_regs(env,ii)
@@ -511,16 +608,20 @@ def gather_stats(db):
     unhandled = 0
     forms = len(db)
     generated_fns = 0
+    skipped_fns = 0
     for ii in db:
         gen_fn = len(ii.encoder_functions)
         if gen_fn == 0:
             unhandled  = unhandled + 1
         generated_fns = generated_fns + gen_fn
+        if ii.encoder_skipped:
+            skipped_fns = skipped_fns + 1
         
     print("Forms:       {:4d}".format(forms))
     print("Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
     print("Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
     print("Generated Encoding functions: {}".format(generated_fns))
+    print("Skipped Encoding functions:   {}".format(skipped_fns))
         
           
 # used for making file paths for xed db reader
@@ -544,6 +645,7 @@ def work(agi):
     
     for ii in xeddb.recs:
         setattr(ii,'encoder_functions',[])
+        setattr(ii,'encoder_skipped',False)
         _create_enc_fn(agi,env,ii)
             
     gather_stats(xeddb.recs)
