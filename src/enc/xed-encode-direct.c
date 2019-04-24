@@ -531,6 +531,36 @@ void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
     set_disp16(r,disp16);
 }
 
+/// handling partial opcodes
+
+xed_uint8_t emit_partial_opcode_and_rmreg(xed_enc2_req_t* r,
+                                          xed_uint8_t opcode,
+                                          xed_reg_enum_t rmreg,
+                                          xed_reg_enum_t first)
+{
+    xed_uint_t offset = rmreg - first;
+    xed_uint8_t opcode_out = opcode | (offset & 7);
+    set_rexb(r, offset >= 8);
+    return opcode_out
+}
+xed_uint8_t emit_partial_opcode_and_rmreg_gpr16(xed_enc2_req_t* r,
+                                                xed_uint8_t opcode,
+                                                xed_reg_enum_t rmreg)
+{
+    return emit_partial_opcode_and_rmreg(r,opcode,rmreg, XED_REG_GPR16_FIRST);
+}
+xed_uint8_t emit_partial_opcode_and_rmreg_gpr32(xed_enc2_req_t* r,
+                                                xed_uint8_t opcode,
+                                                xed_reg_enum_t rmreg)
+{
+    return emit_partial_opcode_and_rmreg(r,opcode,rmreg, XED_REG_GPR32_FIRST);
+}
+xed_uint8_t emit_partial_opcode_and_rmreg_gpr32(xed_enc2_req_t* r,
+                                                xed_uint8_t opcode,
+                                                xed_reg_enum_t rmreg)
+{
+    return emit_partial_opcode_and_rmreg(r,opcode,rmreg, XED_REG_GPR64_FIRST);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
