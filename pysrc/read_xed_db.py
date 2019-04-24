@@ -497,13 +497,15 @@ class xed_reader_t(object):
         """We'll still have multiple pattern/operands/iform lines after reading this.
         Stores each record in a list of dictionaries. Each dictionary has key-value pairs
         and the value is always a list"""
-
+        lines = open(fn).readlines()
+        lines = genutil.process_continuations(lines)
+    
         started = False
         recs = []
         nt_name = "Unknown"
         i = 0
-        f = open(fn)
-        for line in f:
+
+        for line in lines:
             i = i + 1
             if i > 500:
                 sys.stderr.write(".")
