@@ -219,7 +219,8 @@ class xed_reader_t(object):
                 op =  opnds.parse_one_operand(op_str,
                                               'DEFAULT',
                                               self.xtypes,
-                                              self.widths_dict)
+                                              self.widths_dict,
+                                              skip_encoder_conditions=False)
                 v.parsed_operands.append(op)
                 #print "OPERAND: {}".format(op)
 
@@ -364,6 +365,31 @@ class xed_reader_t(object):
                 if mode:
                     v.mode_restriction = int(mode.group('mode'))
 
+            easz = 'aszall'
+            if 'EASZ=1' in v.pattern:
+                easz = 'a16'
+            elif 'EASZ=2' in v.pattern:
+                easz = 'a32'
+            elif 'EASZ=3' in v.pattern:
+                easz =  'a64'
+            elif 'EASZ!=1' in v.pattern:
+                easz = 'asznot16'
+            v.easz = easz
+    
+            eosz = 'oszall'
+            if v.space == 'legacy':
+                if 'EOSZ=1' in v.pattern:
+                    eosz = 'o16'
+                elif 'EOSZ=2' in v.pattern:
+                    eosz = 'o32'
+                elif 'EOSZ=3' in v.pattern:
+                    eosz =  'o64'
+                elif 'EOSZ!=1' in v.pattern:
+                    eosz = 'osznot16'
+                elif 'EOSZ!=3' in v.pattern:
+                    eosz = 'osznot64'
+            v.eosz = eosz         
+
             v.scalar = False
             if hasattr(v,'attributes'):
                 v.attributes = v.attributes.upper()
@@ -374,14 +400,14 @@ class xed_reader_t(object):
 
 
             if opcode.startswith('0x'):
-                nopcode = int(opcode,16)
+                v.opcode_base10 = int(opcode,16)
             elif opcode.startswith('0b'):
                 # partial opcode.. 5 bits, shifted 
-                nopcode = genutil.make_numeric(opcode) << 3
+                v.opcode_base10 = genutil.make_numeric(opcode) << 3
                 v.partial_opcode = True
-
-            v.upper_nibble = int(nopcode/16)
-            v.lower_nibble = nopcode & 0xF
+            
+            v.upper_nibble = int(v.opcode_base10/16)
+            v.lower_nibble = v.opcode_base10 & 0xF
 
 
     def _parse_state_bits(self,f):
@@ -466,7 +492,6 @@ class xed_reader_t(object):
             i = i + 1
             if i > 500:
                 sys.stderr.write(".")
-                #sys.stderr.flush()
                 i = 0
             line = patterns.comment_pattern.sub("",line)
             line=line.strip()
@@ -527,6 +552,6 @@ class xed_reader_t(object):
 
             else:
                 die("Unexpected: [{0}]".format(line))
-        sys.stdout.write("\n")
+        sys.stderr.write("\n")
         return recs
 
