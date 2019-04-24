@@ -26,6 +26,7 @@ import glob
 import re
 
 import genutil
+import codegen
 import read_xed_db
 import gen_setup
 
@@ -73,6 +74,8 @@ oc2_widths_dict['w'] = [16,16,16]
 oc2_widths_dict['d'] = [32,32,32]
 oc2_widths_dict['q'] = [64,64,64]
 
+enc_fn_prefix = "xed_encode"
+
 var_base = 'base'
 arg_base = 'xed_reg_enum_t ' + var_base
 var_index = 'index'
@@ -88,6 +91,9 @@ arg_disp16 = 'xed_int16_t ' + var_disp16
 
 var_disp32 = 'disp32'
 arg_disp32 = 'xed_int32_t ' + var_disp32
+
+var_request = 'r'
+arg_request = 'xed_enc2_req_t* ' + var_request
 
 var_reg0 = 'reg0'
 arg_reg0 = 'xed_reg_enum_t ' + var_reg0
@@ -116,9 +122,306 @@ def _dump_fields(x):
         print("{}: {}".format(fld,getattr(x,fld)))
     print("\n\n")
 
+def _gen_opnds(ii): # generator
+    # filter out write-mask operands and suppressed operands
+    for op in ii.parsed_operands:
+        if op.lookupfn_name == 'MASK1':
+            continue
+        if op.lookupfn_name == 'MASKNOT0':
+            continue
+        if op.visibility == 'SUPPRESSED':
+            continue
+        yield op
+        
+def op_scalable_v(op):
+    if op.lookupfn_name:
+        if 'GPRv' in op.lookupfn_name:
+            return True
+    if op.oc2 == 'v':
+        return True
+    return False
+def op_gpr8(op):
+    if op.lookupfn_name:
+        if 'GPR8' in op.lookupfn_name:
+            return True
+    if op.oc2 == 'b':
+        return True
+    return False
+
+def op_reg(op):
+    if 'REG' in op.name:
+        return True
+    return False
+def op_xmm(op):
+    if op.lookupfn_name:
+        if 'XMM' in op.lookupfn_name:
+            return True
+    return False
+def op_mmx(op):
+    if op.lookupfn_name:
+        if 'MMX' in op.lookupfn_name:
+            return True
+    return False
+def op_x87(op):
+    if op.lookupfn_name:
+        if 'X87' in op.lookupfn_name:
+            return True
+    return False
+    
+def two_scalable_regs(ii):
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_scalable_v(op):
+            n = n + 1
+    return n==2
+def one_x87_reg(ii):
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_x87(op):
+            n = n + 1
+    return n==1
+    
+def two_gpr8_regs(ii):
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_gpr8(op):
+            n = n + 1
+    return n==2
+
+def two_xmm_regs(ii):
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_xmm(op):
+            n = n + 1
+    return n==2
+def two_mmx_regs(ii):
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_mmx(op):
+            n = n + 1
+    return n==2
+    
+def gen_osz_list(mode, osz_list):
+    """skip osz 64 outside of 64b mode"""
+    for osz in osz_list:
+        if mode != 64 and osz == 64:
+            continue
+        yield osz
+        
+def modrm_reg_first_operand(ii):
+    # only look at first operand
+    for op in  _gen_opnds(ii):
+        if op.lookupfn_name and  op.lookupfn_name.endswith('_R'):
+            return True
+        return False
+
+def emit_required_legacy_prefixes(ii,fo):
+    if ii.iclass.endswith('_LOCK'):
+        fo.add_code_eol('emit(r,0xF0)')
+    if ii.f2_required:
+        fo.add_code_eol('emit(r,0xF2)')
+    if ii.f3_required:
+        fo.add_code_eol('emit(r,0xF3)')
+    if ii.osz_required:
+        fo.add_code_eol('emit(r,0x66)')
+def emit_required_legacy_map_escapes(ii,fo):
+    if ii.map == 1:
+        fo.add_code_eol('emit(r,0x0F)')
+    elif ii.map == 2:
+        fo.add_code_eol('emit(r,0x0F)')
+        fo.add_code_eol('emit(r,0x38)')
+    elif ii.map == 3:
+        fo.add_code_eol('emit(r,0x0F)')
+        fo.add_code_eol('emit(r,0x3A)')
+        
+def create_legacy_two_scalable_regs(env, ii, osz_list):
+    global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
+    
+    for osz in gen_osz_list(env.mode,osz_list):
+        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      'rvrv',
+                                      osz)
+        fo = codegen.function_object_t(fname, 'void')
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_reg1)
+        emit_required_legacy_prefixes(ii,fo)
+        if not ii.osz_required:
+            if osz == 16 and env.mode != 16:
+                # add a 66 prefix outside of 16b mode, to create 16b osz
+                fo.add_code_eol('emit(r,0x66)')
+            if osz == 32 and env.mode == 16:
+                # add a 66 prefix outside inside 16b mode to create 32b osz
+                fo.add_code_eol('emit(r,0x66)')
+
+        rexw_forced = False
+        if osz == 64 and ii.default_64b == False:
+            rexw_forced = True
+            fo.add_code_eol('set_rexw(r)')
+
+        if modrm_reg_first_operand(ii):
+            f1, f2 = 'reg','rm'
+        else:
+            f1, f2 = 'rm','reg'
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg0)'.format(f1,osz))
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,osz))
+        
+        # checking rexw_forced saves a conditional branch in 64b operations
+        if rexw_forced:
+            fo.add_code_eol('emit_rex(r)')
+        else:
+            fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_required_legacy_map_escapes(ii,fo)
+        if ii.partial_opcode:
+            genutil.die("NOT HANDLING PARTIAL OPCODES YET")
+        else:
+            fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
+            fo.add_code_eol('emit_modrm(r)')
+        print(fo.emit())
+        ii.encoder_functions.append(fo)
+            
 
 
-def _create_enc_fn(agi, ii):
+def create_legacy_two_gpr8_regs(env, ii):
+    global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
+    
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                              ii.iclass.lower(),
+                              'r8r8')
+    fo = codegen.function_object_t(fname, 'void')
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_reg1)
+    emit_required_legacy_prefixes(ii,fo)
+
+    if modrm_reg_first_operand(ii):
+        f1, f2 = 'reg','rm'
+    else:
+        f1, f2 = 'rm','reg'
+    fo.add_code_eol('enc_modrm_{}_gpr8(r,reg0)'.format(f1))
+    fo.add_code_eol('enc_modrm_{}_gpr8(r,reg1)'.format(f2))
+    fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_required_legacy_map_escapes(ii,fo)
+
+    if ii.partial_opcode:
+        genutil.die("NOT HANDLING PARTIAL OPCODES YET")
+    else:
+        fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
+        fo.add_code_eol('emit_modrm(r)')
+    print(fo.emit())
+    ii.encoder_functions.append(fo)
+        
+def cond_emit_imm8(ii,fo):
+    global arg_imm8, arg_imm8_2
+    if ii.has_imm8:
+        fo.add_code_eol('emit(r,{})'.format(var_imm8))
+    if ii.has_imm8_2:
+        fo.add_code_eol('emit(r,{})'.format(var_imm8_2))
+def cond_add_imm_args(ii,fo):
+    global arg_imm8, arg_imm8_2
+    if ii.has_imm8:
+        fo.add_arg(arg_imm8)
+    if ii.has_imm8_2:
+        fo.add_arg(arg_imm8_2)
+
+    
+def create_legacy_two_xmm_regs(env,ii):
+    global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  'xmm')
+    fo = codegen.function_object_t(fname, 'void')
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_reg1)
+    cond_add_imm_args(ii,fo)
+    emit_required_legacy_prefixes(ii,fo)
+    if modrm_reg_first_operand(ii):
+        f1, f2 = 'reg','rm'
+    else:
+        f1, f2 = 'rm','reg'
+    fo.add_code_eol('enc_modrm_{}_xmm(r,reg0)'.format(f1))
+    fo.add_code_eol('enc_modrm_{}_xmm(r,reg1)'.format(f2))
+    fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_required_legacy_map_escapes(ii,fo)
+    fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
+    fo.add_code_eol('emit_modrm(r)')
+    cond_emit_imm8(ii,fo)
+    
+    print(fo.emit())
+    ii.encoder_functions.append(fo)
+
+
+def create_legacy_two_mmx_regs(env,ii):
+    global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  'mmx')
+    fo = codegen.function_object_t(fname, 'void')
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_reg1)
+    cond_add_imm_args(ii,fo)
+
+    emit_required_legacy_prefixes(ii,fo)
+    if modrm_reg_first_operand(ii):
+        f1, f2 = 'reg','rm'
+    else:
+        f1, f2 = 'rm','reg'
+    fo.add_code_eol('enc_modrm_{}_mmx(r,reg0)'.format(f1))
+    fo.add_code_eol('enc_modrm_{}_mmx(r,reg1)'.format(f2))
+    emit_required_legacy_map_escapes(ii,fo)
+    fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
+    fo.add_code_eol('emit_modrm(r)')
+    cond_emit_imm8(ii,fo)
+    print(fo.emit())
+    ii.encoder_functions.append(fo)
+
+
+def create_legacy_one_x87_reg(env,ii):
+    global enc_fn_prefix, arg_request, arg_reg0
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  'x87')
+    fo = codegen.function_object_t(fname, 'void')
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    emit_required_legacy_prefixes(ii,fo)
+    fo.add_code_eol('set_mod(r,3)')
+    if ii.reg_required == 'unspecified':
+        genutil.die("Need a value for MODRM.REG in x87 encoding")
+    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+    fo.add_code_eol('enc_modrm_rm_x87(r,reg0)')
+    emit_required_legacy_map_escapes(ii,fo)
+    fo.add_code_eol('emit(r,{})'.format(hex(ii.opcode_base10)))
+    fo.add_code_eol('emit_modrm(r)')
+    print(fo.emit())
+    ii.encoder_functions.append(fo)
+    
+
+    
+def _enc_legacy(agi,env,ii):
+    if two_gpr8_regs(ii):
+        create_legacy_two_gpr8_regs(env,ii)
+    if two_scalable_regs(ii):
+        create_legacy_two_scalable_regs(env,ii,[16,32,64])
+    elif two_xmm_regs(ii):
+        create_legacy_two_xmm_regs(env,ii)
+    elif two_mmx_regs(ii):
+        create_legacy_two_mmx_regs(env,ii)
+    elif one_x87_reg(ii):
+        create_legacy_one_x87_reg(env,ii)
+
+    
+def _enc_vex(agi,env,ii):
+    print("VEX encoding still TBD")
+def _enc_evex(agi,env,ii):
+    print("EVEX encoding still TBD")
+def _enc_xop(agi,env,ii):
+    print("XOP encoding still TBD")
+
+def _create_enc_fn(agi, env, ii):
     s = [ii.iclass.lower()]
     s.append(ii.space)
     s.append(hex(ii.opcode_base10))
@@ -160,40 +463,66 @@ def _create_enc_fn(agi, ii):
             s.append('!k0')
 
 
-    for op in ii.parsed_operands:
-        # handled write masking above
-        if op.lookupfn_name == 'MASK1' or op.lookupfn_name == 'MASKNOT0':
-            continue
+    if ii.space == 'legacy':
+        _enc_legacy(agi,env,ii)
+    elif ii.space == 'vex':
+        _enc_vex(agi,env,ii)
+    elif ii.space == 'evex':
+        _enc_evex(agi,env,ii)
+    elif ii.space == 'xop':
+        _enc_xop(agi,env,ii)
+    else:
+        genutil.die("Unhandled encoding space: {}".format(ii.space))
+        
+    for op in _gen_opnds(ii):
+        s.append(op.name)
+        if op.oc2:
+            s[-1] = s[-1] + '-' + op.oc2
+        #if op.xtype:
+        #    s[-1] = s[-1] + '-X:' + op.xtype
 
-        if op.visibility != 'SUPPRESSED':
-            s.append(op.name)
-            if op.oc2:
-                s[-1] = s[-1] + '-' + op.oc2
+        if op.lookupfn_name:
+            s.append('({})'.format(op.lookupfn_name))
+        elif op.bits and op.bits != '1':
+            s.append('[{}]'.format(op.bits))
+        if op.name == 'MEM0':
+            #if op.oc2:
+            #    s[-1] = s[-1] + '-' + op.oc2
             #if op.xtype:
             #    s[-1] = s[-1] + '-X:' + op.xtype
-
-            if op.lookupfn_name:
-                s.append('({})'.format(op.lookupfn_name))
-            elif op.bits and op.bits != '1':
-                s.append('[{}]'.format(op.bits))
-            if op.name == 'MEM0':
-                #if op.oc2:
-                #    s[-1] = s[-1] + '-' + op.oc2
-                #if op.xtype:
-                #    s[-1] = s[-1] + '-X:' + op.xtype
-                if 'UISA_VMODRM_XMM()' in ii.pattern:
-                    s[-1] = s[-1] + '-uvx'
-                elif 'UISA_VMODRM_YMM()' in ii.pattern:
-                    s[-1] = s[-1] + '-uvy'
-                elif 'UISA_VMODRM_ZMM()' in ii.pattern:
-                    s[-1] = s[-1] + '-uvz'
-                elif 'VMODRM_XMM()' in ii.pattern:
-                    s[-1] = s[-1] + '-vx'
-                elif 'VMODRM_YMM()' in ii.pattern:
-                    s[-1] = s[-1] + '-nvy'
+            if 'UISA_VMODRM_XMM()' in ii.pattern:
+                s[-1] = s[-1] + '-uvx'
+            elif 'UISA_VMODRM_YMM()' in ii.pattern:
+                s[-1] = s[-1] + '-uvy'
+            elif 'UISA_VMODRM_ZMM()' in ii.pattern:
+                s[-1] = s[-1] + '-uvz'
+            elif 'VMODRM_XMM()' in ii.pattern:
+                s[-1] = s[-1] + '-vx'
+            elif 'VMODRM_YMM()' in ii.pattern:
+                s[-1] = s[-1] + '-nvy'
                 
-    print("XX {}".format(" ".join(s)))
+    if ii.encoder_functions:            
+        print("XX {}".format(" ".join(s)))
+    else:
+        print("YY {}".format(" ".join(s)))
 
+
+def gather_stats(db):
+    unhandled = 0
+    forms = len(db)
+    generated_fns = 0
+    for ii in db:
+        gen_fn = len(ii.encoder_functions)
+        if gen_fn == 0:
+            unhandled  = unhandled + 1
+        generated_fns = generated_fns + gen_fn
+        
+    print("Forms:       {:4d}".format(forms))
+    print("Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
+    print("Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
+    print("Generated Encoding functions: {}".format(generated_fns))
+        
+          
 # used for making file paths for xed db reader
 class dummy_t(object):
     def __init__(self):
@@ -210,6 +539,11 @@ def work(agi):
                                      args.element_types_filename,
                                      args.cpuid_filename)
 
+    env  = dummy_t()
+    env.mode = 64
+    
     for ii in xeddb.recs:
-        _create_enc_fn(agi,ii)
+        setattr(ii,'encoder_functions',[])
+        _create_enc_fn(agi,env,ii)
             
+    gather_stats(xeddb.recs)

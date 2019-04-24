@@ -31,6 +31,7 @@ typedef struct {
     xed_uint32_t has_disp8:1;
     xed_uint32_t has_disp16:1;
     xed_uint32_t has_disp32:1;
+    xed_uint32_t need_rex:1;  // for SIL,DIL,BPL,SPL
 
     union {
         struct {
@@ -60,8 +61,8 @@ typedef struct {
     xed_uint32_t sibindex:3;
     xed_uint32_t sibbase:3;
 
-    xed_union32_t imm;
-    xed_uint8_t  imm2; // for ENTER
+    xed_union32_t imm0;
+    xed_uint8_t   imm1; // for ENTER
     xed_union64_t disp;
 } xed_enc2_req_payload_t;
 
@@ -303,8 +304,11 @@ static XED_INLINE void emit_rex(xed_enc2_req_t* r) {
     xed_uint8_t v = 0x40 | (get_rexw(r)<<3) | (get_rexr(r)<<2)| (get_rexx(r)<<1) | get_rexb(r);
     emit(r,v);
 }
+static XED_INLINE void set_need_rex(xed_enc2_req_t* r) {
+    r->s.need_rex = 1;
+}
 static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
-    if (r->s.u.rex)
+    if (r->s.u.rex || r->s.need_rex)
         emit_rex(r);
 }
 static XED_INLINE void emit_disp8(xed_enc2_req_t* r) {
@@ -332,17 +336,17 @@ static XED_INLINE void emit_disp64(xed_enc2_req_t* r) {
 }
 
 static XED_INLINE void emit_imm8(xed_enc2_req_t* r) {
-    emit(r,r->s.imm.byte[0]);
+    emit(r,r->s.imm0.byte[0]);
 }
 static XED_INLINE void emit_imm16(xed_enc2_req_t* r) {
-    emit(r,r->s.imm.byte[1]);
-    emit(r,r->s.imm.byte[0]);
+    emit(r,r->s.imm0.byte[1]);
+    emit(r,r->s.imm0.byte[0]);
 }
 static XED_INLINE  void emit_imm32(xed_enc2_req_t* r) {
-    emit(r,r->s.imm.byte[3]);
-    emit(r,r->s.imm.byte[2]);
-    emit(r,r->s.imm.byte[1]);
-    emit(r,r->s.imm.byte[0]);
+    emit(r,r->s.imm0.byte[3]);
+    emit(r,r->s.imm0.byte[2]);
+    emit(r,r->s.imm0.byte[1]);
+    emit(r,r->s.imm0.byte[0]);
 }
 
 static XED_INLINE void emit_vex_c5(xed_enc2_req_t* r) {
@@ -373,6 +377,28 @@ static XED_INLINE void emit_evex(xed_enc2_req_t* r) {
 
 //////
 
+
+
+XED_DLL_EXPORT void enc_modrm_rm_x87(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_reg_xmm(xed_enc2_req_t* r,
+                                      xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_rm_xmm(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_reg_ymm(xed_enc2_req_t* r,
+                                      xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_rm_ymm(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_reg_mmx(xed_enc2_req_t* r,
+                                      xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_rm_mmx(xed_enc2_req_t* r,
+                                     xed_reg_enum_t dst);
+
+
+XED_DLL_EXPORT void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
+                        xed_reg_enum_t dst);
 
 XED_DLL_EXPORT void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
                          xed_reg_enum_t dst);

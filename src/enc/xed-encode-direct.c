@@ -31,8 +31,80 @@ END_LEGAL */
 
 static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
 
-void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
+void enc_modrm_rm_x87(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_ST0;
+    set_rm(r, offset & 7);
+}
+void enc_modrm_reg_xmm(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r,offset >= 8);
+}
+void enc_modrm_rm_xmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
+    set_rm(r, offset & 7);
+    set_rexb(r,offset >= 8);
+}
+void enc_modrm_reg_ymm(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r,offset >= 8);
+}
+
+void enc_modrm_rm_ymm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
+    set_rm(r, offset & 7);
+    set_rexb(r,offset >= 8);
+}
+
+void enc_modrm_reg_mmx(xed_enc2_req_t* r,
                        xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_MMX0;
+    set_reg(r, offset & 7);
+}
+void enc_modrm_rm_mmx(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_MMX0;
+    set_rm(r, offset & 7);
+}
+
+
+void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+    /* encode modrm.reg with a register.  Might imply a rex bit setting */
+    xed_uint_t offset = dst-XED_REG_GPR8_FIRST;   
+    if (dst >= XED_REG_AH && dst <= XED_REG_BH)
+        offset = dst-XED-REG_GPR8h_FIRST;  // AH,CH,DH,BH
+   
+    set_reg(r, offset & 7);
+    set_rexr(r,offset >= 8);
+    //SIL,DIL,BPL,SPL need REX no matter what
+    if (dst >= XED_REG_SIL && dst <= XED_REG_SPL)
+        set_need_rex(r);
+}
+    
+void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    /* encode modrm.rm with a register */
+    xed_uint_t offset = dst-XED_REG_GPR8_FIRST; 
+    if (dst >= XED_REG_AH && dst <= XED_REG_BH)
+        offset = dst-XED-REG_GPR8h_FIRST;  // AH,CH,DH,BH
+
+    set_mod(r, 3);
+    set_rm(r, offset & 7);
+    set_rexb(r, offset >= 8);
+    //SIL,DIL,BPL,SPL need REX no matter what
+    if (dst >= XED_REG_SIL && dst <= XED_REG_SPL)  
+        set_need_rex(r);
+}
+
+void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
     xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
     set_reg(r, offset & 7);
