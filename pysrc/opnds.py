@@ -88,11 +88,8 @@ class operand_info_t(object):
          self.visibility = 'EXPLICIT'
       else:
          # The default visibililty comes from the field definitions
-         if ( vis == 'DEFAULT' or 
-              vis == 'EXPLICIT' or
-              vis == 'IMPLICIT' or
-              vis == 'SUPPRESSED' ):
-            self.visibility = vis # DEFAULT, EXPLICIT, IMPLICIT or SUPPRESSED
+         if vis in ['DEFAULT', 'EXPLICIT', 'IMPLICIT', 'SUPPRESSED', 'ECOND']:
+            self.visibility = vis
          else:
             genutil.die("Bad visibility qualifier: " + vis)
 
@@ -289,7 +286,8 @@ def parse_one_operand(w,
                       default_vis='DEFAULT', 
                       xtypes=None, 
                       default_xtypes=None,
-                      internal=False):
+                      internal=False,
+                      skip_encoder_conditions=True):
    """Format examples:
    name=xxxxxy:{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
    name=NTLUR():{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
@@ -367,7 +365,7 @@ def parse_one_operand(w,
    else:
       a = w
       
-   if vis == 'ECOND':
+   if skip_encoder_conditions and vis == 'ECOND':
       return None
    
       
