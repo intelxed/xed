@@ -365,7 +365,7 @@ class xed_reader_t(object):
                 v.mod_required = '00/01/10'
             mod = mod_reg_required.search(v.pattern)
             if mod:
-                v.mod_required = '3'
+                v.mod_required = 3
 
             # 16/32/64b mode restrictions
             v.mode_restriction = 'unspecified'
