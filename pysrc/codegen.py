@@ -309,10 +309,16 @@ class function_object_t(object):
    def set_ref_return(self):
       self.ref_return = True
 
-   def add_code(self, line):
-      self.body.append(line)
-   def add_code_eol(self, line):
-      self.body.append(line + ';')
+   def add_code(self, line, comment=None):
+      if comment:
+          self.body.append(line + ' // {} '.format(comment) )
+      else:
+          self.body.append(line)
+   def add_code_eol(self, line, comment=None):
+      if comment:
+          self.body.append(line + '; // {} '.format(comment) )
+      else:
+          self.body.append(line + ';')
 
    def add_lines(self, lines):
       self.body.extend(lines)
