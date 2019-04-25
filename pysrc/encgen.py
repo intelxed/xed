@@ -173,6 +173,10 @@ def op_x87(op):
     if op.lookupfn_name:
         if 'X87' in op.lookupfn_name:
             return True
+    elif (op.name.startswith('REG') and
+          op.lookupfn_name == None and
+          re.match(r'XED_REG_ST[0-7]',op.bits) ):
+        return True
     return False
     
 def two_scalable_regs(ii):
@@ -186,11 +190,26 @@ def two_scalable_regs(ii):
 def one_x87_reg(ii):
     n = 0
     for op in _gen_opnds(ii):
-        if op_reg(op) and op_x87(op):
+        if op_reg(op) and op_x87(op) and op.visibility != 'IMPLICIT':
             n = n + 1
         else:
             return False
     return n==1
+
+def two_x87_reg(ii): # one implicit
+    n = 0
+    implicit = 0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_x87(op):
+            n = n + 1
+            if op.visibility == 'IMPLICIT':
+                implicit = implicit + 1
+        else:
+            return False
+        
+    return n==2 and implicit == 1
+
+
 def zero_operands(ii):
     n = 0
     for op in _gen_opnds(ii):
@@ -787,7 +806,27 @@ def create_legacy_two_mmx_regs(env,ii):
     print(fo.emit())
     ii.encoder_functions.append(fo)
 
-
+def create_legacy_two_x87_reg(env,ii):
+    global enc_fn_prefix, arg_request, arg_reg0
+    fname = "{}_{}_{}_st0".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  'x87')
+    fo = codegen.function_object_t(fname, 'void')
+    fo.add_comment("created by create_legacy_two_x87_reg")    
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    emit_required_legacy_prefixes(ii,fo)
+    fo.add_code_eol('set_mod(r,3)')
+    if ii.reg_required == 'unspecified':
+        genutil.die("Need a value for MODRM.REG in x87 encoding")
+    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+    fo.add_code_eol('enc_modrm_rm_x87(r,reg0)')
+    emit_required_legacy_map_escapes(ii,fo)
+    emit_opcode(ii,fo)
+    fo.add_code_eol('emit_modrm(r)')
+    print(fo.emit())
+    ii.encoder_functions.append(fo)
+    
 def create_legacy_one_x87_reg(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0
     fname = "{}_{}_{}".format(enc_fn_prefix,
@@ -839,6 +878,8 @@ def _enc_legacy(agi,env,ii):
         create_legacy_two_mmx_regs(env,ii)
     elif one_x87_reg(ii):
         create_legacy_one_x87_reg(env,ii)
+    elif two_x87_reg(ii): # one implicit
+        create_legacy_two_x87_reg(env,ii)
     elif one_nonmem_operand(ii):  
         create_legacy_one_nonmem_opnd(env,ii)  # branches out
 
