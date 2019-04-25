@@ -29,6 +29,18 @@ END_LEGAL */
 // Turn off unused-function warning for this file while we are doing early development
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+
+void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
+    set_vvvv(r, ~(offset & 15));
+}
+void enc_vvvv_reg_ymm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
+    set_vvvv(r, ~(offset & 15));
+}
+
 static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
 
 void enc_modrm_rm_x87(xed_enc2_req_t* r,
