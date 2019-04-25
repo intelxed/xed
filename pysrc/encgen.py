@@ -337,14 +337,16 @@ def _gather_implicit_regs(ii):
                     names.append(reg_name)
     return names
 
-def emit_vex_prefix(ii,fo):
+def emit_vex_prefix(ii,fo,register_only=False):
     if ii.map == 1 and ii.rexw_prefix != '1':
         # if any of x,b are set, need c4, else can use c5
         
-        # FIXME: performance improvement: we know statically if something is register only.
-        #        In which case, we can avoid testing rexx.
-        
-        fo.add_code('if  (get_rexx(r) || get_rexb(r))')
+        # performance: we know statically if something is register
+        #        only.  In which case, we can avoid testing rexx.
+        if register_only:
+            fo.add_code('if  (get_rexb(r))')
+        else:
+            fo.add_code('if  (get_rexx(r) || get_rexb(r))')
         fo.add_code_eol('    emit_vex_c4(r)')
         fo.add_code('else')
         fo.add_code_eol('    emit_vex_c5(r)') 
@@ -1291,7 +1293,7 @@ def create_vex_simd_reg(env,ii,nopnds):
         fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
     fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(category, var_r))
     fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(category, var_b))        
-    emit_vex_prefix(ii,fo)
+    emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
 
