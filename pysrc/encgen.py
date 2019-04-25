@@ -311,7 +311,64 @@ def create_modrm_byte(ii,fo):
     return modrm_required
 
 def create_legacy_one_scalable_gpr(env,ii,osz_values):
-    pass  # FIXME    
+    global enc_fn_prefix, arg_request, arg_reg0, var_reg0
+
+    for osz in osz_values:
+        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      'rv',
+                                      osz)
+        fo = codegen.function_object_t(fname, 'void')
+        fo.add_comment("created by create_legacy_one_scalable_gpr")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_reg0)
+        emit_required_legacy_prefixes(ii,fo)
+        
+        rexw_forced = False
+
+        if env.mode == 64 and osz == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif env.mode == 64 and osz == 32 and ii.default_64b == True:
+            continue # not encodable
+        elif env.mode == 64 and osz == 64 and ii.default_64b == False:
+            fo.add_code_eol('set_rexw()')
+            rexw_forced = True
+        elif env.mode == 32 and osz == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif env.mode == 16 and osz == 32:
+            fo.add_code_eol('emit(r,0x66)')
+        elif ii.eosz in ['osznot16', 'osznot64']:  #FIXME
+            fo.add_comment("Check handling of {}".format(ii.eosz))
+            genutil.warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
+        elif ii.eosz in ['oszall']: 
+            pass
+
+            
+        if modrm_reg_first_operand(ii):
+            f1, f2 = 'reg','rm'
+        else:
+            f1, f2 = 'rm','reg'
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1, osz, var_reg0))
+        
+        if f2 == 'reg':
+            if ii.reg_required != 'unspecified':
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+        else:
+            if ii.rm_required != 'unspecified':
+                fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+
+        if env.mode == 64:
+            if rexw_forced:
+                fo.add_code_eol('emit_rex(r)')
+            else:
+                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_required_legacy_map_escapes(ii,fo)
+        emit_opcode(ii,fo)
+        fo.add_code_eol('emit_modrm(r)')
+
+        print(fo.emit())
+        ii.encoder_functions.append(fo)
+
 
 def create_legacy_one_gprv_partial(env,ii):
     pass  # FIXME    
@@ -321,6 +378,7 @@ def create_legacy_asz_gpr(env,ii):
     pass # FIXME
 def create_legacy_one_imm_scalable(env,ii, osz_values):
     pass # FIXME
+
 def create_legacy_one_gpr_fixed(env,ii,width_bits):
     global enc_fn_prefix, arg_request
     fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), width_bits)
@@ -356,7 +414,8 @@ def create_legacy_one_gpr_fixed(env,ii,width_bits):
         fo.add_code_eol('set_rexw()')
 
     emit_required_legacy_prefixes(ii,fo)
-    fo.add_code_eol('emit_rex_if_needed(r)')
+    if env.mode == 64:
+        fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
@@ -376,8 +435,6 @@ def create_legacy_relbr(env,ii):
         osz_values = [16,32]
     else:
         genutil.die("Unhandled relbr width for {}: {}".format(ii.iclass, op.oc2))
-
-                
         
     for osz in osz_values:
         fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), osz)
@@ -611,10 +668,11 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,osz))
         
         # checking rexw_forced saves a conditional branch in 64b operations
-        if rexw_forced:
-            fo.add_code_eol('emit_rex(r)')
-        else:
-            fo.add_code_eol('emit_rex_if_needed(r)')
+        if env.mode == 64:
+            if rexw_forced:
+                fo.add_code_eol('emit_rex(r)')
+            else:
+                fo.add_code_eol('emit_rex_if_needed(r)')
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             genutil.die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
@@ -646,7 +704,8 @@ def create_legacy_two_gpr8_regs(env, ii):
         f1, f2 = 'rm','reg'
     fo.add_code_eol('enc_modrm_{}_gpr8(r,reg0)'.format(f1))
     fo.add_code_eol('enc_modrm_{}_gpr8(r,reg1)'.format(f2))
-    fo.add_code_eol('emit_rex_if_needed(r)')
+    if env.mode == 64:
+        fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
 
     if ii.partial_opcode:
@@ -690,7 +749,8 @@ def create_legacy_two_xmm_regs(env,ii):
         f1, f2 = 'rm','reg'
     fo.add_code_eol('enc_modrm_{}_xmm(r,reg0)'.format(f1))
     fo.add_code_eol('enc_modrm_{}_xmm(r,reg1)'.format(f2))
-    fo.add_code_eol('emit_rex_if_needed(r)')
+    if env.mode == 64:
+        fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
@@ -779,8 +839,8 @@ def _enc_legacy(agi,env,ii):
         create_legacy_two_mmx_regs(env,ii)
     elif one_x87_reg(ii):
         create_legacy_one_x87_reg(env,ii)
-    elif one_nonmem_operand(ii):
-        create_legacy_one_nonmem_opnd(env,ii)
+    elif one_nonmem_operand(ii):  
+        create_legacy_one_nonmem_opnd(env,ii)  # branches out
 
     
 def _enc_vex(agi,env,ii):
