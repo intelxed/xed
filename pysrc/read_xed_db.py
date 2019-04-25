@@ -256,7 +256,7 @@ class xed_reader_t(object):
         mod_mem_required = re.compile(r'MOD!=3')
         mod_reg_required = re.compile(r'MOD=3')
         rm_val_required = re.compile(r'RM=(?P<rm>[0-9]+)')
-        rm_required  = re.compile(r'RM[\[](?P<rm>[b01]+)]')
+        rm_required  = re.compile(r'RM[\[](?P<rm>[b01]+)]')  # RM[...] or SRM[...]
         mode_pattern = re.compile(r' MODE=(?P<mode>[012]+)')
         not64_pattern = re.compile(r' MODE!=2')
 
