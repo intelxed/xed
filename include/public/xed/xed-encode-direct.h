@@ -291,6 +291,34 @@ static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r) {
 static XED_INLINE void emit(xed_enc2_req_t* r, xed_uint8_t b) {
     r->s.itext[r->s.cursor++] = b;
 }
+static XED_INLINE void emit_u16(xed_enc2_req_t* r, xed_uint16_t w) {
+    r->s.itext[r->s.cursor++] = w&0xFF;
+    r->s.itext[r->s.cursor++] = (w>>8)&0xFF;
+
+}
+static XED_INLINE void emit_u32(xed_enc2_req_t* r, xed_uint32_t d) {
+    r->s.itext[r->s.cursor++] = d&0xFF;
+    r->s.itext[r->s.cursor++] = (d>>8)&0xFF;
+    r->s.itext[r->s.cursor++] = (d>>16)&0xFF;
+    r->s.itext[r->s.cursor++] = (d>>32)&0xFF;
+}
+
+static XED_INLINE void emit_i8(xed_enc2_req_t* r, xed_int8_t b) {
+    r->s.itext[r->s.cursor++] = b;
+}
+static XED_INLINE void emit_i16(xed_enc2_req_t* r, xed_int16_t w) {
+    r->s.itext[r->s.cursor++] = w&0xFF;
+    r->s.itext[r->s.cursor++] = (w>>8)&0xFF;
+
+}
+static XED_INLINE void emit_i32(xed_enc2_req_t* r, xed_int32_t d) {
+    r->s.itext[r->s.cursor++] = d&0xFF;
+    r->s.itext[r->s.cursor++] = (d>>8)&0xFF;
+    r->s.itext[r->s.cursor++] = (d>>16)&0xFF;
+    r->s.itext[r->s.cursor++] = (d>>32)&0xFF;
+}
+
+
 
 static XED_INLINE void emit_modrm(xed_enc2_req_t* r) {
     xed_uint8_t v = (get_mod(r)<<6) | (get_reg(r)<<3) | get_rm(r);
@@ -315,38 +343,40 @@ static XED_INLINE void emit_disp8(xed_enc2_req_t* r) {
     emit(r,r->s.disp.byte[0]);
 }
 static XED_INLINE void emit_disp16(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[1]);
     emit(r,r->s.disp.byte[0]);
+    emit(r,r->s.disp.byte[1]);
 }
 static XED_INLINE void emit_disp32(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[3]);
-    emit(r,r->s.disp.byte[2]);
-    emit(r,r->s.disp.byte[1]);
     emit(r,r->s.disp.byte[0]);
+    emit(r,r->s.disp.byte[1]);
+    emit(r,r->s.disp.byte[2]);
+    emit(r,r->s.disp.byte[3]);
 }
 static XED_INLINE void emit_disp64(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[7]);
-    emit(r,r->s.disp.byte[6]);
-    emit(r,r->s.disp.byte[5]);
-    emit(r,r->s.disp.byte[4]);
-    emit(r,r->s.disp.byte[3]);
-    emit(r,r->s.disp.byte[2]);
-    emit(r,r->s.disp.byte[1]);
     emit(r,r->s.disp.byte[0]);
+    emit(r,r->s.disp.byte[1]);
+    emit(r,r->s.disp.byte[2]);
+    emit(r,r->s.disp.byte[3]);
+    
+    emit(r,r->s.disp.byte[4]);
+    emit(r,r->s.disp.byte[5]);
+    emit(r,r->s.disp.byte[6]);
+    emit(r,r->s.disp.byte[7]);
 }
 
 static XED_INLINE void emit_imm8(xed_enc2_req_t* r) {
     emit(r,r->s.imm0.byte[0]);
 }
 static XED_INLINE void emit_imm16(xed_enc2_req_t* r) {
-    emit(r,r->s.imm0.byte[1]);
     emit(r,r->s.imm0.byte[0]);
+    emit(r,r->s.imm0.byte[1]);
 }
 static XED_INLINE  void emit_imm32(xed_enc2_req_t* r) {
-    emit(r,r->s.imm0.byte[3]);
-    emit(r,r->s.imm0.byte[2]);
-    emit(r,r->s.imm0.byte[1]);
     emit(r,r->s.imm0.byte[0]);
+    emit(r,r->s.imm0.byte[1]);
+    emit(r,r->s.imm0.byte[2]);
+    emit(r,r->s.imm0.byte[3]);
+
 }
 
 static XED_INLINE void emit_vex_c5(xed_enc2_req_t* r) {
