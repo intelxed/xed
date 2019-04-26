@@ -1266,7 +1266,7 @@ def create_legacy_one_mem_fixed(env,ii):
     
     
     
-def _enc_legacy(agi,env,ii):
+def _enc_legacy(env,ii):
     if env.mode == 64:
         if ii.mode_restriction == 'not64' or ii.mode_restriction in [0,1]:
             # we don't need an encoder function for this form in 64b mode
@@ -1413,18 +1413,18 @@ def create_vex_simd_reg(env,ii,nopnds):
 
     
         
-def _enc_vex(agi,env,ii):
+def _enc_vex(env,ii):
     if three_xmm(ii) or three_ymm(ii):
         create_vex_simd_reg(env,ii,3)
     if two_xmm(ii) or two_ymm(ii):
         create_vex_simd_reg(env,ii,2)
         
-def _enc_evex(agi,env,ii):
+def _enc_evex(env,ii):
     dbg("EVEX encoding still TBD")
-def _enc_xop(agi,env,ii):
+def _enc_xop(env,ii):
     dbg("XOP encoding still TBD")
 
-def _create_enc_fn(agi, env, ii):
+def _create_enc_fn(env, ii):
     s = [ii.iclass.lower()]
     s.append(ii.space)
     s.append(ii.isa_set)
@@ -1468,13 +1468,13 @@ def _create_enc_fn(agi, env, ii):
 
 
     if ii.space == 'legacy':
-        _enc_legacy(agi,env,ii)
+        _enc_legacy(env,ii)
     elif ii.space == 'vex':
-        _enc_vex(agi,env,ii)
+        _enc_vex(env,ii)
     elif ii.space == 'evex':
-        _enc_evex(agi,env,ii)
+        _enc_evex(env,ii)
     elif ii.space == 'xop':
-        _enc_xop(agi,env,ii)
+        _enc_xop(env,ii)
     else:
         die("Unhandled encoding space: {}".format(ii.space))
         
@@ -1535,10 +1535,6 @@ def gather_stats(db):
     dbg("Skipped Encoding functions:   {:5d}".format(skipped_fns))
         
 
-class dummy_t(object):
-    def __init__(self):
-        pass
-            
 # object used for the env we pass to the generator
 class enc_env_t(object):
     def __init__(self, mode, asz):
@@ -1550,7 +1546,7 @@ class enc_env_t(object):
         s.append("asz {}".format(self.asz))
         return ", ".join(s)
 
-def work(agi):
+def work():
     global dbg_output
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
     arg_parser.add_argument('-m64',
@@ -1581,7 +1577,6 @@ def work(agi):
     arg_parser.add_argument('--xeddir',
                             help='XED source directory, default: "."',
                             default='.')
-
 
     args = arg_parser.parse_args()
     args.prefix = os.path.join(args.gendir,'dgen')
@@ -1635,15 +1630,14 @@ def work(agi):
             
     for mode in args.modes:
         for asz in prune_asz_list_for_mode(mode,args.asz_list):
-            env  = enc_env_t(mode, asz)
+            env = enc_env_t(mode, asz)
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
-                _create_enc_fn(agi, env, ii)
+                _create_enc_fn(env, ii)
             
     gather_stats(xeddb.recs)
     return 0
 
 if __name__ == "__main__":
-    agi = dummy_t()
-    r = work(agi)
+    r = work()
     sys.exit(r)
