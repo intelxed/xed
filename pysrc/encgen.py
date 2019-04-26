@@ -1261,19 +1261,19 @@ def create_legacy_one_mem_fixed(env,ii):
         fo.add_code_eol('    emit_sib(r)')
 
         if dispsz == 8:
-            fo.add_code_eol('emit_disp8(r,{})'.format(var_disp8))
+            fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
         elif dispsz == 16:
-            fo.add_code_eol('emit_disp16(r,{})'.format(var_disp16))
+            fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
         elif dispsz == 32:
-            fo.add_code_eol('emit_disp32(r,{})'.format(var_disp32))
+            fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
         elif dispsz == 0:
             # if form has no displacment, then we sometimes have to
             # add a zero displacement to create an allowed modrm/sib
             # encoding.  
             fo.add_code('if (get_has_disp8(r))')
-            fo.add_code_eol('   emit_disp8(r,0)')
+            fo.add_code_eol('   emit_i8(r,0)')
             fo.add_code('else if (get_has_disp32(r))')
-            fo.add_code_eol('   emit_disp32(r,0)')
+            fo.add_code_eol('   emit_i32(r,0)')
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
     
