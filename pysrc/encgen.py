@@ -1194,31 +1194,36 @@ def create_legacy_one_mem_fixed(env,ii):
         dispsz_list = [0,8,16]
     else:
         dispsz_list = [0,8,32]
-    dispsz_str =  { 0  : '',
+    dispsz_str =  { 0  : 'nodisp',
                     8  : 'disp8',
                     16 : 'disp16',
                     32 : 'disp32' }
-    
-    for dispsz in dispsz_list:
 
-        fname = "{}_{}_{}_{}_{}".format(enc_fn_prefix,
-                                        ii.iclass.lower(),
-                                        'mem',
-                                        width,
-                                        dispsz_str[dispsz])
+    # loop over the various displacment options
+    for dispsz in dispsz_list:
+        dstr = dispsz_str[dispsz]
+        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                            ii.iclass.lower(),
+                                            'mem',
+                                            width,
+                                            dstr,
+                                            env.asz)
         fo = codegen.function_object_t(fname, 'void')
         fo.add_comment("created by create_legacy_one_mem_fixed")
         fo.add_arg(arg_request)
         fo.add_arg(arg_base)
         fo.add_arg(arg_index)
-        if env.asz in [16,32]:
+        if env.asz in [32,64]:
             fo.add_arg(arg_scale)  #      a32, a64
         if dispsz == 8:
             fo.add_arg(arg_disp8)  # a16, a32, a64
+            dvar = var_disp8
         elif dispsz == 16:
             fo.add_arg(arg_disp16) # a16
+            dvar = var_disp16
         elif dispsz == 32:
             fo.add_arg(arg_disp32) #      a32, a64
+            dvar = var_disp32
 
         emit_required_legacy_prefixes(ii,fo)
 
@@ -1233,6 +1238,13 @@ def create_legacy_one_mem_fixed(env,ii):
             rexw_forced = True
             fo.add_code_eol('set_rexw(r)')
 
+        if dispsz == 0:
+            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
+                dstr, env.asz, var_base, var_index, var_scale))
+        else:
+            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{},{})'.format(
+                dstr, env.asz, var_base, var_index, var_scale, dvar))
+            
         #FIXME
         if env.mode == 64:
             if rexw_forced:
@@ -1240,6 +1252,7 @@ def create_legacy_one_mem_fixed(env,ii):
             else:
                 fo.add_code_eol('emit_rex_if_needed(r)')
 
+        
 
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
@@ -1313,6 +1326,7 @@ def _enc_legacy(env,ii):
         create_legacy_gprv_immz(env,ii)
     elif one_mem_fixed(ii): # b,w,d,q,dq
         create_legacy_one_mem_fixed(env,ii)
+        
 def two_xmm(ii):
     n = 0
     for op in _gen_opnds(ii):
@@ -1420,9 +1434,9 @@ def _enc_vex(env,ii):
         create_vex_simd_reg(env,ii,2)
         
 def _enc_evex(env,ii):
-    dbg("EVEX encoding still TBD")
+    pass # FIXME
 def _enc_xop(env,ii):
-    dbg("XOP encoding still TBD")
+    pass # FIXME
 
 def prep_instruction(ii):
     setattr(ii,'encoder_functions',[])
@@ -1444,7 +1458,19 @@ def prep_instruction(ii):
             ii.write_masking_merging = True
 
     
-def _create_enc_fn(env, ii):
+def create_enc_fn(env, ii):
+    if ii.space == 'legacy':
+        _enc_legacy(env,ii)
+    elif ii.space == 'vex':
+        _enc_vex(env,ii)
+    elif ii.space == 'evex':
+        _enc_evex(env,ii)
+    elif ii.space == 'xop':
+        _enc_xop(env,ii)
+    else:
+        die("Unhandled encoding space: {}".format(ii.space))
+        
+def spew(ii):
     s = [ii.iclass.lower()]
     s.append(ii.space)
     s.append(ii.isa_set)
@@ -1472,16 +1498,6 @@ def _create_enc_fn(env, ii):
         if ii.write_masking_notk0:
             s.append('!k0')
 
-    if ii.space == 'legacy':
-        _enc_legacy(env,ii)
-    elif ii.space == 'vex':
-        _enc_vex(env,ii)
-    elif ii.space == 'evex':
-        _enc_evex(env,ii)
-    elif ii.space == 'xop':
-        _enc_xop(env,ii)
-    else:
-        die("Unhandled encoding space: {}".format(ii.space))
         
     for op in _gen_opnds(ii):
         s.append(op.name)
@@ -1511,13 +1527,13 @@ def _create_enc_fn(env, ii):
                 s[-1] = s[-1] + '-nvy'
                 
     if ii.encoder_functions:            
-        dbg("XX   {}".format(" ".join(s)))
+        dbg("//XX   {}".format(" ".join(s)))
     elif ii.encoder_skipped:
-        dbg("SKIP {}".format(" ".join(s)))
+        dbg("//SKIP {}".format(" ".join(s)))
     elif one_nonmem_operand(ii) and not one_x87_reg(ii):
-        dbg("ZZ   {}".format(" ".join(s)))
+        dbg("//ZZ   {}".format(" ".join(s)))
     else:
-        dbg("YY   {}".format(" ".join(s)))
+        dbg("//YY   {}".format(" ".join(s)))
 
 
 def gather_stats(db):
@@ -1533,11 +1549,11 @@ def gather_stats(db):
         if ii.encoder_skipped:
             skipped_fns = skipped_fns + 1
         
-    dbg("Forms:       {:4d}".format(forms))
-    dbg("Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
-    dbg("Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
-    dbg("Generated Encoding functions: {:5d}".format(generated_fns))
-    dbg("Skipped Encoding functions:   {:5d}".format(skipped_fns))
+    dbg("// Forms:       {:4d}".format(forms))
+    dbg("// Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
+    dbg("// Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
+    dbg("// Generated Encoding functions: {:5d}".format(generated_fns))
+    dbg("// Skipped Encoding functions:   {:5d}".format(skipped_fns))
         
 
 # object used for the env we pass to the generator
@@ -1637,7 +1653,8 @@ def work():
             env = enc_env_t(mode, asz)
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
-                _create_enc_fn(env, ii)
+                create_enc_fn(env, ii)
+                spew(ii)
             
     gather_stats(xeddb.recs)
     return 0
