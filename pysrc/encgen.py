@@ -1424,6 +1424,26 @@ def _enc_evex(env,ii):
 def _enc_xop(env,ii):
     dbg("XOP encoding still TBD")
 
+def prep_instruction(ii):
+    setattr(ii,'encoder_functions',[])
+    setattr(ii,'encoder_skipped',False)
+
+    ii.write_masking = False
+    ii.write_masking_notk0 = False
+    ii.write_masking_merging = False # if true, no zeroing allowed
+    
+    for op in ii.parsed_operands:
+        if op.lookupfn_name == 'MASK1':
+            ii.write_masking = True
+        elif op.lookupfn_name == 'MASKNOT0':
+            ii.write_masking = True
+            ii.write_masking_notk0 = True
+    
+    if ii.write_masking:
+        if 'ZEROING=0' in ii.pattern:
+            ii.write_masking_merging = True
+
+    
 def _create_enc_fn(env, ii):
     s = [ii.iclass.lower()]
     s.append(ii.space)
@@ -1445,27 +1465,12 @@ def _create_enc_fn(env, ii):
     s.append(ii.easz)
     s.append(ii.eosz)
 
-    ii.write_masking = False
-    ii.write_masking_notk0 = False
-    ii.write_masking_merging = False # if true, no zeroing allowed
-    
-    for op in ii.parsed_operands:
-        if op.lookupfn_name == 'MASK1':
-            ii.write_masking = True
-        elif op.lookupfn_name == 'MASKNOT0':
-            ii.write_masking = True
-            ii.write_masking_notk0 = True
-    
     if ii.write_masking:
-        if 'ZEROING=0' in ii.pattern:
-            ii.write_masking_merging = True
-            
         s.append('masking')
         if ii.write_masking_merging:
             s.append('nz')
         if ii.write_masking_notk0:
             s.append('!k0')
-
 
     if ii.space == 'legacy':
         _enc_legacy(env,ii)
@@ -1616,9 +1621,8 @@ def work():
             args.asz_list = [ 64 ]
     
     for ii in xeddb.recs:
-        setattr(ii,'encoder_functions',[])
-        setattr(ii,'encoder_skipped',False)
-
+        prep_instruction(ii)
+        
     def prune_asz_list_for_mode(mode,alist):
         '''make sure we only use addressing modes appropriate for our mode'''
         for asz in alist:
