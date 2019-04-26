@@ -119,7 +119,7 @@ import ctables
 import ild
 import refine_regs
 import classifier
-import encgen
+#import encgen
 
 #####################################################################
 ## OPTIONS
@@ -6419,7 +6419,7 @@ def main():
    gen_ild(agi)
    gen_cpuid_map(agi)
 
-   encgen.work(agi)
+   #encgen.work(agi)
    
    agi.close_output_files()
    agi.dump_generated_files()
