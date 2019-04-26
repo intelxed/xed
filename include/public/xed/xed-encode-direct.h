@@ -63,7 +63,6 @@ typedef struct {
 
     xed_union32_t imm0;
     xed_uint8_t   imm1; // for ENTER
-    xed_union64_t disp;
 } xed_enc2_req_payload_t;
 
 
@@ -86,6 +85,21 @@ static XED_INLINE xed_uint_t get_has_disp8(xed_enc2_req_t* r) {
 static XED_INLINE void set_has_disp8(xed_enc2_req_t* r) {
      r->s.has_disp8 = 1;
 }
+
+static XED_INLINE xed_uint_t get_has_disp16(xed_enc2_req_t* r) {
+    return r->s.has_disp16;
+}
+static XED_INLINE void set_has_disp16(xed_enc2_req_t* r) {
+     r->s.has_disp16 = 1;
+}
+
+static XED_INLINE xed_uint_t get_has_disp32(xed_enc2_req_t* r) {
+    return r->s.has_disp32;
+}
+static XED_INLINE void set_has_disp32(xed_enc2_req_t* r) {
+     r->s.has_disp32 = 1;
+}
+
 static XED_INLINE xed_uint_t get_has_sib(xed_enc2_req_t* r) {
     return r->s.has_sib;
 }
@@ -93,34 +107,6 @@ static XED_INLINE void set_has_sib(xed_enc2_req_t* r) {
      r->s.has_sib = 1;
 }
 
-static XED_INLINE void set_disp32(xed_enc2_req_t* r, xed_int32_t disp) {
-    set_has_disp32(r);
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int32_t get_disp32(xed_enc2_req_t* r) {
-    return r->s.disp.s_dword[0];
-}
-static XED_INLINE void set_disp8(xed_enc2_req_t* r, xed_int8_t disp) {
-    set_has_disp8(r);
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int8_t get_disp8(xed_enc2_req_t* r) {
-    return r->s.disp.s_byte[0];
-}
-
-static XED_INLINE void set_disp16(xed_enc2_req_t* r, xed_int16_t disp) {
-    r->s.has_disp16 = 1;
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int8_t get_disp16(xed_enc2_req_t* r) {
-    return r->s.disp.s_word[0];
-}
-static XED_INLINE void set_disp64(xed_enc2_req_t* r, xed_int64_t disp) {
-    r->s.disp.i64 = disp;
-}
-static XED_INLINE xed_int64_t get_disp64(xed_enc2_req_t* r) {
-    return r->s.disp.i64;
-}
 
 
 
@@ -338,30 +324,6 @@ static XED_INLINE void set_need_rex(xed_enc2_req_t* r) {
 static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
     if (r->s.u.rex || r->s.need_rex)
         emit_rex(r);
-}
-static XED_INLINE void emit_disp8(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[0]);
-}
-static XED_INLINE void emit_disp16(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[0]);
-    emit(r,r->s.disp.byte[1]);
-}
-static XED_INLINE void emit_disp32(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[0]);
-    emit(r,r->s.disp.byte[1]);
-    emit(r,r->s.disp.byte[2]);
-    emit(r,r->s.disp.byte[3]);
-}
-static XED_INLINE void emit_disp64(xed_enc2_req_t* r) {
-    emit(r,r->s.disp.byte[0]);
-    emit(r,r->s.disp.byte[1]);
-    emit(r,r->s.disp.byte[2]);
-    emit(r,r->s.disp.byte[3]);
-    
-    emit(r,r->s.disp.byte[4]);
-    emit(r,r->s.disp.byte[5]);
-    emit(r,r->s.disp.byte[6]);
-    emit(r,r->s.disp.byte[7]);
 }
 
 static XED_INLINE void emit_imm8(xed_enc2_req_t* r) {
