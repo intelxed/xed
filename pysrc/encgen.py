@@ -1194,100 +1194,143 @@ def create_legacy_one_mem_fixed(env,ii):
         dispsz_list = [0,8,16]
     else:
         dispsz_list = [0,8,32]
-    dispsz_str =  { 0  : 'nodisp',
-                    8  : 'disp8',
-                    16 : 'disp16',
-                    32 : 'disp32' }
+
+    memsig_idx_16 = {  0: 'bi',
+                       8: 'bid8',
+                       16: 'bid16' }
+    
+    memsig_idx_32or64 = {  0: 'bis',
+                           8: 'bisd8',
+                           32: 'bisd32' }
+    
+    memsig_noidx_16 = {  0: 'b',
+                         8: 'bd8',
+                         16: 'bd16' }
+    
+    memsig_noidx_32or64 = {  0: 'b',
+                             8: 'bd8',
+                             32: 'bd32' }
+    
+    memsig_str_16 =  { True : memsig_idx_16,  # indexed by use_index
+                       False: memsig_noidx_16 } 
+    memsig_str_32or64 =  { True : memsig_idx_32or64,  # indexed by use_index
+                           False: memsig_noidx_32or64 } 
+
+    def get_memsig(asz, using_indx, dispz):
+        if asz == 16:
+            return memsig_str_16[using_indx][dispz]
+        return memsig_str_32or64[using_indx][dispz]
+
     
     modvals = { 0 :  0,   # index by dispsz
                 8 :  1,
                 16 : 2,
                 32 : 2 }
+    
+    for use_index in [ False, True ]:
+        for dispsz in dispsz_list:
+            dstr = get_memsig(env.asz,use_index,dispsz)
+            fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                                ii.iclass.lower(),
+                                                'mem',
+                                                width,
+                                                dstr,
+                                                env.asz)
+            fo = codegen.function_object_t(fname, 'void')
+            fo.add_comment("created by create_legacy_one_mem_fixed")
+            fo.add_arg(arg_request)
+            fo.add_arg(arg_base)
+            if use_index:
+                fo.add_arg(arg_index)
+                if env.asz in [32,64]:
+                    fo.add_arg(arg_scale)  #      a32, a64
 
-    # loop over the various displacment options
-    for dispsz in dispsz_list:
-        dstr = dispsz_str[dispsz]
-        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                            ii.iclass.lower(),
-                                            'mem',
-                                            width,
-                                            dstr,
-                                            env.asz)
-        fo = codegen.function_object_t(fname, 'void')
-        fo.add_comment("created by create_legacy_one_mem_fixed")
-        fo.add_arg(arg_request)
-        fo.add_arg(arg_base)
-        fo.add_arg(arg_index)
-        if env.asz in [32,64]:
-            fo.add_arg(arg_scale)  #      a32, a64
-        if dispsz == 8:
-            fo.add_arg(arg_disp8)  # a16, a32, a64
-            dvar = var_disp8
-        elif dispsz == 16:
-            fo.add_arg(arg_disp16) # a16
-            dvar = var_disp16
-        elif dispsz == 32:
-            fo.add_arg(arg_disp32) #      a32, a64
-            dvar = var_disp32
+            if dispsz == 8:
+                fo.add_arg(arg_disp8)  # a16, a32, a64
+                dvar = var_disp8
+            elif dispsz == 16:
+                fo.add_arg(arg_disp16) # a16
+                dvar = var_disp16
+            elif dispsz == 32:
+                fo.add_arg(arg_disp32) #      a32, a64
+                dvar = var_disp32
 
-        emit_required_legacy_prefixes(ii,fo)
+            emit_required_legacy_prefixes(ii,fo)
 
-        rexw_forced = False            
-        #if env.mode == 64:
-        #    if osz == 64 and ii.default_64b == False:
-        #        rexw_forced = True
-        #        fo.add_code_eol('set_rexw(r)')
+            rexw_forced = False            
+            #if env.mode == 64:
+            #    if osz == 64 and ii.default_64b == False:
+            #        rexw_forced = True
+            #        fo.add_code_eol('set_rexw(r)')
 
 
-        if ii.rexw_prefix == '1':
-            rexw_forced = True
-            fo.add_code_eol('set_rexw(r)')
+            if ii.rexw_prefix == '1':
+                rexw_forced = True
+                fo.add_code_eol('set_rexw(r)')
 
-        mod = modvals[dispsz]
-        if mod:  # ZERO-INIT OPTIMIZATION
-            fo.add_code_eol('set_mod(r,{})'.format(mod))
-        if ii.reg_required != 'unspecified':
-            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
-            
-        # this may overwrite modrm.mod
-        if dispsz == 0:
-            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
-                dstr, env.asz, var_base, var_index, var_scale))
-        else:
-            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{},{})'.format(
-                dstr, env.asz, var_base, var_index, var_scale, dvar))
-            
-        #FIXME
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+            mod = modvals[dispsz]
+            if mod:  # ZERO-INIT OPTIMIZATION
+                fo.add_code_eol('set_mod(r,{})'.format(mod))
+            if ii.reg_required != 'unspecified':
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
-        
+            # this may overwrite modrm.mod
+            if use_index:
+                if dispsz == 0:
+                    if env.asz == 16: # no scale
+                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
+                            dstr, env.asz, var_base, var_index))
+                    else:  
+                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
+                            dstr, env.asz, var_base, var_index, var_scale))
+                else: # has disp
+                    if env.asz == 16:  # no scale
+                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
+                            dstr, env.asz, var_base, var_index, dvar))
+                    else:
+                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{},{})'.format(
+                            dstr, env.asz, var_base, var_index, var_scale, dvar))
+                    
+            else: # no index,scale
+                if dispsz == 0:
+                    fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{})'.format(
+                        dstr, env.asz, var_base))
+                else:
+                    fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
+                        dstr, env.asz, var_base, dvar))
 
-        emit_required_legacy_map_escapes(ii,fo)
-        emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
-        fo.add_code('if (get_has_sib(r))')
-        fo.add_code_eol('    emit_sib(r)')
+                
+            #FIXME
+            if env.mode == 64:
+                if rexw_forced:
+                    fo.add_code_eol('emit_rex(r)')
+                else:
+                    fo.add_code_eol('emit_rex_if_needed(r)')
 
-        if dispsz == 8:
-            fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
-        elif dispsz == 16:
-            fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
-        elif dispsz == 32:
-            fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
-        elif dispsz == 0:
-            # if form has no displacment, then we sometimes have to
-            # add a zero displacement to create an allowed modrm/sib
-            # encoding.  
-            fo.add_code('if (get_has_disp8(r))')
-            fo.add_code_eol('   emit_i8(r,0)')
-            fo.add_code('else if (get_has_disp32(r))')
-            fo.add_code_eol('   emit_i32(r,0)')
-        dbg(fo.emit())
-        ii.encoder_functions.append(fo)
+
+
+            emit_required_legacy_map_escapes(ii,fo)
+            emit_opcode(ii,fo)
+            fo.add_code_eol('emit_modrm(r)')
+            fo.add_code('if (get_has_sib(r))')
+            fo.add_code_eol('    emit_sib(r)')
+
+            if dispsz == 8:
+                fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
+            elif dispsz == 16:
+                fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
+            elif dispsz == 32:
+                fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
+            elif dispsz == 0:
+                # if form has no displacment, then we sometimes have to
+                # add a zero displacement to create an allowed modrm/sib
+                # encoding.  
+                fo.add_code('if (get_has_disp8(r))')
+                fo.add_code_eol('   emit_i8(r,0)')
+                fo.add_code('else if (get_has_disp32(r))')
+                fo.add_code_eol('   emit_i32(r,0)')
+            dbg(fo.emit())
+            ii.encoder_functions.append(fo)
     
     
     
