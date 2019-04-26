@@ -415,62 +415,83 @@ XED_DLL_EXPORT void enc_modrm_reg_gpr64(xed_enc2_req_t* r,
 XED_DLL_EXPORT void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
                         xed_reg_enum_t dst);
 
-XED_DLL_EXPORT void emit_modrm_sib_disp(xed_enc2_req_t* r);
+XED_DLL_EXPORT void emit_modrm_sib(xed_enc2_req_t* r);
 
 XED_DLL_EXPORT void enc_error(xed_enc2_req_t* r, char const* msg);
 
 
 // 64b addressing
 
-XED_DLL_EXPORT void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
-                                                xed_reg_enum_t base,
-                                                xed_reg_enum_t indx,
-                                                xed_uint_t scale,
-                                                xed_int32_t disp32);
-XED_DLL_EXPORT void enc_modrm_rm_mem_disp8_a64(xed_enc2_req_t* r,
-                                                xed_reg_enum_t base,
-                                                xed_reg_enum_t indx,
-                                                xed_uint_t scale,
-                                                xed_int8_t disp8);
-XED_DLL_EXPORT void enc_modrm_rm_mem_nodisp_a64(xed_enc2_req_t* r,
+XED_DLL_EXPORT void enc_modrm_rm_mem_bisd32_a64(xed_enc2_req_t* r,
                                                 xed_reg_enum_t base,
                                                 xed_reg_enum_t indx,
                                                 xed_uint_t scale);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bd32_a64(xed_enc2_req_t* r,
+                                              xed_reg_enum_t base);
+
+XED_DLL_EXPORT void enc_modrm_rm_mem_bisd8_a64(xed_enc2_req_t* r,
+                                               xed_reg_enum_t base,
+                                               xed_reg_enum_t indx,
+                                               xed_uint_t scale);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bd8_a64(xed_enc2_req_t* r,
+                                             xed_reg_enum_t base);
+
+XED_DLL_EXPORT void enc_modrm_rm_mem_bis_a64(xed_enc2_req_t* r,
+                                                xed_reg_enum_t base,
+                                                xed_reg_enum_t indx,
+                                                xed_uint_t scale);
+XED_DLL_EXPORT void enc_modrm_rm_mem_b_a64(xed_enc2_req_t* r,
+                                           xed_reg_enum_t base)
+
 
 
 // 32b addressing
 
-XED_DLL_EXPORT void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
-                                                xed_reg_enum_t base,
-                                                xed_reg_enum_t indx,
-                                                xed_uint_t scale,
-                                                xed_int32_t disp32);
-
-XED_DLL_EXPORT void enc_modrm_rm_mem_disp8_a32(xed_enc2_req_t* r,
-                                               xed_reg_enum_t base,
-                                               xed_reg_enum_t indx,
-                                               xed_uint_t scale,
-                                               xed_int8_t disp8);
-
-XED_DLL_EXPORT void enc_modrm_rm_mem_nodisp_a32(xed_enc2_req_t* r,
+XED_DLL_EXPORT void enc_modrm_rm_mem_bisd32_a32(xed_enc2_req_t* r,
                                                 xed_reg_enum_t base,
                                                 xed_reg_enum_t indx,
                                                 xed_uint_t scale);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bd32_a32(xed_enc2_req_t* r,
+                                              xed_reg_enum_t base);
+                                         
+                                               
+
+XED_DLL_EXPORT void enc_modrm_rm_mem_bisd8_a32(xed_enc2_req_t* r,
+                                               xed_reg_enum_t base,
+                                               xed_reg_enum_t indx,
+                                               xed_uint_t scale);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bd8_a32(xed_enc2_req_t* r,
+                                             xed_reg_enum_t base);
+
+
+XED_DLL_EXPORT void enc_modrm_rm_mem_bis_a32(xed_enc2_req_t* r,
+                                             xed_reg_enum_t base,
+                                             xed_reg_enum_t indx,
+                                             xed_uint_t scale);
+XED_DLL_EXPORT void enc_modrm_rm_mem_b_a32(xed_enc2_req_t* r,
+                                           xed_reg_enum_t base);
+                                      
 
 
 // 16b addressing
 
-XED_DLL_EXPORT void enc_modrm_rm_mem_nodisp_a16(xed_enc2_req_t* r,
-                                                xed_reg_enum_t base,
-                                                xed_reg_enum_t indx);
-XED_DLL_EXPORT void enc_modrm_rm_mem_disp8_a16(xed_enc2_req_t* r,
+XED_DLL_EXPORT void enc_modrm_rm_mem_bi_a16(xed_enc2_req_t* r,
+                                            xed_reg_enum_t base,
+                                            xed_reg_enum_t indx);
+XED_DLL_EXPORT void enc_modrm_rm_mem_b_a16(xed_enc2_req_t* r,
+                                           xed_reg_enum_t base)
+XED_DLL_EXPORT void enc_modrm_rm_mem_bid8_a16(xed_enc2_req_t* r,
+                                              xed_reg_enum_t base,
+                                              xed_reg_enum_t indx);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bd8_a16(xed_enc2_req_t* r,
+                                             xed_reg_enum_t base);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bid16_a16(xed_enc2_req_t* r,
                                                xed_reg_enum_t base,
-                                               xed_reg_enum_t indx,
-                                               xed_int8_t disp8);
-XED_DLL_EXPORT void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
-                                                xed_reg_enum_t base,
-                                                xed_reg_enum_t indx,
-                                                xed_int16_t disp16);
+                                               xed_reg_enum_t indx);
+XED_DLL_EXPORT void enc_modrm_rm_mem_bd16_a16(xed_enc2_req_t* r,
+                                              xed_reg_enum_t base);
+                                       
+
 
 
 

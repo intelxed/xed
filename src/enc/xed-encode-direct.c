@@ -310,7 +310,7 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
     }
 }
 
-void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_bisd32_a64(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx,
                                  xed_uint_t scale)
@@ -318,7 +318,13 @@ void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
     set_mod(r,2); 
     enc_modrm_rm_mem_disp_a64_internal(r,base,indx,scale);
 }
-void enc_modrm_rm_mem_disp8_a64(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_bd32_a64(xed_enc2_req_t* r,
+                                   xed_reg_enum_t base)
+{
+    set_mod(r,2); 
+    enc_modrm_rm_mem_disp_a64_internal(r,base,XED_REG_INVALID,0);
+}
+void enc_modrm_rm_mem_bisd8_a64(xed_enc2_req_t* r,
                                 xed_reg_enum_t base,
                                 xed_reg_enum_t indx,
                                 xed_uint_t scale)
@@ -326,13 +332,25 @@ void enc_modrm_rm_mem_disp8_a64(xed_enc2_req_t* r,
     set_mod(r,1); 
     enc_modrm_rm_mem_disp_a64_internal(r,base,indx,scale);
 }
-void enc_modrm_rm_mem_nodisp_a64(xed_enc2_req_t* r,
-                                 xed_reg_enum_t base,
-                                 xed_reg_enum_t indx,
-                                 xed_uint_t scale)
+void enc_modrm_rm_mem_bd8_a64(xed_enc2_req_t* r,
+                              xed_reg_enum_t base)
+{
+    set_mod(r,1); 
+    enc_modrm_rm_mem_disp_a64_internal(r,base,XED_REG_INVALID,0);
+}
+void enc_modrm_rm_mem_bis_a64(xed_enc2_req_t* r,
+                              xed_reg_enum_t base,
+                              xed_reg_enum_t indx,
+                              xed_uint_t scale)
 {
     set_mod(r,0); // no-disp (may be overwritten if funky base specified)
     enc_modrm_rm_mem_nodisp_a64_internal(r,base,indx,scale);
+}
+void enc_modrm_rm_mem_b_a64(xed_enc2_req_t* r,
+                            xed_reg_enum_t base)
+{
+    set_mod(r,0); // no-disp (may be overwritten if funky base specified)
+    enc_modrm_rm_mem_nodisp_a64_internal(r,base,XED_REG_INVALID,0);
 }
 
 
@@ -441,7 +459,7 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
 
 
 
-void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_bisd32_a32(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx,
                                  xed_uint_t scale)
@@ -449,7 +467,13 @@ void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
     set_mod(r,2); // disp32
     enc_modrm_rm_mem_disp_a32_internal(r,base,indx,scale);
 }
-void enc_modrm_rm_mem_disp8_a32(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_bd32_a32(xed_enc2_req_t* r,
+                               xed_reg_enum_t base)
+{
+    set_mod(r,2); // disp32
+    enc_modrm_rm_mem_disp_a32_internal(r,base,XED_REG_INVALID,0);
+}
+void enc_modrm_rm_mem_bisd8_a32(xed_enc2_req_t* r,
                                 xed_reg_enum_t base,
                                 xed_reg_enum_t indx,
                                 xed_uint_t scale)
@@ -457,13 +481,26 @@ void enc_modrm_rm_mem_disp8_a32(xed_enc2_req_t* r,
     set_mod(r,1); // disp8
     enc_modrm_rm_mem_disp_a32_internal(r,base,indx,scale);
 }
-void enc_modrm_rm_mem_nodisp_a32(xed_enc2_req_t* r,
-                                 xed_reg_enum_t base,
-                                 xed_reg_enum_t indx,
-                                 xed_uint_t scale)
+void enc_modrm_rm_mem_bd8_a32(xed_enc2_req_t* r,
+                              xed_reg_enum_t base)
+{
+    set_mod(r,1); // disp8
+    enc_modrm_rm_mem_disp_a32_internal(r,base,XED_REG_INVALID,0);
+}
+void enc_modrm_rm_mem_bis_a32(xed_enc2_req_t* r,
+                              xed_reg_enum_t base,
+                              xed_reg_enum_t indx,
+                              xed_uint_t scale)
 {
     set_mod(r,0); // no-disp (may be overwritten if EBP/R13D used as base)
     enc_modrm_rm_mem_nodisp_a32_internal(r,base,indx,scale);
+}
+void enc_modrm_rm_mem_b_a32(xed_enc2_req_t* r,
+                            xed_reg_enum_t base)
+
+{
+    set_mod(r,0); // no-disp (may be overwritten if EBP/R13D used as base)
+    enc_modrm_rm_mem_nodisp_a32_internal(r,base,XED_REG_INVALID,0);
 }
 
 
@@ -577,26 +614,44 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
     }
 }
 
-void enc_modrm_rm_mem_nodisp_a16(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_bi_a16(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx)
 {
     set_mod(r,0);
     enc_modrm_rm_mem_nodisp_a16_internal(r,base,indx);
 }
-void enc_modrm_rm_mem_disp8_a16(xed_enc2_req_t* r,
+void enc_modrm_rm_mem_b_a16(xed_enc2_req_t* r,
+                            xed_reg_enum_t base)
+{
+    set_mod(r,0);
+    enc_modrm_rm_mem_nodisp_a16_internal(r,base,XED_REG_INVALID);
+}
+void enc_modrm_rm_mem_bid8_a16(xed_enc2_req_t* r,
                                 xed_reg_enum_t base,
                                 xed_reg_enum_t indx)
 {
     set_mod(r,1);
     enc_modrm_rm_mem_a16_disp_internal(r,base,indx);
 }
-void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
-                                 xed_reg_enum_t base,
-                                 xed_reg_enum_t indx)
+void enc_modrm_rm_mem_bd8_a16(xed_enc2_req_t* r,
+                                xed_reg_enum_t base)
+{
+    set_mod(r,1);
+    enc_modrm_rm_mem_a16_disp_internal(r,base,XED_REG_INVALID);
+}
+void enc_modrm_rm_mem_bid16_a16(xed_enc2_req_t* r,
+                                xed_reg_enum_t base,
+                                xed_reg_enum_t indx)
 {
     set_mod(r,2);
     enc_modrm_rm_mem_a16_disp_internal(r,base,indx);
+}
+void enc_modrm_rm_mem_bd16_a16(xed_enc2_req_t* r,
+                                 xed_reg_enum_t base)
+{
+    set_mod(r,2);
+    enc_modrm_rm_mem_a16_disp_internal(r,base,XED_REG_INVALID);
 }
 
 /// handling partial opcodes
