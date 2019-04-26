@@ -277,6 +277,9 @@ static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r) {
 static XED_INLINE void emit(xed_enc2_req_t* r, xed_uint8_t b) {
     r->s.itext[r->s.cursor++] = b;
 }
+static XED_INLINE void emit_u8(xed_enc2_req_t* r, xed_uint8_t b) {
+    r->s.itext[r->s.cursor++] = b;
+}
 static XED_INLINE void emit_u16(xed_enc2_req_t* r, xed_uint16_t w) {
     r->s.itext[r->s.cursor++] = w&0xFF;
     r->s.itext[r->s.cursor++] = (w>>8)&0xFF;
