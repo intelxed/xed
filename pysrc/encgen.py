@@ -203,7 +203,7 @@ def op_x87(op):
 def one_mem_fixed(ii): # b,w,d,q,dq
     n = 0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['b','w','d','q','dq']:
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq','mem14','mem28','mem94','mem108']:
             n = n + 1
         else:
             return False
@@ -1255,22 +1255,29 @@ def create_legacy_one_mem_fixed(env,ii):
                 fo.add_arg(arg_disp32) #      a32, a64
                 dvar = var_disp32
 
-            emit_required_legacy_prefixes(ii,fo)
+            rexw_forced = False
+            if ii.eosz == 'o16' and env.mode in [32,64]:
+                fo.add_code_eol('emit(r,0x66)')
+            elif ii.eosz == 'o32' and env.mode == 16:
+                fo.add_code_eol('emit(r,0x66)')
+            elif (ii.eosz == 'o64' and env.mode == 64 and ii.default_64b == False) or ii.rexw_prefix == '1':
+                rexw_forced = True
+                fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
 
-            rexw_forced = False            
+            emit_required_legacy_prefixes(ii,fo)
+            
+            #For things that are osz scalable we need the following:
             #if env.mode == 64:
             #    if osz == 64 and ii.default_64b == False:
             #        rexw_forced = True
             #        fo.add_code_eol('set_rexw(r)')
 
 
-            if ii.rexw_prefix == '1':
-                rexw_forced = True
-                fo.add_code_eol('set_rexw(r)')
-
             mod = modvals[dispsz]
             if mod:  # ZERO-INIT OPTIMIZATION
                 fo.add_code_eol('set_mod(r,{})'.format(mod))
+
+                
             if ii.reg_required != 'unspecified':
                 fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
@@ -1299,15 +1306,11 @@ def create_legacy_one_mem_fixed(env,ii):
                     fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
                         dstr, env.asz, var_base, dvar))
 
-                
-            #FIXME
             if env.mode == 64:
                 if rexw_forced:
                     fo.add_code_eol('emit_rex(r)')
                 else:
                     fo.add_code_eol('emit_rex_if_needed(r)')
-
-
 
             emit_required_legacy_map_escapes(ii,fo)
             emit_opcode(ii,fo)
