@@ -200,14 +200,27 @@ def op_x87(op):
         return True
     return False
 
-def one_mem_fixed(ii): # b,w,d,q,dq
+def one_mem_fixed(ii): # b,w,d,q,dq, etc.
     n = 0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['b','w','d','q','dq','mem14','mem28','mem94','mem108']:
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq',
+                                     'mem14','mem28','mem94','mem108']:
             n = n + 1
         else:
             return False
     return n==1
+def one_mem_fixed_imm_fixed(ii): # b,w,d,q,dq, etc.
+    n = 0
+    i = 0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq',
+                                     'mem14','mem28','mem94','mem108']:
+            n = n + 1
+        elif op_imm8(op):
+            i = i + 1
+        else:
+            return False
+    return n==1 and i==1
     
     
 def two_scalable_regs(ii):
@@ -1178,7 +1191,7 @@ def create_legacy_gprv_immz(env,ii):
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
         
-def create_legacy_one_mem_fixed(env,ii):
+def create_legacy_one_mem_fixed(env,ii,imm8=False):
     global enc_fn_prefix, arg_request
     global arg_base, var_base
     global arg_index, var_index
@@ -1232,7 +1245,7 @@ def create_legacy_one_mem_fixed(env,ii):
             dstr = get_memsig(env.asz,use_index,dispsz)
             fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                                 ii.iclass.lower(),
-                                                'mem',
+                                                'memi' if imm8 else 'mem',
                                                 width,
                                                 dstr,
                                                 env.asz)
@@ -1255,6 +1268,10 @@ def create_legacy_one_mem_fixed(env,ii):
                 fo.add_arg(arg_disp32) #      a32, a64
                 dvar = var_disp32
 
+            if imm8:
+                fo.add_arg(arg_imm8)
+
+                
             rexw_forced = False
             if ii.eosz == 'o16' and env.mode in [32,64]:
                 fo.add_code_eol('emit(r,0x66)')
@@ -1332,6 +1349,8 @@ def create_legacy_one_mem_fixed(env,ii):
                 fo.add_code_eol('   emit_i8(r,0)')
                 fo.add_code('else if (get_has_disp32(r))')
                 fo.add_code_eol('   emit_i32(r,0)')
+            if imm8:
+                fo.add_code_eol('emit(r,{})'.format(var_imm8), 'mem-fxd-imm8')
             dbg(fo.emit())
             ii.encoder_functions.append(fo)
     
@@ -1383,7 +1402,9 @@ def _enc_legacy(env,ii):
     elif gprv_immz(ii):
         create_legacy_gprv_immz(env,ii)
     elif one_mem_fixed(ii): # b,w,d,q,dq
-        create_legacy_one_mem_fixed(env,ii)
+        create_legacy_one_mem_fixed(env,ii,imm8=False)
+    elif one_mem_fixed_imm_fixed(ii): 
+        create_legacy_one_mem_fixed(env,ii,imm8=True)
         
 def two_xmm(ii):
     n = 0
