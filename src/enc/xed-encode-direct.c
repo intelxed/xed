@@ -172,16 +172,12 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
     set_rexb(r, offset >= 8);
 }
 
-void emit_modrm_sib_disp(xed_enc2_req_t* r) {
+void emit_modrm_sib(xed_enc2_req_t* r) {
     emit_modrm(r);
     // some base reg encodings require sib and some of those require modrm
     // some base reg encodings require disp (rip-rel)
     if (get_has_sib(r))
         emit_sib(r);
-    if (get_has_disp8(r))
-        emit_disp8(r);
-    else if (get_has_disp32(r))
-        emit_disp32(r);
 }
 
 void enc_error(xed_enc2_req_t* r, char const* msg) {
@@ -266,7 +262,7 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
     xed_uint_t offset = base - XED_REG_GPR64_FIRST;
 
     if (base == XED_REG_RIP) {
-        set_disp32(r,0); // supply a fake zero valued disp
+        set_has_disp32(r);// supply a fake zero valued disp
         set_rm(r,5);
         if (indx != XED_REG_INVALID)
             enc_error(r, "cannot have index register with RIP as base");
@@ -292,7 +288,7 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
         
         if ( base == XED_REG_RBP || base == XED_REG_R13  ) {
             set_mod(r,1);              // potentially overwriting earlier setting
-            set_disp8(r,0);            // force a disp8 with value 0.
+            set_has_disp8(r);          // force a disp8 with value 0.
         }
 
         if (indx == XED_REG_INVALID) {
@@ -317,22 +313,18 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
 void enc_modrm_rm_mem_disp32_a64(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx,
-                                 xed_uint_t scale,
-                                 xed_int32_t disp32)
+                                 xed_uint_t scale)
 {
     set_mod(r,2); 
     enc_modrm_rm_mem_disp_a64_internal(r,base,indx,scale);
-    set_disp32(r,disp32);
 }
 void enc_modrm_rm_mem_disp8_a64(xed_enc2_req_t* r,
                                 xed_reg_enum_t base,
                                 xed_reg_enum_t indx,
-                                xed_uint_t scale,
-                                xed_int8_t disp8)
+                                xed_uint_t scale)
 {
     set_mod(r,1); 
     enc_modrm_rm_mem_disp_a64_internal(r,base,indx,scale);
-    set_disp8(r,disp8);
 }
 void enc_modrm_rm_mem_nodisp_a64(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
@@ -425,7 +417,7 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
         }
         if ( base == XED_REG_EBP || base == XED_REG_R13D  ) {
             set_mod(r,1);              // potentially overwriting earlier setting
-            set_disp8(r,0);            // force a disp8 with value 0.
+            set_has_disp8(r);          // force a disp8 with value 0.
         }
 
         if (indx == XED_REG_INVALID) {
@@ -452,22 +444,18 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
 void enc_modrm_rm_mem_disp32_a32(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
                                  xed_reg_enum_t indx,
-                                 xed_uint_t scale,
-                                 xed_int32_t disp32)
+                                 xed_uint_t scale)
 {
     set_mod(r,2); // disp32
     enc_modrm_rm_mem_disp_a32_internal(r,base,indx,scale);
-    set_disp32(r,disp32);
 }
 void enc_modrm_rm_mem_disp8_a32(xed_enc2_req_t* r,
                                 xed_reg_enum_t base,
                                 xed_reg_enum_t indx,
-                                xed_uint_t scale,
-                                xed_int8_t disp8)
+                                xed_uint_t scale)
 {
     set_mod(r,1); // disp8
     enc_modrm_rm_mem_disp_a32_internal(r,base,indx,scale);
-    set_disp8(r,disp8);
 }
 void enc_modrm_rm_mem_nodisp_a32(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
@@ -597,22 +585,18 @@ void enc_modrm_rm_mem_nodisp_a16(xed_enc2_req_t* r,
     enc_modrm_rm_mem_nodisp_a16_internal(r,base,indx);
 }
 void enc_modrm_rm_mem_disp8_a16(xed_enc2_req_t* r,
-                                 xed_reg_enum_t base,
-                                 xed_reg_enum_t indx,
-                                 xed_int8_t disp8)
+                                xed_reg_enum_t base,
+                                xed_reg_enum_t indx)
 {
     set_mod(r,1);
     enc_modrm_rm_mem_a16_disp_internal(r,base,indx);
-    set_disp8(r,disp8);
 }
 void enc_modrm_rm_mem_disp16_a16(xed_enc2_req_t* r,
                                  xed_reg_enum_t base,
-                                 xed_reg_enum_t indx,
-                                 xed_int16_t disp16)
+                                 xed_reg_enum_t indx)
 {
     set_mod(r,2);
     enc_modrm_rm_mem_a16_disp_internal(r,base,indx);
-    set_disp16(r,disp16);
 }
 
 /// handling partial opcodes
@@ -703,10 +687,11 @@ void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
     enc_modrm_reg_gpr32(r,dst);
 
     // FIXME: copies disp32 twice unnecessarily... could just emit it
-    enc_modrm_rm_mem_disp32_a32(r,base,indx,scale,disp);  
+    enc_modrm_rm_mem_disp32_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
-    emit_modrm_sib_disp(r);
+    emit_modrm_sib(r);
+    emit_i32(r,disp);
 }
 void encode_mov32_reg_mem_disp8_a32(xed_enc2_req_t* r,
                                     xed_reg_enum_t dst,
@@ -720,10 +705,11 @@ void encode_mov32_reg_mem_disp8_a32(xed_enc2_req_t* r,
     enc_modrm_reg_gpr32(r,dst);
 
     // FIXME: copies disp32 twice unnecessarily... could just emit it
-    enc_modrm_rm_mem_disp8_a32(r,base,indx,scale,disp);  
+    enc_modrm_rm_mem_disp8_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
-    emit_modrm_sib_disp(r);
+    emit_modrm_sib(r);
+    emit_i8(r,disp);
 }
 void encode_mov32_reg_mem_nodisp_a32(xed_enc2_req_t* r,
                                      xed_reg_enum_t dst,
@@ -740,7 +726,7 @@ void encode_mov32_reg_mem_nodisp_a32(xed_enc2_req_t* r,
     enc_modrm_rm_mem_nodisp_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
-    emit_modrm_sib_disp(r);
+    emit_modrm_sib(r);
 }
 
 
@@ -762,7 +748,7 @@ void encode_mov64_reg_mem_nodisp_a64(xed_enc2_req_t* r,
     enc_modrm_rm_mem_nodisp_a64(r,base,indx,scale);  
     emit_rex(r);
     emit(r,0x8B);
-    emit_modrm_sib_disp(r);
+    emit_modrm_sib(r);
 }
 
 void encode_mov64_reg_mem_disp32_a64(xed_enc2_req_t* r,
@@ -775,10 +761,11 @@ void encode_mov64_reg_mem_disp32_a64(xed_enc2_req_t* r,
     set_rexw(r); //64b operation
     enc_modrm_reg_gpr64(r,dst);
 
-    enc_modrm_rm_mem_disp32_a64(r,base,indx,scale,disp);  
+    enc_modrm_rm_mem_disp32_a64(r,base,indx,scale);  
     emit_rex(r);
     emit(r,0x8B);
-    emit_modrm_sib_disp(r);
+    emit_modrm_sib(r);
+    emit_i32(r,disp);
 }
 
 void encode_mov64_reg_mem_disp8_a64(xed_enc2_req_t* r,
@@ -791,9 +778,10 @@ void encode_mov64_reg_mem_disp8_a64(xed_enc2_req_t* r,
     set_rexw(r); //64b operation
     enc_modrm_reg_gpr64(r,dst);
 
-    enc_modrm_rm_mem_disp8_a64(r,base,indx,scale,disp);  
+    enc_modrm_rm_mem_disp8_a64(r,base,indx,scale);  
     emit_rex(r);
     emit(r,0x8B);
-    emit_modrm_sib_disp(r);
+    emit_modrm_sib(r);
+    emit_i8(r,disp);
 }
 

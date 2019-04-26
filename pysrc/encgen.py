@@ -24,6 +24,7 @@ import copy
 import types
 import glob
 import re
+import argparse
 
 import genutil
 import codegen
@@ -81,7 +82,7 @@ arg_base = 'xed_reg_enum_t ' + var_base
 var_index = 'index'
 arg_index = 'xed_reg_enum_t ' + var_index
 var_scale = 'scale'
-arg_index = 'xed_uint_t ' + var_scale
+arg_scale = 'xed_uint_t ' + var_scale
 
 var_disp8 = 'disp8'
 arg_disp8 = 'xed_int8_t ' + var_disp8
@@ -118,11 +119,24 @@ arg_imm16 = 'xed_uint16_t ' + var_imm16
 var_imm32 = 'imm32'
 arg_imm32 = 'xed_uint32_t ' + var_imm32
 
+dbg_output = sys.stdout
 
+def dbg(s):
+    global dbg_output
+    print(s, file=dbg_output)
+
+def msge(s):
+    print(s, file=sys.stderr, flush=True)
+def warn(s):
+    print("\t"+s, file=sys.stderr, flush=True)
+    #genutil.warn(s)
+def die(s):
+    genutil.die(s)
+    
 def _dump_fields(x):
     for fld in sorted(x.__dict__.keys()):
-        print("{}: {}".format(fld,getattr(x,fld)))
-    print("\n\n")
+        dbg("{}: {}".format(fld,getattr(x,fld)))
+    dbg("\n\n")
 
 def _gen_opnds(ii): # generator
     # filter out write-mask operands and suppressed operands
@@ -185,6 +199,16 @@ def op_x87(op):
           re.match(r'XED_REG_ST[0-7]',op.bits) ):
         return True
     return False
+
+def one_mem_fixed(ii): # b,w,d,q,dq
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq']:
+            n = n + 1
+        else:
+            return False
+    return n==1
+    
     
 def two_scalable_regs(ii):
     n = 0
@@ -419,7 +443,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
             fo.add_code_eol('emit(r,0x66)')
         elif ii.eosz in ['osznot16', 'osznot64']:  #FIXME
             fo.add_comment("Check handling of {}".format(ii.eosz))
-            genutil.warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
+            warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
         elif ii.eosz in ['oszall']: 
             pass
 
@@ -446,7 +470,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
         emit_opcode(ii,fo)
         fo.add_code_eol('emit_modrm(r)')
 
-        print(fo.emit())
+        dbg(fo.emit())
         ii.encoder_functions.append(fo)
 
 
@@ -475,7 +499,7 @@ def create_legacy_one_gpr_fixed(env,ii,width_bits):
     elif width_bits == 64:
         pass
     else:
-        genutil.die("SHOULD NOT REACH HERE")
+        die("SHOULD NOT REACH HERE")
     
     fo.add_code_eol('set_mod(r,{})'.format(3))
     if modrm_reg_first_operand(ii):
@@ -499,7 +523,7 @@ def create_legacy_one_gpr_fixed(env,ii,width_bits):
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
 
@@ -514,7 +538,7 @@ def create_legacy_relbr(env,ii):
     elif op.oc2 == 'z':
         osz_values = [16,32]
     else:
-        genutil.die("Unhandled relbr width for {}: {}".format(ii.iclass, op.oc2))
+        die("Unhandled relbr width for {}: {}".format(ii.iclass, op.oc2))
         
     for osz in osz_values:
         fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), osz)
@@ -545,7 +569,7 @@ def create_legacy_relbr(env,ii):
             fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
         elif osz == 32:
             fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
-        print(fo.emit())
+        dbg(fo.emit())
         ii.encoder_functions.append(fo)
 
 
@@ -564,7 +588,7 @@ def create_legacy_one_imm_fixed(env,ii):
     elif op.oc2 == 'w':
         fo.add_arg(arg_imm16)
     else:
-        genutil.die("not handling imm width {}".format(op.oc2))
+        die("not handling imm width {}".format(op.oc2))
         
     modrm_required = create_modrm_byte(ii,fo)
     emit_required_legacy_prefixes(ii,fo)
@@ -579,7 +603,7 @@ def create_legacy_one_imm_fixed(env,ii):
         fo.add_code_eol('emit(r,({}>>8)&0xFF)'.format(var_imm16))
 
 
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
 
@@ -602,7 +626,7 @@ def create_legacy_one_implicit_reg(env,ii):
     emit_opcode(ii,fo)
     if modrm_required:
         fo.add_code_eol('emit_modrm(r)')
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
     
 def create_legacy_one_nonmem_opnd(env,ii):
@@ -617,7 +641,7 @@ def create_legacy_one_nonmem_opnd(env,ii):
         elif op.oc2 == 'z':
             create_legacy_one_imm_scalable(env,ii,[16,32])
         else:
-            genutil.warn("Need to handle {} in {}".format(
+            warn("Need to handle {} in {}".format(
                 op, "create_legacy_one_nonmem_opnd"))
 
     elif op.lookupfn_name:
@@ -640,13 +664,13 @@ def create_legacy_one_nonmem_opnd(env,ii):
         elif op.lookupfn_name.startswith('A_GPR_'):
             create_legacy_asz_gpr(env,ii)
         else:
-            genutil.warn("Need to handle {} in {}".format(
+            warn("Need to handle {} in {}".format(
                 op.lookupfn_name,
                 "create_legacy_one_nonmem_opnd"))
     elif op.visibility == 'IMPLICIT' and op.name.startswith('REG'):
         create_legacy_one_implicit_reg(env,ii)
     else:
-        genutil.warn("Need to handle {} in {}".format(
+        warn("Need to handle {} in {}".format(
             op, "create_legacy_one_nonmem_opnd"))
 
 
@@ -690,24 +714,24 @@ def create_legacy_no_operands(env,ii):
             fo.add_code_eol('emit(r,0x66)')
         elif ii.eosz in ['osznot16', 'osznot64']:  #FIXME
             fo.add_comment("Check handling of {}".format(ii.eosz))
-            genutil.warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
+            warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
         elif ii.eosz in ['oszall']:  # FIXME
             fo.add_comment("Check handling of oszall.")
-            genutil.warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
+            warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
             
 
     emit_required_legacy_prefixes(ii,fo)
 
     emit_required_legacy_map_escapes(ii,fo)
     if ii.partial_opcode:
-        genutil.warn("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
+        warn("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
         ii.encoder_skipped = True
         return
     else:
         emit_opcode(ii,fo)
         if modrm_required:
             fo.add_code_eol('emit_modrm(r)')
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
         
@@ -755,11 +779,11 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
                 fo.add_code_eol('emit_rex_if_needed(r)')
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
-            genutil.die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
+            die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
         else:
             emit_opcode(ii,fo)
             fo.add_code_eol('emit_modrm(r)')
-        print(fo.emit())
+        dbg(fo.emit())
         ii.encoder_functions.append(fo)
             
 
@@ -789,11 +813,11 @@ def create_legacy_two_gpr8_regs(env, ii):
     emit_required_legacy_map_escapes(ii,fo)
 
     if ii.partial_opcode:
-        genutil.die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
+        die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
     else:
         emit_opcode(ii,fo)
         fo.add_code_eol('emit_modrm(r)')
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
         
 def cond_emit_imm8(ii,fo):
@@ -844,7 +868,7 @@ def create_legacy_two_xmm_regs(env,ii,imm8=False):
     fo.add_code_eol('emit_modrm(r)')
     cond_emit_imm8(ii,fo)
     
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
 
@@ -883,7 +907,7 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
     cond_emit_imm8(ii,fo)
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
 
@@ -926,7 +950,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     fo.add_code_eol('emit_modrm(r)')
     cond_emit_imm8(ii,fo)
     
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
     
 
@@ -954,7 +978,7 @@ def create_legacy_two_mmx_regs(env,ii):
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
     cond_emit_imm8(ii,fo)
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
 def create_legacy_two_x87_reg(env,ii):
@@ -969,13 +993,13 @@ def create_legacy_two_x87_reg(env,ii):
     emit_required_legacy_prefixes(ii,fo)
     fo.add_code_eol('set_mod(r,3)')
     if ii.reg_required == 'unspecified':
-        genutil.die("Need a value for MODRM.REG in x87 encoding")
+        die("Need a value for MODRM.REG in x87 encoding")
     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
     fo.add_code_eol('enc_modrm_rm_x87(r,reg0)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
     
 def create_legacy_one_x87_reg(env,ii):
@@ -990,13 +1014,13 @@ def create_legacy_one_x87_reg(env,ii):
     emit_required_legacy_prefixes(ii,fo)
     fo.add_code_eol('set_mod(r,3)')
     if ii.reg_required == 'unspecified':
-        genutil.die("Need a value for MODRM.REG in x87 encoding")
+        die("Need a value for MODRM.REG in x87 encoding")
     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
     fo.add_code_eol('enc_modrm_rm_x87(r,reg0)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
 def gpr8_imm8(ii):
@@ -1089,7 +1113,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
         fo.add_code_eol('emit_modrm(r)')
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
         
-        print(fo.emit())
+        dbg(fo.emit())
         ii.encoder_functions.append(fo)
 
 
@@ -1151,9 +1175,96 @@ def create_legacy_gprv_immz(env,ii):
         else:
             fo.add_code_eol('emit_u32(r,{})'.format(var_imm32))
         
-        print(fo.emit())
+        dbg(fo.emit())
         ii.encoder_functions.append(fo)
         
+def create_legacy_one_mem_fixed(env,ii):
+    global enc_fn_prefix, arg_request
+    global arg_base, var_base
+    global arg_index, var_index
+    global arg_scale, var_scale
+    global arg_disp8, var_disp8
+    global arg_disp16, var_disp16
+    global arg_disp32, var_disp32
+    
+    op = first_opnd(ii)
+    width = op.oc2
+     
+    if env.asz == 16:
+        dispsz_list = [0,8,16]
+    else:
+        dispsz_list = [0,8,32]
+    dispsz_str =  { 0  : '',
+                    8  : 'disp8',
+                    16 : 'disp16',
+                    32 : 'disp32' }
+    
+    for dispsz in dispsz_list:
+
+        fname = "{}_{}_{}_{}_{}".format(enc_fn_prefix,
+                                        ii.iclass.lower(),
+                                        'mem',
+                                        width,
+                                        dispsz_str[dispsz])
+        fo = codegen.function_object_t(fname, 'void')
+        fo.add_comment("created by create_legacy_one_mem_fixed")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_base)
+        fo.add_arg(arg_index)
+        if env.asz in [16,32]:
+            fo.add_arg(arg_scale)  #      a32, a64
+        if dispsz == 8:
+            fo.add_arg(arg_disp8)  # a16, a32, a64
+        elif dispsz == 16:
+            fo.add_arg(arg_disp16) # a16
+        elif dispsz == 32:
+            fo.add_arg(arg_disp32) #      a32, a64
+
+        emit_required_legacy_prefixes(ii,fo)
+
+        rexw_forced = False            
+        #if env.mode == 64:
+        #    if osz == 64 and ii.default_64b == False:
+        #        rexw_forced = True
+        #        fo.add_code_eol('set_rexw(r)')
+
+
+        if ii.rexw_prefix == '1':
+            rexw_forced = True
+            fo.add_code_eol('set_rexw(r)')
+
+        #FIXME
+        if env.mode == 64:
+            if rexw_forced:
+                fo.add_code_eol('emit_rex(r)')
+            else:
+                fo.add_code_eol('emit_rex_if_needed(r)')
+
+
+        emit_required_legacy_map_escapes(ii,fo)
+        emit_opcode(ii,fo)
+        fo.add_code_eol('emit_modrm(r)')
+        fo.add_code('if (get_has_sib(r))')
+        fo.add_code_eol('    emit_sib(r)')
+
+        if dispsz == 8:
+            fo.add_code_eol('emit_disp8(r,{})'.format(var_disp8))
+        elif dispsz == 16:
+            fo.add_code_eol('emit_disp16(r,{})'.format(var_disp16))
+        elif dispsz == 32:
+            fo.add_code_eol('emit_disp32(r,{})'.format(var_disp32))
+        elif dispsz == 0:
+            # if form has no displacment, then we sometimes have to
+            # add a zero displacement to create an allowed modrm/sib
+            # encoding.  
+            fo.add_code('if (get_has_disp8(r))')
+            fo.add_code_eol('   emit_disp8(r,0)')
+            fo.add_code('else if (get_has_disp32(r))')
+            fo.add_code_eol('   emit_disp32(r,0)')
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)
+    
+    
     
 def _enc_legacy(agi,env,ii):
     if env.mode == 64:
@@ -1200,8 +1311,8 @@ def _enc_legacy(agi,env,ii):
         create_legacy_gpr_imm8(env,ii,[16,32,64])
     elif gprv_immz(ii):
         create_legacy_gprv_immz(env,ii)
-
-
+    elif one_mem_fixed(ii): # b,w,d,q,dq
+        create_legacy_one_mem_fixed(env,ii)
 def two_xmm(ii):
     n = 0
     for op in _gen_opnds(ii):
@@ -1245,7 +1356,7 @@ def set_vex_pp(ii,fo):
         if ppval != 0:
             fo.add_code_eol('set_vexpp(r,{})'.format(ppval))
     else:
-        genutil.die("Could not find the VEX.PP pattern")
+        die("Could not find the VEX.PP pattern")
 
 def create_vex_simd_reg(env,ii,nopnds):
     global enc_fn_prefix, arg_request
@@ -1281,10 +1392,10 @@ def create_vex_simd_reg(env,ii,nopnds):
                 var_b = vars[i]
             elif op.lookupfn_name.endswith('_N'):
                 if nopnds == 2:
-                    genutil.die("Unexpected VVVV operand in 2 operand instr: {}".format(ii.iclass))
+                    die("Unexpected VVVV operand in 2 operand instr: {}".format(ii.iclass))
                 var_n = vars[i]
             else:
-                genutil.die("SHOULD NOT REACH HERE")
+                die("SHOULD NOT REACH HERE")
     if ii.rexw_prefix == '1':
         fo.add_code_eol('set_rexw(r,1)')
     if nopnds == 3:   
@@ -1297,7 +1408,7 @@ def create_vex_simd_reg(env,ii,nopnds):
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
 
-    print(fo.emit())
+    dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
     
@@ -1309,9 +1420,9 @@ def _enc_vex(agi,env,ii):
         create_vex_simd_reg(env,ii,2)
         
 def _enc_evex(agi,env,ii):
-    print("EVEX encoding still TBD")
+    dbg("EVEX encoding still TBD")
 def _enc_xop(agi,env,ii):
-    print("XOP encoding still TBD")
+    dbg("XOP encoding still TBD")
 
 def _create_enc_fn(agi, env, ii):
     s = [ii.iclass.lower()]
@@ -1319,7 +1430,7 @@ def _create_enc_fn(agi, env, ii):
     s.append(ii.isa_set)
     s.append(hex(ii.opcode_base10))
     s.append(str(ii.map))
-    #print('XA: {}'.format(" ".join(s)))
+    #dbg('XA: {}'.format(" ".join(s)))
     # _dump_fields(ii)
 
     modes = ['m16','m32','m64']
@@ -1365,7 +1476,7 @@ def _create_enc_fn(agi, env, ii):
     elif ii.space == 'xop':
         _enc_xop(agi,env,ii)
     else:
-        genutil.die("Unhandled encoding space: {}".format(ii.space))
+        die("Unhandled encoding space: {}".format(ii.space))
         
     for op in _gen_opnds(ii):
         s.append(op.name)
@@ -1395,13 +1506,13 @@ def _create_enc_fn(agi, env, ii):
                 s[-1] = s[-1] + '-nvy'
                 
     if ii.encoder_functions:            
-        print("XX   {}".format(" ".join(s)))
+        dbg("XX   {}".format(" ".join(s)))
     elif ii.encoder_skipped:
-        print("SKIP {}".format(" ".join(s)))
+        dbg("SKIP {}".format(" ".join(s)))
     elif one_nonmem_operand(ii) and not one_x87_reg(ii):
-        print("ZZ   {}".format(" ".join(s)))
+        dbg("ZZ   {}".format(" ".join(s)))
     else:
-        print("YY   {}".format(" ".join(s)))
+        dbg("YY   {}".format(" ".join(s)))
 
 
 def gather_stats(db):
@@ -1417,35 +1528,122 @@ def gather_stats(db):
         if ii.encoder_skipped:
             skipped_fns = skipped_fns + 1
         
-    print("Forms:       {:4d}".format(forms))
-    print("Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
-    print("Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
-    print("Generated Encoding functions: {:5d}".format(generated_fns))
-    print("Skipped Encoding functions:   {:5d}".format(skipped_fns))
+    dbg("Forms:       {:4d}".format(forms))
+    dbg("Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
+    dbg("Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
+    dbg("Generated Encoding functions: {:5d}".format(generated_fns))
+    dbg("Skipped Encoding functions:   {:5d}".format(skipped_fns))
         
-          
-# used for making file paths for xed db reader
+
 class dummy_t(object):
     def __init__(self):
         pass
+            
+# object used for the env we pass to the generator
+class enc_env_t(object):
+    def __init__(self, mode, asz):
+        self.mode = mode
+        self.asz = asz
+    def __str__(self):
+        s = []
+        s.append("mode {}".format(self.mode))
+        s.append("asz {}".format(self.asz))
+        return ", ".join(s)
 
 def work(agi):
+    global dbg_output
+    arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
+    arg_parser.add_argument('-m64',
+                            help='64b mode (default)',
+                            dest='modes', action='append_const', const=64)
+    arg_parser.add_argument('-m32',
+                            help='32b mode',
+                            dest='modes', action='append_const', const=32)
+    arg_parser.add_argument('-m16' ,
+                            help='16b mode',
+                            dest='modes', action='append_const', const=16)
+    arg_parser.add_argument('-a64',
+                            help='64b addressing (default)',
+                            dest='asz_list', action='append_const', const=64)
+    arg_parser.add_argument('-a32',
+                            help='32b addressing',
+                            dest='asz_list', action='append_const', const=32)
+    arg_parser.add_argument('-a16' ,
+                            help='16b addressing',
+                            dest='asz_list', action='append_const', const=16)
+    arg_parser.add_argument('-all',
+                            action="store_true",
+                            default=False,
+                            help='all modes and addressing')
+    arg_parser.add_argument('--gendir',
+                            help='output directory, default: "obj"',
+                            default='obj')
+    arg_parser.add_argument('--xeddir',
+                            help='XED source directory, default: "."',
+                            default='.')
 
-    args = dummy_t()
-    args.prefix = os.path.join(agi.common.options.gendir,'dgen')
+
+    args = arg_parser.parse_args()
+    args.prefix = os.path.join(args.gendir,'dgen')
+    
+    dbg_fn = os.path.join(args.gendir,'enc2out.txt')
+    msge("Writing {}".format(dbg_fn))
+    dbg_output = open(dbg_fn,"w")
+    
     gen_setup.make_paths(args)
+    msge('Reading XED db...')
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
                                      args.instructions_filename,
                                      args.widths_filename,
                                      args.element_types_filename,
                                      args.cpuid_filename)
 
-    env  = dummy_t()
-    env.mode = 64
+    # all modes and address sizes, filtered appropriately later
+    if args.all:
+        args.modes = [16,32,64]
+        args.asz_list = [16,32,64]
+
+    # if you just specify a mode, we supply the full set of address sizes
+    if args.modes == [64]:
+        if not args.asz_list:
+            args.asz_list = [32,64]
+    elif args.modes == [32]:
+        if not args.asz_list:
+            args.asz_list = [16,32]
+    elif args.modes == [16]:
+        if not args.asz_list:
+            args.asz_list = [16,32]
+
+    # default 64b mode, 64b address size
+    if not args.modes:
+        args.modes = [ 64 ]
+        if not args.asz_list:
+            args.asz_list = [ 64 ]
     
     for ii in xeddb.recs:
         setattr(ii,'encoder_functions',[])
         setattr(ii,'encoder_skipped',False)
-        _create_enc_fn(agi,env,ii)
+
+    def prune_asz_list_for_mode(mode,alist):
+        '''make sure we only use addressing modes appropriate for our mode'''
+        for asz in alist:
+            if mode == 64:
+                if asz in [32,64]:
+                    yield asz
+            elif asz != 64:
+                yield asz
+            
+    for mode in args.modes:
+        for asz in prune_asz_list_for_mode(mode,args.asz_list):
+            env  = enc_env_t(mode, asz)
+            msge("Generating encoder functions for {}".format(env))
+            for ii in xeddb.recs:
+                _create_enc_fn(agi, env, ii)
             
     gather_stats(xeddb.recs)
+    return 0
+
+if __name__ == "__main__":
+    agi = dummy_t()
+    r = work(agi)
+    sys.exit(r)
