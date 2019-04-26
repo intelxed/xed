@@ -1198,6 +1198,11 @@ def create_legacy_one_mem_fixed(env,ii):
                     8  : 'disp8',
                     16 : 'disp16',
                     32 : 'disp32' }
+    
+    modvals = { 0 :  0,   # index by dispsz
+                8 :  1,
+                16 : 2,
+                32 : 2 }
 
     # loop over the various displacment options
     for dispsz in dispsz_list:
@@ -1238,6 +1243,13 @@ def create_legacy_one_mem_fixed(env,ii):
             rexw_forced = True
             fo.add_code_eol('set_rexw(r)')
 
+        mod = modvals[dispsz]
+        if mod:  # ZERO-INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(mod))
+        if ii.reg_required != 'unspecified':
+            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+            
+        # this may overwrite modrm.mod
         if dispsz == 0:
             fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
                 dstr, env.asz, var_base, var_index, var_scale))
