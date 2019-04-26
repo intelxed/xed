@@ -200,10 +200,10 @@ def op_x87(op):
         return True
     return False
 
-def one_mem_fixed(ii): # b,w,d,q,dq, etc.
+def one_mem_fixed(ii): # b,w,d,q,dq, v, y, etc.
     n = 0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['b','w','d','q','dq',
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y',
                                      'mem14','mem28','mem94','mem108']:
             n = n + 1
         else:
@@ -427,6 +427,18 @@ def create_modrm_byte(ii,fo):
         fo.add_code_eol('set_rm(r,{})'.format(rm))
     return modrm_required
 
+def make_function_object(env, fname, return_value='void'):
+    if fname in env.function_names:
+        t = env.function_names[fname] + 1
+        env.function_names[fname] = t
+        fname = fname + '_vr' + str(t)
+        msge("Numbered function name for: {}".format(fname))
+    else:
+        env.function_names[fname] = 0
+
+    fo = codegen.function_object_t(fname, return_value)
+    return fo
+
 def create_legacy_one_scalable_gpr(env,ii,osz_values):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
 
@@ -435,7 +447,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
                                       ii.iclass.lower(),
                                       'rv',
                                       osz)
-        fo = codegen.function_object_t(fname, 'void')
+        fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_one_scalable_gpr")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
@@ -499,7 +511,7 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
 def create_legacy_one_gpr_fixed(env,ii,width_bits):
     global enc_fn_prefix, arg_request
     fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), width_bits)
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_gpr_fixed")
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)    
@@ -555,7 +567,7 @@ def create_legacy_relbr(env,ii):
         
     for osz in osz_values:
         fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), osz)
-        fo = codegen.function_object_t(fname, 'void')
+        fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_relbr")
         fo.add_arg(arg_request)
         if osz == 8:
@@ -591,7 +603,7 @@ def create_legacy_one_imm_fixed(env,ii):
 
     fname = "{}_{}".format(enc_fn_prefix,
                            ii.iclass.lower())
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_imm_fixed")
     op = first_opnd(ii)
 
@@ -629,7 +641,7 @@ def create_legacy_one_implicit_reg(env,ii):
     extra_names = _gather_implicit_regs(ii)
     if extra_names:
         fname = fname + '_' + "_".join(extra_names)
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_implicit_reg")
 
     fo.add_arg(arg_request)
@@ -701,7 +713,7 @@ def create_legacy_no_operands(env,ii):
     if ii.eosz in ['o16','o32','o64']:
         fname = fname + '_' + ii.eosz
         
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by created_legacy_no_operands")
     fo.add_arg(arg_request)
 
@@ -758,7 +770,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
                                       ii.iclass.lower(),
                                       'rvrv',
                                       osz)
-        fo = codegen.function_object_t(fname, 'void')
+        fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_two_scalable_regs")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
@@ -807,7 +819,7 @@ def create_legacy_two_gpr8_regs(env, ii):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               'r8r8')
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_two_gpr8_regs")
             
     fo.add_arg(arg_request)
@@ -858,7 +870,7 @@ def create_legacy_two_xmm_regs(env,ii,imm8=False):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   category)
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_two_xmm_regs")
         
     fo.add_arg(arg_request)
@@ -895,7 +907,7 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   category)
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_mmx_reg_imm8")
         
     fo.add_arg(arg_request)
@@ -935,7 +947,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   category)
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_xmm_reg_imm8")
         
     fo.add_arg(arg_request)
@@ -972,7 +984,7 @@ def create_legacy_two_mmx_regs(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   'mmx')
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_two_mmx_regs")
         
     fo.add_arg(arg_request)
@@ -999,7 +1011,7 @@ def create_legacy_two_x87_reg(env,ii):
     fname = "{}_{}_{}_st0".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   'x87')
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_two_x87_reg")    
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)
@@ -1020,7 +1032,7 @@ def create_legacy_one_x87_reg(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   'x87')
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_x87_reg")    
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)
@@ -1092,7 +1104,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
                                       ii.iclass.lower(),
                                       'ri',
                                       osz)
-        fo = codegen.function_object_t(fname, 'void')
+        fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_gpr_imm8")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
@@ -1142,7 +1154,7 @@ def create_legacy_gprv_immz(env,ii):
                                       ii.iclass.lower(),
                                       'ri',
                                       osz)
-        fo = codegen.function_object_t(fname, 'void')
+        fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_gprv_immz")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
@@ -1190,170 +1202,201 @@ def create_legacy_gprv_immz(env,ii):
         
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
-        
-def create_legacy_one_mem_fixed(env,ii,imm8=False):
+
+
+
+memsig_idx_16 = {  0: 'bi',
+                   8: 'bid8',
+                   16: 'bid16' }
+
+memsig_idx_32or64 = {  0: 'bis',
+                       8: 'bisd8',
+                       32: 'bisd32' }
+
+memsig_noidx_16 = {  0: 'b',
+                     8: 'bd8',
+                     16: 'bd16' }
+
+memsig_noidx_32or64 = {  0: 'b',
+                         8: 'bd8',
+                         32: 'bd32' }
+
+memsig_str_16 =  { True : memsig_idx_16,  # indexed by use_index
+                   False: memsig_noidx_16 } 
+memsig_str_32or64 =  { True : memsig_idx_32or64,  # indexed by use_index
+                       False: memsig_noidx_32or64 }
+
+dvars = { 0: '', 8: var_disp8, 16: var_disp16, 32: var_disp32 }  # index by dispsz
+
+def get_memsig(asz, using_indx, dispz):
+    global memsig_str_16
+    global memsig_str_32or64
+    
+    if asz == 16:
+        return memsig_str_16[using_indx][dispz]
+    return memsig_str_32or64[using_indx][dispz]
+
+arg_dvars = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32 }  # index by dispsz
+
+def add_memop_args(env, fo, use_index, dispsz, imm8):
     global enc_fn_prefix, arg_request
-    global arg_base, var_base
-    global arg_index, var_index
-    global arg_scale, var_scale
-    global arg_disp8, var_disp8
-    global arg_disp16, var_disp16
-    global arg_disp32, var_disp32
+    global arg_base, arg_index, arg_scale
+    global arg_disp8, arg_disp16, arg_disp32 
+    global arg_imm8
+    global arg_dvars
+    
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_base)
+    if use_index:
+        fo.add_arg(arg_index)
+        if env.asz in [32,64]:
+            fo.add_arg(arg_scale)  # a32, a64
+
+    if dispsz != 0:
+        fo.add_arg(arg_dvars[dispsz]) 
+
+    if imm8:
+        fo.add_arg(arg_imm8)
+
+def create_legacy_one_mem_fixed(env,ii,imm8=False):
+    global dvars
+
+    modvals = { 0: 0,   8: 1,    16: 2,   32: 2 }  # index by dispsz
+
+    
+    dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
     
     op = first_opnd(ii)
-    width = op.oc2
-     
-    if env.asz == 16:
-        dispsz_list = [0,8,16]
+    if op.oc2 == 'v':
+        widths = ['w','d']
+        if env.mode == 64:
+            widths.append('q')
+    elif op.oc2 == 'y':
+        widths = ['d']
+        if env.mode == 64:
+            widths.append('q')
     else:
-        dispsz_list = [0,8,32]
-
-    memsig_idx_16 = {  0: 'bi',
-                       8: 'bid8',
-                       16: 'bid16' }
-    
-    memsig_idx_32or64 = {  0: 'bis',
-                           8: 'bisd8',
-                           32: 'bisd32' }
-    
-    memsig_noidx_16 = {  0: 'b',
-                         8: 'bd8',
-                         16: 'bd16' }
-    
-    memsig_noidx_32or64 = {  0: 'b',
-                             8: 'bd8',
-                             32: 'bd32' }
-    
-    memsig_str_16 =  { True : memsig_idx_16,  # indexed by use_index
-                       False: memsig_noidx_16 } 
-    memsig_str_32or64 =  { True : memsig_idx_32or64,  # indexed by use_index
-                           False: memsig_noidx_32or64 } 
-
-    def get_memsig(asz, using_indx, dispz):
-        if asz == 16:
-            return memsig_str_16[using_indx][dispz]
-        return memsig_str_32or64[using_indx][dispz]
-
-    
-    modvals = { 0 :  0,   # index by dispsz
-                8 :  1,
-                16 : 2,
-                32 : 2 }
-    
-    for use_index in [ False, True ]:
-        for dispsz in dispsz_list:
-            dstr = get_memsig(env.asz,use_index,dispsz)
-            fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                                ii.iclass.lower(),
-                                                'memi' if imm8 else 'mem',
-                                                width,
-                                                dstr,
-                                                env.asz)
-            fo = codegen.function_object_t(fname, 'void')
-            fo.add_comment("created by create_legacy_one_mem_fixed")
-            fo.add_arg(arg_request)
-            fo.add_arg(arg_base)
-            if use_index:
-                fo.add_arg(arg_index)
-                if env.asz in [32,64]:
-                    fo.add_arg(arg_scale)  #      a32, a64
-
-            if dispsz == 8:
-                fo.add_arg(arg_disp8)  # a16, a32, a64
-                dvar = var_disp8
-            elif dispsz == 16:
-                fo.add_arg(arg_disp16) # a16
-                dvar = var_disp16
-            elif dispsz == 32:
-                fo.add_arg(arg_disp32) #      a32, a64
-                dvar = var_disp32
-
-            if imm8:
-                fo.add_arg(arg_imm8)
-
+        widths = [op.oc2]
+     
+    for width in widths:
+        for use_index in [ False, True ]:
+            for dispsz in dispsz_list:
+                memaddrsig = get_memsig(env.asz, use_index, dispsz)
+                fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                                    ii.iclass.lower(),
+                                                    'memi' if imm8 else 'mem',
+                                                    width,
+                                                    memaddrsig,
+                                                    env.asz)
                 
-            rexw_forced = False
-            if ii.eosz == 'o16' and env.mode in [32,64]:
-                fo.add_code_eol('emit(r,0x66)')
-            elif ii.eosz == 'o32' and env.mode == 16:
-                fo.add_code_eol('emit(r,0x66)')
-            elif (ii.eosz == 'o64' and env.mode == 64 and ii.default_64b == False) or ii.rexw_prefix == '1':
-                rexw_forced = True
-                fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+                fo = make_function_object(env,fname)
+                fo.add_comment("created by create_legacy_one_mem_fixed")
+                add_memop_args(env, fo, use_index, dispsz, imm8)
 
-            emit_required_legacy_prefixes(ii,fo)
+                rexw_forced = False
+
+                if op.oc2 in [ 'y','v']:                  # handle scalable ops
+                    if width == 'w' and env.mode != 16:
+                        fo.add_code_eol('emit(r,0x66)')
+                    elif width == 'd' and  env.mode == 16:
+                        fo.add_code_eol('emit(r,0x66)')
+                    elif width == 'q' and  ii.default_64b == False:
+                        rexw_forced = True
+                        fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+                else:  # fixed width ops
+                    if ii.eosz == 'o16' and env.mode in [32,64]:
+                        fo.add_code_eol('emit(r,0x66)', 'xx: fixed width with 16b osz')
+                    elif ii.eosz == 'o32' and env.mode == 16:
+                        fo.add_code_eol('emit(r,0x66)')
+                    elif (ii.eosz == 'o64' and env.mode == 64 and ii.default_64b == False) or ii.rexw_prefix == '1':
+                        rexw_forced = True
+                        fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+
+                emit_required_legacy_prefixes(ii,fo)
+
+                mod = modvals[dispsz]
+                if mod:  # ZERO-INIT OPTIMIZATION
+                    fo.add_code_eol('set_mod(r,{})'.format(mod))
+
+                # FIXME: ADD SECOND OPERAND HERE
+                if ii.reg_required != 'unspecified':
+                    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+
+                encode_mem_operand(env, ii, fo, use_index, dispsz)
+                finish_memop(env, ii, fo, rexw_forced, dispsz, imm8)
+
             
-            #For things that are osz scalable we need the following:
-            #if env.mode == 64:
-            #    if osz == 64 and ii.default_64b == False:
-            #        rexw_forced = True
-            #        fo.add_code_eol('set_rexw(r)')
-
-
-            mod = modvals[dispsz]
-            if mod:  # ZERO-INIT OPTIMIZATION
-                fo.add_code_eol('set_mod(r,{})'.format(mod))
-
-                
-            if ii.reg_required != 'unspecified':
-                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
-
-            # this may overwrite modrm.mod
-            if use_index:
-                if dispsz == 0:
-                    if env.asz == 16: # no scale
-                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
-                            dstr, env.asz, var_base, var_index))
-                    else:  
-                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
-                            dstr, env.asz, var_base, var_index, var_scale))
-                else: # has disp
-                    if env.asz == 16:  # no scale
-                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
-                            dstr, env.asz, var_base, var_index, dvar))
-                    else:
-                        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{},{})'.format(
-                            dstr, env.asz, var_base, var_index, var_scale, dvar))
-                    
-            else: # no index,scale
-                if dispsz == 0:
-                    fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{})'.format(
-                        dstr, env.asz, var_base))
-                else:
-                    fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
-                        dstr, env.asz, var_base, dvar))
-
-            if env.mode == 64:
-                if rexw_forced:
-                    fo.add_code_eol('emit_rex(r)')
-                else:
-                    fo.add_code_eol('emit_rex_if_needed(r)')
-
-            emit_required_legacy_map_escapes(ii,fo)
-            emit_opcode(ii,fo)
-            fo.add_code_eol('emit_modrm(r)')
-            fo.add_code('if (get_has_sib(r))')
-            fo.add_code_eol('    emit_sib(r)')
-
-            if dispsz == 8:
-                fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
-            elif dispsz == 16:
-                fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
-            elif dispsz == 32:
-                fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
-            elif dispsz == 0:
-                # if form has no displacment, then we sometimes have to
-                # add a zero displacement to create an allowed modrm/sib
-                # encoding.  
-                fo.add_code('if (get_has_disp8(r))')
-                fo.add_code_eol('   emit_i8(r,0)')
-                fo.add_code('else if (get_has_disp32(r))')
-                fo.add_code_eol('   emit_i32(r,0)')
-            if imm8:
-                fo.add_code_eol('emit(r,{})'.format(var_imm8), 'mem-fxd-imm8')
-            dbg(fo.emit())
-            ii.encoder_functions.append(fo)
+def encode_mem_operand(env, ii, fo, use_index, dispsz):
+    global var_base, var_index, var_scale
+    global dvars
     
+    # this may overwrite modrm.mod
+    dvar = dvars[dispsz]
+    memaddrsig = get_memsig(env.asz, use_index, dispsz)
+
+    if use_index:
+        if dispsz == 0:
+            if env.asz == 16: # no scale
+                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
+                    memaddrsig, env.asz, var_base, var_index))
+            else:  
+                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
+                    memaddrsig, env.asz, var_base, var_index, var_scale))
+        else: # has disp
+            if env.asz == 16:  # no scale
+                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
+                    memaddrsig, env.asz, var_base, var_index, dvar))
+            else:
+                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{},{})'.format(
+                    memaddrsig, env.asz, var_base, var_index, var_scale, dvar))
+
+    else: # no index,scale
+        if dispsz == 0:
+            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{})'.format(
+                memaddrsig, env.asz, var_base))
+        else:
+            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
+                memaddrsig, env.asz, var_base, dvar))
+                    
+
+            
+def finish_memop(env, ii, fo, rexw_forced, dispsz, imm8):
+    global var_disp8
+    global var_disp16
+    global var_disp32
+    global var_imm8
+
+    if env.mode == 64:
+        if rexw_forced:
+            fo.add_code_eol('emit_rex(r)')
+        else:
+            fo.add_code_eol('emit_rex_if_needed(r)')
+
+    emit_required_legacy_map_escapes(ii,fo)
+    emit_opcode(ii,fo)
+    fo.add_code_eol('emit_modrm(r)')
+    fo.add_code('if (get_has_sib(r))')
+    fo.add_code_eol('    emit_sib(r)')
+
+    if dispsz == 8:
+        fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
+    elif dispsz == 16:
+        fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
+    elif dispsz == 32:
+        fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
+    elif dispsz == 0:
+        # if form has no displacment, then we sometimes have to
+        # add a zero displacement to create an allowed modrm/sib
+        # encoding.  
+        fo.add_code('if (get_has_disp8(r))')
+        fo.add_code_eol('   emit_i8(r,0)')
+        fo.add_code('else if (get_has_disp32(r))')
+        fo.add_code_eol('   emit_i32(r,0)')
+    if imm8:
+        fo.add_code_eol('emit(r,{})'.format(var_imm8), 'mem-fxd-imm8')
+    dbg(fo.emit())
+    ii.encoder_functions.append(fo)
+
     
     
 def _enc_legacy(env,ii):
@@ -1401,7 +1444,7 @@ def _enc_legacy(env,ii):
         create_legacy_gpr_imm8(env,ii,[16,32,64])
     elif gprv_immz(ii):
         create_legacy_gprv_immz(env,ii)
-    elif one_mem_fixed(ii): # b,w,d,q,dq
+    elif one_mem_fixed(ii): # b,w,d,q,dq, v,y
         create_legacy_one_mem_fixed(env,ii,imm8=False)
     elif one_mem_fixed_imm_fixed(ii): 
         create_legacy_one_mem_fixed(env,ii,imm8=True)
@@ -1462,7 +1505,7 @@ def create_vex_simd_reg(env,ii,nopnds):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               str(nopnds) + category)
-    fo = codegen.function_object_t(fname, 'void')
+    fo = make_function_object(env,fname)
     fo.add_comment("created by create_vex_simd_reg")
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)
@@ -1640,6 +1683,7 @@ class enc_env_t(object):
     def __init__(self, mode, asz):
         self.mode = mode
         self.asz = asz
+        self.function_names = {}
     def __str__(self):
         s = []
         s.append("mode {}".format(self.mode))
