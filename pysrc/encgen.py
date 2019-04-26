@@ -204,19 +204,33 @@ def one_mem_fixed(ii): # b,w,d,q,dq, v, y, etc.
     n = 0
     for op in _gen_opnds(ii):
         if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y',
-                                     'mem14','mem28','mem94','mem108']:
+                                     'mem14','mem28','mem94','mem108',
+                                     'mxsave', 'mprefetch' ]:
             n = n + 1
         else:
             return False
     return n==1
-def one_mem_fixed_imm_fixed(ii): # b,w,d,q,dq, etc.
+def one_mem_fixed_imm8(ii): # b,w,d,q,dq, etc.
     n = 0
     i = 0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['b','w','d','q','dq',
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq', 'v', 'y',
                                      'mem14','mem28','mem94','mem108']:
             n = n + 1
         elif op_imm8(op):
+            i = i + 1
+        else:
+            return False
+    return n==1 and i==1
+
+def one_mem_fixed_immz(ii): # b,w,d,q,dq, etc.
+    n = 0
+    i = 0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq', 'v', 'y',
+                                     'mem14','mem28','mem94','mem108']:
+            n = n + 1
+        elif op_immz(op):
             i = i + 1
         else:
             return False
@@ -286,6 +300,11 @@ def two_xmm_regs(ii):
             return False
     return n==2
 
+def op_immz(op):
+    if op.name == 'IMM0':
+        if op.oc2 == 'z':
+            return True
+    return False
 def op_imm8(op):
     if op.name == 'IMM0':
         if op.oc2 == 'b':
@@ -1088,7 +1107,7 @@ def gprv_immz(ii):
             else:
                 return False
         elif i == 1:
-            if op.name == 'IMM0' and op.oc2 == 'z':
+            if op_immz(op):
                 continue
             else:
                 return False
@@ -1148,7 +1167,8 @@ def create_legacy_gprv_immz(env,ii):
     global arg_imm16, var_imm16
     global arg_imm32, var_imm32
     width_list = [16,32,64]
-    
+    arg_imm = { 16: arg_imm16, 32: arg_imm32, 64: arg_imm32 }
+    var_imm = { 16: var_imm16, 32: var_imm32, 64: var_imm32 }
     for osz in gen_osz_list(env.mode,width_list):
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
@@ -1158,10 +1178,7 @@ def create_legacy_gprv_immz(env,ii):
         fo.add_comment("created by create_legacy_gprv_immz")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
-        if osz == 16:
-            fo.add_arg(arg_imm16)
-        else:
-            fo.add_arg(arg_imm32)
+        fo.add_arg(arg_imm[osz])
         emit_required_legacy_prefixes(ii,fo)
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
@@ -1195,10 +1212,7 @@ def create_legacy_gprv_immz(env,ii):
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         fo.add_code_eol('emit_modrm(r)')
-        if osz == 16:
-            fo.add_code_eol('emit_u16(r,{})'.format(var_imm16))
-        else:
-            fo.add_code_eol('emit_u32(r,{})'.format(var_imm32))
+        fo.add_code_eol('emit_u{}(r,{})'.format(osz,var_imm[osz]))
         
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
@@ -1238,11 +1252,14 @@ def get_memsig(asz, using_indx, dispz):
 
 arg_dvars = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32 }  # index by dispsz
 
-def add_memop_args(env, fo, use_index, dispsz, imm8):
+arg_imm_dct = { 8: arg_imm8, 16: arg_imm16, 32: arg_imm32 }
+var_imm_dct = { 8: arg_imm8, 16: var_imm16, 32: var_imm32 }
+
+def add_memop_args(env, fo, use_index, dispsz, immw):
     global enc_fn_prefix, arg_request
     global arg_base, arg_index, arg_scale
     global arg_disp8, arg_disp16, arg_disp32 
-    global arg_imm8
+    global arg_imm_dct
     global arg_dvars
     
     fo.add_arg(arg_request)
@@ -1255,15 +1272,12 @@ def add_memop_args(env, fo, use_index, dispsz, imm8):
     if dispsz != 0:
         fo.add_arg(arg_dvars[dispsz]) 
 
-    if imm8:
-        fo.add_arg(arg_imm8)
+    if immw:
+        fo.add_arg(arg_imm_dct[immw])
 
-def create_legacy_one_mem_fixed(env,ii,imm8=False):
+def create_legacy_one_mem_fixed(env,ii,imm=0):
     global dvars
-
-    modvals = { 0: 0,   8: 1,    16: 2,   32: 2 }  # index by dispsz
-
-    
+    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
     
     op = first_opnd(ii)
@@ -1277,21 +1291,29 @@ def create_legacy_one_mem_fixed(env,ii,imm8=False):
             widths.append('q')
     else:
         widths = [op.oc2]
-     
+
+    immz_dict = { 'w': 16, 'd': 32, 'q': 32 }
     for width in widths:
+
+        immw = 0
+        if imm == '8':
+            immw = 8
+        elif imm == 'z':
+            immw = immz_dict[width]
+        
         for use_index in [ False, True ]:
             for dispsz in dispsz_list:
                 memaddrsig = get_memsig(env.asz, use_index, dispsz)
                 fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                                     ii.iclass.lower(),
-                                                    'memi' if imm8 else 'mem',
+                                                    'memi{}'.format(immw) if imm else 'mem',
                                                     width,
                                                     memaddrsig,
                                                     env.asz)
                 
                 fo = make_function_object(env,fname)
                 fo.add_comment("created by create_legacy_one_mem_fixed")
-                add_memop_args(env, fo, use_index, dispsz, imm8)
+                add_memop_args(env, fo, use_index, dispsz, immw)
 
                 rexw_forced = False
 
@@ -1323,7 +1345,7 @@ def create_legacy_one_mem_fixed(env,ii,imm8=False):
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
                 encode_mem_operand(env, ii, fo, use_index, dispsz)
-                finish_memop(env, ii, fo, rexw_forced, dispsz, imm8)
+                finish_memop(env, ii, fo, rexw_forced, dispsz, immw)
 
             
 def encode_mem_operand(env, ii, fo, use_index, dispsz):
@@ -1360,11 +1382,11 @@ def encode_mem_operand(env, ii, fo, use_index, dispsz):
                     
 
             
-def finish_memop(env, ii, fo, rexw_forced, dispsz, imm8):
+def finish_memop(env, ii, fo, rexw_forced, dispsz, immw):
     global var_disp8
     global var_disp16
     global var_disp32
-    global var_imm8
+    global var_imm_dct
 
     if env.mode == 64:
         if rexw_forced:
@@ -1392,8 +1414,9 @@ def finish_memop(env, ii, fo, rexw_forced, dispsz, imm8):
         fo.add_code_eol('   emit_i8(r,0)')
         fo.add_code('else if (get_has_disp32(r))')
         fo.add_code_eol('   emit_i32(r,0)')
-    if imm8:
-        fo.add_code_eol('emit(r,{})'.format(var_imm8), 'mem-fxd-imm8')
+    if immw:
+        fo.add_code_eol('emit_u{}(r,{})'.format(immw, var_imm_dct[immw]),
+                        'mem-fxd-imm{}'.format(immw))
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
@@ -1445,9 +1468,11 @@ def _enc_legacy(env,ii):
     elif gprv_immz(ii):
         create_legacy_gprv_immz(env,ii)
     elif one_mem_fixed(ii): # b,w,d,q,dq, v,y
-        create_legacy_one_mem_fixed(env,ii,imm8=False)
-    elif one_mem_fixed_imm_fixed(ii): 
-        create_legacy_one_mem_fixed(env,ii,imm8=True)
+        create_legacy_one_mem_fixed(env,ii,imm=0)
+    elif one_mem_fixed_imm8(ii): 
+        create_legacy_one_mem_fixed(env,ii,imm='8')
+    elif one_mem_fixed_immz(ii): 
+        create_legacy_one_mem_fixed(env,ii,imm='z')
         
 def two_xmm(ii):
     n = 0
