@@ -39,43 +39,44 @@ static void dump_encoding(xed_enc2_req_t* r)
 
 int main(int argc, char** argv) {
     xed_enc2_req_t r;
+    xed_uint8_t itext[XED_MAX_INSTRUCTION_BYTES];
     xed_tables_init();
 
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov16_reg_reg(&r, XED_REG_AX, XED_REG_SI);
     dump_encoding(&r);
 
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov32_reg_reg(&r, XED_REG_EAX, XED_REG_ECX);
     dump_encoding(&r);
 
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov64_reg_reg(&r, XED_REG_R10, XED_REG_RSI);
     dump_encoding(&r);
 
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov32_reg_mem_disp32_a32(&r, XED_REG_EAX, XED_REG_EBP, XED_REG_ESI, 4, 0x11223344);
     dump_encoding(&r);
     
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov32_reg_mem_disp8_a32(&r, XED_REG_EAX, XED_REG_EBP, XED_REG_ESI, 8, 0xFF);
     dump_encoding(&r);
 
     // this one requires the encoder to add a fake disp due to the sib encoding.
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov32_reg_mem_nodisp_a32(&r, XED_REG_EAX, XED_REG_EBP, XED_REG_ESI, 2);
     dump_encoding(&r);
     
 
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov64_reg_mem_nodisp_a64(&r, XED_REG_RAX, XED_REG_RBX, XED_REG_INVALID, 1);
     dump_encoding(&r);
     
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov64_reg_mem_disp8_a64(&r, XED_REG_RAX, XED_REG_RCX, XED_REG_RBX, 8, 0x55);
     dump_encoding(&r);
     
-    xed_enc2_req_t_init(&r);
+    xed_enc2_req_t_init(&r,itext);
     encode_mov64_reg_mem_disp32_a64(&r, XED_REG_RAX, XED_REG_RIP, XED_REG_INVALID, 1, 0x11223344);
     dump_encoding(&r);
 
