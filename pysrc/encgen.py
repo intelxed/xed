@@ -206,23 +206,27 @@ def op_x87(op):
         return True
     return False
 
-def one_xmm_reg_one_mem_fixed(ii): 
+simd_widths = ['xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'xuq', 'zd']
+
+def one_xmm_reg_one_mem_fixed(ii):
+    global simd_widths
     n = 0
     r = 0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['dq','q','ps','pd']:
+        if op_mem(op) and op.oc2 in simd_widths:
             n = n + 1
-        elif op_reg(op) and op.oc2 in ['dq','q','ps','pd']:
+        elif op_reg(op) and op.oc2 in simd_widths:
             r = r + 1
         else:
             return False
     return n==1 and r==1
 def one_xmm_reg_one_mem_fixed_imm8(ii): 
+    global simd_widths
     i,r,n=0,0,0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['dq','q','ps','pd']:
+        if op_mem(op) and op.oc2 in simd_widths:
             n = n + 1
-        elif op_reg(op) and op.oc2 in ['dq','q','ps','pd']:
+        elif op_reg(op) and op.oc2 in simd_widths:
             r = r + 1
         elif op_imm8(op):
             i = i + 1
