@@ -381,6 +381,14 @@ XED_DLL_EXPORT void enc_evex_modrm_reg_kreg(xed_enc2_req_t* r,
                                            xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
                                            xed_reg_enum_t dst);
+
+XED_DLL_EXPORT void enc_vex_vvvv_reg_kreg(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_vex_modrm_reg_kreg(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_vex_modrm_rm_kreg(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+
 XED_DLL_EXPORT void enc_evex_kmask(xed_enc2_req_t* r,
                                    xed_reg_enum_t dst);
 

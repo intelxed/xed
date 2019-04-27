@@ -168,6 +168,12 @@ def first_opnd(ii):
 #        if i==1:
 #            return op
 
+def op_mask_reg(op):
+    if op.lookupfn_name:
+        if 'MASK' in op.lookupfn_name:
+            return True
+    return False
+    
         
 def op_scalable_v(op):
     if op.lookupfn_name:
@@ -1908,8 +1914,65 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
             immw=0
             finish_memop(env, ii, fo, dispsz, immw,  space='vex')
             dbg(fo.emit())
-            ii.encoder_functions.append(fo)  
+            ii.encoder_functions.append(fo)
+            
+def create_vex_all_mask_reg(env,ii):
+    global enc_fn_prefix, arg_request
+    global arg_kreg0, var_kreg0
+    global arg_kreg1, var_kreg1
+    global arg_kreg2, var_kreg2
+    
+    nopnds = 0
+    for op in _gen_opnds(ii):
+        nopnds = nopnds + 1
+        
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                              ii.iclass.lower(),
+                              str(nopnds) + 'k')
+        
+    fo = make_function_object(env,fname)
+    fo.add_comment("created by create_vex_all_mask_reg")
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_kreg0)
+    fo.add_arg(arg_kreg1)
+    if nopnds == 3:
+        fo.add_arg(arg_kreg2)
 
+    set_vex_pp(ii,fo)
+    fo.add_code_eol('set_map(r,{})'.format(ii.map))
+    if ii.vl == 256: # Not setting VL=128 since that is ZERO OPTIMIZATION
+        fo.add_code_eol('set_vexl(r,1)')
+
+    vars = [var_kreg0, var_kreg1, var_kreg2]
+    
+    for i,op in enumerate(_gen_opnds(ii)):
+        if op.lookupfn_name:
+            if op.lookupfn_name.endswith('_R'):
+                var_r = vars[i]
+            elif op.lookupfn_name.endswith('_B'):
+                var_b = vars[i]
+            elif op.lookupfn_name.endswith('_N'):
+                if nopnds == 2:
+                    die("Unexpected VVVV operand in 2 operand instr: {}".format(ii.iclass))
+                var_n = vars[i]
+            else:
+                die("SHOULD NOT REACH HERE")
+    if ii.rexw_prefix == '1':
+        fo.add_code_eol('set_rexw(r)')
+    if nopnds == 3:   
+        fo.add_code_eol('enc_vex_vvvv_kreg(r,{})'.format(var_n))
+    else:
+        fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+    fo.add_code_eol('enc_vex_modrm_reg_kreg(r,{})'.format(var_r))
+    fo.add_code_eol('enc_vex_modrm_rm_kreg(r,{})'.format(var_b))        
+    emit_vex_prefix(ii,fo,register_only=True)
+    emit_opcode(ii,fo)
+    fo.add_code_eol('emit_modrm(r)')
+
+    dbg(fo.emit())
+    ii.encoder_functions.append(fo)
+
+        
 def _enc_vex(env,ii):
     if three_xmm(ii) or three_ymm(ii):
         create_vex_simd_reg(env,ii,3)
@@ -1919,7 +1982,18 @@ def _enc_vex(env,ii):
         create_vex_simd_2reg_mem(env,ii)
     elif one_xymm_and_mem(ii):
         create_vex_simd_2reg_mem(env,ii,nopnds=2)
-
+    elif vex_all_mask_reg(ii):
+        create_vex_all_mask_reg(env,ii)
+        
+def vex_all_mask_reg(ii):
+    k = 0
+    for op in _gen_opnds(ii):
+        if op_mask_reg(op):
+            k = k + 1
+        else:
+            return False
+    return k>=2
+    
 
 def evex_masking_3xyzmm(ii):
     if ii.write_masking:
