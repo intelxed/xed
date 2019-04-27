@@ -117,7 +117,7 @@ var_kreg2 = 'kreg2'
 arg_kreg2 = 'xed_reg_enum_t ' + var_kreg2
 
 var_rcsae = 'rcsae'
-arg_rcase = 'xed_uint_t ' + var_rcsae
+arg_rcsae = 'xed_uint_t ' + var_rcsae
 var_zeroing = 'zeroing'
 arg_zeroing = 'xed_bool_t ' + var_zeroing
 
@@ -1410,7 +1410,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
             dbg(fo.emit())
             ii.encoder_functions.append(fo)
 
-def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):  # WRK
+def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):  
     """REGb-GPRb or GPRb-REGb to start"""
     global var_reg0
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
@@ -1921,8 +1921,8 @@ def _enc_vex(env,ii):
         create_vex_simd_2reg_mem(env,ii,nopnds=2)
 
 
-def evex_masking_3xyzmm_noround(ii):
-    if ii.write_masking and not ii.rounding_form:
+def evex_masking_3xyzmm(ii):
+    if ii.write_masking:
         x,y,z=0,0,0
         for op in _gen_opnds(ii):
             if op_xmm(op):
@@ -1936,8 +1936,21 @@ def evex_masking_3xyzmm_noround(ii):
         return (x==0 and y==0 and z==3) or (x==0 and y==3 and z==0) or (x==3 and y==0 and z==0)
     return False
 
-def evex_masking_2xyzmm_noround(ii):
-    if ii.write_masking and not ii.rounding_form:
+def evex_masking_3xyzmm_noround(ii):
+    if not ii.rounding_form:
+        if evex_masking_3xyzmm(ii):
+            return True
+    return False
+def evex_masking_3xyzmm_round(ii):  
+    if ii.rounding_form:
+        if evex_masking_3xyzmm(ii):
+            return True
+    return False
+
+
+
+def evex_masking_2xyzmm(ii):
+    if ii.write_masking:
         x,y,z=0,0,0
         for op in _gen_opnds(ii):
             if op_xmm(op):
@@ -1951,13 +1964,20 @@ def evex_masking_2xyzmm_noround(ii):
         return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
     return False
 
-def create_evex_masking_3xyzmm(env,ii,nopnds=3):
+def evex_masking_2xyzmm_noround(ii):
+    if not ii.rounding_form:
+        if evex_masking_2xyzmm(ii):
+            return True
+    return False 
+
+def create_evex_masking_3xyzmm(env,ii,nopnds=3,rounding=False):
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
     global arg_reg2,  var_reg2
     global arg_kmask, var_kmask
     global arg_zeroing, var_zeroing
+    global arg_rcsae, var_rcsae
 
     op = first_opnd(ii)
     if op.lookupfn_name.startswith('XMM'):
@@ -1969,7 +1989,7 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3):
     else:
         die("SHOULD NOT REACH HERE")
 
-    # FIXME: add RCSAE
+
     mask_variant_name  = { False:'', True: '_msk' }
     vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
     
@@ -1978,6 +1998,8 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3):
                                      ii.iclass.lower(),
                                      vl,
                                      mask_variant_name[masking])
+        if rounding:
+            fname = fname + '_rc'
         fo = make_function_object(env,fname)
         fo.add_comment("created by create_evex_masking_3xyzmm")
         fo.add_arg(arg_request)
@@ -1989,13 +2011,18 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3):
         fo.add_arg(arg_reg1)
         if nopnds == 3:
             fo.add_arg(arg_reg2)
+        if rounding:
+            fo.add_arg(arg_rcsae) # WRK
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
         fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
-
+        if rounding:
+            fo.add_code_eol('set_evexb(r,1)')
+            fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
+            
         if masking:
             fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
             fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
@@ -2035,9 +2062,11 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3):
         
 def _enc_evex(env,ii):
     if evex_masking_3xyzmm_noround(ii):
-        create_evex_masking_3xyzmm(env,ii,nopnds=3)
+        create_evex_masking_3xyzmm(env,ii, nopnds=3, rounding=False)
+    if evex_masking_3xyzmm_round(ii):
+        create_evex_masking_3xyzmm(env,ii, nopnds=3, rounding=True)
     if evex_masking_2xyzmm_noround(ii):
-        create_evex_masking_3xyzmm(env,ii,nopnds=2)
+        create_evex_masking_3xyzmm(env,ii,nopnds=2, rounding=False)
         
 def _enc_xop(env,ii):
     pass # FIXME
