@@ -1604,6 +1604,19 @@ def two_xymm_and_mem(ii):
             return False
     return  m==1 and ((x==2 and y==0) or (x==0 and y==2))
 
+def one_xymm_and_mem(ii):
+    m,x,y = 0,0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_xmm(op):
+            x = x + 1
+        elif op_reg(op) and op_ymm(op):
+            y = y + 1
+        elif op_mem(op):
+            m = m + 1
+        else:
+            return False
+    return  m==1 and ((x==1 and y==0) or (x==0 and y==1))
+
 def two_ymm_and_mem(ii):
     m,n = 0,0
     for op in _gen_opnds(ii):
@@ -1731,6 +1744,8 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
                         die("Unexpected RM reg operand in mem instr: {}".format(ii.iclass))
                     elif op.lookupfn_name.endswith('_N'):
                         var_n = vars[i]
+                        if nopnds == 2:
+                            die("Unexpected VVVV reg operand in 2-opnd reg+mem instr: {}".format(ii.iclass))
                     else:
                         die("SHOULD NOT REACH HERE")
 
@@ -1756,6 +1771,8 @@ def _enc_vex(env,ii):
         create_vex_simd_reg(env,ii,2)
     elif two_xymm_and_mem(ii):
         create_vex_simd_2reg_mem(env,ii)
+    elif one_xymm_and_mem(ii):
+        create_vex_simd_2reg_mem(env,ii,nopnds=2)
 
     
 def _enc_evex(env,ii):
