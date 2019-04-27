@@ -29,6 +29,72 @@ END_LEGAL */
 // Turn off unused-function warning for this file while we are doing early development
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+/// evex register for evex-VSIB
+void enc_evex_vindex_xmm(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+}
+void enc_evex_vindex_ymm(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+}
+void enc_evex_vindex_zmm(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+}
+
+/// vex register for vex-VSIB
+void enc_vex_vindex_xmm(xed_enc2_req_t* r,
+                         xed_reg_enum_t dst) {
+}
+void enc_vex_vindex_ymm(xed_enc2_req_t* r,
+                        xed_reg_enum_t dst) {
+}
+
+// evex registers k0..k7 regs
+void enc_evex_vvvv_reg_kreg(xed_enc2_req_t* r,
+                            xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_reg_kreg(xed_enc2_req_t* r,
+                            xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
+                            xed_reg_enum_t dst) {
+}
+void enc_evex_kmask(xed_enc2_req_t* r,
+                    xed_reg_enum_t dst) {
+}
+
+// evex registers vvvv, modrm.reg, modrm.rm for xmm, ymm, zmm
+void enc_evex_vvvv_reg_xmm(xed_enc2_req_t* r,
+                           xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_reg_xmm(xed_enc2_req_t* r,
+                            xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_rm_xmm(xed_enc2_req_t* r,
+                           xed_reg_enum_t dst) {
+}
+
+void enc_evex_vvvv_reg_ymm(xed_enc2_req_t* r,
+                           xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_reg_ymm(xed_enc2_req_t* r,
+                            xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_rm_ymm(xed_enc2_req_t* r,
+                           xed_reg_enum_t dst) {
+}
+
+void enc_evex_vvvv_reg_zmm(xed_enc2_req_t* r,
+                           xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_reg_zmm(xed_enc2_req_t* r,
+                            xed_reg_enum_t dst) {
+}
+void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
+                           xed_reg_enum_t dst) {
+}
+
+
+/// AVX register
 
 void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
@@ -74,6 +140,9 @@ void enc_modrm_rm_ymm(xed_enc2_req_t* r,
     set_rexb(r,offset >= 8);
 }
 
+
+/// MMX registers
+
 void enc_modrm_reg_mmx(xed_enc2_req_t* r,
                        xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_MMX0;
@@ -85,6 +154,7 @@ void enc_modrm_rm_mmx(xed_enc2_req_t* r,
     set_rm(r, offset & 7);
 }
 
+/// GPRs
 
 void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {

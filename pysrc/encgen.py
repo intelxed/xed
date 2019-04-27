@@ -107,8 +107,19 @@ arg_reg3 = 'xed_reg_enum_t ' + var_reg3
 var_reg4 = 'reg4'
 arg_reg4 = 'xed_reg_enum_t ' + var_reg4
 
+var_kmask = 'kmask'
+arg_kmask = 'xed_reg_enum_t ' + var_kmask
+var_kreg0 = 'kreg0'
+arg_kreg0 = 'xed_reg_enum_t ' + var_kreg0
+var_kreg1 = 'kreg1'
+arg_kreg1 = 'xed_reg_enum_t ' + var_kreg1
+var_kreg2 = 'kreg2'
+arg_kreg2 = 'xed_reg_enum_t ' + var_kreg2
+
 var_rcsae = 'rcsae'
 arg_rcase = 'xed_uint_t ' + var_rcsae
+var_zeroing = 'zeroing'
+arg_zeroing = 'xed_bool_t ' + var_zeroing
 
 var_imm8 = 'imm8'
 arg_imm8 = 'xed_uint8_t ' + var_imm8
@@ -189,6 +200,11 @@ def op_xmm(op):
 def op_ymm(op):
     if op.lookupfn_name:
         if 'YMM' in op.lookupfn_name:
+            return True
+    return False
+def op_zmm(op):
+    if op.lookupfn_name:
+        if 'ZMM' in op.lookupfn_name:
             return True
     return False
 def op_mmx(op):
@@ -513,7 +529,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
         elif env.mode == 64 and osz == 32 and ii.default_64b == True:
             continue # not encodable
         elif env.mode == 64 and osz == 64 and ii.default_64b == False:
-            fo.add_code_eol('set_rexw()')
+            fo.add_code_eol('set_rexw(r)')
             rexw_forced = True
         elif env.mode == 32 and osz == 16:
             fo.add_code_eol('emit(r,0x66)')
@@ -593,7 +609,7 @@ def create_legacy_one_gpr_fixed(env,ii,width_bits):
             fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
             
     if env.mode == 64 and width_bits == 64 and ii.default_64b == False:
-        fo.add_code_eol('set_rexw()')
+        fo.add_code_eol('set_rexw(r)')
 
     emit_required_legacy_prefixes(ii,fo)
     if env.mode == 64:
@@ -785,7 +801,7 @@ def create_legacy_no_operands(env,ii):
         if env.mode == 64 and ii.eosz == 'o16':
             fo.add_code_eol('emit(r,0x66)')
         elif env.mode == 64 and ii.eosz == 'o64' and ii.default_64b == False:
-            fo.add_code_eol('set_rexw()')
+            fo.add_code_eol('set_rexw(r)')
         elif env.mode == 32 and ii.eosz == 'o16':
             fo.add_code_eol('emit(r,0x66)')
         elif env.mode == 16 and ii.eosz == 'o16':
@@ -1677,7 +1693,7 @@ def create_vex_simd_reg(env,ii,nopnds):
             else:
                 die("SHOULD NOT REACH HERE")
     if ii.rexw_prefix == '1':
-        fo.add_code_eol('set_rexw(r,1)')
+        fo.add_code_eol('set_rexw(r)')
     if nopnds == 3:   
         fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(category, var_n))
     else:
@@ -1750,7 +1766,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
                         die("SHOULD NOT REACH HERE")
 
             if ii.rexw_prefix == '1':
-                fo.add_code_eol('set_rexw(r,1)')
+                fo.add_code_eol('set_rexw(r)')
             if nopnds == 2:
                 fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
             else:
@@ -1774,9 +1790,100 @@ def _enc_vex(env,ii):
     elif one_xymm_and_mem(ii):
         create_vex_simd_2reg_mem(env,ii,nopnds=2)
 
+
+def evex_masking_3xyzmm_noround(ii):
+    if ii.write_masking and not ii.rounding_form:
+        x,y,z=0,0,0
+        for op in _gen_opnds(ii):
+            if op_xmm(op):
+                x = x + 1
+            elif op_ymm(op):
+                y = y + 1
+            elif op_zmm(op):
+                z = z + 1
+            else:
+                return False
+        return (x==0 and y==0 and z==3) or (x==0 and y==3 and z==0) or (x==3 and y==0 and z==0)
+    return False
+
+def create_evex_masking_3xyzmm(env,ii):
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_reg1,  var_reg1
+    global arg_reg2,  var_reg2
+    global arg_kmask, var_kmask
+    global arg_zeroing, var_zeroing
+
+    op = first_opnd(ii)
+    if op.lookupfn_name.startswith('XMM'):
+        vl = 'xmm'
+    elif op.lookupfn_name.startswith('YMM'):
+        vl = 'ymm'
+    elif op.lookupfn_name.startswith('ZMM'):
+        vl = 'zmm'
+    else:
+        die("SHOULD NOT REACH HERE")
+
+    # FIXME: add RCSAE
+    mask_variant_name  = { False:'', True: '_msk' }
+    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
     
+    for masking in [True, False]:
+        fname = "{}_{}_{}{}".format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     vl,
+                                     mask_variant_name[masking])
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_evex_masking_3xyzmm")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_reg0)
+        if masking:
+            fo.add_arg(arg_kmask)
+            if ii.write_masking_merging == False:
+                fo.add_arg(arg_zeroing)
+        fo.add_arg(arg_reg1)
+        fo.add_arg(arg_reg2)
+
+        set_vex_pp(ii,fo)
+        fo.add_code_eol('set_map(r,{})'.format(ii.map))
+        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        if ii.rexw_prefix == '1':
+            fo.add_code_eol('set_rexw(r)')
+
+        if masking:
+            fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
+            fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
+            
+        # ENCODE REGISTERS
+        vars = [var_reg0, var_reg1, var_reg2]
+        for i,op in enumerate(_gen_opnds(ii)):
+            if op.lookupfn_name:
+                if op.lookupfn_name.endswith('_R3'):
+                    var_r = vars[i]
+                elif op.lookupfn_name.endswith('_B3'):
+                    var_b = vars[i]
+                elif op.lookupfn_name.endswith('_N3'):
+                    var_n = vars[i]
+                else:
+                    die("SHOULD NOT REACH HERE")
+                
+        fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+        fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
+        fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(vl, var_b))        
+            
+        fo.add_code_eol('emit_evex(r)')
+        emit_opcode(ii,fo)
+        fo.add_code_eol('emit_modrm(r)')
+    
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)  
+
+
+        
 def _enc_evex(env,ii):
-    pass # FIXME
+    if evex_masking_3xyzmm_noround(ii):
+        create_evex_masking_3xyzmm(env,ii)
+        
 def _enc_xop(env,ii):
     pass # FIXME
 
@@ -1787,17 +1894,22 @@ def prep_instruction(ii):
     ii.write_masking = False
     ii.write_masking_notk0 = False
     ii.write_masking_merging = False # if true, no zeroing allowed
-    
-    for op in ii.parsed_operands:
-        if op.lookupfn_name == 'MASK1':
-            ii.write_masking = True
-        elif op.lookupfn_name == 'MASKNOT0':
-            ii.write_masking = True
-            ii.write_masking_notk0 = True
-    
-    if ii.write_masking:
-        if 'ZEROING=0' in ii.pattern:
-            ii.write_masking_merging = True
+    ii.rounding_form = False
+
+    if ii.space == 'evex':
+        for op in ii.parsed_operands:
+            if op.lookupfn_name == 'MASK1':
+                ii.write_masking = True
+            elif op.lookupfn_name == 'MASKNOT0':
+                ii.write_masking = True
+                ii.write_masking_notk0 = True
+
+        if ii.write_masking:
+            if 'ZEROING=0' in ii.pattern:
+                ii.write_masking_merging = True
+                
+        if 'AVX512_ROUND()' in ii.pattern:
+            ii.rounding_form = True
 
     
 def create_enc_fn(env, ii):
