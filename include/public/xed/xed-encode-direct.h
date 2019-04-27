@@ -24,7 +24,7 @@ END_LEGAL */
 #include "xed-error-enum.h"
 
 typedef struct {
-    xed_uint8_t itext[XED_MAX_INSTRUCTION_BYTES];
+    xed_uint8_t* itext;
     xed_uint32_t cursor;
 
     xed_uint32_t has_sib:1;
@@ -268,10 +268,11 @@ static XED_INLINE xed_uint_t get_evexaaa(xed_enc2_req_t* r) {
 ///
 
 
-static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r) {
+static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r, xed_uint8_t* output_buffer) {
     xed_uint32_t i;
     for(i=0;i<sizeof(xed_enc2_req_t)/sizeof(xed_uint32_t);i++)
         r->flat[i] = 0;
+    r->s.itext = output_buffer;
 }
 
 static XED_INLINE void emit(xed_enc2_req_t* r, xed_uint8_t b) {
@@ -382,6 +383,22 @@ XED_DLL_EXPORT void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
                                            xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_evex_kmask(xed_enc2_req_t* r,
                                    xed_reg_enum_t dst);
+
+/// evex register for evex-VSIB
+XED_DLL_EXPORT void enc_evex_vindex_xmm(xed_enc2_req_t* r,
+                                        xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_vindex_ymm(xed_enc2_req_t* r,
+                                        xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_vindex_zmm(xed_enc2_req_t* r,
+                                        xed_reg_enum_t dst);
+
+/// vex register for vex-VSIB
+XED_DLL_EXPORT void enc_vex_vindex_xmm(xed_enc2_req_t* r,
+                                        xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_vex_vindex_ymm(xed_enc2_req_t* r,
+                                       xed_reg_enum_t dst);
+
+
 
 // evex registers vvvv, modrm.reg, modrm.rm for xmm, ymm, zmm
 XED_DLL_EXPORT void enc_evex_vvvv_reg_xmm(xed_enc2_req_t* r,
