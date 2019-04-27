@@ -1289,15 +1289,16 @@ arg_dvars = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32 }  # index by dispsz
 arg_imm_dct = { 8: arg_imm8, 16: arg_imm16, 32: arg_imm32 }
 var_imm_dct = { 8: arg_imm8, 16: var_imm16, 32: var_imm32 }
 
-def add_memop_args(env, fo, use_index, dispsz, immw, reg0=-1):
-    global enc_fn_prefix, arg_request
+def add_memop_args(env, fo, use_index, dispsz, immw=0, reg0=-1):
+    """reg=-1 -> no reg opnds, 
+       reg=0  -> first opnd is reg,
+       reg=1  -> 2nd opnd is reg """
     global arg_reg0
     global arg_base, arg_index, arg_scale
     global arg_disp8, arg_disp16, arg_disp32 
     global arg_imm_dct
     global arg_dvars
     
-    fo.add_arg(arg_request)
     if reg0 == 0:
         fo.add_arg(arg_reg0)
     fo.add_arg(arg_base)
@@ -1313,21 +1314,10 @@ def add_memop_args(env, fo, use_index, dispsz, immw, reg0=-1):
 
     if immw:
         fo.add_arg(arg_imm_dct[immw])
-        
+
 def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
     global var_reg0
-
-    if 0:
-        oc2 = None
-        for op in _gen_opnds(ii):
-            if oc2 == None:
-                oc2 = op.oc2
-            elif oc2 != op.oc2:
-                _dump_fields(ii)
-                die("OC2 mismatch {}: {} vs {}".format(ii.iclass,oc2,op.oc2))
-
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
-    dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
+    
     op = first_opnd(ii)
     width = op.oc2
     immw = 8 if imm8 else 0
@@ -1335,6 +1325,9 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
     opsig = 'rm' if i==0 else 'mr'
     if imm8:
         opsig = opsig + 'i'
+
+    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
+    dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
         
     for use_index in [ False, True ]:
         for dispsz in dispsz_list:
@@ -1348,7 +1341,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
 
             fo = make_function_object(env,fname)
             fo.add_comment("created by create_legacy_one_xmm_reg_one_mem_fixed")
-            
+            fo.add_arg(arg_request)
             add_memop_args(env, fo, use_index, dispsz, immw, reg0=i)
 
             rexw_forced = False
@@ -1370,7 +1363,9 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
             fo.add_code_eol('enc_modrm_reg_xmm(r,{})'.format(var_reg0))
 
             encode_mem_operand(env, ii, fo, use_index, dispsz)
-            finish_memop(env, ii, fo, rexw_forced, dispsz, immw)
+            finish_memop(env, ii, fo, dispsz, immw, rexw_forced, space='legacy')
+            dbg(fo.emit())
+            ii.encoder_functions.append(fo)
 
 
             
@@ -1411,6 +1406,7 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                 
                 fo = make_function_object(env,fname)
                 fo.add_comment("created by create_legacy_one_mem_fixed")
+                fo.add_arg(arg_request)
                 add_memop_args(env, fo, use_index, dispsz, immw)
 
                 rexw_forced = False
@@ -1442,56 +1438,45 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
                 encode_mem_operand(env, ii, fo, use_index, dispsz)
-                finish_memop(env, ii, fo, rexw_forced, dispsz, immw)
+                finish_memop(env, ii, fo,  dispsz, immw, rexw_forced, space='legacy')
+                dbg(fo.emit())
+                ii.encoder_functions.append(fo)
 
             
 def encode_mem_operand(env, ii, fo, use_index, dispsz):
     global var_base, var_index, var_scale
-    global dvars
     
     # this may overwrite modrm.mod
-    dvar = dvars[dispsz]
     memaddrsig = get_memsig(env.asz, use_index, dispsz)
 
     if use_index:
-        if dispsz == 0:
-            if env.asz == 16: # no scale
-                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
-                    memaddrsig, env.asz, var_base, var_index))
-            else:  
-                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
-                    memaddrsig, env.asz, var_base, var_index, var_scale))
-        else: # has disp
-            if env.asz == 16:  # no scale
-                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
-                    memaddrsig, env.asz, var_base, var_index, dvar))
-            else:
-                fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{},{})'.format(
-                    memaddrsig, env.asz, var_base, var_index, var_scale, dvar))
-
-    else: # no index,scale
-        if dispsz == 0:
-            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{})'.format(
-                memaddrsig, env.asz, var_base))
-        else:
+        if env.asz == 16: # no scale
             fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
-                memaddrsig, env.asz, var_base, dvar))
+                memaddrsig, env.asz, var_base, var_index))
+        else:  
+            fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{},{})'.format(
+                memaddrsig, env.asz, var_base, var_index, var_scale))
+    else: # no index,scale
+        fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{})'.format(
+            memaddrsig, env.asz, var_base))
                     
 
             
-def finish_memop(env, ii, fo, rexw_forced, dispsz, immw):
+def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
     global var_disp8
     global var_disp16
     global var_disp32
     global var_imm_dct
 
-    if env.mode == 64:
-        if rexw_forced:
-            fo.add_code_eol('emit_rex(r)')
-        else:
-            fo.add_code_eol('emit_rex_if_needed(r)')
+    if space == 'legacy':
+        if env.mode == 64:
+            if rexw_forced:
+                fo.add_code_eol('emit_rex(r)')
+            else:
+                fo.add_code_eol('emit_rex_if_needed(r)')
 
-    emit_required_legacy_map_escapes(ii,fo)
+        emit_required_legacy_map_escapes(ii,fo)
+        
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
     fo.add_code('if (get_has_sib(r))')
@@ -1514,9 +1499,6 @@ def finish_memop(env, ii, fo, rexw_forced, dispsz, immw):
     if immw:
         fo.add_code_eol('emit_u{}(r,{})'.format(immw, var_imm_dct[immw]),
                         'mem-fxd-imm{}'.format(immw))
-    dbg(fo.emit())
-    ii.encoder_functions.append(fo)
-
     
     
 def _enc_legacy(env,ii):
@@ -1609,16 +1591,18 @@ def three_ymm(ii):
             return False
     return n==3
 
-def two_xmm_and_mem(ii):
-    m,n = 0,0
+def two_xymm_and_mem(ii):
+    m,x,y = 0,0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
-            n = n + 1
+            x = x + 1
+        elif op_reg(op) and op_ymm(op):
+            y = y + 1
         elif op_mem(op):
             m = m + 1
         else:
             return False
-    return n==2 and m==1
+    return  m==1 and ((x==2 and y==0) or (x==0 and y==2))
 
 def two_ymm_and_mem(ii):
     m,n = 0,0
@@ -1644,7 +1628,7 @@ def set_vex_pp(ii,fo):
 def create_vex_simd_reg(env,ii,nopnds):
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
-    global arg_reg1,  var_reg2
+    global arg_reg1,  var_reg1
     global arg_reg2,  var_reg2
     xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
     category = 'xmm' if xmm else 'ymm'
@@ -1694,18 +1678,84 @@ def create_vex_simd_reg(env,ii,nopnds):
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
-def create_vex_simd_2reg_mem(env,ii,xmm_or_ymm):
-    pass # FIXME
-    
+def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
+    """One or two xmm/ymm and memory."""
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_reg1,  var_reg1
+
+    op = first_opnd(ii)
+    width = op.oc2
+
+    xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
+    vlname = 'xmm' if xmm else 'ymm'
+    if nopnds == 2:
+        category = 'xm' if xmm else 'ym'
+    else:
+        category = 'xxm' if xmm else 'yym'
+        
+    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
+    dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
+        
+    for use_index in [ False, True ]:
+        for dispsz in dispsz_list:
+            memaddrsig = get_memsig(env.asz, use_index, dispsz)
+
+            fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                                ii.iclass.lower(),
+                                                category,
+                                                width,
+                                                memaddrsig,
+                                                env.asz)
+            fo = make_function_object(env,fname)
+            fo.add_comment("created by create_vex_simd_2reg_mem")
+            fo.add_arg(arg_request)
+            fo.add_arg(arg_reg0)
+            if nopnds == 3:
+                fo.add_arg(arg_reg1)
+            add_memop_args(env, fo, use_index, dispsz) 
+
+            set_vex_pp(ii,fo)
+            fo.add_code_eol('set_map(r,{})'.format(ii.map))
+            if not xmm:
+                fo.add_code_eol('set_vexl(r,1)')
+
+            # FIXME function-ize this
+            vars = [var_reg0, var_reg1, var_reg2]
+            for i,op in enumerate(_gen_opnds(ii)):
+                if op.lookupfn_name:
+                    if op.lookupfn_name.endswith('_R'):
+                        var_r = vars[i]
+                    elif op.lookupfn_name.endswith('_B'):
+                        var_b = vars[i]
+                        die("Unexpected RM reg operand in mem instr: {}".format(ii.iclass))
+                    elif op.lookupfn_name.endswith('_N'):
+                        var_n = vars[i]
+                    else:
+                        die("SHOULD NOT REACH HERE")
+
+            if ii.rexw_prefix == '1':
+                fo.add_code_eol('set_rexw(r,1)')
+            if nopnds == 2:
+                fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+            else:
+                fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(vlname, var_n))
+            fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(vlname, var_r))
+
+            encode_mem_operand(env, ii, fo, use_index, dispsz)
+            emit_vex_prefix(ii,fo,register_only=False)
+            immw=0
+            finish_memop(env, ii, fo, dispsz, immw,  space='vex')
+            dbg(fo.emit())
+            ii.encoder_functions.append(fo)  
+
 def _enc_vex(env,ii):
     if three_xmm(ii) or three_ymm(ii):
         create_vex_simd_reg(env,ii,3)
     elif two_xmm(ii) or two_ymm(ii):
         create_vex_simd_reg(env,ii,2)
-    elif two_xmm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii,'xmm')
-    elif two_ymm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii,'ymm')
+    elif two_xymm_and_mem(ii):
+        create_vex_simd_2reg_mem(env,ii)
 
     
 def _enc_evex(env,ii):
