@@ -150,7 +150,13 @@ def _gen_opnds(ii): # generator
         yield op
 def first_opnd(ii):
     op = next(_gen_opnds(ii))
-    return op    
+    return op
+
+#def second_opnd(ii):
+#    for i,op in enumerate(_gen_opnds(ii)):
+#        if i==1:
+#            return op
+
         
 def op_scalable_v(op):
     if op.lookupfn_name:
@@ -199,6 +205,30 @@ def op_x87(op):
           re.match(r'XED_REG_ST[0-7]',op.bits) ):
         return True
     return False
+
+def one_xmm_reg_one_mem_fixed(ii): 
+    n = 0
+    r = 0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['dq','q','ps','pd']:
+            n = n + 1
+        elif op_reg(op) and op.oc2 in ['dq','q','ps','pd']:
+            r = r + 1
+        else:
+            return False
+    return n==1 and r==1
+def one_xmm_reg_one_mem_fixed_imm8(ii): 
+    i,r,n=0,0,0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['dq','q','ps','pd']:
+            n = n + 1
+        elif op_reg(op) and op.oc2 in ['dq','q','ps','pd']:
+            r = r + 1
+        elif op_imm8(op):
+            i = i + 1
+        else:
+            return False
+    return n==1 and r==1 and i==1
 
 def one_mem_fixed(ii): # b,w,d,q,dq, v, y, etc.
     n = 0
@@ -1255,14 +1285,17 @@ arg_dvars = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32 }  # index by dispsz
 arg_imm_dct = { 8: arg_imm8, 16: arg_imm16, 32: arg_imm32 }
 var_imm_dct = { 8: arg_imm8, 16: var_imm16, 32: var_imm32 }
 
-def add_memop_args(env, fo, use_index, dispsz, immw):
+def add_memop_args(env, fo, use_index, dispsz, immw, reg0=-1):
     global enc_fn_prefix, arg_request
+    global arg_reg0
     global arg_base, arg_index, arg_scale
     global arg_disp8, arg_disp16, arg_disp32 
     global arg_imm_dct
     global arg_dvars
     
     fo.add_arg(arg_request)
+    if reg0 == 0:
+        fo.add_arg(arg_reg0)
     fo.add_arg(arg_base)
     if use_index:
         fo.add_arg(arg_index)
@@ -1271,12 +1304,73 @@ def add_memop_args(env, fo, use_index, dispsz, immw):
 
     if dispsz != 0:
         fo.add_arg(arg_dvars[dispsz]) 
+    if reg0 == 1:
+        fo.add_arg(arg_reg0)
 
     if immw:
         fo.add_arg(arg_imm_dct[immw])
+        
+def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
+    global var_reg0
 
+    if 0:
+        oc2 = None
+        for op in _gen_opnds(ii):
+            if oc2 == None:
+                oc2 = op.oc2
+            elif oc2 != op.oc2:
+                _dump_fields(ii)
+                die("OC2 mismatch {}: {} vs {}".format(ii.iclass,oc2,op.oc2))
+
+    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
+    dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
+    op = first_opnd(ii)
+    width = op.oc2
+    immw = 8 if imm8 else 0
+    i = 0 if modrm_reg_first_operand(ii) else 1    # i determines argument order
+    opsig = 'rm' if i==0 else 'mr'
+    if imm8:
+        opsig = opsig + 'i'
+        
+    for use_index in [ False, True ]:
+        for dispsz in dispsz_list:
+            memaddrsig = get_memsig(env.asz, use_index, dispsz)
+            fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                                ii.iclass.lower(),
+                                                opsig,
+                                                width,
+                                                memaddrsig,
+                                                env.asz)
+
+            fo = make_function_object(env,fname)
+            fo.add_comment("created by create_legacy_one_xmm_reg_one_mem_fixed")
+            
+            add_memop_args(env, fo, use_index, dispsz, immw, reg0=i)
+
+            rexw_forced = False
+            if ii.eosz == 'o16' and env.mode in [32,64]:
+                fo.add_code_eol('emit(r,0x66)', 'xx: fixed width with 16b osz')
+            elif ii.eosz == 'o32' and env.mode == 16:
+                fo.add_code_eol('emit(r,0x66)')
+            elif (ii.eosz == 'o64' and env.mode == 64 and ii.default_64b == False) or ii.rexw_prefix == '1':
+                rexw_forced = True
+                fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+
+            emit_required_legacy_prefixes(ii,fo)
+
+            mod = modvals[dispsz]
+            if mod:  # ZERO-INIT OPTIMIZATION
+                fo.add_code_eol('set_mod(r,{})'.format(mod))
+
+            # the sole reg is reg0 whether it is first or 2nd operand...
+            fo.add_code_eol('enc_modrm_reg_xmm(r,{})'.format(var_reg0))
+
+            encode_mem_operand(env, ii, fo, use_index, dispsz)
+            finish_memop(env, ii, fo, rexw_forced, dispsz, immw)
+
+
+            
 def create_legacy_one_mem_fixed(env,ii,imm=0):
-    global dvars
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
     
@@ -1340,7 +1434,6 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                 if mod:  # ZERO-INIT OPTIMIZATION
                     fo.add_code_eol('set_mod(r,{})'.format(mod))
 
-                # FIXME: ADD SECOND OPERAND HERE
                 if ii.reg_required != 'unspecified':
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
@@ -1473,7 +1566,10 @@ def _enc_legacy(env,ii):
         create_legacy_one_mem_fixed(env,ii,imm='8')
     elif one_mem_fixed_immz(ii): 
         create_legacy_one_mem_fixed(env,ii,imm='z')
-        
+    elif one_xmm_reg_one_mem_fixed(ii):
+        create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=False)
+    elif one_xmm_reg_one_mem_fixed_imm8(ii):
+        create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=True)
 def two_xmm(ii):
     n = 0
     for op in _gen_opnds(ii):
@@ -1674,13 +1770,11 @@ def spew(ii):
                 s[-1] = s[-1] + '-nvy'
                 
     if ii.encoder_functions:            
-        dbg("//XX   {}".format(" ".join(s)))
+        dbg("//DONE {}".format(" ".join(s)))
     elif ii.encoder_skipped:
         dbg("//SKIP {}".format(" ".join(s)))
-    elif one_nonmem_operand(ii) and not one_x87_reg(ii):
-        dbg("//ZZ   {}".format(" ".join(s)))
     else:
-        dbg("//YY   {}".format(" ".join(s)))
+        dbg("//TODO {}".format(" ".join(s)))
 
 
 def gather_stats(db):
