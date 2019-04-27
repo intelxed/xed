@@ -1609,6 +1609,28 @@ def three_ymm(ii):
             return False
     return n==3
 
+def two_xmm_and_mem(ii):
+    m,n = 0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_xmm(op):
+            n = n + 1
+        elif op_mem(op):
+            m = m + 1
+        else:
+            return False
+    return n==2 and m==1
+
+def two_ymm_and_mem(ii):
+    m,n = 0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_ymm(op):
+            n = n + 1
+        elif op_mem(op):
+            m = m + 1
+        else:
+            return False
+    return n==2 and m==1
+
 def set_vex_pp(ii,fo):
     vex_prefix = re.compile(r'VEX_PREFIX=(?P<prefix>[0123])')
     m = vex_prefix.search(ii.pattern)
@@ -1672,14 +1694,20 @@ def create_vex_simd_reg(env,ii,nopnds):
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
+def create_vex_simd_2reg_mem(env,ii,xmm_or_ymm):
+    pass # FIXME
     
-        
 def _enc_vex(env,ii):
     if three_xmm(ii) or three_ymm(ii):
         create_vex_simd_reg(env,ii,3)
-    if two_xmm(ii) or two_ymm(ii):
+    elif two_xmm(ii) or two_ymm(ii):
         create_vex_simd_reg(env,ii,2)
-        
+    elif two_xmm_and_mem(ii):
+        create_vex_simd_2reg_mem(env,ii,'xmm')
+    elif two_ymm_and_mem(ii):
+        create_vex_simd_2reg_mem(env,ii,'ymm')
+
+    
 def _enc_evex(env,ii):
     pass # FIXME
 def _enc_xop(env,ii):
