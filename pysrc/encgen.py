@@ -2018,10 +2018,12 @@ def gather_stats(db):
     forms = len(db)
     generated_fns = 0
     skipped_fns = 0
+    not_done = { 'evex':0, 'vex':0, 'legacy':0, 'xop':0 }
     for ii in db:
         gen_fn = len(ii.encoder_functions)
         if gen_fn == 0:
             unhandled  = unhandled + 1
+            not_done[ii.space] =  not_done[ii.space] + 1
         generated_fns = generated_fns + gen_fn
         if ii.encoder_skipped:
             skipped_fns = skipped_fns + 1
@@ -2031,7 +2033,8 @@ def gather_stats(db):
     dbg("// Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
     dbg("// Generated Encoding functions: {:5d}".format(generated_fns))
     dbg("// Skipped Encoding functions:   {:5d}".format(skipped_fns))
-        
+    for space in not_done.keys():
+        dbg("// not-done {:8s}:   {:5d}".format(space, not_done[space]))
 
 # object used for the env we pass to the generator
 class enc_env_t(object):
