@@ -1806,7 +1806,22 @@ def evex_masking_3xyzmm_noround(ii):
         return (x==0 and y==0 and z==3) or (x==0 and y==3 and z==0) or (x==3 and y==0 and z==0)
     return False
 
-def create_evex_masking_3xyzmm(env,ii):
+def evex_masking_2xyzmm_noround(ii):
+    if ii.write_masking and not ii.rounding_form:
+        x,y,z=0,0,0
+        for op in _gen_opnds(ii):
+            if op_xmm(op):
+                x = x + 1
+            elif op_ymm(op):
+                y = y + 1
+            elif op_zmm(op):
+                z = z + 1
+            else:
+                return False
+        return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
+    return False
+
+def create_evex_masking_3xyzmm(env,ii,nopnds=3):
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -1842,7 +1857,8 @@ def create_evex_masking_3xyzmm(env,ii):
             if ii.write_masking_merging == False:
                 fo.add_arg(arg_zeroing)
         fo.add_arg(arg_reg1)
-        fo.add_arg(arg_reg2)
+        if nopnds == 3:
+            fo.add_arg(arg_reg2)
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -1856,6 +1872,7 @@ def create_evex_masking_3xyzmm(env,ii):
             
         # ENCODE REGISTERS
         vars = [var_reg0, var_reg1, var_reg2]
+        var_r, var_b, var_n = None, None, None
         for i,op in enumerate(_gen_opnds(ii)):
             if op.lookupfn_name:
                 if op.lookupfn_name.endswith('_R3'):
@@ -1866,8 +1883,14 @@ def create_evex_masking_3xyzmm(env,ii):
                     var_n = vars[i]
                 else:
                     die("SHOULD NOT REACH HERE")
-                
-        fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+        if var_n:
+            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+        else:
+            if nopnds == 3:
+                die("SHOULD NOT REACH HERE")
+            fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+            fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
+            
         fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
         fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(vl, var_b))        
             
@@ -1882,7 +1905,9 @@ def create_evex_masking_3xyzmm(env,ii):
         
 def _enc_evex(env,ii):
     if evex_masking_3xyzmm_noround(ii):
-        create_evex_masking_3xyzmm(env,ii)
+        create_evex_masking_3xyzmm(env,ii,nopnds=3)
+    if evex_masking_2xyzmm_noround(ii):
+        create_evex_masking_3xyzmm(env,ii,nopnds=2)
         
 def _enc_xop(env,ii):
     pass # FIXME
