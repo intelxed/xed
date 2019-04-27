@@ -372,6 +372,42 @@ static XED_INLINE void emit_evex(xed_enc2_req_t* r) {
 
 //////
 
+
+// evex registers k0..k7 regs
+XED_DLL_EXPORT void enc_evex_vvvv_reg_kreg(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_reg_kreg(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_kmask(xed_enc2_req_t* r,
+                                   xed_reg_enum_t dst);
+
+// evex registers vvvv, modrm.reg, modrm.rm for xmm, ymm, zmm
+XED_DLL_EXPORT void enc_evex_vvvv_reg_xmm(xed_enc2_req_t* r,
+                                          xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_reg_xmm(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_rm_xmm(xed_enc2_req_t* r,
+                                          xed_reg_enum_t dst);
+
+XED_DLL_EXPORT void enc_evex_vvvv_reg_ymm(xed_enc2_req_t* r,
+                                          xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_reg_ymm(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_rm_ymm(xed_enc2_req_t* r,
+                                          xed_reg_enum_t dst);
+
+XED_DLL_EXPORT void enc_evex_vvvv_reg_zmm(xed_enc2_req_t* r,
+                                          xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_reg_zmm(xed_enc2_req_t* r,
+                                           xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
+                                          xed_reg_enum_t dst);
+
+
+
+
 XED_DLL_EXPORT void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
                                       xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_vvvv_reg_ymm(xed_enc2_req_t* r,
