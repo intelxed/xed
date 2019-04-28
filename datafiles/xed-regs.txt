@@ -119,14 +119,13 @@ FLAGS   flags 16 RFLAGS/EFLAGS
 EFLAGS  flags 32 RFLAGS/EFLAGS
 RFLAGS  flags 64 RFLAGS
 
-CS   sr    16 CS
-DS   sr    16 DS
+# natural order for the seg regs. See SEG() nonterminal
 ES   sr    16 ES
+CS   sr    16 CS
 SS   sr    16 SS
+DS   sr    16 DS
 FS   sr    16 FS
 GS   sr    16 GS
-
-
 
 
 MMX0  mmx 64  MMX0  0 - mm0
