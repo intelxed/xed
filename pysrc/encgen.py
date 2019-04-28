@@ -356,6 +356,20 @@ def zero_operands(ii):
     for op in _gen_opnds(ii):
         n = n + 1
     return n == 0
+
+def one_implicit_gpr_imm8(ii):
+    '''this allows implicit operands'''
+    n = 0
+    for op in _gen_opnds(ii):
+        if op_imm8(op):
+            n = n + 1
+        elif op.visibility == 'IMPLICIT':
+            continue
+        else:
+            return False
+    return n == 1
+    
+
 def one_nonmem_operand(ii):
     n = 0
     for op in _gen_opnds(ii):
@@ -590,7 +604,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
             if ii.rm_required != 'unspecified':
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
 
-        if ii.partial_opcode: # WRK
+        if ii.partial_opcode: 
             if ii.rm_required == 'unspecified':
                 op = first_opnd(ii)
                 if op.lookupfn_name and op.lookupfn_name == 'GPRv_SB':
@@ -754,11 +768,13 @@ def create_legacy_one_imm_fixed(env,ii):
     ii.encoder_functions.append(fo)
 
 
-def create_legacy_one_implicit_reg(env,ii):
-    global enc_fn_prefix, arg_request
+def create_legacy_one_implicit_reg(env,ii,imm8=False):
+    global enc_fn_prefix, arg_request, arg_imm8, var_imm8
 
-    fname = "{}_{}".format(enc_fn_prefix,
-                           ii.iclass.lower())
+    sig = '_i8' if imm8 else ''
+    fname = "{}_{}{}".format(enc_fn_prefix,
+                              ii.iclass.lower(),
+                              sig)
     # "push es" needs the es as part of the function name
     extra_names = _gather_implicit_regs(ii)
     if extra_names:
@@ -767,14 +783,19 @@ def create_legacy_one_implicit_reg(env,ii):
     fo.add_comment("created by create_legacy_one_implicit_reg")
 
     fo.add_arg(arg_request)
+    if imm8:
+        fo.add_arg(arg_imm8)
     modrm_required = create_modrm_byte(ii,fo)
     emit_required_legacy_prefixes(ii,fo)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     if modrm_required:
         fo.add_code_eol('emit_modrm(r)')
+    if imm8:
+        fo.add_code_eol('emit(r,{})'.format(var_imm8))
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
+    
     
 def create_legacy_one_nonmem_opnd(env,ii):
 
@@ -815,7 +836,7 @@ def create_legacy_one_nonmem_opnd(env,ii):
                 op.lookupfn_name,
                 "create_legacy_one_nonmem_opnd"))
     elif op.visibility == 'IMPLICIT' and op.name.startswith('REG'):
-        create_legacy_one_implicit_reg(env,ii)
+        create_legacy_one_implicit_reg(env,ii,imm8=False)
     else:
         warn("Need to handle {} in {}".format(
             op, "create_legacy_one_nonmem_opnd"))
@@ -1694,6 +1715,8 @@ def _enc_legacy(env,ii):
 
     if zero_operands(ii):
         create_legacy_no_operands(env,ii)
+    elif one_implicit_gpr_imm8(ii):
+        create_legacy_one_implicit_reg(env,ii,imm8=True)        
     elif one_gpr_reg_one_mem_scalable(ii):
         create_legacy_one_gpr_reg_one_mem_scalable(env,ii)
     elif one_gpr_reg_one_mem_fixed(ii):
