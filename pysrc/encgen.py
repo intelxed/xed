@@ -31,6 +31,13 @@ import codegen
 import read_xed_db
 import gen_setup
 
+PY3 = sys.version_info > (3,)
+def is_python3():
+    global PY3
+    return PY3
+if is_python3() == False:
+    die("This script requires python3\n")
+
 gpr_nt_widths_dict = {}
 # list indexed by OSZ (o16,o32,o64)
 gpr_nt_widths_dict['GPRv_SB'] = [16,32,64]
@@ -349,6 +356,21 @@ def two_x87_reg(ii): # one implicit
             return False
         
     return n==2 and implicit == 1
+
+def one_x87_implicit_reg_one_memop(ii): 
+    mem,implicit_reg = 0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_x87(op):
+            if op.visibility == 'IMPLICIT':
+                implicit_reg = implicit_reg + 1
+            else:
+                return False
+        elif op_mem(op):
+            mem = mem + 1
+        else:
+            return False
+        
+    return mem==1 and implicit_reg==1
 
 
 def zero_operands(ii):
@@ -1155,6 +1177,7 @@ def create_legacy_two_mmx_regs(env,ii):
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
+
 def create_legacy_two_x87_reg(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0
     fname = "{}_{}_{}_st0".format(enc_fn_prefix,
@@ -1186,7 +1209,10 @@ def create_legacy_one_x87_reg(env,ii):
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)
     emit_required_legacy_prefixes(ii,fo)
-    fo.add_code_eol('set_mod(r,3)')
+    if ii.mod_required == 3:
+        fo.add_code_eol('set_mod(r,3)')
+    else:
+        die("FUNKY MOD on x87 op: {}".format(ii.mod_required))
     if ii.reg_required == 'unspecified':
         die("Need a value for MODRM.REG in x87 encoding")
     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
@@ -1588,19 +1614,26 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
             immw = 8
         elif imm == 'z':
             immw = immz_dict[width]
-        
+            
+        extra_names = _gather_implicit_regs(ii)
+        if extra_names:
+            extra_names = '_' + '_'.join( extra_names )
+        else:
+            extra_names = ''
+            
         for use_index in [ False, True ]:
             for dispsz in dispsz_list:
                 memaddrsig = get_memsig(env.asz, use_index, dispsz)
-                fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                                    ii.iclass.lower(),
-                                                    'memi{}'.format(immw) if imm else 'mem',
-                                                    width,
-                                                    memaddrsig,
-                                                    env.asz)
-                
+                fname = '{}_{}{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
+                                                      ii.iclass.lower(),
+                                                      extra_names,
+                                                      'memi{}'.format(immw) if imm else 'mem',
+                                                      width,
+                                                      memaddrsig,
+                                                      env.asz)
+
                 fo = make_function_object(env,fname)
-                fo.add_comment("created by create_legacy_one_mem_fixed")
+                fo.add_comment('created by create_legacy_one_mem_fixed')
                 fo.add_arg(arg_request)
                 add_memop_args(env, fo, use_index, dispsz, immw)
 
@@ -1628,6 +1661,8 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                 mod = modvals[dispsz]
                 if mod:  # ZERO-INIT OPTIMIZATION
                     fo.add_code_eol('set_mod(r,{})'.format(mod))
+                else:
+                    fo.add_comment('mod=0, zero init optimization')
 
                 if ii.reg_required != 'unspecified':
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
@@ -1735,10 +1770,14 @@ def _enc_legacy(env,ii):
         create_legacy_one_mmx_reg_imm8(env,ii)
     elif two_mmx_regs(ii):
         create_legacy_two_mmx_regs(env,ii)
+        
     elif one_x87_reg(ii):
         create_legacy_one_x87_reg(env,ii)
     elif two_x87_reg(ii): # one implicit
         create_legacy_two_x87_reg(env,ii)
+    elif one_x87_implicit_reg_one_memop(ii):
+        create_legacy_one_mem_fixed(env,ii,imm=0)
+        
     elif one_nonmem_operand(ii):  
         create_legacy_one_nonmem_opnd(env,ii)  # branches out
     elif gpr8_imm8(ii):
@@ -2189,7 +2228,7 @@ def _enc_evex(env,ii):
     if evex_masking_3xyzmm_round(ii):
         create_evex_masking_3xyzmm(env,ii, nopnds=3, rounding=True)
     if evex_masking_2xyzmm_noround(ii):
-        create_evex_masking_3xyzmm(env,ii,nopnds=2, rounding=False)
+        create_evex_masking_3xyzmm(env,ii, nopnds=2, rounding=False)
         
 def _enc_xop(env,ii):
     pass # FIXME
@@ -2258,6 +2297,8 @@ def spew(ii):
             s.append('nz')
         if ii.write_masking_notk0:
             s.append('!k0')
+    else:
+        s.append('nomasking')
 
         
     for op in _gen_opnds(ii):
@@ -2418,8 +2459,18 @@ def work():
             for ii in xeddb.recs:
                 create_enc_fn(env, ii)
                 spew(ii)
-            
+
+
+            msge("Writing functions to .c and .h files")
+            func_list = []
+            for ii in xeddb.recs:
+                func_list.extend(ii.encoder_functions)
+            fn_prefix = 'xed-enc2-m{}-a{}'.format(mode,asz)
+            codegen.emit_function_list(func_list, fn_prefix, args.xeddir, args.gendir, args.gendir)
+
+                
     gather_stats(xeddb.recs)
+
     return 0
 
 if __name__ == "__main__":
