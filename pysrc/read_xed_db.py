@@ -348,10 +348,10 @@ class xed_reader_t(object):
                 v.reg_required = genutil.make_numeric(reg.group('reg'))
 
             v.rm_required = 'unspecified'
-            rm = rm_required.search(v.pattern)
+            rm = rm_required.search(v.pattern) # bit capture
             if rm:
                 v.rm_required = genutil.make_numeric(rm.group('rm'))
-            rm = rm_val_required.search(v.pattern)
+            rm = rm_val_required.search(v.pattern)  # equality
             if rm:
                 v.rm_required = genutil.make_numeric(rm.group('rm'))
             
