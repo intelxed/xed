@@ -105,63 +105,63 @@ void enc_evex_vvvv_reg_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_vvvv(r, ~(offset & 15));
-    set_evevv(r, ~(offset>15));    
+    set_evexvv(r, ~(offset>15));    
 }
 void enc_evex_modrm_reg_xmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r, ~(offset >= 8));
-    set_evexrr(r, ~(offset >= 16))
+    set_evexrr(r, ~(offset >= 16));
 }
 void enc_evex_modrm_rm_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, ~(offset >= 8));
-    set_rexx(r, ~(offset >= 16))
+    set_rexx(r, ~(offset >= 16));
 }
 
 void enc_evex_vvvv_reg_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_vvvv(r, ~(offset & 15));
-    set_evevv(r, ~(offset>15));    
+    set_evexvv(r, ~(offset>15));    
 }
 void enc_evex_modrm_reg_ymm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r, ~(offset >= 8));
-    set_evexrr(r, ~(offset >= 16))
+    set_evexrr(r, ~(offset >= 16));
 }
 void enc_evex_modrm_rm_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, ~(offset >= 8));
-    set_rexx(r, ~(offset >= 16))
+    set_rexx(r, ~(offset >= 16));
 }
 
 void enc_evex_vvvv_reg_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_vvvv(r, ~(offset & 15));
-    set_evevv(r, ~(offset>15));    
+    set_evexvv(r, ~(offset>15));    
 }
 void enc_evex_modrm_reg_zmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r, ~(offset >= 8));
-    set_evexrr(r, ~(offset >= 16))
+    set_evexrr(r, ~(offset >= 16));
 }
 void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, ~(offset >= 8));
-    set_rexx(r, ~(offset >= 16))
+    set_rexx(r, ~(offset >= 16));
 }
 
 
@@ -232,7 +232,7 @@ void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
     xed_uint_t offset = dst-XED_REG_GPR8_FIRST;   
     if (dst >= XED_REG_AH && dst <= XED_REG_BH)
-        offset = dst-XED-REG_GPR8h_FIRST;  // AH,CH,DH,BH
+        offset = dst-XED_REG_GPR8h_FIRST;  // AH,CH,DH,BH
    
     set_reg(r, offset & 7);
     set_rexr(r,offset >= 8);
@@ -246,7 +246,7 @@ void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
     /* encode modrm.rm with a register */
     xed_uint_t offset = dst-XED_REG_GPR8_FIRST; 
     if (dst >= XED_REG_AH && dst <= XED_REG_BH)
-        offset = dst-XED-REG_GPR8h_FIRST;  // AH,CH,DH,BH
+        offset = dst-XED_REG_GPR8h_FIRST;  // AH,CH,DH,BH
 
     set_mod(r, 3);
     set_rm(r, offset & 7);
@@ -826,7 +826,7 @@ xed_uint8_t emit_partial_opcode_and_rmreg(xed_enc2_req_t* r,
     xed_uint_t offset = rmreg - first;
     xed_uint8_t opcode_out = opcode | (offset & 7);
     set_rexb(r, offset >= 8);
-    return opcode_out
+    return opcode_out;
 }
 xed_uint8_t emit_partial_opcode_and_rmreg_gpr16(xed_enc2_req_t* r,
                                                 xed_uint8_t opcode,
@@ -840,7 +840,7 @@ xed_uint8_t emit_partial_opcode_and_rmreg_gpr32(xed_enc2_req_t* r,
 {
     return emit_partial_opcode_and_rmreg(r,opcode,rmreg, XED_REG_GPR32_FIRST);
 }
-xed_uint8_t emit_partial_opcode_and_rmreg_gpr32(xed_enc2_req_t* r,
+xed_uint8_t emit_partial_opcode_and_rmreg_gpr64(xed_enc2_req_t* r,
                                                 xed_uint8_t opcode,
                                                 xed_reg_enum_t rmreg)
 {
@@ -903,7 +903,6 @@ void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
 
     enc_modrm_reg_gpr32(r,dst);
 
-    // FIXME: copies disp32 twice unnecessarily... could just emit it
     enc_modrm_rm_mem_disp32_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
