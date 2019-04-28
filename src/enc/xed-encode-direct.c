@@ -903,7 +903,7 @@ void encode_mov32_reg_mem_disp32_a32(xed_enc2_req_t* r,
 
     enc_modrm_reg_gpr32(r,dst);
 
-    enc_modrm_rm_mem_disp32_a32(r,base,indx,scale);  
+    enc_modrm_rm_mem_bisd32_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
     emit_modrm_sib(r);
@@ -921,7 +921,7 @@ void encode_mov32_reg_mem_disp8_a32(xed_enc2_req_t* r,
     enc_modrm_reg_gpr32(r,dst);
 
     // FIXME: copies disp32 twice unnecessarily... could just emit it
-    enc_modrm_rm_mem_disp8_a32(r,base,indx,scale);  
+    enc_modrm_rm_mem_bisd8_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
     emit_modrm_sib(r);
@@ -939,7 +939,7 @@ void encode_mov32_reg_mem_nodisp_a32(xed_enc2_req_t* r,
     // if the user specifies EBP or R13D as a base, we add a zero-valued
     // disp8.
     
-    enc_modrm_rm_mem_nodisp_a32(r,base,indx,scale);  
+    enc_modrm_rm_mem_bis_a32(r,base,indx,scale);  
     emit_rex_if_needed(r);
     emit(r,0x8B);
     emit_modrm_sib(r);
@@ -961,7 +961,7 @@ void encode_mov64_reg_mem_nodisp_a64(xed_enc2_req_t* r,
     // if the user specifies RSP, RBP, R12, R13 as a base, we add a
     // zero-valued disp8.
     
-    enc_modrm_rm_mem_nodisp_a64(r,base,indx,scale);  
+    enc_modrm_rm_mem_bis_a64(r,base,indx,scale);  
     emit_rex(r);
     emit(r,0x8B);
     emit_modrm_sib(r);
@@ -977,7 +977,7 @@ void encode_mov64_reg_mem_disp32_a64(xed_enc2_req_t* r,
     set_rexw(r); //64b operation
     enc_modrm_reg_gpr64(r,dst);
 
-    enc_modrm_rm_mem_disp32_a64(r,base,indx,scale);  
+    enc_modrm_rm_mem_bisd32_a64(r,base,indx,scale);  
     emit_rex(r);
     emit(r,0x8B);
     emit_modrm_sib(r);
@@ -994,7 +994,7 @@ void encode_mov64_reg_mem_disp8_a64(xed_enc2_req_t* r,
     set_rexw(r); //64b operation
     enc_modrm_reg_gpr64(r,dst);
 
-    enc_modrm_rm_mem_disp8_a64(r,base,indx,scale);  
+    enc_modrm_rm_mem_bisd8_a64(r,base,indx,scale);  
     emit_rex(r);
     emit(r,0x8B);
     emit_modrm_sib(r);
