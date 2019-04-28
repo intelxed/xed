@@ -579,7 +579,9 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
             f1, f2 = 'reg','rm'
         else:
             f1, f2 = 'rm','reg'
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1, osz, var_reg0))
+        # if f1 is rm then we handle partial opcodes farther down
+        if f1 == 'reg' or not ii.partial_opcode:
+            fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1, osz, var_reg0))
         
         if f2 == 'reg':
             if ii.reg_required != 'unspecified':
@@ -588,14 +590,32 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
             if ii.rm_required != 'unspecified':
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
 
+        if ii.partial_opcode: # WRK
+            if ii.rm_required == 'unspecified':
+                op = first_opnd(ii)
+                if op.lookupfn_name and op.lookupfn_name == 'GPRv_SB':
+                    opcode = "0x{:02X}".format(ii.opcode_base10)
+                    # might end up requring rex in 64b mode
+                    fo.add_code_eol('enc_srm_reg_gpr{}(r,{})'.format(osz, var_reg0))
+                else:
+                    warn("NOT HANDLING SOME PARTIAL OPCODES YET: {} / {} / {}".format(ii.iclass, ii.iform, op))
+                    ii.encoder_skipped = True
+                    return
+            else:
+                die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
+
         if env.mode == 64:
             if rexw_forced:
                 fo.add_code_eol('emit_rex(r)')
             else:
                 fo.add_code_eol('emit_rex_if_needed(r)')
         emit_required_legacy_map_escapes(ii,fo)
-        emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+                
+        if ii.partial_opcode:
+            fo.add_code_eol('emit(r,{} | get_opcode_srm(r))'.format(opcode), 'partial opcode')
+        else:
+            emit_opcode(ii,fo)
+            fo.add_code_eol('emit_modrm(r)')
 
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
@@ -850,10 +870,16 @@ def create_legacy_no_operands(env,ii):
     emit_required_legacy_prefixes(ii,fo)
 
     emit_required_legacy_map_escapes(ii,fo)
-    if ii.partial_opcode:
-        warn("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
-        ii.encoder_skipped = True
-        return
+    if ii.partial_opcode: 
+        if ii.rm_required != 'unspecified':
+            fixed_opcode_srm = ii.rm_required
+            opcode = "0x{:02X}".format(ii.opcode_base10)
+            fo.add_code_eol('emit(r,{} | {})'.format(opcode,fixed_opcode_srm),
+                            'partial opcode')
+        else:
+            warn("NOT HANDLING SOME PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
+            ii.encoder_skipped = True
+            return
     else:
         emit_opcode(ii,fo)
         if modrm_required:
@@ -2086,7 +2112,7 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3,rounding=False):
         if nopnds == 3:
             fo.add_arg(arg_reg2)
         if rounding:
-            fo.add_arg(arg_rcsae) # WRK
+            fo.add_arg(arg_rcsae) 
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))

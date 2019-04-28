@@ -54,6 +54,7 @@ typedef struct {
     xed_uint32_t evexz:1;
     xed_uint32_t evexaaa:3;
 
+    xed_uint32_t opcode_srm:3; /// for "partial opcode" instructions
     xed_uint32_t mod:2;
     xed_uint32_t reg:3;
     xed_uint32_t rm:3;
@@ -156,6 +157,12 @@ static XED_INLINE void set_rm(xed_enc2_req_t* r, xed_uint_t v) {
 }
 static XED_INLINE xed_uint_t get_rm(xed_enc2_req_t* r) {
     return r->s.rm;
+}
+static XED_INLINE void set_srm(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.opcode_srm = v;
+}
+static XED_INLINE xed_uint_t get_opcode_srm(xed_enc2_req_t* r) {
+    return r->s.opcode_srm;
 }
 
 
@@ -478,6 +485,15 @@ XED_DLL_EXPORT void enc_modrm_reg_gpr64(xed_enc2_req_t* r,
     
 XED_DLL_EXPORT void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
                         xed_reg_enum_t dst);
+
+
+XED_DLL_EXPORT void enc_srm_gpr16(xed_enc2_req_t* r,
+                                  xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_srm_gpr32(xed_enc2_req_t* r,
+                                  xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_srm_gpr64(xed_enc2_req_t* r,
+                                  xed_reg_enum_t dst);
+
 
 XED_DLL_EXPORT void emit_modrm_sib(xed_enc2_req_t* r);
 

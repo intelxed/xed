@@ -313,6 +313,27 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
     set_rexb(r, offset >= 8);
 }
 
+
+void enc_srm_gpr16(xed_enc2_req_t* r,
+                   xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
+    set_srm(r, offset & 7);
+    set_rexb(r, offset >= 8);
+}
+void enc_srm_gpr32(xed_enc2_req_t* r,
+                   xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
+    set_srm(r, offset & 7);
+    set_rexb(r, offset >= 8);
+}
+void enc_srm_gpr64(xed_enc2_req_t* r,
+                   xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
+    set_srm(r, offset & 7);
+    set_rexb(r, offset >= 8);
+}
+
+
 void emit_modrm_sib(xed_enc2_req_t* r) {
     emit_modrm(r);
     // some base reg encodings require sib and some of those require modrm
