@@ -36,6 +36,7 @@ END_LEGAL */
 #include "xed-decode-supp.h"
 #if defined(XED_ENCODER)
 # include "xed-encode-isa-functions.h"
+# include "xed-encode-direct.h"
 #endif
 
 #endif
