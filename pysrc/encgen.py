@@ -2466,7 +2466,10 @@ def work():
             for ii in xeddb.recs:
                 func_list.extend(ii.encoder_functions)
             fn_prefix = 'xed-enc2-m{}-a{}'.format(mode,asz)
-            codegen.emit_function_list(func_list, fn_prefix, args.xeddir, args.gendir, args.gendir)
+            codegen.emit_function_list(func_list, fn_prefix,
+                                       args.xeddir,
+                                       args.gendir, args.gendir,
+                                       max_lines_per_file=15000)
 
                 
     gather_stats(xeddb.recs)
