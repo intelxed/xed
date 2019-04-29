@@ -139,6 +139,8 @@ var_imm16 = 'imm16'
 arg_imm16 = 'xed_uint16_t ' + var_imm16
 var_imm32 = 'imm32'
 arg_imm32 = 'xed_uint32_t ' + var_imm32
+var_imm64 = 'imm64'
+arg_imm64 = 'xed_uint64_t ' + var_imm64
 
 dbg_output = sys.stdout
 
@@ -441,6 +443,11 @@ def op_immz(op):
         if op.oc2 == 'z':
             return True
     return False
+def op_immv(op):
+    if op.name == 'IMM0':
+        if op.oc2 == 'v':
+            return True
+    return False
 def op_imm8(op):
     if op.name == 'IMM0':
         if op.oc2 == 'b':
@@ -665,7 +672,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
         emit_required_legacy_map_escapes(ii,fo)
                 
         if ii.partial_opcode:
-            fo.add_code_eol('emit(r,{} | get_opcode_srm(r))'.format(opcode), 'partial opcode')
+            emit_partial_opcode_variable_srm(ii,fo)
         else:
             emit_opcode(ii,fo)
             fo.add_code_eol('emit_modrm(r)')
@@ -932,10 +939,7 @@ def create_legacy_no_operands(env,ii):
     emit_required_legacy_map_escapes(ii,fo)
     if ii.partial_opcode: 
         if ii.rm_required != 'unspecified':
-            fixed_opcode_srm = ii.rm_required
-            opcode = "0x{:02X}".format(ii.opcode_base10)
-            fo.add_code_eol('emit(r,{} | {})'.format(opcode,fixed_opcode_srm),
-                            'partial opcode')
+            emit_partial_opcode_fixed_srm(ii,fo)
         else:
             warn("NOT HANDLING SOME PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
             ii.encoder_skipped = True
@@ -1287,7 +1291,25 @@ def gprv_immz(ii):
         else:
             return False
     return True
-    
+
+def gprv_immv(ii):
+    for i,op in enumerate(_gen_opnds(ii)):
+        if i == 0:
+            if op.name == 'REG0' and op.lookupfn_name and op.lookupfn_name.startswith('GPRv'):
+                continue
+            else:
+                return False
+        elif i == 1:
+            if op_immv(op):
+                continue
+            else:
+                return False
+        else:
+            return False
+    return True
+
+
+
 def create_legacy_gpr_imm8(env,ii,width_list):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0, arg_imm8,  var_imm8
     
@@ -1393,6 +1415,79 @@ def create_legacy_gprv_immz(env,ii):
         ii.encoder_functions.append(fo)
 
 
+
+def create_legacy_gprv_immv(env,ii): #WRK
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_imm16, var_imm16
+    global arg_imm32, var_imm32
+    global arg_imm64, var_imm64
+    width_list = [16,32,64]
+    arg_imm = { 16: arg_imm16, 32: arg_imm32, 64: arg_imm64 }
+    var_imm = { 16: var_imm16, 32: var_imm32, 64: var_imm64 }
+    emit_width_immv = { 16:16, 32:32, 64:64 }
+    for osz in gen_osz_list(env.mode,width_list):
+        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      'ri',
+                                      osz)
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_legacy_gprv_immv")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_imm[osz])
+        emit_required_legacy_prefixes(ii,fo)
+        if osz == 16 and env.mode != 16:
+            # add a 66 prefix outside of 16b mode, to create 16b osz
+            fo.add_code_eol('emit(r,0x66)')
+        if osz == 32 and env.mode == 16:
+            # add a 66 prefix outside inside 16b mode to create 32b osz
+            fo.add_code_eol('emit(r,0x66)')
+        # FIXME exclude osz=32 if df64
+        rexw_forced = False            
+        if env.mode == 64:
+            if osz == 64 and ii.default_64b == False:
+                rexw_forced = True
+                fo.add_code_eol('set_rexw(r)')
+
+        # WE know this is a SRM partial opcode instr
+        if not ii.partial_opcode:
+            die("Expecting partial opcode instruction in create_legacy_gprv_immv")
+
+        op = first_opnd(ii)
+        if op.lookupfn_name and op.lookupfn_name == 'GPRv_SB':
+            opcode = "0x{:02X}".format(ii.opcode_base10)
+            # might end up requring rex in 64b mode
+            fo.add_code_eol('enc_srm_gpr{}(r,{})'.format(osz, var_reg0))
+        else:
+            die("NOT REACHED")
+
+        if env.mode == 64:
+            if rexw_forced:
+                fo.add_code_eol('emit_rex(r)')
+            else:
+                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_required_legacy_map_escapes(ii,fo)
+        emit_partial_opcode_variable_srm(ii,fo)
+        # emits 16/32/64-bit  immediate
+        fo.add_code_eol('emit_u{}(r,{})'.format(emit_width_immv[osz],
+                                                var_imm[osz]))
+        
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)
+        
+
+def emit_partial_opcode_variable_srm(ii,fo):
+    opcode = "0x{:02X}".format(ii.opcode_base10)
+    fo.add_code_eol('emit(r,{} | get_opcode_srm(r))'.format(opcode),
+                    'partial opcode, variable srm')
+
+def emit_partial_opcode_fixed_srm(ii,fo):
+    fixed_opcode_srm = ii.rm_required
+    opcode = "0x{:02X}".format(ii.opcode_base10)
+    fo.add_code_eol('emit(r,{} | {})'.format(opcode,fixed_opcode_srm),
+                    'partial opcode, fixed srm')
+        
 
 memsig_idx_16 = {  0: 'bi',
                    8: 'bid8',
@@ -1803,8 +1898,12 @@ def _enc_legacy(env,ii):
         create_legacy_gpr_imm8(env,ii,[8])
     elif gprv_imm8(ii):
         create_legacy_gpr_imm8(env,ii,[16,32,64])
+        
     elif gprv_immz(ii):
         create_legacy_gprv_immz(env,ii)
+    elif gprv_immv(ii):
+        create_legacy_gprv_immv(env,ii)
+        
     elif one_mem_fixed(ii): # b,w,d,q,dq, v,y
         create_legacy_one_mem_fixed(env,ii,imm=0)
     elif one_mem_fixed_imm8(ii): 
