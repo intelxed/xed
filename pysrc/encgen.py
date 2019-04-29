@@ -649,7 +649,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
                 if op.lookupfn_name and op.lookupfn_name == 'GPRv_SB':
                     opcode = "0x{:02X}".format(ii.opcode_base10)
                     # might end up requring rex in 64b mode
-                    fo.add_code_eol('enc_srm_reg_gpr{}(r,{})'.format(osz, var_reg0))
+                    fo.add_code_eol('enc_srm_gpr{}(r,{})'.format(osz, var_reg0))
                 else:
                     warn("NOT HANDLING SOME PARTIAL OPCODES YET: {} / {} / {}".format(ii.iclass, ii.iform, op))
                     ii.encoder_skipped = True
@@ -2239,9 +2239,10 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
                 die("SHOULD NOT REACH HERE")
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
             fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
-            
-        fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
-        fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(vl, var_b))        
+        if var_r:
+            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
+        if var_b:
+            fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(vl, var_b))        
             
         fo.add_code_eol('emit_evex(r)')
         emit_opcode(ii,fo)
