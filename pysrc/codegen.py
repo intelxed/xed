@@ -417,7 +417,7 @@ def dump_flist_2_header(h_file, functions, headers,
 
     h_file.close()
 
-def emit_function_list(func_list, fn_prefix, xeddir, gendir, hgendir, namespace=None, other_headers=[]):
+def emit_function_list(func_list, fn_prefix, xeddir, gendir, hgendir, namespace=None, other_headers=[], max_lines_per_file=3000):
    """Emit a list of functions to a numbered sequence of
    files. Breaking them up when the files get too big.
 
@@ -433,9 +433,12 @@ def emit_function_list(func_list, fn_prefix, xeddir, gendir, hgendir, namespace=
     @param hgendir: directory where the output hdr files go.
     @type namespace: string
     @param namespace: defaults to XED
+    @type other_headers: list
+    @param other_headers: extra headers to include
+    @type max_lines_per_file: int
+    @param max_lines_per_file: Approximate limit for file size, in lines. 
    """
    file_number = 0;
-   max_lines_per_file = 3000
    fe = None
    fn_header = "%s.h" % (fn_prefix)
    fe_list = []
