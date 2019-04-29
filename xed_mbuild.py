@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- python -*-
 #BEGIN_LEGAL
 #
@@ -203,7 +203,7 @@ class generator_inputs_t(object):
                                               self.file_name[f],
                                               self.files[f])
 
-    def decode_command(self, xedsrc, extra_args=None, on_windows=False):
+    def decode_command(self, xedsrc, extra_args=None):
         """Produce a decoder generator command"""
         s = []
         s.append( '%(pythonarg)s' )
@@ -239,8 +239,8 @@ class generator_inputs_t(object):
             s.append(extra_args)
         return ' '.join(s)
 
-    def encode_command(self, xedsrc, extra_args=None, on_windows=False, amd_enabled=True):
-        """Produce a decoder generator command"""
+    def encode_command(self, xedsrc, extra_args=None, amd_enabled=True):
+        """Produce a encoder generator command"""
         s = []
         s.append( '%(pythonarg)s' )
         # s.append("-3") # python3.0 compliance checking using python2.6
@@ -256,6 +256,16 @@ class generator_inputs_t(object):
             s.append('--no-amd')
         if extra_args:
             s.append( extra_args)
+        return ' '.join(s)
+    
+    def encode_command2(self, xeddir, gendir, file_name_for_output_file_list):
+        """Produce a encoder2 generator command"""
+        s = []
+        s.append( '%(pythonarg)s' )
+        s.append( aq(mbuild.join(xeddir, 'pysrc', 'encgen.py')))
+        s.append('--xeddir %s' % aq(xeddir))
+        s.append('--gendir %s' % aq(gendir))
+        s.append('--output-file-list %s' % aq(file_name_for_output_file_list))
         return ' '.join(s)
 
     def concatenate_one_set_of_files(self, env, target, inputs):
@@ -322,9 +332,8 @@ def run_decode_generator(gc, env):
     if env['compress_operands']:
         gen_extra_args += " --compress-operands" 
         
-    cmd = env.expand_string(gc.decode_command(xedsrc,
-                                              gen_extra_args,
-                                              env.on_windows()))
+    cmd = env.expand(gc.decode_command(xedsrc, gen_extra_args))
+
 
     if mbuild.verbose(2):
         mbuild.msgb("DEC-GEN", cmd)
@@ -337,8 +346,7 @@ def run_decode_generator(gc, env):
 
     if retval == 0:
         list_of_files = read_file_list(gc.dec_output_file)
-        mbuild.hash_files(list_of_files, 
-                          env.build_dir_join(".mbuild.hash.xeddecgen"))
+        mbuild.hash_files(list_of_files, gc.dec_hash_file)
 
     mbuild.msgb("DEC-GEN", "Return code: " + str(retval))
     return (retval, error_output )
@@ -352,10 +360,9 @@ def run_encode_generator(gc, env):
     build_dir = env.escape_string(env['build_dir'])
         
     gen_extra_args = "--gendir %s --xeddir %s" % (build_dir, xedsrc)
-    cmd = env.expand_string(gc.encode_command(xedsrc,
-                                              gen_extra_args,
-                                              env.on_windows(),
-                                              env['amd_enabled']))
+    cmd = env.expand(gc.encode_command(xedsrc,
+                                       gen_extra_args,
+                                       env['amd_enabled']))
     if mbuild.verbose(2):
         mbuild.msgb("ENC-GEN", cmd)
     (retval, output, error_output) = mbuild.run_command(cmd,
@@ -367,11 +374,39 @@ def run_encode_generator(gc, env):
 
     if retval == 0:
         list_of_files = read_file_list(gc.enc_output_file)
-        mbuild.hash_files(list_of_files, 
-                          env.build_dir_join(".mbuild.hash.xedencgen"))
+        mbuild.hash_files(list_of_files, gc.enc_hash_file)
 
     mbuild.msgb("ENC-GEN", "Return code: " + str(retval))
     return (retval, [] )
+
+def run_encode_generator2(gc, env):
+    """Run the encoder2 table generator"""
+    if env == None:
+        return (1, ['no env!'])
+    
+    xeddir = env.escape_string(env['src_dir'])
+    gendir = env.escape_string(env['build_dir'])
+        
+    cmd = env.expand(gc.encode_command2(xeddir,
+                                        gendir,
+                                        gc.enc2_output_file))
+
+    if mbuild.verbose(2):
+        mbuild.msgb("ENC2-GEN", cmd)
+    (retval, output, error_output) = mbuild.run_command(cmd,
+                                                        separate_stderr=True)
+    oo = env.build_dir_join('ENC2-OUT.txt')
+    oe = env.build_dir_join('ENC2-ERR.txt')
+    _write_file(oo, output)
+    _write_file(oe, error_output)
+
+    if retval == 0:
+        list_of_files = read_file_list(gc.enc2_output_file)
+        mbuild.hash_files(list_of_files, gc.enc2_hash_file)
+
+    mbuild.msgb("ENC2-GEN", "Return code: " + str(retval))
+    return (retval, [] )
+
 
 def need_to_rebuild(fn,sigfile):
     rebuild = False
@@ -521,8 +556,8 @@ def make_doxygen_api(env, work_queue, install_dir):
     
 def mkenv():
     """External entry point: create the environment"""
-    if not mbuild.check_python_version(2,7):
-        xbc.cdie("Need python 2.7.x...")
+    if not mbuild.check_python_version(3,4):
+        xbc.cdie("Need python 3.4.x or later")
 
     # create an environment, parse args
     env = mbuild.env_t()
@@ -1372,6 +1407,117 @@ def _remove_src_list(lst, list_to_remove):
             nlist.append(lfn)
     return nlist
 
+def add_encoder_command(env, gc, gen_dag, prep):
+    enc_py = ['pysrc/genutil.py', 'pysrc/encutil.py',
+              'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
+              'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',
+              'pysrc/codegen.py', 'pysrc/ild_nt.py', 'pysrc/actions.py',
+              'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
+              'pysrc/constraint_vec_gen.py', 'pysrc/xedhash.py',
+              'pysrc/ild_phash.py', 'pysrc/actions_codegen.py',
+              'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
+              'pysrc/func_gen.py', 'pysrc/refine_regs.py',
+              'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
+              'pysrc/scatter.py', 'pysrc/ins_emit.py']
+
+    enc_py = env.src_dir_join(enc_py)
+    gc.enc_hash_file = env.build_dir_join('.mbuild.hash.xedencgen')
+    
+    ed = env.build_dir_join('ENCGEN-OUTPUT-FILES.txt')
+    if os.path.exists(ed):
+        need_to_rebuild_enc = need_to_rebuild(ed, gc.enc_hash_file)
+        if need_to_rebuild_enc:
+            mbuild.remove_file(ed)
+
+    gc.enc_output_file = ed
+    enc_input_files = gc.all_input_files() + prep.targets + enc_py + [env['mfile']]
+    c2 = mbuild.plan_t(name='encgen',
+                       command=run_encode_generator,
+                       args=gc,
+                       env=env,
+                       input=enc_input_files,
+                       output= ed)
+    enc_cmd = gen_dag.add(env,c2)
+
+
+def add_encoder2_command(env, gc, gen_dag, prep):
+    enc_py = ['pysrc/genutil.py',
+              'pysrc/codegen.py',
+              'pysrc/read_xed_db.py',
+              'pysrc/opnds.py',
+              'pysrc/opnd_types.py',
+              'pysrc/cpuid_rdr.py',
+              'pysrc/slash_expand.py',
+              'pysrc/patterns.py',
+              'pysrc/gen_setup.py',              
+              'pysrc/encgen.py' ]
+
+    enc_py = env.src_dir_join(enc_py)
+    gc.enc2_hash_file = env.build_dir_join('.mbuild.hash.xedencgen2')
+    
+    ed = env.build_dir_join('ENCGEN2-OUTPUT-FILES.txt')
+    if os.path.exists(ed):
+        need_to_rebuild_enc = need_to_rebuild(ed, gc.enc_hash_file)
+        if need_to_rebuild_enc:
+            mbuild.remove_file(ed)
+
+    gc.enc2_output_file = ed 
+    enc_input_files = gc.all_input_files() + prep.targets + enc_py + [env['mfile']]
+    c2 = mbuild.plan_t(name='encgen2',
+                       command=run_encode_generator2,
+                       args=gc,
+                       env=env,
+                       input=enc_input_files,
+                       output= ed)
+    enc_cmd = gen_dag.add(env,c2)
+
+# Python imports used by the 2 generators.
+# generated 2016-04-15 by importfinder.py:
+#   pysrc/importfinder.py generator pysrc
+#   pysrc/importfinder.py read-encfile pysrc
+#  importfinder.py is too slow to use on every build, over 20seconds/run.
+
+def add_decoder_command(env, gc, gen_dag, prep):
+    dec_py =['pysrc/actions.py', 'pysrc/genutil.py',
+             'pysrc/ild_easz.py', 'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
+             'pysrc/encutil.py', 'pysrc/verbosity.py', 'pysrc/ild_eosz.py',
+             'pysrc/xedhash.py', 'pysrc/ild_phash.py',
+             'pysrc/actions_codegen.py', 'pysrc/patterns.py',
+             'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/hashlin.py',
+             'pysrc/hashfks.py', 'pysrc/ild_info.py', 'pysrc/ild_cdict.py',
+             'pysrc/xed3_nt.py', 'pysrc/codegen.py', 'pysrc/ild_nt.py',
+             'pysrc/hashmul.py', 'pysrc/enumer.py', 'pysrc/enum_txt_writer.py',
+             'pysrc/xed3_nt.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
+             'pysrc/ild_modrm.py', 'pysrc/ild_storage.py',
+             'pysrc/ild_storage_data.py', 'pysrc/slash_expand.py',
+             'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
+             'pysrc/hlist.py', 'pysrc/ctables.py', 'pysrc/ild.py',
+             'pysrc/refine_regs.py', 'pysrc/metaenum.py', 'pysrc/classifier.py']
+          
+    dec_py = env.src_dir_join(dec_py)
+    dec_py += mbuild.glob(env.src_dir_join('datafiles/*enum.txt'))
+
+    gc.dec_hash_file = env.build_dir_join('.mbuild.hash.xeddecgen')
+
+    dd = env.build_dir_join('DECGEN-OUTPUT-FILES.txt')
+    if os.path.exists(dd):
+        need_to_rebuild_dec = need_to_rebuild(dd, gc.dec_hash_file)
+        if need_to_rebuild_dec:
+            mbuild.remove_file(dd)
+
+    gc.dec_output_file = dd
+
+    dec_input_files = (gc.all_input_files() + prep.targets +
+                       dec_py + [env['mfile']])
+    c1 = mbuild.plan_t(name='decgen',
+                       command=run_decode_generator,
+                       args=gc,
+                       env=env,
+                       input=dec_input_files,
+                       output= dd)
+    dec_cmd = gen_dag.add(env,c1)
+    
+    
 def build_libxed(env,work_queue):
     "Run the generator and build libxed"
     
@@ -1401,7 +1547,6 @@ def build_libxed(env,work_queue):
     f.write( "\n".join(gc.all_input_files()) + "\n")
     f.close()
     
-    #mbuild.msgb("PREP INPUTS", ", ".join(gc.all_input_files()))
     c0 = mbuild.plan_t(name='decprep',
                        command=run_generator_preparation,
                        args=gc,
@@ -1422,81 +1567,11 @@ def build_libxed(env,work_queue):
         mbuild.msgb("STOPPING", "after prep")
         xbc.cexit()
 
-    # Python imports used by the 2 generators.
-    # generated 2016-04-15 by importfinder.py:
-    #   pysrc/importfinder.py generator pysrc
-    #   pysrc/importfinder.py read-encfile pysrc
-    #  importfinder.py is too slow to use on every build, over 20seconds/run.
-
-    dec_py =['pysrc/actions.py', 'pysrc/genutil.py',
-             'pysrc/ild_easz.py', 'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
-             'pysrc/encutil.py', 'pysrc/verbosity.py', 'pysrc/ild_eosz.py',
-             'pysrc/xedhash.py', 'pysrc/ild_phash.py',
-             'pysrc/actions_codegen.py', 'pysrc/patterns.py',
-             'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/hashlin.py',
-             'pysrc/hashfks.py', 'pysrc/ild_info.py', 'pysrc/ild_cdict.py',
-             'pysrc/xed3_nt.py', 'pysrc/codegen.py', 'pysrc/ild_nt.py',
-             'pysrc/hashmul.py', 'pysrc/enumer.py', 'pysrc/enum_txt_writer.py',
-             'pysrc/xed3_nt.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
-             'pysrc/ild_modrm.py', 'pysrc/ild_storage.py',
-             'pysrc/ild_storage_data.py', 'pysrc/slash_expand.py',
-             'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
-             'pysrc/hlist.py', 'pysrc/ctables.py', 'pysrc/ild.py',
-             'pysrc/refine_regs.py', 'pysrc/metaenum.py', 'pysrc/classifier.py']
-          
-    enc_py = ['pysrc/genutil.py', 'pysrc/encutil.py',
-              'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
-              'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',
-              'pysrc/codegen.py', 'pysrc/ild_nt.py', 'pysrc/actions.py',
-              'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
-              'pysrc/constraint_vec_gen.py', 'pysrc/xedhash.py',
-              'pysrc/ild_phash.py', 'pysrc/actions_codegen.py',
-              'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
-              'pysrc/func_gen.py', 'pysrc/refine_regs.py',
-              'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
-              'pysrc/scatter.py', 'pysrc/ins_emit.py']
-
-    dec_py = env.src_dir_join(dec_py)
-    enc_py = env.src_dir_join(enc_py)
-    dec_py += mbuild.glob(env.src_dir_join('datafiles/*enum.txt'))
-
-    dd = env.build_dir_join('DECGEN-OUTPUT-FILES.txt')
-    if os.path.exists(dd):
-        need_to_rebuild_dec = need_to_rebuild(dd, 
-                                  env.build_dir_join(".mbuild.hash.xeddecgen"))
-        if need_to_rebuild_dec:
-            mbuild.remove_file(dd)
-
-    gc.dec_output_file = dd
-
-    dec_input_files = (gc.all_input_files() + prep.targets +
-                       dec_py + [env['mfile']])
-    c1 = mbuild.plan_t(name='decgen',
-                       command=run_decode_generator,
-                       args=gc,
-                       env=env,
-                       input=dec_input_files,
-                       output= dd)
-    dec_cmd = gen_dag.add(env,c1)
-       
+    # Add commands for building decoder and encoder(s)
+    add_decoder_command(env, gc, gen_dag, prep)
     if env['encoder']:
-        ed = previous_output_fn = env.build_dir_join('ENCGEN-OUTPUT-FILES.txt')
-        if os.path.exists(ed):
-            need_to_rebuild_enc = need_to_rebuild(ed,
-                                   env.build_dir_join('.mbuild.hash.xedencgen'))
-            if need_to_rebuild_enc:
-                mbuild.remove_file(ed)
-
-        gc.enc_output_file = ed
-        enc_input_files = (gc.all_input_files() + prep.targets +
-                           enc_py + [env['mfile']])
-        c2 = mbuild.plan_t(name='encgen',
-                           command=run_encode_generator,
-                           args=gc,
-                           env=env,
-                           input=enc_input_files,
-                           output= ed)
-        enc_cmd = gen_dag.add(env,c2)
+        add_encoder_command(env, gc, gen_dag, prep)
+        add_encoder2_command(env, gc, gen_dag, prep)
 
     phase = "DECODE/ENCODE GENERATORS"
     if 'skip-gen' in env['targets']:
