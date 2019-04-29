@@ -210,6 +210,10 @@ def op_mem(op):
     if 'MEM' in op.name:
         return True
     return False
+def op_agen(op): # LEA
+    if 'AGEN' in op.name:
+        return True
+    return False
 def op_xmm(op):
     if op.lookupfn_name:
         if 'XMM' in op.lookupfn_name:
@@ -243,7 +247,7 @@ def op_x87(op):
 def one_gpr_reg_one_mem_scalable(ii):
     n,r = 0,0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['v']:
+        if op_agen(op) or (op_mem(op) and op.oc2 in ['v']):
             n = n + 1
         elif op_gprv(op):
             r = r + 1
