@@ -2083,79 +2083,41 @@ def vex_all_mask_reg(ii):
     return k>=2
     
 
-def evex_masking_3xyzmm(ii,imm8=False):
-    if ii.write_masking:
-        x,y,z=0,0,0
-        for op in _gen_opnds(ii):
-            if op_xmm(op):
-                x = x + 1
-            elif op_ymm(op):
-                y = y + 1
-            elif op_zmm(op):
-                z = z + 1
-            elif imm8 and op_imm8(op):
-                continue
-            else:
-                return False
-        return (x==0 and y==0 and z==3) or (x==0 and y==3 and z==0) or (x==3 and y==0 and z==0)
-    return False
-
-def evex_masking_3xyzmm_noround(ii):
-    if not ii.rounding_form:
-        if evex_masking_3xyzmm(ii):
-            return True
-    return False
-def evex_masking_3xyzmm_round(ii):  
-    if ii.rounding_form:
-        if evex_masking_3xyzmm(ii):
-            return True
-    return False
+def evex_3xyzmm(ii):
+    x,y,z=0,0,0
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            x = x + 1
+        elif op_ymm(op):
+            y = y + 1
+        elif op_zmm(op):
+            z = z + 1
+        elif op_imm8(op):
+            continue
+        else:
+            return False
+    return (x==0 and y==0 and z==3) or (x==0 and y==3 and z==0) or (x==3 and y==0 and z==0)
 
 
-def evex_masking_2xyzmm(ii,imm8=False):
-    if ii.write_masking:
-        x,y,z=0,0,0
-        for op in _gen_opnds(ii):
-            if op_xmm(op):
-                x = x + 1
-            elif op_ymm(op):
-                y = y + 1
-            elif op_zmm(op):
-                z = z + 1
-            elif imm8 and op_imm8(op):
-                continue
-            else:
-                return False
-        return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
-    return False
+def evex_2xyzmm(ii):
+    x,y,z=0,0,0
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            x = x + 1
+        elif op_ymm(op):
+            y = y + 1
+        elif op_zmm(op):
+            z = z + 1
+        elif op_imm8(op):
+            continue
+        else:
+            return False
+    return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
 
 
 
-def evex_masking_2xyzmm_noround(ii):
-    if not ii.rounding_form:
-        if evex_masking_2xyzmm(ii):
-            return True
-    return False
 
-def evex_masking_2xyzmm_noround_imm8(ii):
-    if not ii.rounding_form:
-        if evex_masking_2xyzmm(ii,imm8=True):
-            for op in _gen_opnds(ii):
-                if op_imm8(op):
-                    return True
-    return False
-
-def evex_masking_3xyzmm_noround_imm8(ii):
-    if not ii.rounding_form:
-        if evex_masking_3xyzmm(ii,imm8=True):
-            for op in _gen_opnds(ii):
-                if op_imm8(op):
-                    return True
-    return False
-    
-
-
-def create_evex_masking_3xyzmm(env,ii,nopnds=3,rounding=False,imm8=False):
+def create_evex_3xyzmm(env,ii,nopnds=3):
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -2164,6 +2126,14 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3,rounding=False,imm8=False):
     global arg_zeroing, var_zeroing
     global arg_rcsae, var_rcsae
     global arg_imm8, var_imm8
+
+    rounding,imm8,masking_allowed=False,False,False
+    if ii.rounding_form:
+        rounding = True
+    if ii.has_imm8:
+        imm8 = True
+    if ii.write_masking:
+        masking_allowed = True
 
     op = first_opnd(ii)
     if op.lookupfn_name.startswith('XMM'):
@@ -2184,16 +2154,18 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3,rounding=False,imm8=False):
         pattern_name = pattern_name + 'i'
     if rounding:
         pattern_name = pattern_name + 'rc'
+
+    mask_versions = [False]
+    if masking_allowed:
+        mask_versions.append(True)
     
-    for masking in [True, False]:
+    for masking in mask_versions:
         fname = "{}_{}_{}{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
                                     pattern_name,
                                     mask_variant_name[masking])
-        if rounding:
-            fname = fname + '_rc'
         fo = make_function_object(env,fname)
-        fo.add_comment("created by create_evex_masking_3xyzmm")
+        fo.add_comment("created by create_evex_3xyzmm")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
         if masking:
@@ -2257,16 +2229,11 @@ def create_evex_masking_3xyzmm(env,ii,nopnds=3,rounding=False,imm8=False):
 
         
 def _enc_evex(env,ii):
-    if evex_masking_3xyzmm_noround(ii):
-        create_evex_masking_3xyzmm(env,ii, nopnds=3, rounding=False)
-    if evex_masking_3xyzmm_round(ii):
-        create_evex_masking_3xyzmm(env,ii, nopnds=3, rounding=True)
-    if evex_masking_2xyzmm_noround(ii):
-        create_evex_masking_3xyzmm(env,ii, nopnds=2, rounding=False)
-    if evex_masking_2xyzmm_noround_imm8(ii):
-        create_evex_masking_3xyzmm(env,ii, nopnds=2, rounding=False, imm8=True)
-    if evex_masking_3xyzmm_noround_imm8(ii):
-        create_evex_masking_3xyzmm(env,ii, nopnds=2, rounding=False, imm8=True)
+    # handles rounding, norounding, imm8, no-imm8, masking/nomasking
+    if evex_3xyzmm(ii):
+        create_evex_3xyzmm(env, ii, nopnds=3)
+    elif evex_2xyzmm(ii):
+        create_evex_3xyzmm(env, ii, nopnds=2)
         
 def _enc_xop(env,ii):
     pass # FIXME
