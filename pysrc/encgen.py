@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- python -*-
 #BEGIN_LEGAL
 #
@@ -30,6 +30,9 @@ import genutil
 import codegen
 import read_xed_db
 import gen_setup
+
+def die(s):
+    genutil.die(s)
 
 PY3 = sys.version_info > (3,)
 def is_python3():
@@ -82,7 +85,7 @@ oc2_widths_dict['w'] = [16,16,16]
 oc2_widths_dict['d'] = [32,32,32]
 oc2_widths_dict['q'] = [64,64,64]
 
-enc_fn_prefix = "xed_encode"
+enc_fn_prefix = "xed_enc"
 
 var_base = 'base'
 arg_base = 'xed_reg_enum_t ' + var_base
@@ -148,8 +151,6 @@ def msge(s):
 def warn(s):
     print("\t"+s, file=sys.stderr, flush=True)
     #genutil.warn(s)
-def die(s):
-    genutil.die(s)
     
 def _dump_fields(x):
     for fld in sorted(x.__dict__.keys()):
@@ -159,6 +160,18 @@ def _dump_fields(x):
 def _gen_opnds(ii): # generator
     # filter out write-mask operands and suppressed operands
     for op in ii.parsed_operands:
+        if op.lookupfn_name == 'MASK1':
+            continue
+        if op.lookupfn_name == 'MASKNOT0':
+            continue
+        if op.visibility == 'SUPPRESSED':
+            continue
+        yield op
+def _gen_opnds_nomem(ii): # generator
+    # filter out write-mask operands and suppressed operands and memops
+    for op in ii.parsed_operands:
+        if op.name.startswith('MEM'):
+            continue
         if op.lookupfn_name == 'MASK1':
             continue
         if op.lookupfn_name == 'MASKNOT0':
@@ -1329,6 +1342,7 @@ def create_legacy_gprv_immz(env,ii):
     width_list = [16,32,64]
     arg_imm = { 16: arg_imm16, 32: arg_imm32, 64: arg_imm32 }
     var_imm = { 16: var_imm16, 32: var_imm32, 64: var_imm32 }
+    emit_width_immz = { 16:16, 32:32, 64:32 }
     for osz in gen_osz_list(env.mode,width_list):
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
@@ -1372,7 +1386,8 @@ def create_legacy_gprv_immz(env,ii):
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         fo.add_code_eol('emit_modrm(r)')
-        fo.add_code_eol('emit_u{}(r,{})'.format(osz,var_imm[osz]))
+        fo.add_code_eol('emit_u{}(r,{})'.format(emit_width_immz[osz],
+                                                var_imm[osz]))
         
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
@@ -1413,7 +1428,7 @@ def get_memsig(asz, using_indx, dispz):
 arg_dvars = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32 }  # index by dispsz
 
 arg_imm_dct = { 8: arg_imm8, 16: arg_imm16, 32: arg_imm32 }
-var_imm_dct = { 8: arg_imm8, 16: var_imm16, 32: var_imm32 }
+var_imm_dct = { 8: var_imm8, 16: var_imm16, 32: var_imm32 }
 
 def add_memop_args(env, fo, use_index, dispsz, immw=0, reg=-1):
     """reg=-1 -> no reg opnds, 
@@ -1477,7 +1492,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
                 fo.add_code_eol('emit(r,0x66)')
             elif (ii.eosz == 'o64' and env.mode == 64 and ii.default_64b == False) or ii.rexw_prefix == '1':
                 rexw_forced = True
-                fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+                fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
 
             emit_required_legacy_prefixes(ii,fo)
 
@@ -1575,7 +1590,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
                     fo.add_code_eol('emit(r,0x66)')
                 elif width == 'q' and  ii.default_64b == False:
                     rexw_forced = True
-                    fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+                    fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
 
                 emit_required_legacy_prefixes(ii,fo)
 
@@ -1650,7 +1665,7 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                         fo.add_code_eol('emit(r,0x66)')
                     elif width == 'q' and  ii.default_64b == False:
                         rexw_forced = True
-                        fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+                        fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
                 else:  # fixed width ops
                     if ii.eosz == 'o16' and env.mode in [32,64]:
                         fo.add_code_eol('emit(r,0x66)', 'xx: fixed width with 16b osz')
@@ -1658,7 +1673,7 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                         fo.add_code_eol('emit(r,0x66)')
                     elif (ii.eosz == 'o64' and env.mode == 64 and ii.default_64b == False) or ii.rexw_prefix == '1':
                         rexw_forced = True
-                        fo.add_code_eol('set_rewxw(r)', 'forced rexw on memop')
+                        fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
 
                 emit_required_legacy_prefixes(ii,fo)
 
@@ -1943,13 +1958,20 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
 
     op = first_opnd(ii)
     width = op.oc2
-
+    mem_first = True if op.name.startswith('MEM') else False
+    
     xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
     vlname = 'xmm' if xmm else 'ymm'
     if nopnds == 2:
-        category = 'xm' if xmm else 'ym'
+        if mem_first:
+            category = 'mx' if xmm else 'my'
+        else:
+            category = 'xm' if xmm else 'ym'
     else:
-        category = 'xxm' if xmm else 'yym'
+        if mem_first:
+            category = 'mxx' if xmm else 'myy'
+        else:
+            category = 'xxm' if xmm else 'yym'
         
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
@@ -1979,7 +2001,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
 
             # FIXME function-ize this
             vars = [var_reg0, var_reg1, var_reg2]
-            for i,op in enumerate(_gen_opnds(ii)):
+            for i,op in enumerate(_gen_opnds_nomem(ii)): # use no mem version to skip memop if a store-type op
                 if op.lookupfn_name:
                     if op.lookupfn_name.endswith('_R'):
                         var_r = vars[i]
@@ -2385,9 +2407,19 @@ class enc_env_t(object):
         s.append("mode {}".format(self.mode))
         s.append("asz {}".format(self.asz))
         return ", ".join(s)
+    
+
+def dump_output_file_names(fn, fe_list):
+    global output_file_emitters
+    ofn = os.path.join(fn)
+    o = open(ofn,"w")
+    for fe in fe_list:
+        o.write(fe.full_file_name + "\n")
+    o.close()
 
 def work():
     global dbg_output
+    
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
     arg_parser.add_argument('-m64',
                             help='64b mode (default)',
@@ -2417,9 +2449,16 @@ def work():
     arg_parser.add_argument('--xeddir',
                             help='XED source directory, default: "."',
                             default='.')
+    arg_parser.add_argument('--output-file-list',
+                            dest='output_file_list',
+                            help='Name of output file containing list of output files created. ' +
+                            'Default: GENDIR/enc2-list-of-files.txt')
+
 
     args = arg_parser.parse_args()
     args.prefix = os.path.join(args.gendir,'dgen')
+    if args.output_file_list == None:
+        args.output_file_list = os.path.join(args.gendir, 'enc2-list-of-files.txt')
     
     dbg_fn = os.path.join(args.gendir,'enc2out.txt')
     msge("Writing {}".format(dbg_fn))
@@ -2466,7 +2505,11 @@ def work():
                     yield asz
             elif asz != 64:
                 yield asz
-            
+
+
+    output_file_emitters = []
+    
+    #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:
         for asz in prune_asz_list_for_mode(mode,args.asz_list):
             env = enc_env_t(mode, asz)
@@ -2481,14 +2524,17 @@ def work():
             for ii in xeddb.recs:
                 func_list.extend(ii.encoder_functions)
             fn_prefix = 'xed-enc2-m{}-a{}'.format(mode,asz)
-            codegen.emit_function_list(func_list, fn_prefix,
-                                       args.xeddir,
-                                       args.gendir, args.gendir,
-                                       max_lines_per_file=15000)
-
+            file_emitters = codegen.emit_function_list(func_list, fn_prefix,
+                                                       args.xeddir,
+                                                       args.gendir, args.gendir,
+                                                       #other_headers = extra_headers,
+                                                       max_lines_per_file=15000)
+            output_file_emitters.extend(file_emitters)
                 
     gather_stats(xeddb.recs)
-
+    
+    dump_output_file_names( args.output_file_list,
+                            output_file_emitters )
     return 0
 
 if __name__ == "__main__":
