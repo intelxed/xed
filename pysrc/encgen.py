@@ -1336,20 +1336,27 @@ def create_legacy_gpr_imm8(env,ii,width_list):
             if osz == 64 and ii.default_64b == False:
                 rexw_forced = True
                 fo.add_code_eol('set_rexw(r)')
-                
-        if modrm_reg_first_operand(ii):
-            f1, f2 = 'reg','rm'
+
+        if ii.partial_opcode:
+            fo.add_code_eol('enc_srm_gpr{}(r,{})'.format(osz, var_reg0))
         else:
-            f1, f2 = 'rm','reg'
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
+            if modrm_reg_first_operand(ii):
+                f1, f2 = 'reg','rm'
+            else:
+                f1, f2 = 'rm','reg'
+            fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
+            
         if env.mode == 64:
             if rexw_forced:
                 fo.add_code_eol('emit_rex(r)')
             else:
                 fo.add_code_eol('emit_rex_if_needed(r)')
         emit_required_legacy_map_escapes(ii,fo)
-        emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+        if ii.partial_opcode:
+            emit_partial_opcode_variable_srm(ii,fo)
+        else:
+            emit_opcode(ii,fo)
+            fo.add_code_eol('emit_modrm(r)')
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
         
         dbg(fo.emit())
