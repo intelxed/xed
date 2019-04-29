@@ -54,8 +54,8 @@ void enc_vex_vindex_ymm(xed_enc2_req_t* r,
 }
 
 // evex registers k0..k7 regs
-void enc_evex_vvvv_reg_kreg(xed_enc2_req_t* r,
-                            xed_reg_enum_t dst) {
+void enc_evex_vvvv_kreg(xed_enc2_req_t* r,
+                        xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
     set_vvvv(r, ~(offset & 7));
     set_evexvv(r,1);
@@ -75,7 +75,7 @@ void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
     set_rexx(r,1);
 }
 
-void enc_vex_vvvv_reg_kreg(xed_enc2_req_t* r,     
+void enc_vex_vvvv_kreg(xed_enc2_req_t* r,     
                            xed_reg_enum_t dst) {  ///VEX
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
     set_vvvv(r, ~(offset & 7));
