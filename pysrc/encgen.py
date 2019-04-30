@@ -185,6 +185,9 @@ def _gen_opnds_nomem(ii): # generator
 def first_opnd(ii):
     op = next(_gen_opnds(ii))
     return op
+def first_opnd_nonmem(ii):
+    op = next(_gen_opnds_nomem(ii))
+    return op
 
 #def second_opnd(ii):
 #    for i,op in enumerate(_gen_opnds(ii)):
@@ -2477,6 +2480,22 @@ def evex_2xyzmm_mem(ii):
         else:
             return False
     return m==1 and ((x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0))
+def evex_1xyzmm_mem(ii): 
+    x,y,z,m=0,0,0,0
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            x = x + 1
+        elif op_ymm(op):
+            y = y + 1
+        elif op_zmm(op):
+            z = z + 1
+        elif op_imm8(op):
+            continue
+        elif op_mem(op):
+            m += 1
+        else:
+            return False
+    return m==1 and (x+y+z)==1
 
 
 
@@ -2535,7 +2554,7 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
         fo.add_arg(arg_reg0)
         if masking:
             fo.add_arg(arg_kmask)
-            if ii.write_masking_merging == False:
+            if not ii.write_masking_merging_only:
                 fo.add_arg(arg_zeroing)
         fo.add_arg(arg_reg1)
         if nopnds == 3:
@@ -2555,7 +2574,8 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
             fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
             
         if masking:
-            fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
+            if not ii.write_masking_merging_only:
+                fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
             fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
             
         # ENCODE REGISTERS
@@ -2592,7 +2612,7 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
         dbg(fo.emit())
         ii.encoder_functions.append(fo)  
 
-def create_evex_2xyzmm_mem(env, ii): 
+def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  #WRK
     """Allows imm8 also"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -2608,12 +2628,13 @@ def create_evex_2xyzmm_mem(env, ii):
     if ii.write_masking:
         masking_allowed = True
 
-    op = first_opnd(ii)
-    if op.lookupfn_name.startswith('XMM'):
+
+    op = first_opnd_nonmem(ii)
+    if op_luf_start(op,'XMM'):
         vl = 'xmm'
-    elif op.lookupfn_name.startswith('YMM'):
+    elif op_luf_start(op,'YMM'):
         vl = 'ymm'
-    elif op.lookupfn_name.startswith('ZMM'):
+    elif op_luf_start(op,'ZMM'):
         vl = 'zmm'
     else:
         die("SHOULD NOT REACH HERE")
@@ -2622,7 +2643,7 @@ def create_evex_2xyzmm_mem(env, ii):
     mask_variant_name  = { False:'', True: '_msk' }
     vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
 
-    pattern_name = 2*vl[0] + 'm'
+    pattern_name = nregs*vl[0] + 'm'
     if imm8:
         pattern_name += 'i'
 
@@ -2653,14 +2674,15 @@ def create_evex_2xyzmm_mem(env, ii):
                                              bcast_variant_name[broadcast],
                                              env.asz)
         fo = make_function_object(env,fname)
-        fo.add_comment("created by create_evex_2xyzmm_mem")
+        fo.add_comment("created by create_evex_1or2xyzmm_mem")
         fo.add_arg(arg_request)
         fo.add_arg(arg_reg0)
         if masking:
             fo.add_arg(arg_kmask)
-            if ii.write_masking_merging == False:
+            if ii.write_masking_merging_only == False:
                 fo.add_arg(arg_zeroing)
-        fo.add_arg(arg_reg1)
+        if nregs == 2:
+            fo.add_arg(arg_reg1)
         
         add_memop_args(env, fo, use_index, dispsz) 
             
@@ -2674,7 +2696,8 @@ def create_evex_2xyzmm_mem(env, ii):
             fo.add_code_eol('set_rexw(r)')
             
         if masking:
-            fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
+            if not ii.write_masking_merging_only:
+                fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
             fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
         if broadcast == 'broadcast': # ZERO INIT OPTIMIZATION
             fo.add_code_eol('set_evexb(r,1)')
@@ -2695,11 +2718,20 @@ def create_evex_2xyzmm_mem(env, ii):
         if var_n:
             fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
         else:
-            die("SHOULD NOT REACH HERE")
+            if nregs == 3:
+                die("SHOULD NOT REACH HERE")
+            fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+            fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
         if var_r:
             fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
         else:
-            die("SHOULD NOT REACH HERE")
+            # some instructions use _N3 as dest (like rotates)
+            fo.add_code_eol('set_rexr(r,1)')
+            fo.add_code_eol('set_evexrexrr(r,1)')
+            if ii.reg_required != 'unspecified':
+                if ii.reg_required: # ZERO INIT OPTIMIZATION
+                    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+
         if var_b:
             die("SHOULD NOT REACH HERE")
             
@@ -2708,7 +2740,7 @@ def create_evex_2xyzmm_mem(env, ii):
             fo.add_code_eol('set_mod(r,{})'.format(mod))
             
         
-        encode_mem_operand(env, ii, fo, use_index, dispsz)  # WRK
+        encode_mem_operand(env, ii, fo, use_index, dispsz)  
         immw=8 if imm8 else 0
         finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='evex')
     
@@ -2725,7 +2757,9 @@ def _enc_evex(env,ii):
     elif evex_2xyzmm(ii):
         create_evex_3xyzmm(env, ii, nopnds=2)
     elif evex_2xyzmm_mem(ii): 
-        create_evex_2xyzmm_mem(env, ii)
+        create_evex_1or2xyzmm_mem(env, ii, nregs=2)
+    elif evex_1xyzmm_mem(ii): 
+        create_evex_1or2xyzmm_mem(env, ii, nregs=1)
 
         
 def _enc_xop(env,ii):
@@ -2737,7 +2771,7 @@ def prep_instruction(ii):
 
     ii.write_masking = False
     ii.write_masking_notk0 = False
-    ii.write_masking_merging = False # if true, no zeroing allowed
+    ii.write_masking_merging_only = False # if true, no zeroing allowed
     ii.rounding_form = False
     ii.broadcast_allowed = False
     
@@ -2751,7 +2785,7 @@ def prep_instruction(ii):
 
         if ii.write_masking:
             if 'ZEROING=0' in ii.pattern:
-                ii.write_masking_merging = True
+                ii.write_masking_merging_only = True
                 
         if 'AVX512_ROUND()' in ii.pattern:
             ii.rounding_form = True
@@ -2800,7 +2834,7 @@ def spew(ii):
     if ii.space == 'evex':
         if ii.write_masking:
             s.append('masking')
-            if ii.write_masking_merging:
+            if ii.write_masking_merging_only:
                 s.append('nz')
             if ii.write_masking_notk0:
                 s.append('!k0')
