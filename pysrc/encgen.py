@@ -25,6 +25,7 @@ import types
 import glob
 import re
 import argparse
+import itertools
 
 import genutil
 import codegen
@@ -659,7 +660,7 @@ def make_function_object(env, fname, return_value='void'):
     fo = codegen.function_object_t(fname, return_value)
     return fo
 
-def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  #WRK
+def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
     
     extra_names = _gather_implicit_regs(ii)
@@ -2025,6 +2026,9 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
                 fo.add_code_eol('emit_rex_if_needed(r)')
 
         emit_required_legacy_map_escapes(ii,fo)
+    elif space =='evex':
+        fo.add_code_eol('emit_evex(r)')
+
         
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
@@ -2457,6 +2461,24 @@ def evex_2xyzmm(ii):
             return False
     return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
 
+def evex_2xyzmm_mem(ii): 
+    x,y,z,m=0,0,0,0
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            x = x + 1
+        elif op_ymm(op):
+            y = y + 1
+        elif op_zmm(op):
+            z = z + 1
+        elif op_imm8(op):
+            continue
+        elif op_mem(op):
+            m += 1
+        else:
+            return False
+    return m==1 and ((x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0))
+
+
 
 
 
@@ -2570,6 +2592,130 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
         dbg(fo.emit())
         ii.encoder_functions.append(fo)  
 
+def create_evex_2xyzmm_mem(env, ii): 
+    """Allows imm8 also"""
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_reg1,  var_reg1
+    
+    global arg_kmask, var_kmask
+    global arg_zeroing, var_zeroing
+    global arg_imm8, var_imm8
+
+    imm8,masking_allowed=False,False
+    if ii.has_imm8:
+        imm8 = True
+    if ii.write_masking:
+        masking_allowed = True
+
+    op = first_opnd(ii)
+    if op.lookupfn_name.startswith('XMM'):
+        vl = 'xmm'
+    elif op.lookupfn_name.startswith('YMM'):
+        vl = 'ymm'
+    elif op.lookupfn_name.startswith('ZMM'):
+        vl = 'zmm'
+    else:
+        die("SHOULD NOT REACH HERE")
+
+
+    mask_variant_name  = { False:'', True: '_msk' }
+    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
+
+    pattern_name = 2*vl[0] + 'm'
+    if imm8:
+        pattern_name += 'i'
+
+    mask_versions = [False]
+    if masking_allowed:
+        mask_versions.append(True)
+
+    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
+    dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
+    
+    if ii.broadcast_allowed:
+        bcast_vals = ['nobroadcast','broadcast']
+    else:
+        bcast_vals = ['nobroadcast']
+    bcast_variant_name = {'nobroadcast':'', 'broadcast':'_bcast' }
+    index_vals = [False, True]
+
+    # flatten a 4-deep nested loop using itertools.product()
+    ispace = itertools.product(bcast_vals, index_vals, dispsz_list, mask_versions)
+    for broadcast, use_index, dispsz, masking in ispace:
+        memaddrsig = get_memsig(env.asz, use_index, dispsz)
+
+        fname = "{}_{}_{}{}_{}{}_a{}".format(enc_fn_prefix,
+                                             ii.iclass.lower(),
+                                             pattern_name,
+                                             mask_variant_name[masking],
+                                             memaddrsig,
+                                             bcast_variant_name[broadcast],
+                                             env.asz)
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_evex_2xyzmm_mem")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_reg0)
+        if masking:
+            fo.add_arg(arg_kmask)
+            if ii.write_masking_merging == False:
+                fo.add_arg(arg_zeroing)
+        fo.add_arg(arg_reg1)
+        
+        add_memop_args(env, fo, use_index, dispsz) 
+            
+        if imm8:
+            fo.add_arg(arg_imm8)
+
+        set_vex_pp(ii,fo)
+        fo.add_code_eol('set_map(r,{})'.format(ii.map))
+        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        if ii.rexw_prefix == '1':
+            fo.add_code_eol('set_rexw(r)')
+            
+        if masking:
+            fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
+            fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
+        if broadcast == 'broadcast': # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_evexb(r,1)')
+            
+        # ENCODE REGISTERS
+        vars = [var_reg0, var_reg1, var_reg2]
+        var_r, var_b, var_n = None, None, None
+        for i,op in enumerate(_gen_opnds(ii)):
+            if op.lookupfn_name:
+                if op.lookupfn_name.endswith('_R3'):
+                    var_r = vars[i]
+                elif op.lookupfn_name.endswith('_B3'):
+                    var_b = vars[i]
+                elif op.lookupfn_name.endswith('_N3'):
+                    var_n = vars[i]
+                else:
+                    die("SHOULD NOT REACH HERE")
+        if var_n:
+            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+        else:
+            die("SHOULD NOT REACH HERE")
+        if var_r:
+            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
+        else:
+            die("SHOULD NOT REACH HERE")
+        if var_b:
+            die("SHOULD NOT REACH HERE")
+            
+        mod = modvals[dispsz]
+        if mod:  # ZERO-INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(mod))
+            
+        
+        encode_mem_operand(env, ii, fo, use_index, dispsz)  # WRK
+        immw=8 if imm8 else 0
+        finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='evex')
+    
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)  
+    
+        
 
         
 def _enc_evex(env,ii):
@@ -2578,6 +2724,9 @@ def _enc_evex(env,ii):
         create_evex_3xyzmm(env, ii, nopnds=3)
     elif evex_2xyzmm(ii):
         create_evex_3xyzmm(env, ii, nopnds=2)
+    elif evex_2xyzmm_mem(ii): 
+        create_evex_2xyzmm_mem(env, ii)
+
         
 def _enc_xop(env,ii):
     pass # FIXME
@@ -2590,7 +2739,8 @@ def prep_instruction(ii):
     ii.write_masking_notk0 = False
     ii.write_masking_merging = False # if true, no zeroing allowed
     ii.rounding_form = False
-
+    ii.broadcast_allowed = False
+    
     if ii.space == 'evex':
         for op in ii.parsed_operands:
             if op.lookupfn_name == 'MASK1':
@@ -2605,6 +2755,13 @@ def prep_instruction(ii):
                 
         if 'AVX512_ROUND()' in ii.pattern:
             ii.rounding_form = True
+
+        for op in ii.parsed_operands:
+            if op_mem(op):
+                if 'BCRC=0' not in ii.pattern:
+                    ii.broadcast_allowed = True
+                break
+            
 
     
 def create_enc_fn(env, ii):
