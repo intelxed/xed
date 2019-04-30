@@ -2143,40 +2143,48 @@ def _enc_legacy(env,ii):
         create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=False)
     elif one_xmm_reg_one_mem_fixed_imm8(ii):
         create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=True)
-def two_xmm(ii):
-    n = 0
+def two_xmm_opti8(ii):
+    n,i = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
-            n = n + 1
+            n += 1
+        elif op_imm8(op):
+            i += 1
         else:
             return False
-    return n==2
+    return n==2 and i <= 1
   
-def two_ymm(ii):
-    n = 0
+def two_ymm_opti8(ii):
+    n,i = 0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_ymm(op):
+            n += 1
+        elif op_imm8(op):
+            i += 1
+        else:
+            return False
+    return n==2 and i <= 1
+def three_xmm_opti8(ii):
+    n,i = 0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_xmm(op):
+            n += 1
+        elif op_imm8(op):
+            i += 1
+        else:
+            return False
+    return n==3 and i <= 1
+  
+def three_ymm_opti8(ii):
+    n,i = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_ymm(op):
             n = n + 1
+        elif op_imm8(op):
+            i += 1
         else:
             return False
-    return n==2
-def three_xmm(ii):
-    n = 0
-    for op in _gen_opnds(ii):
-        if op_reg(op) and op_xmm(op):
-            n = n + 1
-        else:
-            return False
-    return n==3
-  
-def three_ymm(ii):
-    n = 0
-    for op in _gen_opnds(ii):
-        if op_reg(op) and op_ymm(op):
-            n = n + 1
-        else:
-            return False
-    return n==3
+    return n==3 and i <= 1
 
 def two_xymm_and_mem(ii):
     m,x,y = 0,0,0
@@ -2225,13 +2233,19 @@ def set_vex_pp(ii,fo):
     else:
         die("Could not find the VEX.PP pattern")
 
-def create_vex_simd_reg(env,ii,nopnds):
+def create_vex_simd_reg(env,ii,nopnds): 
+    """Handle 2/3 xmm or ymm regs and optional imm8"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
     global arg_reg2,  var_reg2
+    global arg_imm8,  var_imm8
+
+    imm8 = ii.has_imm8
     xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
     category = 'xmm' if xmm else 'ymm'
+    if imm8:
+        category += 'i'
     
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
@@ -2243,6 +2257,8 @@ def create_vex_simd_reg(env,ii,nopnds):
     fo.add_arg(arg_reg1)
     if nopnds == 3:
         fo.add_arg(arg_reg2)
+    if imm8:
+        fo.add_arg(arg_imm8)
 
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -2250,7 +2266,8 @@ def create_vex_simd_reg(env,ii,nopnds):
         fo.add_code_eol('set_vexl(r,1)')
 
     vars = [var_reg0, var_reg1, var_reg2]
-    
+
+    var_r, var_b, var_n = None, None, None
     for i,op in enumerate(_gen_opnds(ii)):
         if op.lookupfn_name:
             if op.lookupfn_name.endswith('_R'):
@@ -2258,22 +2275,36 @@ def create_vex_simd_reg(env,ii,nopnds):
             elif op.lookupfn_name.endswith('_B'):
                 var_b = vars[i]
             elif op.lookupfn_name.endswith('_N'):
-                if nopnds == 2:
-                    die("Unexpected VVVV operand in 2 operand instr: {}".format(ii.iclass))
                 var_n = vars[i]
             else:
                 die("SHOULD NOT REACH HERE")
     if ii.rexw_prefix == '1':
         fo.add_code_eol('set_rexw(r)')
-    if nopnds == 3:   
+
+    setregs = 0
+    if var_n:
         fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(category, var_n))
+        setregs += 1
     else:
         fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
-    fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(category, var_r))
-    fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(category, var_b))        
+        
+    if var_r:
+        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(category, var_r))
+        setregs += 1
+        
+    if var_b:
+        fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(category, var_b))
+        setregs += 1
+        
+    if setregs != nopnds:
+        die("Set wrong number of registers: {} vs {}".format(setregs,nopnds))
+
     emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
+    if imm8:
+        fo.add_code_eol('emit(r,{})'.format(var_imm8))
+
 
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
@@ -2416,10 +2447,11 @@ def create_vex_all_mask_reg(env,ii):
 
         
 def _enc_vex(env,ii):
-    if three_xmm(ii) or three_ymm(ii):
+    if three_xmm_opti8(ii) or three_ymm_opti8(ii):
         create_vex_simd_reg(env,ii,3)
-    elif two_xmm(ii) or two_ymm(ii):
+    elif two_xmm_opti8(ii) or two_ymm_opti8(ii):
         create_vex_simd_reg(env,ii,2)
+        
     elif two_xymm_and_mem(ii):
         create_vex_simd_2reg_mem(env,ii)
     elif one_xymm_and_mem(ii):
@@ -2616,7 +2648,7 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
         dbg(fo.emit())
         ii.encoder_functions.append(fo)  
 
-def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  #WRK
+def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  
     """Allows imm8 also"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -2730,8 +2762,8 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  #WRK
             fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
         else:
             # some instructions use _N3 as dest (like rotates)
-            fo.add_code_eol('set_rexr(r,1)')
-            fo.add_code_eol('set_evexrr(r,1)')
+            #fo.add_code_eol('set_rexr(r,1)')
+            #fo.add_code_eol('set_evexrr(r,1)')
             if ii.reg_required != 'unspecified':
                 if ii.reg_required: # ZERO INIT OPTIMIZATION
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
