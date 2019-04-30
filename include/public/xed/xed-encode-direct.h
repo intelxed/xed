@@ -61,6 +61,8 @@ typedef struct {
     xed_uint32_t sibscale:2;
     xed_uint32_t sibindex:3;
     xed_uint32_t sibbase:3;
+    
+    xed_uint8 imm8_reg; // for _SE imm8-specified registers.
 } xed_enc2_req_payload_t;
 
 
@@ -156,6 +158,12 @@ static XED_INLINE xed_uint_t get_opcode_srm(xed_enc2_req_t* r) {
     return r->s.opcode_srm;
 }
 
+static XED_INLINE void set_imm8_reg(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.imm8_reg = v;
+}
+static XED_INLINE xed_uint_t get_imm8_reg(xed_enc2_req_t* r) {
+    return r->s.imm8_reg;
+}
 
 
 static XED_INLINE void set_sibbase(xed_enc2_req_t* r, xed_uint_t v) {
@@ -322,6 +330,9 @@ static XED_INLINE void emit_i32(xed_enc2_req_t* r, xed_int32_t d) {
 
 
 
+static XED_INLINE void emit_se_imm8_reg(xed_enc2_req_t* r) {
+    emit(r, get_imm8_reg(r) );
+}
 static XED_INLINE void emit_modrm(xed_enc2_req_t* r) {
     xed_uint8_t v = (get_mod(r)<<6) | (get_reg(r)<<3) | get_rm(r);
     emit(r,v);
@@ -478,7 +489,7 @@ XED_DLL_EXPORT void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
                         xed_reg_enum_t dst);
 
 
-XED_DLL_EXPORT void enc_srm_gpr8(xed_enc2_req_t* r,
+XED_DLL_EXPORT void enc_srm_gpr8(xed_enc2_req_t* r,   // partial opcode _SRM field
                                  xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_srm_gpr16(xed_enc2_req_t* r,
                                   xed_reg_enum_t dst);
@@ -486,6 +497,11 @@ XED_DLL_EXPORT void enc_srm_gpr32(xed_enc2_req_t* r,
                                   xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_srm_gpr64(xed_enc2_req_t* r,
                                   xed_reg_enum_t dst);
+
+XED_DLL_EXPORT void enc_imm8_reg_xmm(xed_enc2_req_t* r,  // _SE imm8 reg
+                                     xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_imm8_reg_ymm(xed_enc2_req_t* r, // _SE imm8 reg
+                                     xed_reg_enum_t dst);
 
 
 XED_DLL_EXPORT void emit_modrm_sib(xed_enc2_req_t* r);

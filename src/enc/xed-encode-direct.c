@@ -314,6 +314,8 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
 }
 
 
+ // partial opcode _SRM field
+
 void enc_srm_gpr8(xed_enc2_req_t* r,
                    xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR8_FIRST;
@@ -345,6 +347,17 @@ void enc_srm_gpr64(xed_enc2_req_t* r,
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_srm(r, offset & 7);
     set_rexb(r, offset >= 8);
+}
+
+void enc_imm8_reg_xmm(xed_enc2_req_t* r, // _SE imm8 reg
+                      xed_reg_enum_t dst) { 
+    xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
+    set_imm8_reg(r, offset);
+}
+void enc_imm8_reg_ymm(xed_enc2_req_t* r,  // _SE imm8 reg
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
+    set_imm8_reg(r, offset);
 }
 
 
