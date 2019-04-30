@@ -169,6 +169,8 @@ def _gen_opnds(ii): # generator
             continue
         if op.visibility == 'SUPPRESSED':
             continue
+        if op.name == 'BCAST':
+            continue
         yield op
 def _gen_opnds_nomem(ii): # generator
     # filter out write-mask operands and suppressed operands and memops
@@ -180,6 +182,8 @@ def _gen_opnds_nomem(ii): # generator
         if op.lookupfn_name == 'MASKNOT0':
             continue
         if op.visibility == 'SUPPRESSED':
+            continue
+        if op.name == 'BCAST':
             continue
         yield op
 def first_opnd(ii):
