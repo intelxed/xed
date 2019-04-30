@@ -61,9 +61,6 @@ typedef struct {
     xed_uint32_t sibscale:2;
     xed_uint32_t sibindex:3;
     xed_uint32_t sibbase:3;
-
-    xed_union32_t imm0;
-    xed_uint8_t   imm1; // for ENTER
 } xed_enc2_req_payload_t;
 
 
@@ -345,20 +342,6 @@ static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
         emit_rex(r);
 }
 
-static XED_INLINE void emit_imm8(xed_enc2_req_t* r) {
-    emit(r,r->s.imm0.byte[0]);
-}
-static XED_INLINE void emit_imm16(xed_enc2_req_t* r) {
-    emit(r,r->s.imm0.byte[0]);
-    emit(r,r->s.imm0.byte[1]);
-}
-static XED_INLINE  void emit_imm32(xed_enc2_req_t* r) {
-    emit(r,r->s.imm0.byte[0]);
-    emit(r,r->s.imm0.byte[1]);
-    emit(r,r->s.imm0.byte[2]);
-    emit(r,r->s.imm0.byte[3]);
-
-}
 
 static XED_INLINE void emit_vex_c5(xed_enc2_req_t* r) {
     xed_uint8_t v = ((~get_rexr(r)) << 7) | (get_vvvv(r) << 3) | (get_vexl(r)<<2) | get_vexpp(r);
