@@ -297,14 +297,14 @@ static XED_INLINE void emit_u32(xed_enc2_req_t* r, xed_uint32_t d) {
 static XED_INLINE void emit_u64(xed_enc2_req_t* r, xed_uint64_t d) {
     xed_union64_t u;  // avoid issues with shifts > 32 on 32b builds
     u.u64 = d;
-    emit_u32(r, u.lo32);
-    emit_u32(r, u.h32);
+    emit_u32(r, u.s.lo32);
+    emit_u32(r, u.s.hi32);
 }
 static XED_INLINE void emit_i64(xed_enc2_req_t* r, xed_int64_t d) {
     xed_union64_t u; // avoid issues with shifts > 32 on 32b builds
     u.i64 = d;
-    emit_u32(r, u.lo32);
-    emit_u32(r, u.h32);
+    emit_u32(r, u.s.lo32);
+    emit_u32(r, u.s.hi32);
 }
 
 
@@ -495,6 +495,8 @@ XED_DLL_EXPORT void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
                         xed_reg_enum_t dst);
 
 
+XED_DLL_EXPORT void enc_srm_gpr8(xed_enc2_req_t* r,
+                                 xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_srm_gpr16(xed_enc2_req_t* r,
                                   xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_srm_gpr32(xed_enc2_req_t* r,

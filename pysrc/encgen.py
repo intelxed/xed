@@ -2705,7 +2705,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  #WRK
         # ENCODE REGISTERS
         vars = [var_reg0, var_reg1, var_reg2]
         var_r, var_b, var_n = None, None, None
-        for i,op in enumerate(_gen_opnds(ii)):
+        for i,op in enumerate(_gen_opnds_nomem(ii)):
             if op.lookupfn_name:
                 if op.lookupfn_name.endswith('_R3'):
                     var_r = vars[i]
@@ -2727,7 +2727,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  #WRK
         else:
             # some instructions use _N3 as dest (like rotates)
             fo.add_code_eol('set_rexr(r,1)')
-            fo.add_code_eol('set_evexrexrr(r,1)')
+            fo.add_code_eol('set_evexrr(r,1)')
             if ii.reg_required != 'unspecified':
                 if ii.reg_required: # ZERO INIT OPTIMIZATION
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))

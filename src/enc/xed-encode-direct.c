@@ -314,6 +314,20 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
 }
 
 
+void enc_srm_gpr8(xed_enc2_req_t* r,
+                   xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR8_FIRST;
+    if (dst >= XED_REG_AH && dst <= XED_REG_BH)
+        offset = dst-XED_REG_GPR8h_FIRST;  // AH,CH,DH,BH
+
+    set_srm(r, offset & 7);
+    set_rexb(r, offset >= 8);
+    
+    //SIL,DIL,BPL,SPL need REX no matter what
+    if (dst >= XED_REG_SIL && dst <= XED_REG_SPL)
+        set_need_rex(r);
+}
+
 void enc_srm_gpr16(xed_enc2_req_t* r,
                    xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
