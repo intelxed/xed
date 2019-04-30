@@ -371,6 +371,25 @@ void enc_imm8_reg_ymm(xed_enc2_req_t* r,  // _SE imm8 reg
     set_imm8_reg(r, offset);
 }
 
+// CRs and DRs, SEG regs
+
+void enc_modrm_reg_cr(xed_enc2_req_t* r,  
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_CR_FIRST;
+    set_reg(r, offset&7);
+    set_rexr(r, offset>=8);
+}
+void enc_modrm_reg_dr(xed_enc2_req_t* r, 
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_DR_FIRST;
+    set_reg(r, offset&7);
+}
+void enc_modrm_reg_seg(xed_enc2_req_t* r, 
+                       xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_ES;
+    set_reg(r, offset&7);
+}
+
 
 void emit_modrm_sib(xed_enc2_req_t* r) {
     emit_modrm(r);
