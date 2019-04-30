@@ -178,6 +178,17 @@ void enc_vvvv_reg_ymm(xed_enc2_req_t* r,
     set_vvvv(r, ~(offset & 15));
 }
 
+void enc_vvvv_reg_gpr32(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
+    set_vvvv(r, ~(offset & 15));
+}
+void enc_vvvv_reg_gpr64(xed_enc2_req_t* r,
+                        xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
+    set_vvvv(r, ~(offset & 15));
+}
+
 static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
 
 void enc_modrm_rm_x87(xed_enc2_req_t* r,
