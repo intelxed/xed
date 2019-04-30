@@ -2243,13 +2243,13 @@ def create_vex_simd_reg(env,ii,nopnds):
 
     imm8 = ii.has_imm8
     xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
-    category = 'xmm' if xmm else 'ymm'
+    fn_category = category = 'xmm' if xmm else 'ymm'
     if imm8:
-        category += 'i'
+        fn_category += 'i'
     
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
-                              str(nopnds) + category)
+                              str(nopnds) + fn_category)
     fo = make_function_object(env,fname)
     fo.add_comment("created by create_vex_simd_reg")
     fo.add_arg(arg_request)
