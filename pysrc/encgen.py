@@ -950,8 +950,33 @@ def create_legacy_no_operands(env,ii):
     ii.encoder_functions.append(fo)
 
         
-    
-    
+
+def two_fixed_gprs(ii):
+    width = None
+    n = 0 # count of the number of GPR32 or GPR64 stuff we encounter
+    c = 0 # operand count, avoid stray stuff
+    for op in _gen_opnds(ii):
+        c += 1
+        for w in [32,64]:
+            if op_luf_start(op,'GPR{}'.format(w)):
+                if not width:
+                    width = w
+                    n += 1
+                elif width != w:
+                    return False
+                else:
+                    n += 1
+    return width and n == 2 and c == 2
+        
+def create_legacy_two_fixed_gprs(env,ii):
+    op = first_opnd(ii)
+    if op_luf_start(op,'GPR32'):
+        create_legacy_two_scalable_regs(env,ii,[32])
+    elif op_luf_start(op,'GPR64'):
+        create_legacy_two_scalable_regs(env,ii,[64])
+    else:
+        die("NOT REACHED")
+        
 def create_legacy_two_scalable_regs(env, ii, osz_list):
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
     
@@ -1463,7 +1488,7 @@ def create_legacy_gprv_immz(env,ii):
         ii.encoder_functions.append(fo)
 
 
-def create_legacy_orax_immz(env,ii): # WRK
+def create_legacy_orax_immz(env,ii): 
     """Handles OrAX+IMMz. No MODRM byte"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -1518,7 +1543,7 @@ def create_legacy_orax_immz(env,ii): # WRK
         ii.encoder_functions.append(fo)
 
 
-def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False): #WRK
+def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
     """Handles GPRv_SB-IMMv partial reg opcodes and GPRv_SB+OrAX implicit"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -1986,6 +2011,8 @@ def _enc_legacy(env,ii):
         create_legacy_two_gpr8_regs(env,ii)
     elif two_scalable_regs(ii):
         create_legacy_two_scalable_regs(env,ii,[16,32,64])
+    elif two_fixed_gprs(ii):
+        create_legacy_two_fixed_gprs(env,ii)
     elif two_xmm_regs(ii):
         create_legacy_two_xmm_regs(env,ii)
     elif two_xmm_regs_imm8(ii):
