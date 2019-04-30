@@ -502,9 +502,20 @@ XED_DLL_EXPORT void enc_srm_gpr32(xed_enc2_req_t* r,
 XED_DLL_EXPORT void enc_srm_gpr64(xed_enc2_req_t* r,
                                   xed_reg_enum_t dst);
 
-XED_DLL_EXPORT void enc_imm8_reg_xmm(xed_enc2_req_t* r,  // _SE imm8 reg
+ // _SE imm8 reg
+
+XED_DLL_EXPORT void enc_imm8_reg_xmm(xed_enc2_req_t* r, 
                                      xed_reg_enum_t dst);
-XED_DLL_EXPORT void enc_imm8_reg_ymm(xed_enc2_req_t* r, // _SE imm8 reg
+XED_DLL_EXPORT void enc_imm8_reg_ymm(xed_enc2_req_t* r, 
+                                     xed_reg_enum_t dst);
+
+
+// CRs and DRs, SEG regs
+XED_DLL_EXPORT void enc_modrm_reg_cr(xed_enc2_req_t* r,  
+                                     xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_reg_sr(xed_enc2_req_t* r, 
+                                     xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_modrm_reg_seg(xed_enc2_req_t* r, 
                                      xed_reg_enum_t dst);
 
 
