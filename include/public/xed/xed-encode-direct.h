@@ -446,6 +446,10 @@ XED_DLL_EXPORT void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
                                       xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_vvvv_reg_ymm(xed_enc2_req_t* r,
                                       xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_vvvv_reg_gpr32(xed_enc2_req_t* r,
+                                       xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_vvvv_reg_gpr64(xed_enc2_req_t* r,
+                                       xed_reg_enum_t dst);
 
 
 XED_DLL_EXPORT void enc_modrm_rm_x87(xed_enc2_req_t* r,

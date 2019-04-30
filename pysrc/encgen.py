@@ -224,6 +224,10 @@ def op_gprv(op):
         if 'GPRv' in op.lookupfn_name:
             return True
     return False
+def op_vgpr32(op):
+    return op_luf_start(op,'VGPR32')
+def op_vgpr64(op):
+    return op_luf_start(op,'VGPR64')
 
 def op_reg(op):
     if 'REG' in op.name:
@@ -2182,6 +2186,29 @@ def four_ymm(ii):
             return False
     return n==4
 
+def three_vgpr(ii):
+    w,q=0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_vgpr32(op):
+            w += 1
+        elif op_reg(op) and op_vgpr64(op):
+            q += 1
+        else:
+            return False
+    return (w==0 and q==3) or (w==3 and q==0)
+def two_vgpr_opti8(ii):
+    w,q,i=0,0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_vgpr32(op):
+            w += 1
+        elif op_reg(op) and op_vgpr64(op):
+            q += 1
+        elif op_imm8(op):
+            i += 1
+        else:
+            return False
+    return i<= 1 and ((w==0 and q==2) or (w==2 and q==0))
+
 def three_xmm_opti8(ii):
     n,i = 0,0
     for op in _gen_opnds(ii):
@@ -2252,7 +2279,7 @@ def set_vex_pp(ii,fo):
     else:
         die("Could not find the VEX.PP pattern")
 
-def create_vex_simd_reg(env,ii,nopnds): 
+def create_vex_simd_reg(env,ii,nopnds):  #WRK
     """Handle 2/3/4 xmm or ymm regs and optional imm8"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -2262,8 +2289,24 @@ def create_vex_simd_reg(env,ii,nopnds):
     global arg_imm8,  var_imm8
 
     imm8 = ii.has_imm8
-    xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
-    fn_category = category = 'xmm' if xmm else 'ymm'
+    op = first_opnd(ii)
+    xmm = op_xmm(op)
+    ymm = op_ymm(op)
+    gpr32 = op_vgpr32(op)
+    gpr64 = op_vgpr64(op)
+
+    if xmm:
+        category = 'xmm'
+    elif ymm:
+        category = 'ymm'
+    elif gpr32:
+        category = 'gpr32'
+    elif gpr64:
+        category = 'gpr64'
+    else:
+        die("NOT REACHED")
+        
+    fn_category = category 
     if imm8:
         fn_category += 'i'
     
@@ -2271,7 +2314,7 @@ def create_vex_simd_reg(env,ii,nopnds):
                               ii.iclass.lower(),
                               str(nopnds) + fn_category)
     fo = make_function_object(env,fname)
-    fo.add_comment("created by create_vex_simd_reg nopnds={}".format(nopnds))
+    fo.add_comment("created by create_vex_simd_reg category={} nopnds={}".format(category,nopnds))
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)
     fo.add_arg(arg_reg1)
@@ -2284,7 +2327,8 @@ def create_vex_simd_reg(env,ii,nopnds):
 
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
-    if not xmm:
+    
+    if ii.vl == '256': # ZERO INIT OPTIMIZATION
         fo.add_code_eol('set_vexl(r,1)')
 
     vars = [var_reg0, var_reg1, var_reg2, var_reg3]
@@ -2334,7 +2378,6 @@ def create_vex_simd_reg(env,ii,nopnds):
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
     elif var_se:
         fo.add_code_eol('emit_se_imm8_reg(r)')
-
 
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
@@ -2480,9 +2523,9 @@ def _enc_vex(env,ii):
     if four_xmm(ii) or four_ymm(ii):
         create_vex_simd_reg(env,ii,4)
         
-    if three_xmm_opti8(ii) or three_ymm_opti8(ii):
+    if three_xmm_opti8(ii) or three_ymm_opti8(ii) or three_vgpr(ii):
         create_vex_simd_reg(env,ii,3)
-    elif two_xmm_opti8(ii) or two_ymm_opti8(ii):
+    elif two_xmm_opti8(ii) or two_ymm_opti8(ii) or two_vgpr_opti8(ii):
         create_vex_simd_reg(env,ii,2)
         
     elif two_xymm_and_mem(ii):
