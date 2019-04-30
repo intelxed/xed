@@ -156,8 +156,8 @@ def warn(s):
     
 def _dump_fields(x):
     for fld in sorted(x.__dict__.keys()):
-        dbg("{}: {}".format(fld,getattr(x,fld)))
-    dbg("\n\n")
+        msge("{}: {}".format(fld,getattr(x,fld)))
+    msge("\n\n")
 
 def _gen_opnds(ii): # generator
     # filter out write-mask operands and suppressed operands
@@ -309,7 +309,7 @@ def one_xmm_reg_one_mem_fixed_imm8(ii):
             return False
     return n==1 and r==1 and i==1
 
-def one_mem_fixed(ii): # b,w,d,q,dq, v, y, etc.
+def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
     n = 0
     for op in _gen_opnds(ii):
         if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y',
@@ -319,6 +319,32 @@ def one_mem_fixed(ii): # b,w,d,q,dq, v, y, etc.
         else:
             return False
     return n==1
+
+def op_reg_invalid(op):
+    if op.bits and op.bits != '1':
+        if op.bits == 'XED_REG_INVALID':
+            return True
+    return False
+
+def one_mem_common_one_implicit_gpr(ii): 
+    '''memop can be b,w,d,q,dq, v, y, etc.  with
+       GPR8 or GPRv'''
+    n,g = 0,0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y',
+                                     'mem14','mem28','mem94','mem108',
+                                     'mxsave', 'mprefetch' ]:
+            n += 1
+        elif op_reg(op) and op_implicit(op) and not op_reg_invalid(op):
+            # FIXME: could improve the accuracy by enforcing GPR. but
+            #        not sure if that is strictly necessary. Encoding works...
+            g += 1
+        else:
+            return False
+    return n==1 and g==1
+
+
+
 def one_mem_fixed_imm8(ii): # b,w,d,q,dq, etc.
     n = 0
     i = 0
@@ -354,10 +380,13 @@ def two_scalable_regs(ii):
         else:
             return False
     return n==2
+def op_implicit(op):
+    return op.visibility == 'IMPLICIT'
+    
 def one_x87_reg(ii):
     n = 0
     for op in _gen_opnds(ii):
-        if op_reg(op) and op_x87(op) and op.visibility != 'IMPLICIT':
+        if op_reg(op) and op_x87(op) and not op_implicit(op):
             n = n + 1
         else:
             return False
@@ -369,7 +398,7 @@ def two_x87_reg(ii): # one implicit
     for op in _gen_opnds(ii):
         if op_reg(op) and op_x87(op):
             n = n + 1
-            if op.visibility == 'IMPLICIT':
+            if op_implicit(op):
                 implicit = implicit + 1
         else:
             return False
@@ -380,7 +409,7 @@ def one_x87_implicit_reg_one_memop(ii):
     mem,implicit_reg = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_x87(op):
-            if op.visibility == 'IMPLICIT':
+            if op_implicit(op):
                 implicit_reg = implicit_reg + 1
             else:
                 return False
@@ -404,12 +433,41 @@ def one_implicit_gpr_imm8(ii):
     for op in _gen_opnds(ii):
         if op_imm8(op):
             n = n + 1
-        elif op.visibility == 'IMPLICIT':
+        elif op_implicit(op):
             continue
         else:
             return False
     return n == 1
-    
+
+def op_implicit_specific_reg(op):
+    if op.name.startswith('REG'):
+        if op.bits and op.bits.startswith('XED_REG_'):
+            return True
+    return False
+
+
+def one_gprv_one_implicit(ii):  
+    n,implicit = 0,0
+    for op in _gen_opnds(ii):
+        if op_gprv(op):
+            n += 1
+        elif op_implicit_specific_reg(op):
+            implicit += 1
+        else:
+            return False
+    return n == 1 and implicit == 1
+
+def one_gpr8_one_implicit(ii):  
+    n,implicit = 0,0
+    for op in _gen_opnds(ii):
+        if op_gpr8(op):
+            n += 1
+        elif op_implicit_specific_reg(op):
+            implicit += 1
+        else:
+            return False
+    return n == 1 and implicit == 1
+
 
 def one_nonmem_operand(ii):
     n = 0
@@ -529,7 +587,7 @@ def emit_required_legacy_map_escapes(ii,fo):
 def _gather_implicit_regs(ii):
     names = []
     for op in _gen_opnds(ii):
-        if op.visibility == 'IMPLICIT':
+        if op_implicit(op):
             if op.name.startswith('REG'):
                 if op.bits and op.bits.startswith('XED_REG_'):
                     reg_name = re.sub('XED_REG_','',op.bits).lower()
@@ -601,14 +659,22 @@ def make_function_object(env, fname, return_value='void'):
     fo = codegen.function_object_t(fname, return_value)
     return fo
 
-def create_legacy_one_scalable_gpr(env,ii,osz_values):
+def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  #WRK
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
+    
+    extra_names = _gather_implicit_regs(ii)
+    if extra_names:
+        extra_names = '_' + "_".join(extra_names)
+    else:
+        extra_names = ''
 
     for osz in osz_values:
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
-                                      ii.iclass.lower(),
-                                      'rv',
-                                      osz)
+        
+        fname = "{}_{}{}_{}{}".format(enc_fn_prefix,
+                                        ii.iclass.lower(),
+                                        extra_names,
+                                        'r' + oc2,
+                                        '_o{}'.format(osz) if osz != 8 else '')
         fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_one_scalable_gpr")
         fo.add_arg(arg_request)
@@ -660,6 +726,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values):
                     ii.encoder_skipped = True
                     return
             else:
+                _dump_fields(ii)
                 die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
 
         if env.mode == 64:
@@ -858,9 +925,9 @@ def create_legacy_one_nonmem_opnd(env,ii):
 
     elif op.lookupfn_name:
         if op.lookupfn_name.startswith('GPRv'):
-            create_legacy_one_scalable_gpr(env,ii,[16,32,64])        
+            create_legacy_one_scalable_gpr(env,ii,[16,32,64],'v')        
         elif op.lookupfn_name.startswith('GPRy'):
-            create_legacy_one_scalable_gpr(env,ii,[32,64])        
+            create_legacy_one_scalable_gpr(env,ii,[32,64],'y')        
         elif op.lookupfn_name.startswith('GPR8'):
             create_legacy_one_gpr_fixed(env,ii,8)        
         elif op.lookupfn_name.startswith('GPR16'):
@@ -879,7 +946,7 @@ def create_legacy_one_nonmem_opnd(env,ii):
             warn("Need to handle {} in {}".format(
                 op.lookupfn_name,
                 "create_legacy_one_nonmem_opnd"))
-    elif op.visibility == 'IMPLICIT' and op.name.startswith('REG'):
+    elif op_implicit(op) and op.name.startswith('REG'):
         create_legacy_one_implicit_reg(env,ii,imm8=False)
     else:
         warn("Need to handle {} in {}".format(
@@ -1841,7 +1908,8 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
 
 
 
-def create_legacy_one_mem_fixed(env,ii,imm=0):
+def create_legacy_one_mem_common(env,ii,imm=0):
+    """Handles one memop, fixed or scalable."""
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
     
@@ -1884,7 +1952,7 @@ def create_legacy_one_mem_fixed(env,ii,imm=0):
                                                       env.asz)
 
                 fo = make_function_object(env,fname)
-                fo.add_comment('created by create_legacy_one_mem_fixed')
+                fo.add_comment('created by create_legacy_one_mem_common')
                 fo.add_arg(arg_request)
                 add_memop_args(env, fo, use_index, dispsz, immw)
 
@@ -2029,8 +2097,13 @@ def _enc_legacy(env,ii):
     elif two_x87_reg(ii): # one implicit
         create_legacy_two_x87_reg(env,ii)
     elif one_x87_implicit_reg_one_memop(ii):
-        create_legacy_one_mem_fixed(env,ii,imm=0)
-        
+        create_legacy_one_mem_common(env,ii,imm=0)
+
+    elif one_gprv_one_implicit(ii):  
+        create_legacy_one_scalable_gpr(env, ii, [16,32,64], 'v')        
+    elif one_gpr8_one_implicit(ii):  
+        create_legacy_one_scalable_gpr(env, ii, [8], '8')        
+       
     elif one_nonmem_operand(ii):  
         create_legacy_one_nonmem_opnd(env,ii)  # branches out
     elif gpr8_imm8(ii):
@@ -2047,12 +2120,14 @@ def _enc_legacy(env,ii):
     elif orax_immz(ii):
         create_legacy_orax_immz(env,ii)
         
-    elif one_mem_fixed(ii): # b,w,d,q,dq, v,y
-        create_legacy_one_mem_fixed(env,ii,imm=0)
+    elif one_mem_common(ii): # b,w,d,q,dq, v,y
+        create_legacy_one_mem_common(env,ii,imm=0)
+    elif one_mem_common_one_implicit_gpr(ii): # b,w,d,q,dq, v,y
+        create_legacy_one_mem_common(env,ii,imm=0)
     elif one_mem_fixed_imm8(ii): 
-        create_legacy_one_mem_fixed(env,ii,imm='8')
+        create_legacy_one_mem_common(env,ii,imm='8')
     elif one_mem_fixed_immz(ii): 
-        create_legacy_one_mem_fixed(env,ii,imm='z')
+        create_legacy_one_mem_common(env,ii,imm='z')
     elif one_xmm_reg_one_mem_fixed(ii):
         create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=False)
     elif one_xmm_reg_one_mem_fixed_imm8(ii):
