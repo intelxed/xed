@@ -282,18 +282,20 @@ def op_x87(op):
         return True
     return False
 
-def one_scalable_gpr_and_one_mem(ii): # allows optional imm8,immz
-    n,r,i = 0,0,0
+def one_scalable_gpr_and_one_mem(ii): # allows optional imm8,immz, one implicit specific reg
+    implicit,n,r,i = 0,0,0,0
     for op in _gen_opnds(ii):
         if op_mem(op):
             n += 1
+        elif op_reg(op) and op_implicit_specific_reg(op):
+            implicit += 1
         elif op_gprv(op): #or op_gpry(op):
             r += 1
         elif op_imm8(op) or op_immz(op):
             i += 1
         else:
             return False
-    return n==1 and r==1 and i<=1
+    return n==1 and r==1 and i<=1 and implicit <= 1
 
     
 def one_gpr_reg_one_mem_scalable(ii):
@@ -421,16 +423,18 @@ def two_gpr_one_scalable_one_fixed(ii):
             return False
     return v==1 and f==1
     
-def two_scalable_regs(ii): # allow optional imm8, immz
-    n,i = 0,0
+def two_scalable_regs(ii): # allow optional imm8, immz, allow one implicit GPR
+    n,i,implicit = 0,0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_scalable_v(op):
             n += 1
+        elif op_reg(op) and op_implicit_specific_reg(op):
+            implicit += 1
         elif op_imm8(op) or op_immz(op):
             i += 1
         else:
             return False
-    return n==2 and i <= 1
+    return n==2 and i <= 1 and implicit <= 1
 def op_implicit(op):
     return op.visibility == 'IMPLICIT'
     
@@ -645,6 +649,14 @@ def _gather_implicit_regs(ii):
                     names.append(reg_name)
     return names
 
+def _implicit_reg_names(ii):
+    extra_names = _gather_implicit_regs(ii)
+    if extra_names:
+        extra_names = '_' + '_'.join( extra_names )
+    else:
+        extra_names = ''
+    return extra_names
+
 def emit_vex_prefix(ii,fo,register_only=False):
     if ii.map == 1 and ii.rexw_prefix != '1':
         # if any of x,b are set, need c4, else can use c5
@@ -713,11 +725,7 @@ def make_function_object(env, fname, return_value='void'):
 def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
     
-    extra_names = _gather_implicit_regs(ii)
-    if extra_names:
-        extra_names = '_' + "_".join(extra_names)
-    else:
-        extra_names = ''
+    extra_names = _implicit_reg_names(ii)
 
     for osz in osz_values:
         
@@ -966,9 +974,7 @@ def create_legacy_one_implicit_reg(env,ii,imm8=False):
                               ii.iclass.lower(),
                               sig)
     # "push es" needs the es as part of the function name
-    extra_names = _gather_implicit_regs(ii)
-    if extra_names:
-        fname = fname + '_' + "_".join(extra_names)
+    fname = fname + _implicit_reg_names(ii)
     fo = make_function_object(env,fname)
     fo.add_comment("created by create_legacy_one_implicit_reg")
 
@@ -1196,7 +1202,6 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
             fo.add_code_eol('emit_modrm(r)')
         dbg(fo.emit())
         ii.encoder_functions.append(fo)
-            
 
 
 def create_legacy_two_fixed_gprs(env,ii):
@@ -1207,17 +1212,18 @@ def create_legacy_two_fixed_gprs(env,ii):
         create_legacy_two_scalable_regs(env,ii,[64])
     else:
         die("NOT REACHED")
-        
 
 def create_legacy_two_scalable_regs(env, ii, osz_list):
     """Allows optional imm8,immz"""
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
     global arg_imm8, var_imm8
 
+    extra_names = _implicit_reg_names(ii)
     
     for osz in gen_osz_list(env.mode,osz_list):
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+        fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
+                                      extra_names,
                                       'rvrv' if not (ii.has_immz or ii.has_imm8) else 'rvrvi',
                                       osz)
         fo = make_function_object(env,fname)
@@ -2038,7 +2044,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
                 dbg(fo.emit())
                 ii.encoder_functions.append(fo)
 
-def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):  #WRK
+def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):  
     """GPRv-MEMv, MEMv-GPRv, GPRy-MEMv, MEMv-GPRy w/optional imm8 or immz.  This
        will work with anything that has one scalable register operand
        and another fixed or scalable memory operand. """
@@ -2062,7 +2068,10 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):  #WRK
     for op in _gen_opnds(ii):
         if op_gpry(op):
             gpry=True
-        
+
+
+    extra_names = _implicit_reg_names(ii)
+            
     index_vals = [ False, True ]
     ispace = itertools.product(widths, index_vals, dispsz_list)
     for width, use_index, dispsz in ispace:
@@ -2074,12 +2083,13 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):  #WRK
             immw = 16 if width == 16 else 32
             
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                            ii.iclass.lower(),
-                                            mem_reg_order,
-                                            width,
-                                            memaddrsig,
-                                            env.asz)
+        fname = "{}_{}{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                              ii.iclass.lower(),
+                                              extra_names,
+                                              mem_reg_order,
+                                              width,
+                                              memaddrsig,
+                                              env.asz)
 
         fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
@@ -2140,11 +2150,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         elif imm == 'z':
             immw = immz_dict[width]
             
-        extra_names = _gather_implicit_regs(ii)
-        if extra_names:
-            extra_names = '_' + '_'.join( extra_names )
-        else:
-            extra_names = ''
+        extra_names = _implicit_reg_names(ii)
             
         for use_index in [ False, True ]:
             for dispsz in dispsz_list:
