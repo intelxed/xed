@@ -3207,13 +3207,14 @@ def gather_stats(db):
     skipped_fns = 0
     not_done = { 'evex':0, 'vex':0, 'legacy':0, 'xop':0 }
     for ii in db:
-        gen_fn = len(ii.encoder_functions)
-        if gen_fn == 0:
-            unhandled  = unhandled + 1
-            not_done[ii.space] += 1
-        generated_fns += gen_fn
         if ii.encoder_skipped:
             skipped_fns += 1
+        else:
+            gen_fn = len(ii.encoder_functions)
+            if gen_fn == 0:
+                unhandled  = unhandled + 1
+                not_done[ii.space] += 1
+            generated_fns += gen_fn
         
     dbg("// Forms:       {:4d}".format(forms))
     dbg("// Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
