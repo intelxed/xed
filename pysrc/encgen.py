@@ -326,7 +326,8 @@ def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
     for op in _gen_opnds(ii):
         if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y',
                                      'mem14','mem28','mem94','mem108',
-                                     'mxsave', 'mprefetch' ]:
+                                     'mxsave', 'mprefetch',
+                                     'mem16', 's64', 'mfpxenv' ]:
             n = n + 1
         else:
             return False
@@ -1996,7 +1997,8 @@ def create_legacy_one_mem_common(env,ii,imm=0):
                     fo.add_comment('mod=0, zero init optimization')
 
                 if ii.reg_required != 'unspecified':
-                    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+                    if ii.reg_required != 0:  # ZERO INIT OPTIMIZATION
+                        fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
                 encode_mem_operand(env, ii, fo, use_index, dispsz)
                 finish_memop(env, ii, fo,  dispsz, immw, rexw_forced, space='legacy')
@@ -3004,10 +3006,10 @@ def gather_stats(db):
         gen_fn = len(ii.encoder_functions)
         if gen_fn == 0:
             unhandled  = unhandled + 1
-            not_done[ii.space] =  not_done[ii.space] + 1
-        generated_fns = generated_fns + gen_fn
+            not_done[ii.space] += 1
+        generated_fns += gen_fn
         if ii.encoder_skipped:
-            skipped_fns = skipped_fns + 1
+            skipped_fns += 1
         
     dbg("// Forms:       {:4d}".format(forms))
     dbg("// Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
