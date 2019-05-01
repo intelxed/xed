@@ -228,6 +228,10 @@ def op_vgpr32(op):
     return op_luf_start(op,'VGPR32')
 def op_vgpr64(op):
     return op_luf_start(op,'VGPR64')
+def op_gpr32(op):
+    return op_luf_start(op,'GPR32')
+def op_gpr64(op):
+    return op_luf_start(op,'GPR64')
 
 def op_reg(op):
     if 'REG' in op.name:
@@ -285,10 +289,11 @@ def one_gpr_reg_one_mem_scalable(ii):
 def one_gpr_reg_one_mem_fixed(ii): # FIXME starting with 'b', expand...
     n,r = 0,0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['b']:
-            n = n + 1
-        elif op_gpr8(op):
-            r = r + 1
+        # FIXME: sloppy could bemixing b and d operands
+        if op_mem(op) and op.oc2 in ['b','d']:  
+            n += 1
+        elif op_gpr8(op) or op_gpr32(op):
+            r += 1
         else:
             return False
     return n==1 and r==1
@@ -1820,14 +1825,16 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
             dbg(fo.emit())
             ii.encoder_functions.append(fo)
 
-def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):  
-    """REGb-GPRb or GPRb-REGb to start"""
+def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):   #WRK
+    """REGb-GPRb or GPRb-REGb also GPR32-MEMd to start"""
     global var_reg0
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
 
     op = first_opnd(ii)
     widths = ['b']
+    if op_gpr32(op):
+        widths = ['d']
 
     mem_reg_order,regn = ('mr',1)  if op.name == 'MEM0' else ('rm',0)
     widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
@@ -2281,7 +2288,7 @@ def set_vex_pp(ii,fo):
     else:
         die("Could not find the VEX.PP pattern")
 
-def create_vex_simd_reg(env,ii,nopnds):  #WRK
+def create_vex_simd_reg(env,ii,nopnds): 
     """Handle 2/3/4 xmm or ymm regs and optional imm8"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
