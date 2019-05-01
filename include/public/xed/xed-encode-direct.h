@@ -513,7 +513,7 @@ XED_DLL_EXPORT void enc_imm8_reg_ymm(xed_enc2_req_t* r,
 // CRs and DRs, SEG regs
 XED_DLL_EXPORT void enc_modrm_reg_cr(xed_enc2_req_t* r,  
                                      xed_reg_enum_t dst);
-XED_DLL_EXPORT void enc_modrm_reg_sr(xed_enc2_req_t* r, 
+XED_DLL_EXPORT void enc_modrm_reg_dr(xed_enc2_req_t* r, 
                                      xed_reg_enum_t dst);
 XED_DLL_EXPORT void enc_modrm_reg_seg(xed_enc2_req_t* r, 
                                      xed_reg_enum_t dst);
