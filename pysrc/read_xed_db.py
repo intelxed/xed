@@ -367,6 +367,18 @@ class xed_reader_t(object):
             if mod:
                 v.mod_required = 3
 
+            v.has_modrm = False
+            if 'MODRM' in v.pattern: # accounts for normal MODRM and various VSIB types
+                v.has_modrm=True
+            elif (v.reg_required != 'unspecified' or
+                  v.mod_required != 'unspecified'):
+                v.has_modrm=True
+            elif v.rm_required != 'unspecified':
+                # avoid the partial opcode bytes which do not have MODRM
+                if 'SRM[' not in v.pattern: 
+                    v.has_modrm=True
+                
+
             # 16/32/64b mode restrictions
             v.mode_restriction = 'unspecified'
             if not64_pattern.search(v.pattern):
