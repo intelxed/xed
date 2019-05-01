@@ -104,6 +104,9 @@ arg_disp16 = 'xed_int16_t ' + var_disp16
 var_disp32 = 'disp32'
 arg_disp32 = 'xed_int32_t ' + var_disp32
 
+var_disp64 = 'disp64'
+arg_disp64 = 'xed_int64_t ' + var_disp64
+
 var_request = 'r'
 arg_request = 'xed_enc2_req_t* ' + var_request
 
@@ -206,19 +209,24 @@ def op_mask_reg(op):
     
         
 def op_scalable_v(op):
-    if op.lookupfn_name:
-        if 'GPRv' in op.lookupfn_name:
-            return True
+    if op_luf_start(op,'GPRv'):
+        return True
     if op.oc2 == 'v':
         return True
     return False
 def op_gpr8(op):
-    if op.lookupfn_name:
-        if 'GPR8' in op.lookupfn_name:
-            return True
+    if op_luf_start(op,'GPR8'):
+        return True
     if op.oc2 == 'b':
         return True
     return False
+def op_gpr16(op):
+    if op_luf_start(op,'GPR16'):
+        return True
+    if op.oc2 == 'w':
+        return True
+    return False
+
 def op_gprv(op):
     if op.lookupfn_name:
         if 'GPRv' in op.lookupfn_name:
@@ -401,6 +409,16 @@ def one_mem_fixed_immz(ii): # b,w,d,q,dq, etc.
             return False
     return n==1 and i==1
     
+def two_gpr_one_scalable_one_fixed(ii):
+    f,v = 0,0
+    for op in _gen_opnds(ii):
+        if op_reg(op) and op_scalable_v(op):
+            v += 1
+        elif op_reg(op) and (op_gpr8(op) or op_gpr16(op) or op_gpr32(op)):
+            f += 1
+        else:
+            return False
+    return v==1 and f==1
     
 def two_scalable_regs(ii):
     n = 0
@@ -1064,7 +1082,93 @@ def two_fixed_gprs(ii):
                 else:
                     n += 1
     return width and n == 2 and c == 2
+
+def get_gpr_opsz_code(op):
+    if op_luf_start(op,'GPR8'):
+        return 'rb'
+    if op_luf_start(op,'GPR16'):
+        return 'rw'
+    if op_luf_start(op,'GPR32'):
+        return 'rd'
+    if op_luf_start(op,'GPR64'):
+        return 'rq'
+    if op_luf_start(op,'GPRv'):
+        return 'rv'
+    if op_luf_start(op,'GPRy'):
+        return 'ry'
+    else:
+        die("Unhandled GPR width: {}".format(op))
+
+def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
+    global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
+
+    opsz_to_bits = { 'rb':8, 'rw':16, 'rd':32, 'rq':64 }
+    osz_list = [16,32,64]
+    opnds = []
+    opsz_codes =[]
+    for op in _gen_opnds(ii):
+        opnds.append(op)
+        opsz_codes.append( get_gpr_opsz_code(opnds[0]))
         
+    for osz in gen_osz_list(env.mode,osz_list):
+        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      "".join(opsz_codes),
+                                      osz)
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_legacy_two_gpr_one_scalable_one_fixed")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_reg1)
+        emit_required_legacy_prefixes(ii,fo)
+        if not ii.osz_required:
+            if osz == 16 and env.mode != 16:
+                # add a 66 prefix outside of 16b mode, to create 16b osz
+                fo.add_code_eol('emit(r,0x66)')
+            if osz == 32 and env.mode == 16:
+                # add a 66 prefix outside inside 16b mode to create 32b osz
+                fo.add_code_eol('emit(r,0x66)')
+
+        rexw_forced = False
+        if osz == 64 and ii.default_64b == False:
+            rexw_forced = True
+            fo.add_code_eol('set_rexw(r)')
+
+        if modrm_reg_first_operand(ii):
+            f1, f2 = 'reg','rm'
+        else:
+            f1, f2 = 'rm','reg'
+            
+        if opsz_codes[0] in ['rv','ry']:
+            op0_bits = osz
+        else:
+            op0_bits = opsz_to_bits(opsz_codes[0])
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg0)'.format(f1,osz))
+            
+        if opsz_codes[1] in ['rv','ry']:
+            op1_bits = osz
+            
+        else:
+            op1_bits = opsz_to_bits(opsz_codes[1])
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,op1_bits))
+            
+        # checking rexw_forced saves a conditional branch in 64b operations
+        if env.mode == 64:
+            if rexw_forced:
+                fo.add_code_eol('emit_rex(r)')
+            else:
+                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_required_legacy_map_escapes(ii,fo)
+        if ii.partial_opcode:
+            die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
+        else:
+            emit_opcode(ii,fo)
+            fo.add_code_eol('emit_modrm(r)')
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)
+            
+
+
 def create_legacy_two_fixed_gprs(env,ii):
     op = first_opnd(ii)
     if op_luf_start(op,'GPR32'):
@@ -1660,10 +1764,10 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
         else:
             extra_names = ''
         fname = "{}_{}{}_{}o{}".format(enc_fn_prefix,
-                                        ii.iclass.lower(),
-                                        extra_names,
-                                        'ri_' if imm else '',
-                                        osz)
+                                       ii.iclass.lower(),
+                                       extra_names,
+                                       'ri_' if imm else '',
+                                       osz)
 
         fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_gprv_immv")
@@ -1745,6 +1849,8 @@ memsig_str_32or64 =  { True : memsig_idx_32or64,  # indexed by use_index
                        False: memsig_noidx_32or64 }
 
 dvars = { 0: '', 8: var_disp8, 16: var_disp16, 32: var_disp32 }  # index by dispsz
+widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
+bits_to_widths = {8:'b', 16:'w', 32:'d', 64:'q' }
 
 def get_memsig(asz, using_indx, dispz):
     global memsig_str_16
@@ -1839,7 +1945,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
 
 def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):  
     """REGb-GPRb or GPRb-REGb also GPR32-MEMd to start"""
-    global var_reg0
+    global var_reg0, widths_to_bits
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
 
@@ -1849,7 +1955,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         widths = ['d']
 
     mem_reg_order,regn = ('mr',1)  if op.name == 'MEM0' else ('rm',0)
-    widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
+
 
     for width in widths:
         for use_index in [ False, True ]:
@@ -1885,7 +1991,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
 def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     """GPRv-MEMv or MEMv-GPRv. This will work with anything that has one
        scalable register operand and another fixed or scalable memory operand."""
-    global var_reg0
+    global var_reg0, widths_to_bits
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
 
@@ -1895,7 +2001,6 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         widths.append('q')
 
     mem_reg_order,regn = ('mr',1)  if op.name == 'MEM0' else ('rm',0)
-    widths_to_bits = { 'w':16, 'd':32, 'q':64 }
     index_vals = [ False, True ]
     ispace = itertools.product(widths, index_vals, dispsz_list)
     for width, use_index, dispsz in ispace:
@@ -2083,7 +2188,78 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
         fo.add_code_eol('emit_u{}(r,{})'.format(immw, var_imm_dct[immw]),
                         'mem-fxd-imm{}'.format(immw))
     
+
+def mov_without_modrm(ii):
+    if ii.iclass == 'MOV' and not ii.has_modrm:
+        if 'UIMM' in ii.pattern: # avoid 0xB0/0xB8 related mov's
+            return False
+        return True
+    return False
+
+def create_legacy_mov_without_modrm(env,ii): #WRK
+    '''This if for 0xA0...0xA3 MOVs without MODRM'''
+    global enc_fn_prefix, arg_request, arg_reg0
+    global arg_disp16, var_disp16
+    global arg_disp32, var_disp32
+    global arg_disp64, var_disp64
+    opnds = []
+    for op in _gen_opnds(ii):
+        opnds.append(op)
+    # the memop has the size.
+    # the reg op is AL or OrAX, both sizeless
+    if op_mem(opnds[0]):
+        sz = opnds[0].oc2
+        mem_reg_order = 'mr'
+    else:
+        sz = opnds[1].oc2
+        mem_reg_order = 'rm'
+        
+    if env.mode in [16,32]:
+        disp_widths = [16,32]
+    else:
+        disp_widths = [16,32,64]
+
+    arg_dispv = { 16:arg_disp16, 32:arg_disp32, 64:arg_disp64 }
+    var_dispv = { 16:var_disp16, 32:var_disp32, 64:var_disp64 }
+
+    rax_names = { 'b': '_al', 'w': '_ax', 'd':'_eax', 'q':'_rax' }
     
+    for disp_width in disp_widths:
+        memaddrsig = 'd{}'.format(disp_width)
+
+        if sz == 'b':
+            mem_ref_width = 'b'
+        else:
+            mem_ref_width = bits_to_widths[disp_width]
+        extra_names = rax_names[mem_ref_width]
+
+        fname = "{}_{}{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                              ii.iclass.lower(),
+                                              extra_names,
+                                              mem_reg_order,
+                                              mem_ref_width,
+                                              memaddrsig,
+                                              env.asz)
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_legacy_mov_without_modrm")
+        fo.add_arg(arg_request)
+        fo.add_arg(arg_dispv[disp_width])
+
+        if disp_width == 16 and env.mode != 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif disp_width == 32 and  env.mode == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif disp_width == 64 and  ii.default_64b == False:
+            # FIXME: OPTIMIZATION could just emit 0x48 since we know no other bits are set.
+            fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
+            fo.add_code_eol('emit_rex(r)') # no legacy prefixes required, shortcut
+
+        emit_opcode(ii,fo)
+        fo.add_code_eol('emit_i{}(r,{})'.format(disp_width,var_dispv[disp_width]))
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)
+
+
 def _enc_legacy(env,ii):
     if env.mode == 64:
         if ii.mode_restriction == 'not64' or ii.mode_restriction in [0,1]:
@@ -2105,6 +2281,9 @@ def _enc_legacy(env,ii):
         create_legacy_no_operands(env,ii)
     elif one_implicit_gpr_imm8(ii):
         create_legacy_one_implicit_reg(env,ii,imm8=True)
+
+    elif mov_without_modrm(ii): 
+        create_legacy_mov_without_modrm(env,ii)
         
     elif one_gpr_reg_one_mem_scalable(ii):
         create_legacy_one_gpr_reg_one_mem_scalable(env,ii)
@@ -2117,6 +2296,10 @@ def _enc_legacy(env,ii):
         create_legacy_two_gpr8_regs(env,ii)
     elif two_scalable_regs(ii):
         create_legacy_two_scalable_regs(env,ii,[16,32,64])
+        
+    elif two_gpr_one_scalable_one_fixed(ii): 
+        create_legacy_two_gpr_one_scalable_one_fixed(env,ii)
+        
     elif two_fixed_gprs(ii):
         create_legacy_two_fixed_gprs(env,ii)
     elif two_xmm_regs(ii):
