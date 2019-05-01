@@ -275,6 +275,18 @@ def op_x87(op):
         return True
     return False
 
+def one_scalable_gpr_and_one_mem(ii):
+    n,r = 0,0
+    for op in _gen_opnds(ii):
+        if op_mem(op):
+            n = n + 1
+        elif op_gprv(op):
+            r = r + 1
+        else:
+            return False
+    return n==1 and r==1
+
+    
 def one_gpr_reg_one_mem_scalable(ii):
     n,r = 0,0
     for op in _gen_opnds(ii):
@@ -1825,7 +1837,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
             dbg(fo.emit())
             ii.encoder_functions.append(fo)
 
-def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):   #WRK
+def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):  
     """REGb-GPRb or GPRb-REGb also GPR32-MEMd to start"""
     global var_reg0
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
@@ -1871,7 +1883,8 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):   #WRK
                 ii.encoder_functions.append(fo)
 
 def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
-    """REGV- GPRv or GPRV-REGv"""
+    """GPRv-MEMv or MEMv-GPRv. This will work with anything that has one
+       scalable register operand and another fixed or scalable memory operand."""
     global var_reg0
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
@@ -1883,48 +1896,45 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
 
     mem_reg_order,regn = ('mr',1)  if op.name == 'MEM0' else ('rm',0)
     widths_to_bits = { 'w':16, 'd':32, 'q':64 }
-    var_regs = [ var_reg0, var_reg1 ]
+    index_vals = [ False, True ]
+    ispace = itertools.product(widths, index_vals, dispsz_list)
+    for width, use_index, dispsz in ispace:
+        memaddrsig = get_memsig(env.asz, use_index, dispsz)
+        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                            ii.iclass.lower(),
+                                            mem_reg_order,
+                                            width,
+                                            memaddrsig,
+                                            env.asz)
 
-    for width in widths:
-        for use_index in [ False, True ]:
-            for dispsz in dispsz_list:
-                memaddrsig = get_memsig(env.asz, use_index, dispsz)
-                fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                                    ii.iclass.lower(),
-                                                    mem_reg_order,
-                                                    width,
-                                                    memaddrsig,
-                                                    env.asz)
-                
-                fo = make_function_object(env,fname)
-                fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
-                fo.add_arg(arg_request)
-                add_memop_args(env, fo, use_index, dispsz, immw=0, reg=regn)
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
+        fo.add_arg(arg_request)
+        add_memop_args(env, fo, use_index, dispsz, immw=0, reg=regn)
 
-                rexw_forced = False
+        rexw_forced = False
 
-                if width == 'w' and env.mode != 16:
-                    fo.add_code_eol('emit(r,0x66)')
-                elif width == 'd' and  env.mode == 16:
-                    fo.add_code_eol('emit(r,0x66)')
-                elif width == 'q' and  ii.default_64b == False:
-                    rexw_forced = True
-                    fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
+        if width == 'w' and env.mode != 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif width == 'd' and  env.mode == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif width == 'q' and  ii.default_64b == False:
+            rexw_forced = True
+            fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
 
-                emit_required_legacy_prefixes(ii,fo)
+        emit_required_legacy_prefixes(ii,fo)
 
-                mod = modvals[dispsz]
-                if mod:  # ZERO-INIT OPTIMIZATION
-                    fo.add_code_eol('set_mod(r,{})'.format(mod))
+        mod = modvals[dispsz]
+        if mod:  # ZERO-INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(mod))
 
-                # the sole reg is reg0 whether it is first or 2nd operand...
-                fo.add_code_eol('enc_modrm_reg_gpr{}(r,{})'.format(widths_to_bits[width],
-                                                                   var_reg0))
-                    
-                encode_mem_operand(env, ii, fo, use_index, dispsz)
-                finish_memop(env, ii, fo,  dispsz, immw=False, rexw_forced=rexw_forced, space='legacy')
-                dbg(fo.emit())
-                ii.encoder_functions.append(fo)
+        fo.add_code_eol('enc_modrm_reg_gpr{}(r,{})'.format(widths_to_bits[width],
+                                                           var_reg0))
+
+        encode_mem_operand(env, ii, fo, use_index, dispsz)
+        finish_memop(env, ii, fo,  dispsz, immw=False, rexw_forced=rexw_forced, space='legacy')
+        dbg(fo.emit())
+        ii.encoder_functions.append(fo)
 
 
 
@@ -2094,9 +2104,13 @@ def _enc_legacy(env,ii):
     if zero_operands(ii):
         create_legacy_no_operands(env,ii)
     elif one_implicit_gpr_imm8(ii):
-        create_legacy_one_implicit_reg(env,ii,imm8=True)        
+        create_legacy_one_implicit_reg(env,ii,imm8=True)
+        
     elif one_gpr_reg_one_mem_scalable(ii):
         create_legacy_one_gpr_reg_one_mem_scalable(env,ii)
+    elif one_scalable_gpr_and_one_mem(ii): # mem fixed or scalable
+        create_legacy_one_gpr_reg_one_mem_scalable(env,ii)
+        
     elif one_gpr_reg_one_mem_fixed(ii):
         create_legacy_one_gpr_reg_one_mem_fixed(env,ii)
     elif two_gpr8_regs(ii):
