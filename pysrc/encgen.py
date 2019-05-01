@@ -2508,46 +2508,50 @@ def three_ymm_opti8(ii):
     n,i = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_ymm(op):
-            n = n + 1
+            n += 1
         elif op_imm8(op):
             i += 1
         else:
             return False
     return n==3 and i <= 1
 
-def two_xymm_and_mem(ii):
-    m,x,y = 0,0,0
+def two_xymm_and_mem(ii): # allow imm8
+    i,m,x,y = 0,0,0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
-            x = x + 1
+            x += 1
         elif op_reg(op) and op_ymm(op):
-            y = y + 1
+            y += 1
+        elif op_imm8(op):
+            i += 1
         elif op_mem(op):
-            m = m + 1
+            m += 1
         else:
             return False
-    return  m==1 and ((x==2 and y==0) or (x==0 and y==2))
+    return  m==1 and ((x==2 and y==0) or (x==0 and y==2)) and i<=1
 
-def one_xymm_and_mem(ii):
-    m,x,y = 0,0,0
+def one_xymm_and_mem(ii): # allow imm8
+    i,m,x,y = 0,0,0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
-            x = x + 1
+            x += 1
         elif op_reg(op) and op_ymm(op):
-            y = y + 1
+            y += 1
+        elif op_imm8(op):
+            i += 1
         elif op_mem(op):
-            m = m + 1
+            m += 1
         else:
             return False
-    return  m==1 and ((x==1 and y==0) or (x==0 and y==1))
+    return  m==1 and ((x==1 and y==0) or (x==0 and y==1)) and i<=1
 
 def two_ymm_and_mem(ii):
     m,n = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_ymm(op):
-            n = n + 1
+            n += 1
         elif op_mem(op):
-            m = m + 1
+            m += 1
         else:
             return False
     return n==2 and m==1
@@ -2666,10 +2670,11 @@ def create_vex_simd_reg(env,ii,nopnds):
     ii.encoder_functions.append(fo)
 
 def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
-    """One or two xmm/ymm and memory."""
+    """One or two xmm/ymm and memory. allows imm8 optionally"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
+    global arg_imm8
 
     op = first_opnd(ii)
     width = op.oc2
@@ -2687,6 +2692,11 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
             category = 'mxx' if xmm else 'myy'
         else:
             category = 'xxm' if xmm else 'yym'
+
+    immw=0
+    if ii.has_imm8:
+        category += 'i'
+        immw=8
         
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = [0,8,16] if env.asz == 16 else [0,8,32]
@@ -2707,7 +2717,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
             fo.add_arg(arg_reg0)
             if nopnds == 3:
                 fo.add_arg(arg_reg1)
-            add_memop_args(env, fo, use_index, dispsz) 
+            add_memop_args(env, fo, use_index, dispsz, immw)
 
             set_vex_pp(ii,fo)
             fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -2740,7 +2750,6 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3): # FIXME
 
             encode_mem_operand(env, ii, fo, use_index, dispsz)
             emit_vex_prefix(ii,fo,register_only=False)
-            immw=0
             finish_memop(env, ii, fo, dispsz, immw,  space='vex')
             dbg(fo.emit())
             ii.encoder_functions.append(fo)
@@ -2812,9 +2821,9 @@ def _enc_vex(env,ii):
         create_vex_simd_reg(env,ii,2)
         
     elif two_xymm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii)
+        create_vex_simd_2reg_mem(env,ii, nopnds=3) # allows imm8
     elif one_xymm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii,nopnds=2)
+        create_vex_simd_2reg_mem(env,ii, nopnds=2) # allows imm8
     elif vex_all_mask_reg(ii):
         create_vex_all_mask_reg(env,ii)
         
