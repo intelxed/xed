@@ -546,6 +546,17 @@ def op_imm8(op):
         if op.oc2 == 'b':
             return True
     return False
+def op_imm16(op):
+    if op.name == 'IMM0':
+        if op.oc2 == 'w':
+            return True
+    return False
+def op_imm8_2(op):
+    if op.name == 'IMM1':
+        if op.oc2 == 'b':
+            return True
+    return False
+
 def one_mmx_reg_imm8(ii):
     n = 0
     for i,op in enumerate(_gen_opnds(ii)):
@@ -556,16 +567,18 @@ def one_mmx_reg_imm8(ii):
         else:
             return False
     return n==1
-def one_xmm_reg_imm8(ii):
-    n = 0
-    for i,op in enumerate(_gen_opnds(ii)):
+def one_xmm_reg_imm8(ii): # also allows SSE4 2-imm8 instr
+    i,j,n=0,0,0
+    for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
-            n = n + 1
-        elif i == 1 and op_imm8(op):
-            continue
+            n += 1
+        elif op_imm8(op):
+            i += 1
+        elif op_imm8_2(op):
+            j += 1
         else:
             return False
-    return n==1
+    return n==1 and i==1 and j<=1
     
 def two_xmm_regs_imm8(ii):
     n = 0
@@ -1257,7 +1270,7 @@ def emit_immz(fo,osz):
                                             var_immz[osz]))
         
 def cond_emit_imm8(ii,fo):
-    global arg_imm8, arg_imm8_2
+    global var_imm8, var_imm8_2
     if ii.has_imm8:
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
     if ii.has_imm8_2:
@@ -1267,8 +1280,7 @@ def cond_add_imm_args(ii,fo):
     if ii.has_imm8:
         fo.add_arg(arg_imm8)
     if ii.has_imm8_2:
-        fo.add_arg(arg_imm8_2)
-
+        fo.add_arg(arg_imm8_2)    
     
 
 def emit_rexw(env,fo, rexw_forced):
@@ -1292,11 +1304,13 @@ def get_reg_type(op):
         return 'mmx'
     die("UNHANDLED OPERAND TYPE {}".format(op))
 
-def two_fixed_regs_opti8(ii):
-    i,d,q,m,x=0,0,0,0,0
+def two_fixed_regs_opti8(ii): # also allows 2-imm8 SSE4 instr
+    j,i,d,q,m,x=0,0,0,0,0,0
     for op in _gen_opnds(ii):
         if op_imm8(op):
             i += 1
+        elif op_imm8_2(op):
+            j += 1
         elif op_gpr32(op):
             d += 1
         elif op_gpr64(op):
@@ -1307,13 +1321,13 @@ def two_fixed_regs_opti8(ii):
             x += 1
         else:
             return False
-    if i>=2:
+    if i>=2 or j>=2:
         return False
     sum = d + q + m + x
     return sum == 2  # 1+1 or 2+0...either is fine
 
             
-def create_legacy_two_fixed_regs_opti8(env,ii):  #WRK
+def create_legacy_two_fixed_regs_opti8(env,ii): 
     '''Two regs and optional imm8. Regs can be gpr32,gpr64,xmm,mmx, and
        they can be different from one another'''
     global enc_fn_prefix, arg_request
@@ -1398,11 +1412,12 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
 
 
 def create_legacy_one_xmm_reg_imm8(env,ii):
+    '''also handles 2 imm8 SSE4 instr'''
     global enc_fn_prefix, arg_request
     global arg_reg0, var_reg0
     global arg_imm8, var_imm8
 
-    category = 'xmmi'
+    category = 'xii' if ii.has_imm8_2 else 'xi'
     
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
@@ -1877,7 +1892,7 @@ def add_memop_args(env, fo, use_index, dispsz, immw=0, reg=-1):
     if immw:
         fo.add_arg(arg_imm_dct[immw])
 
-def create_legacy_one_xmm_reg_one_mem_fixed(env,ii): #WRK
+def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     '''optional imm8'''
     global var_reg0
     
@@ -2280,6 +2295,33 @@ def create_legacy_mov_without_modrm(env,ii):
         fo.add_code_eol('emit_i{}(r,{})'.format(disp_width,var_dispv[disp_width]))
         add_enc_func(ii,fo)
 
+def is_enter_instr(ii):
+    return ii.iclass == 'ENTER' # imm0-w, imm1-b
+    
+def create_legacy_enter(env,ii): #WRK
+    '''These are 3 unusual instructions: enter and AMD SSE4a extrq, insrq'''
+    global arg_imm16, var_imm16
+    global arg_imm8_2, var_imm8_2
+
+    fname = "{}_{}".format(enc_fn_prefix, ii.iclass.lower())
+
+    fo = make_function_object(env,fname)
+    fo.add_comment("created by create_legacy_enter")
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_imm16)
+    fo.add_arg(arg_imm8_2)
+    
+    #FIXME: EOSZes needed for ENTER?
+    
+    emit_required_legacy_prefixes(ii,fo)
+    emit_opcode(ii,fo)
+
+    fo.add_code_eol('emit_u16(r,{})'.format(var_imm16))
+    fo.add_code_eol('emit(r,{})'.format(var_imm8_2))
+    add_enc_func(ii,fo)
+
+
+
 
 def _enc_legacy(env,ii):
     if env.mode == 64:
@@ -2323,12 +2365,12 @@ def _enc_legacy(env,ii):
         
     elif two_fixed_gprs(ii):
         create_legacy_two_fixed_gprs(env,ii)
-    elif one_xmm_reg_imm8(ii):        
+    elif one_xmm_reg_imm8(ii):     # also SSE4 2-imm8 instr
         create_legacy_one_xmm_reg_imm8(env,ii)
     elif one_mmx_reg_imm8(ii):        
         create_legacy_one_mmx_reg_imm8(env,ii)
         
-    elif two_fixed_regs_opti8(ii):
+    elif two_fixed_regs_opti8(ii): 
         create_legacy_two_fixed_regs_opti8(env,ii)
         
     elif one_x87_reg(ii):
@@ -2369,7 +2411,8 @@ def _enc_legacy(env,ii):
         create_legacy_one_mem_common(env,ii,imm='z')
     elif one_xmm_reg_one_mem_fixed_opti8(ii):
         create_legacy_one_xmm_reg_one_mem_fixed(env,ii)
-        
+    elif is_enter_instr(ii):
+        create_legacy_enter(env,ii)        
 def two_xymm_opti8(ii):  # mixed xmm and ymm, optional imm8
     n,i = 0,0
     for op in _gen_opnds(ii):
@@ -2394,7 +2437,7 @@ def three_xymm_opti8(ii):  # mixed xmm and ymm, optional imm8
 
 
 
-def two_xmm_opti8(ii):
+def two_xmm_opti8(ii): 
     n,i = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
@@ -2403,7 +2446,7 @@ def two_xmm_opti8(ii):
             i += 1
         else:
             return False
-    return n==2 and i <= 1
+    return n==2 and i <= 1 
   
 def two_ymm_opti8(ii):
     n,i = 0,0
@@ -2582,6 +2625,10 @@ def make_opnd_signature(ii):
             s.append('m')
         elif op_imm8(op):
             s.append('i')
+        elif op_imm16(op):
+            s.append('i') #FIXME something else?
+        elif op_imm8_2(op):
+            s.append('i') #FIXME something else?
         elif op_mmx(op):
             s.append('n') #FIXME something else
         else:
@@ -2595,13 +2642,12 @@ def get_type_size(op):
 def create_vex_simd_reg(env,ii,nopnds): 
     """Handle 2/3/4 xmm or ymm regs and optional imm8.  This is coded to
        allow different type and size for each operand.  Different
-       x/ymm show up on converts.    """
+       x/ymm show up on converts. Also handles 2-imm8 SSE4a instr.   """
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
     global arg_reg2,  var_reg2
     global arg_reg3,  var_reg3
-    global arg_imm8,  var_imm8
 
     opnd_sig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
@@ -2617,8 +2663,7 @@ def create_vex_simd_reg(env,ii,nopnds):
         fo.add_arg(arg_reg2)
     if nopnds == 4:
         fo.add_arg(arg_reg3)
-    if ii.has_imm8:
-        fo.add_arg(arg_imm8)
+    cond_add_imm_args(ii,fo)
 
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -2670,16 +2715,18 @@ def create_vex_simd_reg(env,ii,nopnds):
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
     if ii.has_imm8:
-        fo.add_code_eol('emit(r,{})'.format(var_imm8))
+        cond_emit_imm8(ii,fo)
     elif var_se:
         fo.add_code_eol('emit_se_imm8_reg(r)')
     add_enc_func(ii,fo)
+    
 
 def find_mempos(ii):
     for i,op in enumerate(_gen_opnds(ii)):
         if op_mem(op):
             return i
     die("NOT REACHED")
+    
 def create_vex_simd_2reg_mem(env,ii, nopnds=3): 
     """1,2 or 3 xmm/ymm and memory. allows imm8 optionally"""
     global enc_fn_prefix, arg_request
