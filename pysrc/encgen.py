@@ -2732,6 +2732,15 @@ def two_xymm_and_mem(ii): # allow imm8
             return False
     return  m==1 and ((x==2 and y==0) or (x==0 and y==2)) and i<=1
 
+def vex_just_mem(ii):
+    m = 0
+    for op in _gen_opnds(ii):
+        if op_mem(op):
+            m += 1
+        else:
+            return False
+    return  m==1
+    
 def three_xymm_and_mem(ii): # optional imm8
     i,m,x,y = 0,0,0,0
     for op in _gen_opnds(ii):
@@ -2933,7 +2942,7 @@ def find_mempos(ii):
     die("NOT REACHED")
     
 def create_vex_simd_2reg_mem(env,ii, nopnds=3): 
-    """1,2 or 3 xmm/ymm and memory. allows imm8 optionally"""
+    """0, 1, 2 or 3 xmm/ymm and memory. allows imm8 optionally"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -2972,7 +2981,8 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         fo = make_function_object(env,fname)
         fo.add_comment("created by create_vex_simd_2reg_mem")
         fo.add_arg(arg_request)
-        fo.add_arg(arg_reg0)
+        if nopnds >= 2:
+            fo.add_arg(arg_reg0)
         if nopnds >= 3:
             fo.add_arg(arg_reg1)
         if mempos == 3 and nopnds == 4: # mem last
@@ -3011,8 +3021,11 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
         else:
             fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(vlname, var_n))
-
-        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(vlname, var_r))
+        if var_r:
+            fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(vlname, var_r))
+        elif ii.reg_required != 'unspecified':
+            if ii.reg_required: # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
         if var_se:
             fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(vlname, var_se))
@@ -3096,6 +3109,8 @@ def _enc_vex(env,ii):
         create_vex_simd_2reg_mem(env,ii, nopnds=2) # allows imm8
     elif three_xymm_and_mem(ii):
         create_vex_simd_2reg_mem(env,ii, nopnds=4) # allows imm8
+    elif vex_just_mem(ii):
+        create_vex_simd_2reg_mem(env,ii, nopnds=1) 
     elif vex_all_mask_reg(ii):
         create_vex_all_mask_reg(env,ii)
     elif vex_vzero(ii):
@@ -3114,11 +3129,11 @@ def create_vex_vzero(env,ii): #WRK
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
     if ii.vl == '256': # ZERO INIT OPTIMIZATION
         fo.add_code_eol('set_vexl(r,1)')
-    if ii.rexw_prefix == '1':
+    if ii.rexw_prefix == '1': # could skip this because we know...
         fo.add_code_eol('set_rexw(r)')
     fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
-    emit_vex_prefix(ii,fo,register_only=True)
-    emit_opcode(ii,fo)
+    emit_vex_prefix(ii,fo,register_only=True) # could force C5 since we know...
+    emit_opcode(ii,fo)  # no modrm on vzero* ... only exception in VEX space.
     add_enc_func(ii,fo)
 
     
