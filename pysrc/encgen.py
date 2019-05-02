@@ -2366,7 +2366,7 @@ def create_legacy_gprv_seg(env,ii,op_info):
         add_enc_func(ii,fo)
             
 
-def create_legacy_mem_seg(env,ii,op_info):  #WRK
+def create_legacy_mem_seg(env,ii,op_info):  
     '''order varies: MEM-SEG or SEG-MEM'''
     global arg_reg_type, index_vals
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
@@ -3098,7 +3098,30 @@ def _enc_vex(env,ii):
         create_vex_simd_2reg_mem(env,ii, nopnds=4) # allows imm8
     elif vex_all_mask_reg(ii):
         create_vex_all_mask_reg(env,ii)
+    elif vex_vzero(ii):
+        create_vex_vzero(env,ii)
         
+def vex_vzero(ii):
+    return ii.iclass.startswith('VZERO')
+    
+def create_vex_vzero(env,ii): #WRK
+    fname = "{}_{}".format(enc_fn_prefix,
+                           ii.iclass.lower())
+    fo = make_function_object(env,fname)
+    fo.add_comment("created by create_vex_vzero")
+    fo.add_arg(arg_request)
+    set_vex_pp(ii,fo)
+    fo.add_code_eol('set_map(r,{})'.format(ii.map))
+    if ii.vl == '256': # ZERO INIT OPTIMIZATION
+        fo.add_code_eol('set_vexl(r,1)')
+    if ii.rexw_prefix == '1':
+        fo.add_code_eol('set_rexw(r)')
+    fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+    emit_vex_prefix(ii,fo,register_only=True)
+    emit_opcode(ii,fo)
+    add_enc_func(ii,fo)
+
+    
 def vex_all_mask_reg(ii):
     k = 0
     for op in _gen_opnds(ii):
