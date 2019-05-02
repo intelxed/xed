@@ -1457,7 +1457,7 @@ def add_encoder2_command(env, gc, gen_dag, prep):
     
     ed = env.build_dir_join('ENCGEN2-OUTPUT-FILES.txt')
     if os.path.exists(ed):
-        need_to_rebuild_enc = need_to_rebuild(ed, gc.enc_hash_file)
+        need_to_rebuild_enc = need_to_rebuild(ed, gc.enc2_hash_file)
         if need_to_rebuild_enc:
             mbuild.remove_file(ed)
 
