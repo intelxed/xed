@@ -2309,8 +2309,6 @@ def is_mov_cr_dr(ii):
 
 def create_mov_cr_dr(env,ii): #WRK
     '''mov-cr and mov-dr. operand order varies'''
-    global arg_reg0, var_reg0
-    global arg_reg1, var_reg1
     op_info=[] # for encoding the modrm fields
     for op in _gen_opnds(ii):
         if op_gpr32(op):
@@ -2327,15 +2325,15 @@ def create_mov_cr_dr(env,ii): #WRK
     fo = make_function_object(env,fname)
     fo.add_comment("created by create_mov_cr_dr")
     fo.add_arg(arg_request)
-    fo.add_arg(arg_reg0)
-    fo.add_arg(arg_reg1)
+    fo.add_arg('xed_reg_enum_t ' + op_info[0])
+    fo.add_arg('xed_reg_enum_t ' + op_info[1])
 
     if modrm_reg_first_operand(ii):
         f1, f2, = 'reg','rm'
     else:
         f1, f2, = 'rm','reg' 
-    fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f1,op_info[0], var_reg0))
-    fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f2,op_info[1], var_reg1))
+    fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f1, op_info[0], op_info[0]))
+    fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f2, op_info[1], op_info[1]))
     
     emit_required_legacy_prefixes(ii,fo)
     if env.mode == 64:
