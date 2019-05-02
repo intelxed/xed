@@ -325,7 +325,7 @@ def one_gpr_reg_one_mem_fixed(ii): # FIXME starting with 'b', expand...
             return False
     return n==1 and r==1
 
-simd_widths = ['xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'xuq', 'zd']
+simd_widths = ['b','w','xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'xuq', 'zd']
 
 def one_xmm_reg_one_mem_fixed_opti8(ii): 
     global simd_widths
