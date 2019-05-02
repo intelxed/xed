@@ -2710,7 +2710,7 @@ def make_opnd_signature(ii):
 
 def get_type_size(op):
     a = re.sub(r'_.*','',op.lookupfn_name)
-    return re.sub(r'^v','',a).lower()
+    return re.sub(r'^[Vv]','',a).lower()
 
 def create_vex_simd_reg(env,ii,nopnds): 
     """Handle 2/3/4 xmm or ymm regs and optional imm8.  This is coded to
@@ -3323,7 +3323,6 @@ def prep_instruction(ii):
     ii.write_masking_merging_only = False # if true, no zeroing allowed
     ii.rounding_form = False
     ii.broadcast_allowed = False
-    ii.has_immz=False
     
     if ii.space == 'evex':
         for op in ii.parsed_operands:
@@ -3344,11 +3343,6 @@ def prep_instruction(ii):
             if op_mem(op):
                 if 'BCRC=0' not in ii.pattern:
                     ii.broadcast_allowed = True
-                break
-    elif ii.space == 'legacy':
-        for op in _gen_opnds(ii):
-            if op_immz(op):
-                ii.has_immz=True
                 break
 
 
