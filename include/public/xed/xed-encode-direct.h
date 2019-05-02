@@ -62,7 +62,7 @@ typedef struct {
     xed_uint32_t sibindex:3;
     xed_uint32_t sibbase:3;
     
-    xed_uint8 imm8_reg; // for _SE imm8-specified registers.
+    xed_uint8_t imm8_reg; // for _SE imm8-specified registers.
 } xed_enc2_req_payload_t;
 
 

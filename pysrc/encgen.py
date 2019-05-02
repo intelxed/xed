@@ -808,6 +808,7 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
         fname = "{}_m{}_{}_o{}".format(enc_fn_prefix, env.mode, ii.iclass.lower(), osz)
         fo = make_function_object(env,fname)
         fo.add_comment("created by create_legacy_one_imm_scalable")
+        fo.add_arg(arg_request)
         fo.add_arg(immargs[osz])
 
         if ii.has_modrm:
@@ -2709,7 +2710,7 @@ def make_opnd_signature(ii):
 
 def get_type_size(op):
     a = re.sub(r'_.*','',op.lookupfn_name)
-    return re.sub(r'^v','',a)
+    return re.sub(r'^v','',a).lower()
 
 def create_vex_simd_reg(env,ii,nopnds): 
     """Handle 2/3/4 xmm or ymm regs and optional imm8.  This is coded to
