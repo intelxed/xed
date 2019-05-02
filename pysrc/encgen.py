@@ -323,19 +323,7 @@ def one_gpr_reg_one_mem_fixed(ii): # FIXME starting with 'b', expand...
 
 simd_widths = ['xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'xuq', 'zd']
 
-def one_xmm_reg_one_mem_fixed(ii):
-    global simd_widths
-    n = 0
-    r = 0
-    for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in simd_widths:
-            n = n + 1
-        elif op_reg(op) and op.oc2 in simd_widths:
-            r = r + 1
-        else:
-            return False
-    return n==1 and r==1
-def one_xmm_reg_one_mem_fixed_imm8(ii): 
+def one_xmm_reg_one_mem_fixed_opti8(ii): 
     global simd_widths
     i,r,n=0,0,0
     for op in _gen_opnds(ii):
@@ -347,7 +335,7 @@ def one_xmm_reg_one_mem_fixed_imm8(ii):
             i = i + 1
         else:
             return False
-    return n==1 and r==1 and i==1
+    return n==1 and r==1 and i<=1
 
 def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
     n = 0
@@ -542,14 +530,16 @@ def two_gpr8_regs(ii):
             return False
     return n==2
 
-def two_xmm_regs(ii):
-    n = 0
+def two_xmm_regs_opti8(ii): # FIXME: UNUSED -  DELETE
+    n,i = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_xmm(op):
-            n = n + 1
+            n += 1
+        elif op_imm8(op):
+            i += 1
         else:
             return False
-    return n==2
+    return n==2 and i <= 1
 
 def op_immz(op):
     if op.name == 'IMM0':
@@ -598,7 +588,7 @@ def two_xmm_regs_imm8(ii):
             return False
     return n==2
 
-def two_mmx_regs_opti8(ii):
+def two_mmx_regs_opti8(ii): # FIXME: UNUSED DELETE
     i,n = 0,0
     for op in _gen_opnds(ii):
         if op_reg(op) and op_mmx(op):
@@ -789,11 +779,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
                 _dump_fields(ii)
                 die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
 
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
                 
         if ii.partial_opcode:
@@ -1180,12 +1166,7 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
             op1_bits = opsz_to_bits(opsz_codes[1])
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,op1_bits))
             
-        # checking rexw_forced saves a conditional branch in 64b operations
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
@@ -1249,12 +1230,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg0)'.format(f1,osz))
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,osz))
         
-        # checking rexw_forced saves a conditional branch in 64b operations
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
@@ -1327,14 +1303,12 @@ def cond_add_imm_args(ii,fo):
         fo.add_arg(arg_imm8_2)
 
     
-def create_legacy_two_xmm_regs(env,ii,imm8=False):
+def create_legacy_two_xmm_regs_opti8(env,ii): # FIXME: UNUSED - DELETE
     global enc_fn_prefix, arg_request
     global arg_reg0, var_reg0
     global arg_reg1, var_reg1
-    global arg_imm8, var_imm8
 
-    category = 'xmm' if imm8==False else 'xmmi'
-    
+    category = 'xmm' if ii.has_imm8==False else 'xmmi'
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   category)
@@ -1344,8 +1318,8 @@ def create_legacy_two_xmm_regs(env,ii,imm8=False):
     fo.add_arg(arg_request)
     fo.add_arg(arg_reg0)
     fo.add_arg(arg_reg1)
-        
     cond_add_imm_args(ii,fo)
+    
     emit_required_legacy_prefixes(ii,fo)
     if modrm_reg_first_operand(ii):
         f1, f2 = 'reg','rm'
@@ -1364,6 +1338,96 @@ def create_legacy_two_xmm_regs(env,ii,imm8=False):
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
+def emit_rexw(env,fo, rexw_forced):
+    if env.mode == 64:
+        if rexw_forced:
+            fo.add_code_eol('emit_rex(r)')
+        else:
+            fo.add_code_eol('emit_rex_if_needed(r)')
+    
+def get_reg_type(op):
+    '''return a type suitable for use in an enc_modrm function'''
+    if op_gpr32(op):
+        return 'gpr32'
+    elif op_gpr64(op):
+        return 'gpr64'
+    elif op_xmm(op):
+        return 'xmm'
+    elif op_ymm(op):
+        return 'ymm'
+    elif op_mmx(op):
+        return 'mmx'
+    die("UNHANDLED OPERAND TYPE {}".format(op))
+
+def two_fixed_regs_opti8(ii):
+    i,d,q,m,x=0,0,0,0,0
+    for op in _gen_opnds(ii):
+        if op_imm8(op):
+            i += 1
+        elif op_gpr32(op):
+            d += 1
+        elif op_gpr64(op):
+            q += 1
+        elif op_mmx(op):
+            m += 1
+        elif op_xmm(op):
+            x += 1
+        else:
+            return False
+    if i>=2:
+        return False
+    sum = d + q + m + x
+    return sum == 2  # 1+1 or 2+0...either is fine
+
+            
+def create_legacy_two_fixed_regs_opti8(env,ii):  #WRK
+    '''Two regs and optional imm8. Regs can be gpr32,gpr64,xmm,mmx, and
+       they can be different from one another'''
+    global enc_fn_prefix, arg_request
+    global arg_reg0, var_reg0
+    global arg_reg1, var_reg1
+
+    opnd_sig = make_opnd_signature(ii)
+
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  opnd_sig)
+    fo = make_function_object(env,fname)
+    fo.add_comment("created by create_legacy_two_fixed_regs_opti8")
+        
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_reg1)
+    cond_add_imm_args(ii,fo)
+    
+    emit_required_legacy_prefixes(ii,fo)
+    if modrm_reg_first_operand(ii):
+        locations = ['reg', 'rm']
+    else:
+        locations = ['rm', 'reg']
+    regs = [ var_reg0, var_reg1]
+
+    rexw_forced = False            
+    if env.mode == 64 and ii.rexw_prefix == '1':
+        rexw_forced = True
+        fo.add_code_eol('set_rexw(r)')
+
+    fo.add_code_eol('set_mod(r,3)')
+    for i,op in enumerate(_gen_opnds(ii)):
+        if op_imm8(op):
+            break
+        reg_type = get_reg_type(op)
+        fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(locations[i], reg_type, regs[i]))
+    emit_rexw(env,fo,rexw_forced)
+    emit_required_legacy_map_escapes(ii,fo)
+    emit_opcode(ii,fo)
+    fo.add_code_eol('emit_modrm(r)')
+    cond_emit_imm8(ii,fo)
+    
+    dbg(fo.emit())
+    ii.encoder_functions.append(fo)
+
+    
 
 def create_legacy_one_mmx_reg_imm8(env,ii):
     global enc_fn_prefix, arg_request
@@ -1446,7 +1510,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     ii.encoder_functions.append(fo)
     
 
-def create_legacy_two_mmx_regs_opti8(env,ii):
+def create_legacy_two_mmx_regs_opti8(env,ii): # FIXME: UNUSED - DELETE
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
 
     fname = "{}_{}_{}".format(enc_fn_prefix,
@@ -1664,12 +1728,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
             else:
                 f1, f2 = 'rm','reg'
             fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
-            
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             emit_partial_opcode_variable_srm(ii,fo)
@@ -1722,11 +1781,8 @@ def create_legacy_gprv_immz(env,ii):
         else:
             if ii.rm_required != 'unspecified':
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         fo.add_code_eol('emit_modrm(r)')
@@ -1775,11 +1831,7 @@ def create_legacy_orax_immz(env,ii):
                 rexw_forced = True
                 fo.add_code_eol('set_rexw(r)')
 
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         emit_immz(fo,osz)
@@ -1843,11 +1895,7 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
         else:
             die("NOT REACHED")
 
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_partial_opcode_variable_srm(ii,fo)
         if imm:
@@ -1939,15 +1987,16 @@ def add_memop_args(env, fo, use_index, dispsz, immw=0, reg=-1):
     if immw:
         fo.add_arg(arg_imm_dct[immw])
 
-def create_legacy_one_xmm_reg_one_mem_fixed(env,ii,imm8=False):
+def create_legacy_one_xmm_reg_one_mem_fixed(env,ii): #WRK
+    '''optional imm8'''
     global var_reg0
     
     op = first_opnd(ii)
     width = op.oc2
-    immw = 8 if imm8 else 0
+    immw = 8 if ii.has_imm8 else 0
     i = 0 if modrm_reg_first_operand(ii) else 1    # i determines argument order
     opsig = 'rm' if i==0 else 'mr'
-    if imm8:
+    if ii.has_imm8:
         opsig = opsig + 'i'
 
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
@@ -2002,7 +2051,7 @@ def get_reg_width(op):
         return 'q'
     die("NOT REACHED")
             
-def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):   #WRK
+def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):   
     """REGb-GPRb or GPRb-REGb also GPR32-MEMd, GPR64-MEMq or MEMdq to start"""
     global var_reg0, widths_to_bits
     modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
@@ -2245,12 +2294,7 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
     global var_imm_dct
 
     if space == 'legacy':
-        if env.mode == 64:
-            if rexw_forced:
-                fo.add_code_eol('emit_rex(r)')
-            else:
-                fo.add_code_eol('emit_rex_if_needed(r)')
-
+        emit_rexw(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
     elif space =='evex':
         fo.add_code_eol('emit_evex(r)')
@@ -2393,16 +2437,18 @@ def _enc_legacy(env,ii):
         
     elif two_fixed_gprs(ii):
         create_legacy_two_fixed_gprs(env,ii)
-    elif two_xmm_regs(ii):
-        create_legacy_two_xmm_regs(env,ii)
-    elif two_xmm_regs_imm8(ii):
-        create_legacy_two_xmm_regs(env,ii,imm8=True)
     elif one_xmm_reg_imm8(ii):        
         create_legacy_one_xmm_reg_imm8(env,ii)
     elif one_mmx_reg_imm8(ii):        
         create_legacy_one_mmx_reg_imm8(env,ii)
-    elif two_mmx_regs_opti8(ii):
-        create_legacy_two_mmx_regs_opti8(env,ii)
+        
+    #elif two_mmx_regs_opti8(ii): # FIXME: UNUSED - DELETE
+    #    create_legacy_two_mmx_regs_opti8(env,ii)
+    #elif two_xmm_regs_opti8(ii):
+    #    create_legacy_two_xmm_regs_opti8(env,ii)
+
+    elif two_fixed_regs_opti8(ii):
+        create_legacy_two_fixed_regs_opti8(env,ii)
         
     elif one_x87_reg(ii):
         create_legacy_one_x87_reg(env,ii)
@@ -2440,10 +2486,8 @@ def _enc_legacy(env,ii):
         create_legacy_one_mem_common(env,ii,imm='8')
     elif one_mem_fixed_immz(ii): 
         create_legacy_one_mem_common(env,ii,imm='z')
-    elif one_xmm_reg_one_mem_fixed(ii):
-        create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=False)
-    elif one_xmm_reg_one_mem_fixed_imm8(ii):
-        create_legacy_one_xmm_reg_one_mem_fixed(env,ii, imm8=True)
+    elif one_xmm_reg_one_mem_fixed_opti8(ii):
+        create_legacy_one_xmm_reg_one_mem_fixed(env,ii)
         
 def two_xymm_opti8(ii):  # mixed xmm and ymm, optional imm8
     n,i = 0,0
@@ -2646,13 +2690,19 @@ def make_opnd_signature(ii):
         elif op_ymm(op):
             s.append('y')
         elif op_vgpr32(op):
-            s.append('g')
+            s.append('r')
         elif op_vgpr64(op):
-            s.append('g') #FIXME something else
+            s.append('r') #FIXME something else
+        elif op_gpr32(op):
+            s.append('r')
+        elif op_gpr64(op):
+            s.append('r') #FIXME something else
         elif op_mem(op):
             s.append('m')
         elif op_imm8(op):
             s.append('i')
+        elif op_mmx(op):
+            s.append('n') #FIXME something else
         else:
             die("Unhandled operand {}".format(op))
     return "".join(s)
@@ -3391,22 +3441,31 @@ def gather_stats(db):
     forms = len(db)
     generated_fns = 0
     skipped_fns = 0
+    skipped_mpx = 0
+    handled = 0
     not_done = { 'evex':0, 'vex':0, 'legacy':0, 'xop':0 }
     for ii in db:
         if ii.encoder_skipped:
             skipped_fns += 1
+        elif ii.isa_set in ['MPX']:
+            skipped_mpx += 1
         else:
             gen_fn = len(ii.encoder_functions)
             if gen_fn == 0:
                 unhandled  = unhandled + 1
                 not_done[ii.space] += 1
-            generated_fns += gen_fn
-        
+            else:
+                handled += 1
+                generated_fns += gen_fn
+            
+    skipped = skipped_mpx + skipped_fns
+    tot_focus = handled + unhandled # not counting various skipped
     dbg("// Forms:       {:4d}".format(forms))
-    dbg("// Handled:     {:4d}  ({:6.2f}%)".format(forms-unhandled, 100.0*(forms-unhandled)/forms ))
-    dbg("// Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/forms))
+    dbg("// Handled:     {:4d}  ({:6.2f}%)".format(handled, 100.0*handled/tot_focus ))
+    dbg("// Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/tot_focus))
     dbg("// Generated Encoding functions: {:5d}".format(generated_fns))
     dbg("// Skipped Encoding functions:   {:5d}".format(skipped_fns))
+    dbg("// Skipped MPX instr:            {:5d}".format(skipped_mpx))
     for space in not_done.keys():
         dbg("// not-done {:8s}:   {:5d}".format(space, not_done[space]))
 
