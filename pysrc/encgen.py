@@ -227,6 +227,10 @@ def op_gpr16(op):
         return True
     return False
 
+def op_cr(op):
+    return op_luf_start(op,'CR')
+def op_dr(op):
+    return op_luf_start(op,'DR')
 def op_gprv(op):
     return op_luf_start(op,'GPRv')
 def op_gpry(op):
@@ -2297,8 +2301,52 @@ def create_legacy_mov_without_modrm(env,ii):
 
 def is_enter_instr(ii):
     return ii.iclass == 'ENTER' # imm0-w, imm1-b
+
+
+def is_mov_cr_dr(ii):
+    return ii.iclass in ['MOV_CR','MOV_DR']
+
+
+def create_mov_cr_dr(env,ii): #WRK
+    '''mov-cr and mov-dr. operand order varies'''
+    global arg_reg0, var_reg0
+    global arg_reg1, var_reg1
+    op_info=[] # for encoding the modrm fields
+    for op in _gen_opnds(ii):
+        if op_gpr32(op):
+            op_info.append('gpr32')
+        elif op_gpr64(op):
+            op_info.append('gpr64')
+        elif op_cr(op):
+            op_info.append('cr')
+        elif op_dr(op):
+            op_info.append('dr')
+            
+    opsig = make_opnd_signature(ii)
+    fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(),opsig)
+    fo = make_function_object(env,fname)
+    fo.add_comment("created by create_mov_cr_dr")
+    fo.add_arg(arg_request)
+    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_reg1)
+
+    if modrm_reg_first_operand(ii):
+        f1, f2, = 'reg','rm'
+    else:
+        f1, f2, = 'rm','reg' 
+    fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f1,op_info[0], var_reg0))
+    fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f2,op_info[1], var_reg1))
     
-def create_legacy_enter(env,ii): #WRK
+    emit_required_legacy_prefixes(ii,fo)
+    if env.mode == 64:
+        fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_required_legacy_map_escapes(ii,fo)
+    emit_opcode(ii,fo)
+    fo.add_code_eol('emit_modrm(r)')
+    add_enc_func(ii,fo)
+
+    
+def create_legacy_enter(env,ii): 
     '''These are 3 unusual instructions: enter and AMD SSE4a extrq, insrq'''
     global arg_imm16, var_imm16
     global arg_imm8_2, var_imm8_2
@@ -2312,8 +2360,8 @@ def create_legacy_enter(env,ii): #WRK
     fo.add_arg(arg_imm8_2)
     
     #FIXME: EOSZes needed for ENTER?
-    
     emit_required_legacy_prefixes(ii,fo)
+    emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
 
     fo.add_code_eol('emit_u16(r,{})'.format(var_imm16))
@@ -2413,6 +2461,8 @@ def _enc_legacy(env,ii):
         create_legacy_one_xmm_reg_one_mem_fixed(env,ii)
     elif is_enter_instr(ii):
         create_legacy_enter(env,ii)        
+    elif is_mov_cr_dr(ii):
+        create_mov_cr_dr(env,ii)        
 def two_xymm_opti8(ii):  # mixed xmm and ymm, optional imm8
     n,i = 0,0
     for op in _gen_opnds(ii):
@@ -2631,6 +2681,10 @@ def make_opnd_signature(ii):
             s.append('i') #FIXME something else?
         elif op_mmx(op):
             s.append('n') #FIXME something else
+        elif op_cr(op):
+            s.append('cr')
+        elif op_dr(op):
+            s.append('dr')
         else:
             die("Unhandled operand {}".format(op))
     return "".join(s)
