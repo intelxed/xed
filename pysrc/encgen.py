@@ -159,7 +159,7 @@ index_vals = [False,True]
 # what zero displacements for patching.  I could also consider merging
 # disp8 and disp16/32 and then chose the smallest displacement that
 # fits, but that also takes away control from the user.
-def get_dispz_list(env):
+def get_dispsz_list(env):
     return  [0,8,16] if env.asz == 16 else [0,8,32]
 
 dbg_output = sys.stdout
