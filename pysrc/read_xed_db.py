@@ -61,6 +61,16 @@ def _is_bits(val):
             return number_string
    return None
 
+def _op_immz(op):
+    if op.name == 'IMM0':
+        if op.oc2 == 'z':
+            return True
+    return False
+def _op_imm8(op):
+    if op.name == 'IMM0':
+        if op.oc2 == 'b':
+            return True
+    return False
 
 
     
@@ -214,10 +224,13 @@ class xed_reader_t(object):
     def _summarize_operands(self):
         for v in self.recs:
             v.has_imm8 = False
+            v.has_immz = False #  16/32b imm. (32b in 64b EOSZ)
             v.has_imm8_2 = False
             for op in v.parsed_operands:
-                if op.name == 'IMM0':
+                if _op_imm8(op):
                     v.has_imm8 = True
+                elif _op_immz(op):
+                    v.has_immz = True
                 elif op.name == 'IMM1':
                     v.has_imm8_2 = True
 
