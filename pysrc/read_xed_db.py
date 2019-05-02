@@ -414,7 +414,7 @@ class xed_reader_t(object):
             v.eosz = eosz
 
             v.default_64b = False
-            if 'DF64()' in v.pattern:
+            if 'DF64()' in v.pattern or 'CR_WIDTH()' in v.pattern:
                 v.default_64b = True
 
             v.scalar = False
