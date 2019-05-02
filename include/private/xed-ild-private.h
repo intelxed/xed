@@ -80,6 +80,8 @@ static XED_INLINE void xed_ild_hasimm_map0x0F_op0x78_l1(xed_decoded_inst_t* x) {
     /*FIXME: f3 prefix is not mentioned in INSERTQ or EXTRQ grammar
     definitions, however is forbidden for VMREAD. It seems that it can
     go with INSERTQ and EXTRQ. Right? */
+#if defined(XED_AMD_ENABLED)
+
     if (xed3_operand_get_osz(x) ||
         xed3_operand_get_ild_f2(x)
         //    || xed3_operand_get_ild_f3(x)
@@ -91,7 +93,9 @@ static XED_INLINE void xed_ild_hasimm_map0x0F_op0x78_l1(xed_decoded_inst_t* x) {
         xed3_operand_set_imm1_bytes(x, 1);
         return;
     }
+#endif
     /* for VMREAD imm_bytes is 0*/
+    (void) x;
 }
 
 /*ENTER instruction has UIMM16 and UIMM8_1 NTs*/
