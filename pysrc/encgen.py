@@ -831,13 +831,6 @@ def add_enc_func(ii,fo):
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
-def create_legacy_one_gprv_partial(env,ii):
-    pass  # FIXME    
-def create_legacy_asz_rax(env,ii):
-    pass # FIXME
-def create_legacy_asz_gpr(env,ii):
-    pass # FIXME
-
 def create_legacy_one_imm_scalable(env,ii, osz_values): 
     '''just an imm-z (or IMM-v)'''
     global enc_fn_prefix, arg_request
@@ -1029,16 +1022,6 @@ def create_legacy_one_nonmem_opnd(env,ii):
             create_legacy_one_gpr_fixed(env,ii,32)        
         elif op.lookupfn_name.startswith('GPR64'):
             create_legacy_one_gpr_fixed(env,ii,64)        
-        elif op.lookupfn_name.startswith('GPRv_SB'):
-            create_legacy_one_gprv_partial(env,ii)
-        elif op.lookupfn_name.startswith('ArAX'):
-            create_legacy_asz_rax(env,ii)
-        elif op.lookupfn_name.startswith('A_GPR_'):
-            create_legacy_asz_gpr(env,ii)
-        else:
-            warn("Need to handle {} in {}".format(
-                op.lookupfn_name,
-                "create_legacy_one_nonmem_opnd"))
     elif op_implicit(op) and op.name.startswith('REG'):
         create_legacy_one_implicit_reg(env,ii,imm8=False)
     else:
@@ -2688,7 +2671,8 @@ def is_movdir64(ii):
 
 def create_legacy_movdir64(env,ii):
     '''MOVDIR64B is a strange instr. It has 2 memops, one in an
-       address-space-sized GPR and the other a normal memop'''
+       address-space-sized GPR_R and the other a normal
+       memop.'''
     global arg_request, enc_fn_prefix, gprv_names
     ispace = itertools.product( get_index_vals(), get_dispsz_list(env))
     for use_index, dispsz in ispace:
@@ -2734,6 +2718,57 @@ def create_legacy_movdir64(env,ii):
         finish_memop(env, ii, fo, dispsz, immw, rexw_forced, space='legacy')
         add_enc_func(ii,fo)
 
+
+
+def is_umonitor(ii):
+    return ii.iclass == 'UMONITOR'
+
+def create_legacy_umonitor(env,ii):
+    '''ASZ-based GPR_B.'''
+    global arg_request, enc_fn_prefix, gprv_names
+    fname = '{}_{}_a{}'.format(enc_fn_prefix,
+                               ii.iclass.lower(),
+                               env.asz)
+    fo = make_function_object(env,fname)
+    fo.add_comment("created by create_legacy_umonitor")
+    fo.add_arg(arg_request)
+    reg = gpry_names[env.asz]  # abuse the gprv names
+    fo.add_arg(arg_reg_type +  reg)
+
+    # This operation is address-size modulated In 64b mode, 64b
+    # addressing is the default. For non default 32b addressing in
+    # 64b mode, we need a 67 prefix.
+    if env.mode == 64 and env.asz == 32:
+        fo.add_code_eol('emit(r,0x67)')
+    # FIXME: These next two are wonky. In 32b mode, we usually,
+    # but not always have 32b addressing. It is perfectly legit to
+    # have 32b mode with 16b addressing in which case a 67 is not
+    # needed. Same (other way around) for 16b mode. So we really
+    # do not need the 67 prefix ever outside of 64b mode as users
+    # are expected to use the appropriate library for their
+    # addressing mode.
+    #
+    #elif env.mode == 32 and env.asz == 16:
+    #    fo.add_code_eol('emit(r,0x67)')
+    #elif env.mode == 16 and asz == 32:
+    #    fo.add_code_eol('emit(r,0x67)')
+
+    fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(reg, reg))
+    if ii.reg_required != 'unspecified':
+        if ii.reg_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required),
+                            'reg opcode extension')
+    if ii.mod_required != 'unspecified':
+        if ii.mod_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(ii.mod_required))
+
+    emit_required_legacy_prefixes(ii,fo)
+    emit_rex(env,fo,rexw_forced=False)
+    emit_required_legacy_map_escapes(ii,fo)
+    emit_opcode(ii,fo)
+    fo.add_code_eol('emit_modrm(r)')
+    add_enc_func(ii,fo)
+        
         
 def _enc_legacy(env,ii):
     if env.mode == 64:
@@ -2795,8 +2830,10 @@ def _enc_legacy(env,ii):
     elif one_gprv_one_implicit(ii):  
         create_legacy_one_scalable_gpr(env, ii, [16,32,64], 'v')        
     elif one_gpr8_one_implicit(ii):  
-        create_legacy_one_scalable_gpr(env, ii, [8], '8')        
-       
+        create_legacy_one_scalable_gpr(env, ii, [8], '8')
+        
+    elif is_umonitor(ii): # must be before one_nonmem_operand...
+        create_legacy_umonitor(env,ii)
     elif one_nonmem_operand(ii):  
         create_legacy_one_nonmem_opnd(env,ii)  # branches out
     elif gpr8_imm8(ii):
