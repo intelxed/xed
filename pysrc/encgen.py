@@ -161,6 +161,8 @@ index_vals = [False,True]
 # fits, but that also takes away control from the user.
 def get_dispsz_list(env):
     return  [0,8,16] if env.asz == 16 else [0,8,32]
+def get_osz_list(env):
+    return  [16,32,64] if env.mode == 64 else [16,32]
 
 dbg_output = sys.stdout
 
@@ -371,6 +373,14 @@ def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
             return False
     return n==1
 
+def is_far_xfer_mem(ii):
+    if 'FAR_XFER' in ii.attributes:
+        for op in _gen_opnds(ii):
+            if op_mem(op) and op.oc2 in ['p','p2']:
+                return True
+    return False
+            
+
 def op_reg_invalid(op):
     if op.bits and op.bits != '1':
         if op.bits == 'XED_REG_INVALID':
@@ -486,9 +496,11 @@ def one_x87_implicit_reg_one_memop(ii):
     return mem==1 and implicit_reg==1
 
 
-def zero_operands(ii):
+def zero_operands(ii):# allow all implicit regs
     n = 0
     for op in _gen_opnds(ii):
+        #if op_implicit(op): # FIXME: catches too much
+        #    continue
         n = n + 1
     return n == 0
 
@@ -1023,7 +1035,7 @@ def create_legacy_one_nonmem_opnd(env,ii):
             op, "create_legacy_one_nonmem_opnd"))
 
 
-def create_legacy_no_operands(env,ii):
+def create_legacy_no_operands(env,ii): # allows all implicit too
     global enc_fn_prefix, arg_request
     
     if env.mode == 64 and ii.easz == 'a16':
@@ -2107,6 +2119,63 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         finish_memop(env, ii, fo,  dispsz, immw, rexw_forced=rexw_forced, space='legacy')
         add_enc_func(ii,fo)
 
+def create_legacy_far_xfer_mem(env,ii):
+    '''call far and jmp far via memop. p has widths 4/6/6 bytes. p2 has 4/6/10 widths'''
+    # FIXME: functio naming conflict in 32vs64 modes. Could use osz instead of "mem#BYTES"
+    p_widths = {16:4, 32:6, 64:6} 
+    p2_widths = {16:4, 32:6, 64:10}
+    op = first_opnd(ii)
+    if op.oc2 == 'p2':
+        widths = p2_widths
+    elif op.oc2 == 'p':
+        widths = p_widths
+    else:
+        die("NOT REACHED")
+    osz_list = get_osz_list(env)
+    dispsz_list = get_dispsz_list(env)
+    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
+
+    ispace = itertools.product(osz_list, index_vals, dispsz_list)
+    for osz, use_index, dispsz in ispace:
+        membytes = widths[osz]
+        memaddrsig = get_memsig(env.asz, use_index, dispsz)
+        fname = '{}_{}_{}{}_{}_a{}'.format(enc_fn_prefix,
+                                           ii.iclass.lower(),
+                                           'mem',
+                                           membytes,
+                                           memaddrsig,
+                                           env.asz)
+
+        fo = make_function_object(env,fname)
+        fo.add_comment('created by create_legacy_far_xfer_mem')
+        fo.add_arg(arg_request)
+        add_memop_args(env, fo, use_index, dispsz)
+        rexw_forced = False
+        if osz == 16 and env.mode != 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif osz == 32 and  env.mode == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif osz == 64 and  ii.default_64b == False:
+            rexw_forced = True
+            fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
+        emit_required_legacy_prefixes(ii,fo)
+
+        mod = modvals[dispsz]
+        if mod:  # ZERO-INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(mod))
+        else:
+            fo.add_comment('mod=0, zero init optimization')
+
+        if ii.reg_required != 'unspecified':
+            if ii.reg_required != 0:  # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+
+        encode_mem_operand(env, ii, fo, use_index, dispsz)
+        finish_memop(env, ii, fo,  dispsz,
+                     immw=0,
+                     rexw_forced=rexw_forced,
+                     space='legacy')
+        add_enc_func(ii,fo)
 
 def create_legacy_one_mem_common(env,ii,imm=0):
     """Handles one memop, fixed or scalable."""
@@ -2535,7 +2604,7 @@ def _enc_legacy(env,ii):
             ii.encoder_skipped = True 
             return
 
-    if zero_operands(ii):
+    if zero_operands(ii):# allows all-implicit too
         create_legacy_no_operands(env,ii)
     elif one_implicit_gpr_imm8(ii):
         create_legacy_one_implicit_reg(env,ii,imm8=True)
@@ -2596,6 +2665,8 @@ def _enc_legacy(env,ii):
     elif orax_immz(ii):
         create_legacy_orax_immz(env,ii)
         
+    elif is_far_xfer_mem(ii): 
+        create_legacy_far_xfer_mem(env,ii)
     elif one_mem_common(ii): # b,w,d,q,dq, v,y
         create_legacy_one_mem_common(env,ii,imm=0)
     elif one_mem_common_one_implicit_gpr(ii): # b,w,d,q,dq, v,y
@@ -3119,7 +3190,7 @@ def _enc_vex(env,ii):
 def vex_vzero(ii):
     return ii.iclass.startswith('VZERO')
     
-def create_vex_vzero(env,ii): #WRK
+def create_vex_vzero(env,ii): 
     fname = "{}_{}".format(enc_fn_prefix,
                            ii.iclass.lower())
     fo = make_function_object(env,fname)
