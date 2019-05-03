@@ -160,6 +160,9 @@ gprv_names = { 16:'gpr16', 32:'gpr32', 64:'gpr64'}
 gpry_names = { 16:'gpr32', 32:'gpr32', 64:'gpr64'}
 gprz_names = { 16:'gpr16', 32:'gpr32', 64:'gpr32'}
 
+vl2names = { '128':'xmm', '256':'ymm', '512':'zmm',
+             'LIG':'xmm', 'LLIG':'xmm' }
+
 # if I cut the number of displacements by removing 0, I would have to
 # add some sort of gizmo to omit the displacent if the value of the
 # displacement is 0, but then that creates a problem for people who
@@ -3190,25 +3193,19 @@ def set_vex_pp(ii,fo):
     else:
         die("Could not find the VEX.PP pattern")
 
-def largest_vl_vex(ii):
-    vl = 0
-    for op in _gen_opnds(ii):
-        if op_xmm(op):
-            vl = vl | 1
-        if op_ymm(op):
-            vl = vl | 2
-    if vl >= 2:
-        return 'ymm'
-    return 'xmm'
-
-def largest_vl_vex(ii):
+def largest_vl_vex(ii): # and evex
     vl = 0
     for op in _gen_opnds(ii):
         if op_xmm(op):
             vl = vl | 1
         elif op_ymm(op):
             vl = vl | 2
-    if vl >= 2:
+        elif op_zmm(op):
+            vl = vl | 4
+            
+    if vl >= 4:
+        return 'zmm'
+    elif vl >= 2:
         return 'ymm'
     return 'xmm'
 
@@ -3219,6 +3216,8 @@ def make_opnd_signature(ii):
             s.append('x')
         elif op_ymm(op):
             s.append('y')
+        elif op_zmm(op):
+            s.append('z')
         elif op_vgpr32(op):
             s.append('r')
         elif op_vgpr64(op):
@@ -3543,7 +3542,7 @@ def vex_all_mask_reg(ii):
     return k>=2
     
 
-def evex_3xyzmm(ii):
+def evex_2or3xyzmm(ii): # allows for mixing widths of registers
     x,y,z=0,0,0
     for op in _gen_opnds(ii):
         if op_xmm(op):
@@ -3556,10 +3555,11 @@ def evex_3xyzmm(ii):
             continue
         else:
             return False
-    return (x==0 and y==0 and z==3) or (x==0 and y==3 and z==0) or (x==3 and y==0 and z==0)
+    sum = x + y + z
+    return sum == 2 or sum == 3
 
 
-def evex_2xyzmm(ii):
+def evex_2xyzmm(ii): 
     x,y,z=0,0,0
     for op in _gen_opnds(ii):
         if op_xmm(op):
@@ -3608,10 +3608,8 @@ def evex_1xyzmm_mem(ii):
     return m==1 and (x+y+z)==1
 
 
-
-
-
-def create_evex_3xyzmm(env,ii,nopnds=3):
+def create_evex_3xyzmm(env,ii):
+    '''Handles 1,2,3 mixed type x/y/zmm regs plus optional imm8, optional rcsae'''
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -3620,6 +3618,7 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
     global arg_zeroing, var_zeroing
     global arg_rcsae, var_rcsae
     global arg_imm8, var_imm8
+    global vl2names
 
     rounding,imm8,masking_allowed=False,False,False
     if ii.rounding_form:
@@ -3628,35 +3627,34 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
         imm8 = True
     if ii.write_masking:
         masking_allowed = True
-
-    op = first_opnd(ii)
-    if op.lookupfn_name.startswith('XMM'):
-        vl = 'xmm'
-    elif op.lookupfn_name.startswith('YMM'):
-        vl = 'ymm'
-    elif op.lookupfn_name.startswith('ZMM'):
-        vl = 'zmm'
-    else:
-        die("SHOULD NOT REACH HERE")
-
-
+        
+    vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
     vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
 
-    pattern_name = nopnds*vl[0]
-    if imm8:
-        pattern_name = pattern_name + 'i'
+    opnd_sig = make_opnd_signature(ii)
     if rounding:
-        pattern_name = pattern_name + 'rc'
+        opnd_sig += 'rc'
 
     mask_versions = [False]
     if masking_allowed:
         mask_versions.append(True)
+
+    reg_type_names = []
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            reg_type_names.append('xmm')
+        elif op_ymm(op):
+            reg_type_names.append('ymm')
+        elif op_zmm(op):
+            reg_type_names.append('zmm')
+
+    nregs = len(reg_type_names)
     
     for masking in mask_versions:
         fname = "{}_{}_{}{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
-                                    pattern_name,
+                                    opnd_sig,
                                     mask_variant_name[masking])
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_evex_3xyzmm")
@@ -3667,7 +3665,7 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
             if not ii.write_masking_merging_only:
                 fo.add_arg(arg_zeroing)
         fo.add_arg(arg_reg1)
-        if nopnds == 3:
+        if nregs == 3:
             fo.add_arg(arg_reg2)
         if imm8:
             fo.add_arg(arg_imm8)
@@ -3694,24 +3692,24 @@ def create_evex_3xyzmm(env,ii,nopnds=3):
         for i,op in enumerate(_gen_opnds(ii)):
             if op.lookupfn_name:
                 if op.lookupfn_name.endswith('_R3'):
-                    var_r = vars[i]
+                    var_r, ri = vars[i], i
                 elif op.lookupfn_name.endswith('_B3'):
-                    var_b = vars[i]
+                    var_b, bi = vars[i], i
                 elif op.lookupfn_name.endswith('_N3'):
-                    var_n = vars[i]
+                    var_n, ni = vars[i], i
                 else:
                     die("SHOULD NOT REACH HERE")
         if var_n:
-            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(reg_type_names[ni], var_n))
         else:
-            if nopnds == 3:
+            if nregs == 3:
                 die("SHOULD NOT REACH HERE")
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
             fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
         if var_r:
-            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
+            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(reg_type_names[ri], var_r))
         if var_b:
-            fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(vl, var_b))        
+            fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(reg_type_names[bi], var_b))        
             
         fo.add_code_eol('emit_evex(r)')
         emit_opcode(ii,fo)
@@ -3855,10 +3853,8 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         
 def _enc_evex(env,ii):
     # handles rounding, norounding, imm8, no-imm8, masking/nomasking
-    if evex_3xyzmm(ii):
-        create_evex_3xyzmm(env, ii, nopnds=3)
-    elif evex_2xyzmm(ii):
-        create_evex_3xyzmm(env, ii, nopnds=2)
+    if evex_2or3xyzmm(ii):
+        create_evex_3xyzmm(env, ii)
     elif evex_2xyzmm_mem(ii): 
         create_evex_1or2xyzmm_mem(env, ii, nregs=2)
     elif evex_1xyzmm_mem(ii): 
