@@ -650,8 +650,11 @@ def gen_osz_list(mode, osz_list):
         
 def modrm_reg_first_operand(ii):
     op = first_opnd(ii)
-    if op.lookupfn_name and  op.lookupfn_name.endswith('_R'):
-        return True
+    if op.lookupfn_name:
+        if op.lookupfn_name.endswith('_R'):
+            return True
+        if op.lookupfn_name.startswith('SEG'):
+            return True
     return False
 
 def emit_required_legacy_prefixes(ii,fo):
