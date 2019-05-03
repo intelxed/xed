@@ -511,8 +511,8 @@ def one_x87_implicit_reg_one_memop(ii):
 def zero_operands(ii):# allow all implicit regs
     n = 0
     for op in _gen_opnds(ii):
-        #if op_implicit(op): # FIXME: catches too much
-        #    continue
+        if op_implicit(op):
+            continue
         n = n + 1
     return n == 0
 
@@ -678,6 +678,11 @@ def _gather_implicit_regs(ii):
                 if op.bits and op.bits.startswith('XED_REG_'):
                     reg_name = re.sub('XED_REG_','',op.bits).lower()
                     names.append(reg_name)
+                elif op.lookupfn_name:
+                    #ntluf = re.sub(r'_.*','',op.lookupfn_name)
+                    ntluf = op.lookupfn_name
+                    names.append(ntluf)
+                
     return names
 
 def _implicit_reg_names(ii):
@@ -736,9 +741,12 @@ def create_modrm_byte(ii,fo):
     if modrm_required:
         modrm = (mod << 6) | (reg<<3) | rm
         fo.add_comment('MODRM = 0x{:02x}'.format(modrm))
-        fo.add_code_eol('set_mod(r,{})'.format(mod))
-        fo.add_code_eol('set_reg(r,{})'.format(reg))
-        fo.add_code_eol('set_rm(r,{})'.format(rm))
+        if mod: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(mod))
+        if reg: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_reg(r,{})'.format(reg))
+        if rm: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_rm(r,{})'.format(rm))
     return modrm_required
 
 def make_function_object(env, ii,fname, return_value='void'):
@@ -1033,22 +1041,64 @@ def create_legacy_one_nonmem_opnd(env,ii):
             op, "create_legacy_one_nonmem_opnd"))
 
 
-def create_legacy_no_operands(env,ii): # allows all implicit too
+def scalable_implicit_operands(ii): #WRK
+    for op in _gen_opnds(ii):
+        if op_luf(op,'OeAX'):
+            return True
+    return False
+
+def create_legacy_zero_operands_scalable(env,ii):
+    implicits = _implicit_reg_names(ii)
+    if ii.iclass in ['IN','OUT']:
+        osz_list = [16,32]
+        
+    for osz in osz_list:
+        fname = "{}_{}{}_o{}".format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     implicits,
+                                     osz)
+        fo = make_function_object(env,ii,fname)
+        fo.add_comment("created by create_legacy_zero_operands_scalable")
+        fo.add_arg(arg_request)
+        modrm_required = create_modrm_byte(ii,fo)
+        if env.mode in [32,64] and osz == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        if env.mode == 16 and osz == 32:
+            fo.add_code_eol('emit(r,0x66)')
+
+        emit_required_legacy_prefixes(ii,fo)
+        emit_required_legacy_map_escapes(ii,fo)
+        if ii.partial_opcode:
+            die("NOT HANDLING  PARTIAL OPCODES YET in create_legacy_zero_operands_scalable")
+        emit_opcode(ii,fo)
+        if modrm_required:
+            fo.add_code_eol('emit_modrm(r)')
+        add_enc_func(ii,fo)
+
+        
+
+def create_legacy_zero_operands(env,ii): # allows all implicit too
     global enc_fn_prefix, arg_request
     
     if env.mode == 64 and ii.easz == 'a16':
+        # cannot do 16b addressing in 64b mode...so skip these!
         ii.encoder_skipped = True
         return
-    
-    fname = "{}_{}".format(enc_fn_prefix,
-                           ii.iclass.lower())
+    if scalable_implicit_operands(ii):
+        create_legacy_zero_operands_scalable(env,ii)
+        return
+                
+    implicits = _implicit_reg_names(ii)
+    fname = "{}_{}{}".format(enc_fn_prefix,
+                             ii.iclass.lower(),
+                             implicits)
     if ii.easz in ['a16','a32','a64']:
         fname = fname + '_' + ii.easz
     if ii.eosz in ['o16','o32','o64']:
         fname = fname + '_' + ii.eosz
         
     fo = make_function_object(env,ii,fname)
-    fo.add_comment("created by created_legacy_no_operands")
+    fo.add_comment("created by create_legacy_zero_operands")
     fo.add_arg(arg_request)
 
     modrm_required = create_modrm_byte(ii,fo)
@@ -2869,9 +2919,14 @@ def _enc_legacy(env,ii):
             # we don't need an encoder function for this form in 16b mode
             ii.encoder_skipped = True 
             return
+        
+    if is_ArAX_implicit(ii): # must be before one_nonmem_operand and zero_operands
+        create_legacy_ArAX_implicit(env,ii)
+    elif is_umonitor(ii): # must be before one_nonmem_operand and zero_oprands
+        create_legacy_umonitor(env,ii)
 
-    if zero_operands(ii):# allows all-implicit too
-        create_legacy_no_operands(env,ii)
+    elif zero_operands(ii):# allows all-implicit too
+        create_legacy_zero_operands(env,ii)
     elif one_implicit_gpr_imm8(ii):
         create_legacy_one_implicit_reg(env,ii,imm8=True)
 
@@ -2915,10 +2970,6 @@ def _enc_legacy(env,ii):
     elif one_gpr8_one_implicit(ii):  
         create_legacy_one_scalable_gpr(env, ii, [8], '8')
         
-    elif is_ArAX_implicit(ii): # must be before one_nonmem_operand...
-        create_legacy_ArAX_implicit(env,ii)
-    elif is_umonitor(ii): # must be before one_nonmem_operand...
-        create_legacy_umonitor(env,ii)
     elif one_nonmem_operand(ii):  
         create_legacy_one_nonmem_opnd(env,ii)  # branches out
     elif gpr8_imm8(ii):
