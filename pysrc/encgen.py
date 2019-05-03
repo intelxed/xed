@@ -164,6 +164,11 @@ def get_dispsz_list(env):
 def get_osz_list(env):
     return  [16,32,64] if env.mode == 64 else [16,32]
 
+_modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
+def get_modval(dispsz):
+    global _modvals
+    return _modvals[dispsz]
+
 dbg_output = sys.stdout
 
 def dbg(s):
@@ -1135,14 +1140,14 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
 
     opsz_to_bits = { 'rb':8, 'rw':16, 'rd':32, 'rq':64 }
-    osz_list = [16,32,64]
+    osz_list = get_osz_list(env)
     opnds = []
     opsz_codes =[]
     for op in _gen_opnds(ii):
         opnds.append(op)
         opsz_codes.append( get_gpr_opsz_code(opnds[0]))
         
-    for osz in gen_osz_list(env.mode,osz_list):
+    for osz in osz_list:
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       "".join(opsz_codes),
@@ -1689,9 +1694,9 @@ def create_legacy_gpr_imm8(env,ii,width_list):
 def create_legacy_gprv_immz(env,ii):
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
-    width_list = [16,32,64]
+    width_list = get_osz_list(env)
 
-    for osz in gen_osz_list(env.mode,width_list):
+    for osz in width_list:
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       'ri',
@@ -1742,11 +1747,11 @@ def create_legacy_orax_immz(env,ii):
     global arg_imm16
     global arg_imm32
 
-    width_list = [16,32,64]
+    width_list = get_osz_list(env)
 
     rax_names = { 16: '_ax', 32:'_eax', 64:'_rax' }
     
-    for osz in gen_osz_list(env.mode,width_list):
+    for osz in width_list:
         fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
                                         ii.iclass.lower(),
                                         rax_names[osz],
@@ -1788,14 +1793,14 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
     global arg_imm16, var_imm16
     global arg_imm32, var_imm32
     global arg_imm64, var_imm64
-    width_list = [16,32,64]
+    width_list = get_osz_list(env)
     arg_imm = { 16: arg_imm16, 32: arg_imm32, 64: arg_imm64 }
     var_imm = { 16: var_imm16, 32: var_imm32, 64: var_imm64 }
     emit_width_immv = { 16:16, 32:32, 64:64 }
 
     rax_names = { 16: '_ax', 32:'_eax', 64:'_rax' }
     
-    for osz in gen_osz_list(env.mode,width_list):
+    for osz in width_list:
         if implicit_orax:
             extra_names = rax_names[osz]
         else:
@@ -1938,7 +1943,6 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     if ii.has_imm8:
         opsig = opsig + 'i'
 
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
         
     ispace = itertools.product(index_vals, dispsz_list)
@@ -1967,7 +1971,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
 
         emit_required_legacy_prefixes(ii,fo)
 
-        mod = modvals[dispsz]
+        mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
 
@@ -1994,7 +1998,6 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
     """REGb-GPRb or GPRb-REGb also GPR32-MEMd, GPR64-MEMq or MEMdq to start"""
     global var_reg0, widths_to_bits
     global index_vals
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
 
     width = None
@@ -2027,7 +2030,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
 
         emit_required_legacy_prefixes(ii,fo)
 
-        mod = modvals[dispsz]
+        mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
 
@@ -2054,7 +2057,6 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     # The GPRy stuff is not working yet
     global index_vals
     global var_reg0, widths_to_bits, widths_to_bits_y
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
 
     op = first_opnd(ii)
@@ -2106,7 +2108,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
 
         emit_required_legacy_prefixes(ii,fo)
 
-        mod = modvals[dispsz]
+        mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
 
@@ -2133,7 +2135,6 @@ def create_legacy_far_xfer_mem(env,ii):
         die("NOT REACHED")
     osz_list = get_osz_list(env)
     dispsz_list = get_dispsz_list(env)
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
 
     ispace = itertools.product(osz_list, index_vals, dispsz_list)
     for osz, use_index, dispsz in ispace:
@@ -2160,17 +2161,16 @@ def create_legacy_far_xfer_mem(env,ii):
             fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
         emit_required_legacy_prefixes(ii,fo)
 
-        mod = modvals[dispsz]
+        mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
-        else:
-            fo.add_comment('mod=0, zero init optimization')
 
         if ii.reg_required != 'unspecified':
             if ii.reg_required != 0:  # ZERO INIT OPTIMIZATION
                 fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)
+        
         finish_memop(env, ii, fo,  dispsz,
                      immw=0,
                      rexw_forced=rexw_forced,
@@ -2179,7 +2179,6 @@ def create_legacy_far_xfer_mem(env,ii):
 
 def create_legacy_one_mem_common(env,ii,imm=0):
     """Handles one memop, fixed or scalable."""
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
     
     op = first_opnd(ii)
@@ -2242,11 +2241,9 @@ def create_legacy_one_mem_common(env,ii,imm=0):
 
             emit_required_legacy_prefixes(ii,fo)
 
-            mod = modvals[dispsz]
+            mod = get_modval(dispsz)
             if mod:  # ZERO-INIT OPTIMIZATION
                 fo.add_code_eol('set_mod(r,{})'.format(mod))
-            else:
-                fo.add_comment('mod=0, zero init optimization')
 
             if ii.reg_required != 'unspecified':
                 if ii.reg_required != 0:  # ZERO INIT OPTIMIZATION
@@ -2399,9 +2396,9 @@ def is_mov_cr_dr(ii):
 def create_legacy_gprv_seg(env,ii,op_info):
     global arg_reg_type
     reg1 = 'seg'
-    osz_list = [16,32,64]
+    osz_list = get_osz_list(env)
     gprv_names = { 16:'gpr16', 32:'gpr32', 64:'gpr64'}
-    for osz in gen_osz_list(env.mode, osz_list):
+    for osz in osz_list:
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       'rs',
@@ -2438,7 +2435,6 @@ def create_legacy_gprv_seg(env,ii,op_info):
 def create_legacy_mem_seg(env,ii,op_info):  
     '''order varies: MEM-SEG or SEG-MEM'''
     global arg_reg_type, index_vals
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
 
     opnd_sig = make_opnd_signature(ii)
@@ -2463,7 +2459,7 @@ def create_legacy_mem_seg(env,ii,op_info):
                 die("NOT REACHED")
                 
         emit_required_legacy_prefixes(ii,fo)
-        mod = modvals[dispsz]
+        mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
         fo.add_code_eol('enc_modrm_reg_seg(r,{})'.format(reg0))
@@ -3035,8 +3031,6 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
     if ii.has_imm8:
         category += 'i'
         immw=8
-        
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
     
     ispace = itertools.product(index_vals, dispsz_list)
@@ -3436,7 +3430,6 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
     if masking_allowed:
         mask_versions.append(True)
 
-    modvals = { 0: 0,    8: 1,    16: 2,   32: 2 }  # index by dispsz
     dispsz_list = get_dispsz_list(env)
     
     if ii.broadcast_allowed:
@@ -3519,7 +3512,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         if var_b:
             die("SHOULD NOT REACH HERE")
             
-        mod = modvals[dispsz]
+        mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
             
