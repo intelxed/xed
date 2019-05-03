@@ -2674,13 +2674,67 @@ def create_legacy_crc32_reg(env,ii):
         add_enc_func(ii,fo)
             
 
-def create_legacy_crc32(env,ii): #WRK
+def create_legacy_crc32(env,ii): 
     '''CRC32 is really strange. First operand is GPRy. Second operand is GPRv or GPR8 or MEMv or MEMb'''
     if has_memop(ii):
         create_legacy_crc32_mem(env,ii)
     else:
         create_legacy_crc32_reg(env,ii)
 
+
+
+def is_movdir64(ii):
+    return ii.iclass == 'MOVDIR64B'
+
+def create_legacy_movdir64(env,ii):
+    '''MOVDIR64B is a strange instr. It has 2 memops, one in an
+       address-space-sized GPR and the other a normal memop'''
+    global arg_request, enc_fn_prefix, gprv_names
+    ispace = itertools.product( get_index_vals(), get_dispsz_list(env))
+    for use_index, dispsz in ispace:
+        memaddrsig = get_memsig(env.asz, use_index, dispsz)
+        fname = '{}_{}_{}_a{}'.format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      memaddrsig,
+                                      env.asz)
+        fo = make_function_object(env,fname)
+        fo.add_comment("created by create_legacy_movdir64")
+        fo.add_arg(arg_request)
+        
+        reg = gpry_names[env.asz]  # abuse the gprv names
+        fo.add_arg(arg_reg_type +  reg)
+        add_memop_args(env, fo, use_index, dispsz)
+
+        # This operation is address-size modulated In 64b mode, 64b
+        # addressing is the default. For non default 32b addressing in
+        # 64b mode, we need a 67 prefix.
+        if env.mode == 64 and env.asz == 32:
+            fo.add_code_eol('emit(r,0x67)')
+        # FIXME: These next two are wonky. In 32b mode, we usually,
+        # but not always have 32b addressing. It is perfectly legit to
+        # have 32b mode with 16b addressing in which case a 67 is not
+        # needed. Same (other way around) for 16b mode. So we really
+        # do not need the 67 prefix ever outside of 64b mode as users
+        # are expected to use the appropriate library for their
+        # addressing mode.
+        #
+        #elif env.mode == 32 and env.asz == 16:
+        #    fo.add_code_eol('emit(r,0x67)')
+        #elif env.mode == 16 and asz == 32:
+        #    fo.add_code_eol('emit(r,0x67)')
+        
+        rexw_forced = False
+        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(reg, reg))
+        emit_required_legacy_prefixes(ii,fo)
+        mod = get_modval(dispsz)
+        if mod:  # ZERO-INIT OPTIMIZATION
+            fo.add_code_eol('set_mod(r,{})'.format(mod))
+        encode_mem_operand(env, ii, fo, use_index, dispsz)
+        immw=0
+        finish_memop(env, ii, fo, dispsz, immw, rexw_forced, space='legacy')
+        add_enc_func(ii,fo)
+
+        
 def _enc_legacy(env,ii):
     if env.mode == 64:
         if ii.mode_restriction == 'not64' or ii.mode_restriction in [0,1]:
@@ -2779,6 +2833,8 @@ def _enc_legacy(env,ii):
         create_mov_seg(env,ii)        
     elif is_mov_crc32(ii):
         create_legacy_crc32(env,ii)
+    elif is_movdir64(ii):
+        create_legacy_movdir64(env,ii)
 
         
 def two_xymm_opti8(ii):  # mixed xmm and ymm, optional imm8
