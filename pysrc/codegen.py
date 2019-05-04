@@ -285,6 +285,8 @@ class function_object_t(object):
       self.dll_export = dll_export
       self.body = []
       self.args = []
+      # meta information about the expected values of the corresponding argument
+      self.args_type = []
       self.const_member = False
       self.ref_return = False
       self.force_no_inline = force_no_inline
@@ -295,7 +297,7 @@ class function_object_t(object):
    def lines(self):
       return len(self.body)
 
-   def add_arg(self, arg):
+   def add_arg(self, arg, arg_type=None):
       self.args.append(arg)
 
    def get_arg_num(self):
@@ -417,7 +419,14 @@ def dump_flist_2_header(h_file, functions, headers,
 
     h_file.close()
 
-def emit_function_list(func_list, fn_prefix, xeddir, gendir, hgendir, namespace=None, other_headers=[], max_lines_per_file=3000):
+def emit_function_list(func_list,
+                       fn_prefix,
+                       xeddir,
+                       gendir,
+                       hgendir,
+                       namespace=None,
+                       other_headers=[],
+                       max_lines_per_file=3000):
    """Emit a list of functions to a numbered sequence of
    files. Breaking them up when the files get too big.
 
