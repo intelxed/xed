@@ -27,6 +27,9 @@ import re
 import argparse
 import itertools
 
+import find_dir # finds mbuild and adds it to sys.path
+import mbuild
+
 import genutil
 import codegen
 import read_xed_db
@@ -156,12 +159,29 @@ def get_index_vals():
     global index_vals
     return index_vals
 
-gprv_names = { 16:'gpr16', 32:'gpr32', 64:'gpr64'}
+gprv_names = { 8:'gpr8', 16:'gpr16', 32:'gpr32', 64:'gpr64'} # added gpr8 for convenience
 gpry_names = { 16:'gpr32', 32:'gpr32', 64:'gpr64'}
 gprz_names = { 16:'gpr16', 32:'gpr32', 64:'gpr32'}
 
 vl2names = { '128':'xmm', '256':'ymm', '512':'zmm',
              'LIG':'xmm', 'LLIG':'xmm' }
+
+bits_to_widths = {8:'b', 16:'w', 32:'d', 64:'q' }
+
+arg_immz_dct = { 0: '', 8: arg_imm8, 16: arg_imm16, 32: arg_imm32, 64: arg_imm32 }
+var_immz_dct = { 0: '', 8: var_imm8, 16: var_imm16, 32: var_imm32, 64: var_imm32 }
+arg_immz_meta = { 0: '', 8:'imm8', 16: 'imm16', 32: 'imm32', 64: 'imm32' }
+
+arg_immv_dct = { 0: '', 8: arg_imm8, 16: arg_imm16, 32: arg_imm32, 64: arg_imm64 }
+var_immv_dct = { 0: '', 8: var_imm8, 16: var_imm16, 32: var_imm32, 64: var_imm64 }
+arg_immv_meta = { 0: '', 8:'imm8', 16: 'imm16', 32: 'imm32', 64: 'imm64' }
+
+arg_dispv = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32, 64: arg_disp64 }  # index by dispsz
+var_dispv = { 8: arg_disp8, 16:var_disp16, 32:var_disp32, 64:var_disp64 }
+arg_dispv_meta = { 8:'int8', 16:'int16', 32:'int32', 64:'int64' }
+
+widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
+widths_to_bits_y = {'w':32, 'd':32, 'q':64 }
 
 # if I cut the number of displacements by removing 0, I would have to
 # add some sort of gizmo to omit the displacent if the value of the
@@ -771,7 +791,7 @@ def make_function_object(env, ii,fname, return_value='void'):
     return fo
 
 def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  
-    global enc_fn_prefix, arg_request, arg_reg0, var_reg0
+    global enc_fn_prefix, arg_request, arg_reg0, var_reg0, gprv_names
     
     extra_names = _implicit_reg_names(ii)
 
@@ -784,8 +804,8 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
                                         '_o{}'.format(osz) if osz != 8 else '')
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_scalable_gpr")
-        fo.add_arg(arg_request)
-        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_request,'req')
+        fo.add_arg(arg_reg0, gprv_names[osz])
         emit_required_legacy_prefixes(ii,fo)
         
         rexw_forced = False
@@ -852,14 +872,13 @@ def add_enc_func(ii,fo):
 def create_legacy_one_imm_scalable(env,ii, osz_values): 
     '''just an imm-z (or IMM-v)'''
     global enc_fn_prefix, arg_request
-    global immargs, immvars
 
     for osz in osz_values:
         fname = "{}_m{}_{}_o{}".format(enc_fn_prefix, env.mode, ii.iclass.lower(), osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_imm_scalable")
-        fo.add_arg(arg_request)
-        fo.add_arg(immargs[osz])
+        fo.add_arg(arg_request,'req')
+        add_arg_immv(fo,osz)
 
         if ii.has_modrm:
             die("NOT REACHED")
@@ -874,16 +893,16 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
         emit_required_legacy_prefixes(ii,fo)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_u{}(r,{})'.format(osz, immvars[osz]))
+        emit_immv(fo,osz)
         add_enc_func(ii,fo)
 
 def create_legacy_one_gpr_fixed(env,ii,width_bits):
-    global enc_fn_prefix, arg_request
+    global enc_fn_prefix, arg_request, gprv_names
     fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), width_bits)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_gpr_fixed")
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_reg0)    
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_reg0, gprv_names[width_bits])    
     if width_bits not in [8,16,32,64]:
         die("SHOULD NOT REACH HERE")
     
@@ -928,13 +947,8 @@ def create_legacy_relbr(env,ii):
         fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_relbr")
-        fo.add_arg(arg_request)
-        if osz == 8:
-            fo.add_arg(arg_disp8)
-        elif osz == 16:
-            fo.add_arg(arg_disp16)
-        elif osz == 32:
-            fo.add_arg(arg_disp32)
+        fo.add_arg(arg_request,'req')
+        add_arg_disp(fo,osz)
         if op.oc2 == 'z':
             if env.mode in [32,64] and osz == 16:
                 fo.add_code_eol('emit(r,0x66)')
@@ -964,11 +978,11 @@ def create_legacy_one_imm_fixed(env,ii):
     fo.add_comment("created by create_legacy_one_imm_fixed")
     op = first_opnd(ii)
 
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     if op.oc2 == 'b':
-        fo.add_arg(arg_imm8)
+        fo.add_arg(arg_imm8,'imm8')
     elif op.oc2 == 'w':
-        fo.add_arg(arg_imm16)
+        fo.add_arg(arg_imm16,'imm16')
     else:
         die("not handling imm width {}".format(op.oc2))
         
@@ -998,9 +1012,9 @@ def create_legacy_one_implicit_reg(env,ii,imm8=False):
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_implicit_reg")
 
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     if imm8:
-        fo.add_arg(arg_imm8)
+        fo.add_arg(arg_imm8,'imm8')
     modrm_required = create_modrm_byte(ii,fo)
     emit_required_legacy_prefixes(ii,fo)
     emit_required_legacy_map_escapes(ii,fo)
@@ -1065,7 +1079,7 @@ def create_legacy_zero_operands_scalable(env,ii):
                                      osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_zero_operands_scalable")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         modrm_required = create_modrm_byte(ii,fo)
         if env.mode in [32,64] and osz == 16:
             fo.add_code_eol('emit(r,0x66)')
@@ -1105,7 +1119,7 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
         
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_zero_operands")
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
 
     modrm_required = create_modrm_byte(ii,fo)
     
@@ -1203,7 +1217,7 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
                                       osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_gpr_one_scalable_one_fixed")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         fo.add_arg(arg_reg0)
         fo.add_arg(arg_reg1)
         emit_required_legacy_prefixes(ii,fo)
@@ -1267,11 +1281,11 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
                                       osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_scalable_regs")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         fo.add_arg(arg_reg0)
         fo.add_arg(arg_reg1)
         if ii.has_imm8:
-            fo.add_arg(arg_imm8)
+            fo.add_arg(arg_imm8,'imm8')
         elif ii.has_immz:
             add_arg_immz(fo,osz)
                 
@@ -1314,9 +1328,9 @@ def create_legacy_two_gpr8_regs(env, ii):
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_two_gpr8_regs")
             
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_reg0)
-    fo.add_arg(arg_reg1)
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_reg0,'gpr8')
+    fo.add_arg(arg_reg1,'gpr8')
     emit_required_legacy_prefixes(ii,fo)
 
     if modrm_reg_first_operand(ii):
@@ -1336,18 +1350,32 @@ def create_legacy_two_gpr8_regs(env, ii):
         fo.add_code_eol('emit_modrm(r)')
     add_enc_func(ii,fo)
 
+def add_arg_disp(fo,dispsz): 
+    global arg_dispv, arg_dispv_meta
+    fo.add_arg(arg_dispv[dispsz], arg_dispv_meta[dispsz])
+def add_arg_immz(fo,osz): 
+    global arg_immz_dct, arg_immz_meta
+    fo.add_arg(arg_immz_dct[osz], arg_immz_meta[osz])
+def add_arg_immv(fo,osz): 
+    global arg_immv_dct, arg_immv_meta
+    fo.add_arg(arg_immv_dct[osz], arg_immv_meta[osz])
     
-def add_arg_immz(fo,osz):
-    global arg_imm16, arg_imm32
-    arg_immz = { 16: arg_imm16, 32: arg_imm32, 64: arg_imm32 }
-    fo.add_arg(arg_immz[osz])
 def emit_immz(fo,osz):
-    global var_imm16, var_imm32
-    var_immz = { 16: var_imm16, 32: var_imm32, 64: var_imm32 }
+    global var_immz_dct
     emit_width_immz = { 16:16, 32:32, 64:32 }
 
     fo.add_code_eol('emit_i{}(r,{})'.format(emit_width_immz[osz],
-                                            var_immz[osz]))
+                                            var_immz_dct[osz]))
+def emit_immv(fo,osz):
+    global var_immv_dct
+    emit_width_immv = {8:8, 16:16, 32:32, 64:64 }
+
+    fo.add_code_eol('emit_u{}(r,{})'.format(emit_width_immv[osz],
+                                            var_immv_dct[osz]))
+def emit_disp(fo,dispsz):
+    global var_dispv
+    fo.add_code_eol('emit_i{}(r,{})'.format(dispsz,
+                                            var_dispv[dispsz]))
         
 def cond_emit_imm8(ii,fo):
     global var_imm8, var_imm8_2
@@ -1358,9 +1386,9 @@ def cond_emit_imm8(ii,fo):
 def cond_add_imm_args(ii,fo):
     global arg_imm8, arg_imm8_2
     if ii.has_imm8:
-        fo.add_arg(arg_imm8)
+        fo.add_arg(arg_imm8,'imm8')
     if ii.has_imm8_2:
-        fo.add_arg(arg_imm8_2)    
+        fo.add_arg(arg_imm8_2,'imm8')    
     
 
 def emit_rex(env,fo, rexw_forced):
@@ -1422,7 +1450,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_two_fixed_regs_opti8")
         
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     fo.add_arg(arg_reg0)
     fo.add_arg(arg_reg1)
     cond_add_imm_args(ii,fo)
@@ -1462,7 +1490,7 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_mmx_reg_imm8")
         
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     fo.add_arg(arg_reg0)
     cond_add_imm_args(ii,fo)
     
@@ -1501,8 +1529,8 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_xmm_reg_imm8")
         
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_reg0,'xmm')
     cond_add_imm_args(ii,fo)
     
     emit_required_legacy_prefixes(ii,fo)
@@ -1529,20 +1557,20 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
 
     
 def create_legacy_two_x87_reg(env,ii):
-    global enc_fn_prefix, arg_request, arg_reg0
+    global enc_fn_prefix, arg_request, arg_reg0, var_reg0
     fname = "{}_{}_{}_st0".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   'x87')
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_two_x87_reg")    
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_reg0,'x87')
     emit_required_legacy_prefixes(ii,fo)
     fo.add_code_eol('set_mod(r,3)')
     if ii.reg_required == 'unspecified':
         die("Need a value for MODRM.REG in x87 encoding")
     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
-    fo.add_code_eol('enc_modrm_rm_x87(r,reg0)')
+    fo.add_code_eol('enc_modrm_rm_x87(r,{})'.format(var_reg0))
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
@@ -1550,14 +1578,14 @@ def create_legacy_two_x87_reg(env,ii):
 
     
 def create_legacy_one_x87_reg(env,ii):
-    global enc_fn_prefix, arg_request, arg_reg0
+    global enc_fn_prefix, arg_request, arg_reg0, var_reg0
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   'x87')
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_x87_reg")    
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_reg0,'x87')
     emit_required_legacy_prefixes(ii,fo)
     if ii.mod_required == 3:
         fo.add_code_eol('set_mod(r,3)')
@@ -1566,7 +1594,7 @@ def create_legacy_one_x87_reg(env,ii):
     if ii.reg_required == 'unspecified':
         die("Need a value for MODRM.REG in x87 encoding")
     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
-    fo.add_code_eol('enc_modrm_rm_x87(r,reg0)')
+    fo.add_code_eol('enc_modrm_rm_x87(r,{})'.format(var_reg0))
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
@@ -1683,7 +1711,7 @@ def gprv_implicit_orax(ii):
     
 
 def create_legacy_gpr_imm8(env,ii,width_list):
-    global enc_fn_prefix, arg_request, arg_reg0, var_reg0, arg_imm8,  var_imm8
+    global enc_fn_prefix, arg_request, arg_reg0, var_reg0, arg_imm8,  var_imm8, gprv_names
     
     for osz in gen_osz_list(env.mode,width_list):
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
@@ -1692,9 +1720,9 @@ def create_legacy_gpr_imm8(env,ii,width_list):
                                       osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_gpr_imm8")
-        fo.add_arg(arg_request)
-        fo.add_arg(arg_reg0)
-        fo.add_arg(arg_imm8)
+        fo.add_arg(arg_request,'req')
+        fo.add_arg(arg_reg0, gprv_names[osz])
+        fo.add_arg(arg_imm8,'imm8')
         emit_required_legacy_prefixes(ii,fo)
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
@@ -1725,8 +1753,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
 
 
 def create_legacy_gprv_immz(env,ii):
-    global enc_fn_prefix, arg_request
-    global arg_reg0,  var_reg0
+    global enc_fn_prefix, arg_request, gprv_names, arg_reg0,  var_reg0
     width_list = get_osz_list(env)
 
     for osz in width_list:
@@ -1736,8 +1763,8 @@ def create_legacy_gprv_immz(env,ii):
                                       osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_gprv_immz")
-        fo.add_arg(arg_request)
-        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_request,'req')
+        fo.add_arg(arg_reg0, gprv_names[osz])
         add_arg_immz(fo,osz)
         emit_required_legacy_prefixes(ii,fo)
         if osz == 16 and env.mode != 16:
@@ -1789,7 +1816,7 @@ def create_legacy_orax_immz(env,ii):
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_orax_immz")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         fo.add_arg(arg_reg0)
         add_arg_immz(fo,osz)
 
@@ -1813,16 +1840,12 @@ def create_legacy_orax_immz(env,ii):
 
 def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
     """Handles GPRv_SB-IMMv partial reg opcodes and GPRv_SB+OrAX implicit"""
-    global enc_fn_prefix, arg_request
+    global enc_fn_prefix, arg_request, gprv_names
     global arg_reg0,  var_reg0
     global arg_imm16, var_imm16
     global arg_imm32, var_imm32
     global arg_imm64, var_imm64
     width_list = get_osz_list(env)
-    arg_imm = { 16: arg_imm16, 32: arg_imm32, 64: arg_imm64 }
-    var_imm = { 16: var_imm16, 32: var_imm32, 64: var_imm64 }
-    emit_width_immv = { 16:16, 32:32, 64:64 }
-
     rax_names = { 16: '_ax', 32:'_eax', 64:'_rax' }
     
     for osz in width_list:
@@ -1838,10 +1861,10 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_gprv_immv")
-        fo.add_arg(arg_request)
-        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_request,'req')
+        fo.add_arg(arg_reg0, gprv_names[osz])
         if imm:
-            fo.add_arg(arg_imm[osz])
+            add_arg_immv(fo,osz)
         emit_required_legacy_prefixes(ii,fo)
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
@@ -1866,9 +1889,7 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
         emit_required_legacy_map_escapes(ii,fo)
         emit_partial_opcode_variable_srm(ii,fo)
         if imm:
-            # emits 16/32/64-bit  immediate
-            fo.add_code_eol('emit_u{}(r,{})'.format(emit_width_immv[osz],
-                                                    var_imm[osz]))
+            emit_immv(fo,osz)
         add_enc_func(ii,fo)
         
 
@@ -1905,13 +1926,6 @@ memsig_str_16 =  { True : memsig_idx_16,  # indexed by use_index
 memsig_str_32or64 =  { True : memsig_idx_32or64,  # indexed by use_index
                        False: memsig_noidx_32or64 }
 
-dvars = { 0: '', 8: var_disp8, 16: var_disp16, 32: var_disp32 }  # index by dispsz
-immvars = { 0: '', 8: var_imm8, 16: var_imm16, 32: var_imm32 }
-immargs = { 0: '', 8: arg_imm8, 16: arg_imm16, 32: arg_imm32 } 
-widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
-widths_to_bits_y = {'w':32, 'd':32, 'q':64 }
-
-bits_to_widths = {8:'b', 16:'w', 32:'d', 64:'q' }
 
 def get_memsig(asz, using_indx, dispz):
     global memsig_str_16
@@ -1921,36 +1935,31 @@ def get_memsig(asz, using_indx, dispz):
         return memsig_str_16[using_indx][dispz]
     return memsig_str_32or64[using_indx][dispz]
 
-arg_dvars = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32 }  # index by dispsz
-
-arg_imm_dct = { 8: arg_imm8, 16: arg_imm16, 32: arg_imm32 }
-var_imm_dct = { 8: var_imm8, 16: var_imm16, 32: var_imm32 }
 
 def add_memop_args(env, fo, use_index, dispsz, immw=0, reg=-1):
     """reg=-1 -> no reg opnds, 
        reg=0  -> first opnd is reg,
        reg=1  -> 2nd opnd is reg """
-    global arg_reg0
+    global arg_reg0, arg_imm_dct
     global arg_base, arg_index, arg_scale
     global arg_disp8, arg_disp16, arg_disp32 
-    global arg_imm_dct
-    global arg_dvars
     
     if reg == 0:
         fo.add_arg(arg_reg0)
-    fo.add_arg(arg_base)
+    fo.add_arg(arg_base, gprv_names[env.asz])
     if use_index:
-        fo.add_arg(arg_index)
+        fo.add_arg(arg_index, gprv_names[env.asz])
         if env.asz in [32,64]:
             fo.add_arg(arg_scale)  # a32, a64
 
     if dispsz != 0:
-        fo.add_arg(arg_dvars[dispsz]) 
+        add_arg_disp(fo,dispsz)
+
     if reg == 1:
         fo.add_arg(arg_reg0)
 
     if immw:
-        fo.add_arg(arg_imm_dct[immw])
+        add_arg_immv(fo,immw)
 
 def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     '''optional imm8'''
@@ -1978,7 +1987,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_xmm_reg_one_mem_fixed")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         add_memop_args(env, fo, use_index, dispsz, immw, reg=i)
 
         rexw_forced = False
@@ -2045,7 +2054,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_fixed")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         add_memop_args(env, fo, use_index, dispsz, immw=0, reg=regn)
 
         emit_required_legacy_prefixes(ii,fo)
@@ -2110,7 +2119,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         add_memop_args(env, fo, use_index, dispsz, immw, reg=regn)
 
         rexw_forced = False
@@ -2166,7 +2175,7 @@ def create_legacy_far_xfer_mem(env,ii):
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment('created by create_legacy_far_xfer_mem')
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         add_memop_args(env, fo, use_index, dispsz)
         rexw_forced = False
         if osz == 16 and env.mode != 16:
@@ -2234,7 +2243,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
 
             fo = make_function_object(env,ii,fname)
             fo.add_comment('created by create_legacy_one_mem_common')
-            fo.add_arg(arg_request)
+            fo.add_arg(arg_request,'req')
             add_memop_args(env, fo, use_index, dispsz, immw)
 
             rexw_forced = False
@@ -2287,14 +2296,10 @@ def encode_mem_operand(env, ii, fo, use_index, dispsz):
     else: # no index,scale
         fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{})'.format(
             memaddrsig, env.asz, var_base))
-                    
 
             
 def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
-    global var_disp8
-    global var_disp16
-    global var_disp32
-    global var_imm_dct
+    global var_disp8, var_disp16, var_disp32
 
     if space == 'legacy':
         emit_rex(env,fo,rexw_forced)
@@ -2323,8 +2328,7 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
         fo.add_code('else if (get_has_disp32(r))')
         fo.add_code_eol('   emit_i32(r,0)')
     if immw:
-        fo.add_code_eol('emit_u{}(r,{})'.format(immw, var_imm_dct[immw]),
-                        'mem-fxd-imm{}'.format(immw))
+        emit_immv(fo,immw)
     
 
 def mov_without_modrm(ii):
@@ -2334,12 +2338,10 @@ def mov_without_modrm(ii):
         return True
     return False
 
+
 def create_legacy_mov_without_modrm(env,ii):
     '''This if for 0xA0...0xA3 MOVs without MODRM'''
-    global enc_fn_prefix, arg_request, arg_reg0
-    global arg_disp16, var_disp16
-    global arg_disp32, var_disp32
-    global arg_disp64, var_disp64
+    global enc_fn_prefix, arg_request, arg_reg0, bits_to_widths
     opnds = []
     for op in _gen_opnds(ii):
         opnds.append(op)
@@ -2357,14 +2359,10 @@ def create_legacy_mov_without_modrm(env,ii):
     else:
         disp_widths = [16,32,64]
 
-    arg_dispv = { 16:arg_disp16, 32:arg_disp32, 64:arg_disp64 }
-    var_dispv = { 16:var_disp16, 32:var_disp32, 64:var_disp64 }
-
     rax_names = { 'b': '_al', 'w': '_ax', 'd':'_eax', 'q':'_rax' }
     
     for disp_width in disp_widths:
         memaddrsig = 'd{}'.format(disp_width)
-
         if sz == 'b':
             mem_ref_width = 'b'
         else:
@@ -2380,8 +2378,9 @@ def create_legacy_mov_without_modrm(env,ii):
                                               env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_mov_without_modrm")
-        fo.add_arg(arg_request)
-        fo.add_arg(arg_dispv[disp_width])
+        fo.add_arg(arg_request,'req')
+        add_arg_disp(fo,disp_width)
+
 
         if disp_width == 16 and env.mode != 16:
             fo.add_code_eol('emit(r,0x66)')
@@ -2393,7 +2392,7 @@ def create_legacy_mov_without_modrm(env,ii):
             fo.add_code_eol('emit_rex(r)') # no legacy prefixes required, shortcut
 
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_i{}(r,{})'.format(disp_width,var_dispv[disp_width]))
+        emit_disp(fo,disp_width)
         add_enc_func(ii,fo)
 
 def is_enter_instr(ii):
@@ -2421,7 +2420,7 @@ def create_legacy_gprv_seg(env,ii,op_info):
                                       osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment('created by create_legacy_gprv_seg')
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         reg0 = gprv_names[osz]
         fo.add_arg(arg_reg_type + reg0)
         fo.add_arg(arg_reg_type + reg1)
@@ -2464,7 +2463,7 @@ def create_legacy_mem_seg(env,ii,op_info):
                                          env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment('created by create_legacy_mem_seg')
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         for opi in op_info:
             if opi == 'mem':
                 add_memop_args(env, fo, use_index, dispsz) 
@@ -2518,9 +2517,9 @@ def create_mov_seg(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(),opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_mov_seg")
-    fo.add_arg(arg_request)
-    fo.add_arg('xed_reg_enum_t ' + op_info[0])
-    fo.add_arg('xed_reg_enum_t ' + op_info[1])
+    fo.add_arg(arg_request,'req')
+    fo.add_arg('xed_reg_enum_t ' + op_info[0], 'seg')
+    fo.add_arg('xed_reg_enum_t ' + op_info[1], 'gpr16')
 
     if modrm_reg_first_operand(ii):
         f1, f2, = 'reg','rm'
@@ -2554,9 +2553,9 @@ def create_mov_cr_dr(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(),opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_mov_cr_dr")
-    fo.add_arg(arg_request)
-    fo.add_arg('xed_reg_enum_t ' + op_info[0])
-    fo.add_arg('xed_reg_enum_t ' + op_info[1])
+    fo.add_arg(arg_request,'req')
+    fo.add_arg('xed_reg_enum_t ' + op_info[0], op_info[0])
+    fo.add_arg('xed_reg_enum_t ' + op_info[1], op_info[1])
 
     if modrm_reg_first_operand(ii):
         f1, f2, = 'reg','rm'
@@ -2583,9 +2582,9 @@ def create_legacy_enter(env,ii):
 
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_enter")
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_imm16)
-    fo.add_arg(arg_imm8_2)
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_imm16,'imm16')
+    fo.add_arg(arg_imm8_2,'imm8')
     
     #FIXME: EOSZes needed for ENTER?
     emit_required_legacy_prefixes(ii,fo)
@@ -2650,18 +2649,17 @@ def create_legacy_crc32_mem(env,ii):
                                              env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_crc32_mem")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         op = first_opnd(ii)
         if op.oc2 == 'y':
             reg = gpry_names[osz]
-            arg_name = '{}'.format(reg)
-            fo.add_arg(arg_reg_type +  arg_name)
+            fo.add_arg(arg_reg_type + reg, reg)
         else:
             die("NOT REACHED")
         add_memop_args(env, fo, use_index, dispsz)
         
         rexw_forced = emit_legacy_osz(env,ii,fo,osz)
-        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(reg, arg_name))
+        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(reg, reg))
         emit_required_legacy_prefixes(ii,fo)
         mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
@@ -2703,7 +2701,7 @@ def create_legacy_crc32_reg(env,ii):
         fname = "{}_{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), opnd_sig, osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_crc32_reg")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         reg_types_names =[]
         for i,otype in enumerate(opnd_types):
             if otype == 'y':
@@ -2715,7 +2713,7 @@ def create_legacy_crc32_reg(env,ii):
             elif otype == 'v':
                 reg = gprv_names[osz]
             arg_name = '{}_{}'.format(reg,i)
-            fo.add_arg(arg_reg_type +  arg_name)
+            fo.add_arg(arg_reg_type +  arg_name, reg)
             reg_types_names.append((reg,arg_name))
 
         if modrm_reg_first_operand(ii):
@@ -2762,10 +2760,10 @@ def create_legacy_movdir64(env,ii):
                                       env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_movdir64")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         
         reg = gpry_names[env.asz]  # abuse the gprv names
-        fo.add_arg(arg_reg_type +  reg)
+        fo.add_arg(arg_reg_type +  reg, reg)
         add_memop_args(env, fo, use_index, dispsz)
 
         # This operation is address-size modulated In 64b mode, 64b
@@ -2810,9 +2808,9 @@ def create_legacy_umonitor(env,ii):
                                env.asz)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_umonitor")
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     reg = gpry_names[env.asz]  # abuse the gprv names
-    fo.add_arg(arg_reg_type +  reg)
+    fo.add_arg(arg_reg_type +  reg, reg)
 
     # This operation is address-size modulated In 64b mode, 64b
     # addressing is the default. For non default 32b addressing in
@@ -2867,7 +2865,7 @@ def create_legacy_ArAX_implicit(env,ii):
                                env.asz)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_ArAX_implicit")
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
 
     # This operation is address-size modulated In 64b mode, 64b
     # addressing is the default. For non default 32b addressing in
@@ -3270,7 +3268,7 @@ def create_vex_simd_reg(env,ii,nopnds):
 
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_simd_reg opnd_sig={} nopnds={}".format(opnd_sig,nopnds))
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     fo.add_arg(arg_reg0)
     fo.add_arg(arg_reg1)
     if nopnds >= 3:
@@ -3378,7 +3376,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
                                             env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_vex_simd_2reg_mem")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         if nopnds >= 2:
             fo.add_arg(arg_reg0)
         if nopnds >= 3:
@@ -3389,7 +3387,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         if mempos == 2 and nopnds == 4: # reg last
             fo.add_arg(arg_reg2)
         if immw:
-            fo.add_arg(arg_imm8)
+            fo.add_arg(arg_imm8,'imm8')
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -3449,11 +3447,11 @@ def create_vex_all_mask_reg(env,ii):
         
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_all_mask_reg")
-    fo.add_arg(arg_request)
-    fo.add_arg(arg_kreg0)
-    fo.add_arg(arg_kreg1)
+    fo.add_arg(arg_request,'req')
+    fo.add_arg(arg_kreg0,'kreg')
+    fo.add_arg(arg_kreg1,'kreg')
     if nopnds == 3:
-        fo.add_arg(arg_kreg2)
+        fo.add_arg(arg_kreg2,'kreg')
 
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -3522,7 +3520,7 @@ def create_vex_vzero(env,ii):
                            ii.iclass.lower())
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_vzero")
-    fo.add_arg(arg_request)
+    fo.add_arg(arg_request,'req')
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
     if ii.vl == '256': # ZERO INIT OPTIMIZATION
@@ -3661,19 +3659,19 @@ def create_evex_3xyzmm(env,ii):
                                     mask_variant_name[masking])
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_evex_3xyzmm")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         fo.add_arg(arg_reg0)
         if masking:
-            fo.add_arg(arg_kmask)
+            fo.add_arg(arg_kmask,'kreg')
             if not ii.write_masking_merging_only:
                 fo.add_arg(arg_zeroing)
         fo.add_arg(arg_reg1)
         if nregs == 3:
             fo.add_arg(arg_reg2)
         if imm8:
-            fo.add_arg(arg_imm8)
+            fo.add_arg(arg_imm8,'imm8')
         if rounding:
-            fo.add_arg(arg_rcsae) 
+            fo.add_arg(arg_rcsae,'rcsae') 
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -3783,10 +3781,10 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
                                              env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_evex_1or2xyzmm_mem")
-        fo.add_arg(arg_request)
+        fo.add_arg(arg_request,'req')
         fo.add_arg(arg_reg0)
         if masking:
-            fo.add_arg(arg_kmask)
+            fo.add_arg(arg_kmask,'kreg')
             if ii.write_masking_merging_only == False:
                 fo.add_arg(arg_zeroing)
         if nregs == 2:
@@ -3795,7 +3793,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         add_memop_args(env, fo, use_index, dispsz) 
             
         if imm8:
-            fo.add_arg(arg_imm8)
+            fo.add_arg(arg_imm8,'imm8')
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -4144,10 +4142,22 @@ def work():
             func_list = []
             for ii in xeddb.recs:
                 func_list.extend(ii.encoder_functions)
-            fn_prefix = 'xed-enc2-m{}-a{}'.format(mode,asz)
-            file_emitters = codegen.emit_function_list(func_list, fn_prefix,
+            config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)                
+            fn_prefix = 'xed-{}'.format(config_descriptor)
+            if 1: # WRK/WIP
+                gen_src_dir = args.gendir
+                gen_hdr_dir = args.gendir
+            else:
+                gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
+                gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr')
+                mbuild.cmkdir(gen_src_dir)
+                mbuild.cmkdir(gen_hdr_dir)
+                                       
+            file_emitters = codegen.emit_function_list(func_list,
+                                                       fn_prefix,
                                                        args.xeddir,
-                                                       args.gendir, args.gendir,
+                                                       gen_src_dir,
+                                                       gen_hdr_dir,
                                                        #other_headers = extra_headers,
                                                        max_lines_per_file=15000)
             output_file_emitters.extend(file_emitters)
