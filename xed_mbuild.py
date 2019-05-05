@@ -262,7 +262,7 @@ class generator_inputs_t(object):
         """Produce a encoder2 generator command"""
         s = []
         s.append( '%(pythonarg)s' )
-        s.append( aq(mbuild.join(xeddir, 'pysrc', 'encgen.py')))
+        s.append( aq(mbuild.join(xeddir, 'pysrc', 'enc2gen.py')))
         s.append('--xeddir %s' % aq(xeddir))
         s.append('--gendir %s' % aq(gendir))
         s.append('--output-file-list %s' % aq(file_name_for_output_file_list))
@@ -1453,7 +1453,7 @@ def add_encoder2_command(env, gc, gen_dag, prep):
               'pysrc/slash_expand.py',
               'pysrc/patterns.py',
               'pysrc/gen_setup.py',              
-              'pysrc/encgen.py' ]
+              'pysrc/enc2gen.py' ]
 
     enc_py = env.src_dir_join(enc_py)
     gc.enc2_hash_file = env.build_dir_join('.mbuild.hash.xedencgen2')
