@@ -53,7 +53,8 @@ def _add_test_function(ii,fo):
     dbg(fo.emit())
 
 
-
+# can vary output randomly, vary by number of calls in this
+# instruction, etc.
 def  get_gpr64(env, ii):
     return 'XED_REG_RBX'
 def  get_gpr32(env, ii):
@@ -116,22 +117,22 @@ def  get_dr(env, ii):
 def  get_seg(env, ii):
     return 'XED_REG_FS'
 
-def  get_zeroing(env, ii):
+def  get_zeroing(env, ii): # 0(merging),1(zeroing)
     return '1'
 
-def  get_rcsae(env, ii):
+def  get_rcsae(env, ii):  # 0,1,2
     return '0x2'
 
-def  get_scale(env, ii):
+def  get_scale(env, ii): # 1,2,4,8
     return '2'
 
-def  get_ax(env, ii):
+def  get_ax(env, ii): # always this value
     return 'XED_REG_AX'
 
-def  get_eax(env, ii):
+def  get_eax(env, ii): # always this value
     return 'XED_REG_EAX'
 
-def  get_rax(env, ii):
+def  get_rax(env, ii): # always this value
     return 'XED_REG_RAX'
     
 
@@ -215,7 +216,12 @@ def _create_enc_test_functions(env, ii, encfn):
         else:
             if not arginfo:
                 die("NO ARGINFO FOR {} {} in {}".format(argtype, argname, ii.iclass))
-            vfn = arginfo2value_creator[arginfo]
+            try:
+                vfn = arginfo2value_creator[arginfo]
+            except:
+                # FIXME: hack to make progress
+                warn("FIXME: MESSED UP ARGUMENTS FOR {} {} {} from {}".format(argtype, argname, arginfo, ii.iclass))
+                return
             v = vfn(env,ii)
             testfn.add_code_eol('{} = {}'.format(argname, v))            
     
