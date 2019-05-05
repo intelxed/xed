@@ -4248,7 +4248,7 @@ def work():
 
 
 
-            msge("Writing functions to .c and .h files")
+            msge("Writing encoder 'encode' functions to .c and .h files")
             func_list = []
             for ii in xeddb.recs:
                 func_list.extend(ii.encoder_functions)
@@ -4270,8 +4270,52 @@ def work():
                                                        gen_hdr_dir,
                                                        #other_headers = extra_headers,
                                                        max_lines_per_file=15000)
+
             output_file_emitters.extend(file_emitters)
+
+
+
+
+
+
+            msge("Writing encoder 'test' functions to .c and .h files")
+            func_list = []
+            for ii in xeddb.recs:
+                func_list.extend(ii.enc_test_functions)
                 
+            config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)                
+            fn_prefix = 'xed-{}'.format(config_descriptor)
+            gen_src_dir = os.path.join(args.gendir, config_descriptor, 'test', 'src')
+            gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'test', 'hdr')
+            mbuild.cmkdir(gen_src_dir)
+            mbuild.cmkdir(gen_hdr_dir)
+                                       
+            file_emitters = codegen.emit_function_list(func_list,
+                                                       fn_prefix,
+                                                       args.xeddir,
+                                                       gen_src_dir,
+                                                       gen_hdr_dir,
+                                                       #other_headers = extra_headers,
+                                                       max_lines_per_file=15000)
+
+            output_file_emitters.extend(file_emitters)
+
+            # emit a C file  initializing an array with test function names
+            fe = codegen.xed_file_emitter_t(args.xeddir, gen_src_dir, 'testtable-m{}-a{}.c'.format(mode,asz)
+            fe.add_header('xed/xed-types.h')
+            fe.start()
+            # FIXME: include headers
+            array_name = 'test_functions_m{}_a{}'.format(mode,asz)                
+            fe.add_code('xed_uint32_t (*{})(xed_uint8_t* output_buffer)[] = {{'.format(array_name))
+            for fn in func_list:
+                fe.add_code('{},'.format(fn.get_function_name()))
+            fe.add_code('0')
+            fe.add_code('};')
+            fe.close()
+            output_file_emitters.append(fe)
+
+            
+            
     gather_stats(xeddb.recs)
     
     dump_output_file_names( args.output_file_list,
