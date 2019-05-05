@@ -43,7 +43,7 @@ def _make_test_function_object(env, enc_fn):
     fname = 'test_{}_{}'.format(versions, encoder_fn)
     env.test_function_names[encoder_fn] += 1
     
-    fo = codegen.function_object_t(fname, return_type='void')
+    fo = codegen.function_object_t(fname, return_type='xed_uint32_t')
     return fo
 
 
@@ -51,6 +51,34 @@ def _add_test_function(ii,fo):
     ii.enc_test_functions.append(fo)
     dbg("TEST FUNCTION:")
     dbg(fo.emit())
+
+# generate all the register names
+gpr64 = "RAX RCX RDX RBX RSI RDI RBP RSP R8 R9 R10 R11 R12 R13 R14 R15".split()
+
+gpr32_not64 = "EAX ECX EDX EBX ESI EDI EBP ESP".split()
+gpr16_not64 = "AX CX DX BX SI DI BP SP".split()
+gpr8_not64  = "AL CL DL BL SIL DIL BPL SPL".split()
+
+gpr32_m64 = gpr32_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
+gpr16_m64 = gpr16_not64 + "R8W R9W R10W R11W R12W R13W R14W R15W".split()
+gpr8_m64  = gpr8_not64  + "R8B R9B R10B R11B R12B R13B R14B R15B".split()
+
+gpr8h = "AH CH DH BH".split()
+
+MMX = [ 'MM{}'.format(i) for i in range(0,8)]
+x87 = [ 'ST{}'.format(i) for i in range(0,8)]
+kreg = [ 'K{}'.format(i) for i in range(0,8)]
+xmm_m64 = [ 'XMM{}'.format(i) for i in range(0,32)]
+ymm_m64 = [ 'YMM{}'.format(i) for i in range(0,32)]
+zmm_m64 = [ 'ZMM{}'.format(i) for i in range(0,32)]
+xmm_not64 = [ 'XMM{}'.format(i) for i in range(0,8)]
+ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
+zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
+
+seg = 'ES CS SS DS FS GS'.split()
+cr_64 = 'CR0 CR2 CR3 CR4 CR8'
+cr_not64 = 'CR0 CR2 CR3 CR4' 
+dr = [ 'DR{}'.format(i) for i in range(0,8)]
 
 
 # can vary output randomly, vary by number of calls in this
@@ -182,7 +210,7 @@ def _create_enc_test_functions(env, ii, encfn):
     global arginfo2value_creator
  
     testfn = _make_test_function_object(env,encfn)
-
+    testfn.add_arg('xed_uint8_t* output_buffer')
     # gather args
     args = []
     for arg,arginfo in encfn.get_args():
@@ -204,10 +232,10 @@ def _create_enc_test_functions(env, ii, encfn):
 
     # common configuration
     testfn.add_code_eol('xed_enc2_req_t request')
-    testfn.add_code_eol('xed_uint8_t output_buffer[XED_MAX_INSTRUCTION_BYTES]')
+    #testfn.add_code_eol('xed_uint8_t output_buffer[XED_MAX_INSTRUCTION_BYTES]')
     
     
-    # set vars to test values  - FIXME
+    # set vars to test values 
     for argtype,argname,arginfo in args:
         if arginfo == 'req':
             # set up the request structure and output buffer
@@ -219,9 +247,7 @@ def _create_enc_test_functions(env, ii, encfn):
             try:
                 vfn = arginfo2value_creator[arginfo]
             except:
-                # FIXME: hack to make progress
-                warn("FIXME: MESSED UP ARGUMENTS FOR {} {} {} from {}".format(argtype, argname, arginfo, ii.iclass))
-                return
+                die("FIXME: MESSED UP ARGUMENTS FOR {} {} {} from {}".format(argtype, argname, arginfo, ii.iclass))
             v = vfn(env,ii)
             testfn.add_code_eol('{} = {}'.format(argname, v))            
     
@@ -236,7 +262,8 @@ def _create_enc_test_functions(env, ii, encfn):
     s.append( ')' )
     testfn.add_code_eol(''.join(s))
 
-    # FIXME: call XED decode to test the encoder output!
+    # return the output length
+    testfn.add_code_eol('return xed_enc2_encoded_length({})'.format(request_arg))
     
     _add_test_function(ii, testfn)
     
