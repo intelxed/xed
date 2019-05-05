@@ -4301,8 +4301,10 @@ def work():
             output_file_emitters.extend(file_emitters)
 
             # emit a C file  initializing an array with test function names
-            fe = codegen.xed_file_emitter_t(args.xeddir, gen_src_dir, 'testtable-m{}-a{}.c'.format(mode,asz)
-            fe.add_header('xed/xed-types.h')
+            fe = codegen.xed_file_emitter_t(args.xeddir,
+                                            gen_src_dir,
+                                            'testtable-m{}-a{}.c'.format(mode,asz))
+            #fe.add_header('xed/xed-types.h')
             fe.start()
             # FIXME: include headers
             array_name = 'test_functions_m{}_a{}'.format(mode,asz)                
