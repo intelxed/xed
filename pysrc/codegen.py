@@ -291,12 +291,16 @@ class function_object_t(object):
 
    def set_function_name(self,fname):
        self.function_name = fname
+    def get_function_name(self):
+        return self.function_name
 
    def lines(self):
       return len(self.body)
 
    def add_arg(self, arg, arg_type=None):
       self.args.append((arg,arg_type))
+   def get_args(self):
+       return self.args
 
    def get_arg_num(self):
        return len(self.args)
