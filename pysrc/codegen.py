@@ -291,8 +291,8 @@ class function_object_t(object):
 
    def set_function_name(self,fname):
        self.function_name = fname
-    def get_function_name(self):
-        return self.function_name
+   def get_function_name(self):
+       return self.function_name
 
    def lines(self):
       return len(self.body)
