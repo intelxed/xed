@@ -46,6 +46,9 @@ if is_python3() == False:
     die("This script requires python3\n")
     
 dbg_output = sys.stdout
+def set_dbg_output(x):
+    global dbg_output
+    dbg_output = x
 
 def dbg(s):
     global dbg_output
