@@ -2558,7 +2558,7 @@ def work(env):
     test_libs = []
     for config in configs[0:1]: # FIXME - pick config. just doing first config now
         (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
-        test_libs.append((shd,link))
+        test_libs.append((shd,lnk))
     
     legal_header_tagging(env)
     build_examples(env)
