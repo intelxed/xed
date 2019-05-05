@@ -2564,8 +2564,8 @@ def create_legacy_gprv_seg(env,ii,op_info):
         fo.add_comment('created by create_legacy_gprv_seg')
         fo.add_arg(arg_request,'req')
         reg0 = gprv_names[osz]
-        fo.add_arg(arg_reg_type + reg0)
-        fo.add_arg(arg_reg_type + reg1)
+        fo.add_arg(arg_reg_type + reg0,'gpr{}'.format(osz))
+        fo.add_arg(arg_reg_type + reg1,'seg')
         
         emit_required_legacy_prefixes(ii,fo)
         if not ii.osz_required:
@@ -2611,7 +2611,7 @@ def create_legacy_mem_seg(env,ii,op_info):
                 add_memop_args(env, ii, fo, use_index, dispsz) 
             elif opi == 'seg':
                 reg0 = 'seg'
-                fo.add_arg(arg_reg_type + reg0)
+                fo.add_arg(arg_reg_type + reg0, 'seg')
             else:
                 die("NOT REACHED")
                 
