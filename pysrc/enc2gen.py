@@ -35,15 +35,8 @@ import codegen
 import read_xed_db
 import gen_setup
 
-def die(s):
-    genutil.die(s)
+from enc2common import *
 
-PY3 = sys.version_info > (3,)
-def is_python3():
-    global PY3
-    return PY3
-if is_python3() == False:
-    die("This script requires python3\n")
 
 gpr_nt_widths_dict = {}
 # list indexed by OSZ (o16,o32,o64)
@@ -199,22 +192,6 @@ def get_modval(dispsz):
     global _modvals
     return _modvals[dispsz]
 
-dbg_output = sys.stdout
-
-def dbg(s):
-    global dbg_output
-    print(s, file=dbg_output)
-
-def msge(s):
-    print(s, file=sys.stderr, flush=True)
-def warn(s):
-    print("\t"+s, file=sys.stderr, flush=True)
-    #genutil.warn(s)
-    
-def _dump_fields(x):
-    for fld in sorted(x.__dict__.keys()):
-        msge("{}: {}".format(fld,getattr(x,fld)))
-    msge("\n\n")
 
 def _gen_opnds(ii): # generator
     # filter out write-mask operands and suppressed operands
@@ -4265,6 +4242,7 @@ def work():
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
                 create_enc_fn(env, ii)
+                enc2test.create_test_fn_main(env, ii)
                 spew(ii)
 
 
