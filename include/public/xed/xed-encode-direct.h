@@ -281,6 +281,11 @@ static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r, xed_uint8_t* outpu
     r->s.itext = output_buffer;
 }
 
+/// To find out how many bytes were used for the encoding
+static XED_INLINE xed_uint32_t xed_enc2_encoded_length(xed_enc2_req_t* r) {
+    return r->s.cursor;
+}
+
 static XED_INLINE void emit(xed_enc2_req_t* r, xed_uint8_t b) {
     r->s.itext[r->s.cursor++] = b;
 }
