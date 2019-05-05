@@ -3456,7 +3456,8 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         category += 'i'
         immw=8
     dispsz_list = get_dispsz_list(env)
-    opnd_types = get_opnd_types(env,ii)
+    opnd_types_org = get_opnd_types(env,ii)
+    arg_regs = [ arg_reg0, arg_reg1, arg_reg2 ]
 
     ispace = itertools.product(get_index_vals(), dispsz_list)
     for use_index, dispsz  in ispace:
@@ -3471,18 +3472,20 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_vex_simd_2reg_mem")
         fo.add_arg(arg_request,'req')
+        opnd_types = copy.copy(opnd_types_org)
 
-        if nopnds >= 2:
-            fo.add_arg(arg_reg0,opnd_types[0])
-        if nopnds >= 3:
-            fo.add_arg(arg_reg1,opnd_types[1])
-        if mempos == 3 and nopnds == 4: # mem last
-            fo.add_arg(arg_reg2, opnd_types[2])
-        add_memop_args(env, ii, fo, use_index, dispsz, immw=0)
-        if mempos == 2 and nopnds == 4: # reg last
-            fo.add_arg(arg_reg2, opnd_types[3])
-        if immw:
-            fo.add_arg(arg_imm8,'int8')
+        regn = 0
+        for i,optype in enumerate(opnd_types_org):
+            if optype in ['xmm','ymm','zmm']:
+                fo.add_arg(arg_regs[regn], opnd_types.pop(0))
+                regn += 1
+            elif optype in ['mem']:
+                add_memop_args(env, ii, fo, use_index, dispsz, immw=0)
+                opnd_types.pop(0)
+            elif optype in 'int8':
+                fo.add_arg(arg_imm8,'int8')
+            else:
+                die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
