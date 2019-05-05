@@ -315,7 +315,8 @@ def read_file_list(fn):
     return a
 
 def run_decode_generator(gc, env):
-    """Run the decode table generator"""
+    """Run the decode table generator. This function is executed as
+     required by the work_queue."""
     if env == None:
         return (1, ['no env!'])
     
@@ -352,7 +353,8 @@ def run_decode_generator(gc, env):
     return (retval, error_output )
 
 def run_encode_generator(gc, env):
-    """Run the encoder table generator"""
+    """Run the encoder table generator. This function is executed as
+     required by the work_queue."""
     if env == None:
         return (1, ['no env!'])
     
@@ -380,7 +382,8 @@ def run_encode_generator(gc, env):
     return (retval, [] )
 
 def run_encode_generator2(gc, env):
-    """Run the encoder2 table generator"""
+    """Run the encoder2 table generator. This function is executed as
+     required by the work_queue."""
     if env == None:
         return (1, ['no env!'])
     
@@ -1455,20 +1458,19 @@ def add_encoder2_command(env, gc, gen_dag, prep):
     enc_py = env.src_dir_join(enc_py)
     gc.enc2_hash_file = env.build_dir_join('.mbuild.hash.xedencgen2')
     
-    ed = env.build_dir_join('ENCGEN2-OUTPUT-FILES.txt')
-    if os.path.exists(ed):
-        need_to_rebuild_enc = need_to_rebuild(ed, gc.enc2_hash_file)
+    gc.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES.txt')
+    if os.path.exists(gc.enc2_output_file):
+        need_to_rebuild_enc = need_to_rebuild(gc.enc2_output_file, gc.enc2_hash_file)
         if need_to_rebuild_enc:
-            mbuild.remove_file(ed)
+            mbuild.remove_file(gc.enc2_output_file)
 
-    gc.enc2_output_file = ed 
     enc_input_files = gc.all_input_files() + prep.targets + enc_py + [env['mfile']]
     c2 = mbuild.plan_t(name='encgen2',
                        command=run_encode_generator2,
                        args=gc,
                        env=env,
                        input=enc_input_files,
-                       output= ed)
+                       output=gc.enc2_output_file)
     enc_cmd = gen_dag.add(env,c2)
 
 # Python imports used by the 2 generators.
