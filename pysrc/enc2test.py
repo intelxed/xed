@@ -65,7 +65,7 @@ gpr8_m64  = gpr8_not64  + "R8B R9B R10B R11B R12B R13B R14B R15B".split()
 
 gpr8h = "AH CH DH BH".split()
 
-MMX = [ 'MM{}'.format(i) for i in range(0,8)]
+MMX = [ 'MMX{}'.format(i) for i in range(0,8)]
 x87 = [ 'ST{}'.format(i) for i in range(0,8)]
 kreg = [ 'K{}'.format(i) for i in range(0,8)]
 xmm_m64 = [ 'XMM{}'.format(i) for i in range(0,32)]
@@ -111,7 +111,7 @@ def  get_x87(env, ii):
     return 'XED_REG_ST1'
 
 def  get_mmx(env, ii):
-    return 'XED_REG_MM0'
+    return 'XED_REG_MMX0'
 
 def  get_imm8(env, ii):
     return '0xFF'

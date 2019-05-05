@@ -1734,7 +1734,7 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
 
     lib, dll = xbc.make_lib_dll(env,'xed-{}'.format(config))
     x = mbuild.join(env['build_dir'], lib)
-    env['shd_teslib']  = x
+    env['shd_testlib']  = x
     env['link_testlib'] = x
     if  env['shared']:
         env['shd_testlib']  = mbuild.join(env['build_dir'], dll)

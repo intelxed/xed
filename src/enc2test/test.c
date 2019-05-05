@@ -16,23 +16,20 @@ Copyright (c) 2019 Intel Corporation
   
 END_LEGAL */
 
-#include "xed-internal-header.h"
-#include "xed-encode-private.h"
-#include "xed-operand-accessors.h"
-#include "xed-reg-class.h"
-#include "xed-encode-direct.h"
-
+#include "xed-interface.h"
 #include "enc2-m64-a64/hdr/xed-enc2-m64-a64.h"
 #include <stdio.h>
 
-extern xed_uint32_t (*test_functions_m64_a64)(xed_uint8_t* output_buffer)[];
+typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
 
-typedef  xed_uint32_t (*test_function_t)(xed_uint8_t* output_buffer);
+extern test_func_t test_functions_m64_a64[];
+
+
 
 void test_m64_a64(void) {
     xed_uint32_t tests=0;
     xed_uint32_t errors = 0;
-    test_function_t** p = test_functions_m64_a64;
+    test_func_t* p = test_functions_m64_a64;
     xed_uint8_t output_buffer[2*XED_MAX_INSTRUCTION_BYTES];
     xed_state_t dstate;
 
@@ -48,19 +45,19 @@ void test_m64_a64(void) {
         xed_uint32_t enclen;
         xed_error_enum_t err;
         
-        printf("Calling test function %d\n",i);
+        printf("Calling test function %d\n",tests);
         enclen = (*p)(output_buffer);
 
         // This stuff should problably move in to the individual tests so
         // that we can do more validation about the iclass and operands.
         
         if (enclen > XED_MAX_INSTRUCTION_BYTES) {
-            printf("\t ERROR: %s\n", "ENCODE TOO LONG")
+            printf("\t ERROR: %s\n", "ENCODE TOO LONG");
             errors++;
         }
             
         xed_decoded_inst_zero_set_mode(&xedd, &dstate);
-        err = xed_decode(xedd, output_buffer, enclen);
+        err = xed_decode(&xedd, output_buffer, enclen);
         if (err != XED_ERROR_NONE) {
             printf("\t ERROR: %s\n",xed_error_enum_t2str(err));
             errors++;
