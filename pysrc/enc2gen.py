@@ -34,6 +34,7 @@ import genutil
 import codegen
 import read_xed_db
 import gen_setup
+import enc2test
 
 from enc2common import *
 
@@ -4144,7 +4145,6 @@ def dump_output_file_names(fn, fe_list):
     o.close()
 
 def work():
-    global dbg_output
     
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
     arg_parser.add_argument('-m64',
@@ -4188,7 +4188,7 @@ def work():
     
     dbg_fn = os.path.join(args.gendir,'enc2out.txt')
     msge("Writing {}".format(dbg_fn))
-    dbg_output = open(dbg_fn,"w")
+    set_dbg_output(open(dbg_fn,"w"))
     
     gen_setup.make_paths(args)
     msge('Reading XED db...')
@@ -4242,8 +4242,9 @@ def work():
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
                 create_enc_fn(env, ii)
-                enc2test.create_test_fn_main(env, ii)
                 spew(ii)
+                enc2test.create_test_fn_main(env, ii)
+
 
 
             msge("Writing functions to .c and .h files")

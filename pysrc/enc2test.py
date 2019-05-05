@@ -43,7 +43,7 @@ def _make_test_function_object(env, enc_fn):
     fname = 'test_{}_{}'.format(versions, encoder_fn)
     env.test_function_names[encoder_fn] += 1
     
-    fo = codegen.function_object_t(fname, return_value='void')
+    fo = codegen.function_object_t(fname, return_type='void')
     return fo
 
 
@@ -59,7 +59,7 @@ def _create_enc_test_functions(env, ii, encfn):
     # gather args
     args = []
     for arg,arginfo in encfn.get_args():
-        @arg_chunks = arg.split(' ')
+        arg_chunks = arg.split(' ')
         argtype = " ".join(arg_chunks[:-1])
         argname = arg_chunks[-1]
         args.append((argtype,argname,arginfo))
