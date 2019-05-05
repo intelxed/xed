@@ -4248,20 +4248,18 @@ def work():
 
 
 
+            
             msge("Writing encoder 'encode' functions to .c and .h files")
             func_list = []
             for ii in xeddb.recs:
                 func_list.extend(ii.encoder_functions)
             config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)                
             fn_prefix = 'xed-{}'.format(config_descriptor)
-            if 1: # WRK/WIP
-                gen_src_dir = args.gendir
-                gen_hdr_dir = args.gendir
-            else:
-                gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
-                gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr')
-                mbuild.cmkdir(gen_src_dir)
-                mbuild.cmkdir(gen_hdr_dir)
+            
+            gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
+            gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr')
+            mbuild.cmkdir(gen_src_dir)
+            mbuild.cmkdir(gen_hdr_dir)
                                        
             file_emitters = codegen.emit_function_list(func_list,
                                                        fn_prefix,
@@ -4299,6 +4297,9 @@ def work():
                                                        max_lines_per_file=15000)
 
             output_file_emitters.extend(file_emitters)
+
+
+            
 
             # emit a C file  initializing an array with test function names
             fe = codegen.xed_file_emitter_t(args.xeddir,

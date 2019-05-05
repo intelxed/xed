@@ -258,15 +258,6 @@ class generator_inputs_t(object):
             s.append( extra_args)
         return ' '.join(s)
     
-    def encode_command2(self, xeddir, gendir, file_name_for_output_file_list):
-        """Produce a encoder2 generator command"""
-        s = []
-        s.append( '%(pythonarg)s' )
-        s.append( aq(mbuild.join(xeddir, 'pysrc', 'enc2gen.py')))
-        s.append('--xeddir %s' % aq(xeddir))
-        s.append('--gendir %s' % aq(gendir))
-        s.append('--output-file-list %s' % aq(file_name_for_output_file_list))
-        return ' '.join(s)
 
     def concatenate_one_set_of_files(self, env, target, inputs):
         """Concatenate input files creating the target file."""
@@ -381,18 +372,28 @@ def run_encode_generator(gc, env):
     mbuild.msgb("ENC-GEN", "Return code: " + str(retval))
     return (retval, [] )
 
-def run_encode_generator2(gc, env):
+def _encode_command2(args):
+    """Produce a encoder2 generator command"""
+    s = []
+    s.append( '%(pythonarg)s' )
+    s.append( aq(mbuild.join(args.xeddir, 'pysrc', 'enc2gen.py')))
+    s.append('--xeddir %s' % aq(args.xeddir))
+    s.append('--gendir %s' % aq(args.gendir))
+    s.extend( args.config.as_args() )  
+    s.append('--output-file-list %s' % aq(args.enc2_output_file))
+    return ' '.join(s)
+
+def run_encode_generator2(args, env):
     """Run the encoder2 table generator. This function is executed as
      required by the work_queue."""
     if env == None:
         return (1, ['no env!'])
     
-    xeddir = env.escape_string(env['src_dir'])
-    gendir = env.escape_string(env['build_dir'])
+    args.xeddir = env.escape_string(env['src_dir'])
+    # we append our own paths in the generator
+    args.gendir = env.escape_string(env['libxed_build_dir']) 
         
-    cmd = env.expand(gc.encode_command2(xeddir,
-                                        gendir,
-                                        gc.enc2_output_file))
+    cmd = env.expand( _encode_command2(args) )
 
     if mbuild.verbose(2):
         mbuild.msgb("ENC2-GEN", cmd)
@@ -404,8 +405,8 @@ def run_encode_generator2(gc, env):
     _write_file(oe, error_output)
 
     if retval == 0:
-        list_of_files = read_file_list(gc.enc2_output_file)
-        mbuild.hash_files(list_of_files, gc.enc2_hash_file)
+        list_of_files = read_file_list(args.enc2_output_file)
+        mbuild.hash_files(list_of_files, args.enc2_hash_file)
 
     mbuild.msgb("ENC2-GEN", "Return code: " + str(retval))
     return (retval, [] )
@@ -1442,8 +1443,24 @@ def add_encoder_command(env, gc, gen_dag, prep):
                        output= ed)
     enc_cmd = gen_dag.add(env,c2)
 
+class dummy_obj_t(object):
+    def __init__(self):
+        pass
+    
+class enc2_config_t(object):
+    def __init__(self, mode, asz):
+        self.mode=mode
+        self.asz=asz
+        
+    def as_args(self):
+        return ['-m{}'.format(self.mode),
+                '-a{}'.format(self.asz) ]
+    
+    def __str__(self):
+        return 'enc2-m{}-a{}'.format(self.mode,self.asz)
 
-def add_encoder2_command(env, gc, gen_dag, prep):
+    
+def add_encoder2_command(env, dag, input_files, config):
     enc_py = ['pysrc/genutil.py',
               'pysrc/codegen.py',
               'pysrc/read_xed_db.py',
@@ -1453,25 +1470,28 @@ def add_encoder2_command(env, gc, gen_dag, prep):
               'pysrc/slash_expand.py',
               'pysrc/patterns.py',
               'pysrc/gen_setup.py',              
-              'pysrc/enc2gen.py' ]
+              'pysrc/enc2gen.py',
+              'pysrc/enc2test.py' ]
 
+    enc2args = dummy_obj_t()
     enc_py = env.src_dir_join(enc_py)
-    gc.enc2_hash_file = env.build_dir_join('.mbuild.hash.xedencgen2')
-    
-    gc.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES.txt')
-    if os.path.exists(gc.enc2_output_file):
-        need_to_rebuild_enc = need_to_rebuild(gc.enc2_output_file, gc.enc2_hash_file)
+    enc2args.enc2_hash_file   = env.build_dir_join('.mbuild.hash.xedencgen2-{}'.format(config))
+    enc2args.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES-{}.txt'.format(config))
+    enc2args.config = config
+    if os.path.exists(enc2args.enc2_output_file):
+        need_to_rebuild_enc = need_to_rebuild(enc2args.enc2_output_file,
+                                              enc2args.enc2_hash_file)
         if need_to_rebuild_enc:
-            mbuild.remove_file(gc.enc2_output_file)
+            mbuild.remove_file(enc2args.enc2_output_file)
 
-    enc_input_files = gc.all_input_files() + prep.targets + enc_py + [env['mfile']]
-    c2 = mbuild.plan_t(name='encgen2',
-                       command=run_encode_generator2,
-                       args=gc,
-                       env=env,
-                       input=enc_input_files,
-                       output=gc.enc2_output_file)
-    enc_cmd = gen_dag.add(env,c2)
+    enc_input_files = input_files +  enc_py + [env['mfile']]
+    c = mbuild.plan_t(name='encgen2-{}'.format(config),
+                      command=run_encode_generator2,
+                      args=enc2args,
+                      env=env,
+                      input=enc_input_files,
+                      output=enc2args.enc2_output_file)
+    enc_cmd = dag.add(env,c)
 
 # Python imports used by the 2 generators.
 # generated 2016-04-15 by importfinder.py:
@@ -1518,6 +1538,14 @@ def add_decoder_command(env, gc, gen_dag, prep):
                        input=dec_input_files,
                        output= dd)
     dec_cmd = gen_dag.add(env,c1)
+
+def wq_build(env,work_queue, dag):
+    okay = work_queue.build(dag,
+                            die_on_errors=env['die_on_errors'],
+                            show_progress=True, 
+                            show_output=True,
+                            show_errors_only=_wk_show_errors_only())
+    return okay
     
     
 def build_libxed(env,work_queue):
@@ -1573,7 +1601,6 @@ def build_libxed(env,work_queue):
     add_decoder_command(env, gc, gen_dag, prep)
     if env['encoder']:
         add_encoder_command(env, gc, gen_dag, prep)
-        add_encoder2_command(env, gc, gen_dag, prep)
 
     phase = "DECODE/ENCODE GENERATORS"
     if 'skip-gen' in env['targets']:
@@ -1666,12 +1693,7 @@ def build_libxed(env,work_queue):
     if 'skip-lib' in env['targets']:
         mbuild.msgb("SKIPPING LIBRARY BUILD")
     else:
-        okay = work_queue.build(lib_dag,
-                                die_on_errors=lib_env['die_on_errors'],
-                                show_progress=True, 
-                                show_output=True,
-                                show_errors_only=_wk_show_errors_only())
-
+        okay = wq_build(env, work_queue, lib_dag)
         if okay and env['shared'] and not env['debug']:
             xbc.strip_file(env,     env['shd_libxed'], '-x')
             if os.path.exists(env['shd_libild']):
@@ -1682,7 +1704,89 @@ def build_libxed(env,work_queue):
             mbuild.msgb("LIBRARY", "build succeeded")
 
     del lib_env
+    input_files = gc.all_input_files() + prep.targets
+    return input_files
+
+def build_libxedenc2(arg_env, work_queue, input_files, config):
+    '''Create and run the builder that creates the xed enc2 encoder source
+       files, header files and associated tests. Then compile the
+       generated files.    '''
+    if not arg_env['encoder']:
+        return
+
+    env = copy.deepcopy(arg_env)
+
+    # *** REDEFINE THE BUILD DIRECTORY ***
+    # keep the libxed build dir around in case we need it
+    env['libxed_build_dir'] = env['build_dir']
+    env['build_dir'] = mbuild.join(env['libxed_build_dir'], str(config))
+    mbuild.cmkdir(env['build_dir'])
     
+    dag = mbuild.dag_t('xedenc2gen-{}'.format(config), env=env)
+    add_encoder2_command(env, dag, input_files, config)
+
+    phase = "ENCODE2 GENERATOR FOR CONFIGURATION {}".format(config)
+    if mbuild.verbose(2):
+        mbuild.msgb(phase, "building...")
+    okay = wq_build(env, work_queue, dag)
+    if not okay:
+        xbc.cdie("[%s] failed. dying..." % phase)
+
+    lib, dll = xbc.make_lib_dll(env,'xed-{}'.format(config))
+    x = mbuild.join(env['build_dir'], lib)
+    env['shd_teslib']  = x
+    env['link_testlib'] = x
+    if  env['shared']:
+        env['shd_testlib']  = mbuild.join(env['build_dir'], dll)
+        # use gcc for making the shared object
+        env['CXX_COMPILER']= env['CC_COMPILER']
+
+    # For the enc2 library:
+    gen_src    = mbuild.glob(mbuild.join(env['build_dir'],'src','*.c'))
+    hdr_dir    = mbuild.join(env['build_dir'],'hdr')
+    static_src = mbuild.glob(mbuild.join(env['src_dir'],'src','enc2','*.c'))
+    
+    dag = mbuild.dag_t('xedenc2lib-{}'.format(config), env=env)
+    env.add_include_dir(hdr_dir)
+    objs = env.compile( dag, gen_src + static_src)
+    if env['shared']:
+        u = env.dynamic_lib(objs, env['shd_testlib'])
+    else:
+        u = env.static_lib(objs, env['link_testlib'])
+    dag.add(env,u)
+    okay = wq_build(env, work_queue, dag)
+    if not okay:
+        xbc.cdie("XED ENC2Library build failed")
+    if mbuild.verbose(2):
+        mbuild.msgb("LIBRARY", "XED ENC2 build succeeded")
+
+    build_enc2_test(env,work_queue, config)
+        
+    return (env['shd_testlib'], env['link_testlib'])
+
+def build_enc2_test(env, work_queue, config):
+    '''Build the enc2 tester program for the specified config '''
+    # this env has build_dir set to the current mode/asz config
+    env['config'] = str(config)
+    exe         = mbuild.join(env['build_dir'],'enc2tester-%(config)s%(EXEEXT)s')
+    gen_src     = mbuild.glob(mbuild.join(env['build_dir'],'test','src','*.c'))
+    gen_hdr_dir = mbuild.join(env['build_dir'],'test','hdr')
+    static_src  = mbuild.glob(mbuild.join(env['src_dir'],'src','enc2test','*.c'))
+
+    # FIXME: shared build
+    dag = mbuild.dag_t('xedenc2test-{}'.format(config), env=env)
+    env.add_include_dir(gen_hdr_dir)
+    objs = env.compile( dag, gen_src + static_src )
+    lc = env.link(objs + [env['link_testlib'], env['link_libxed']], exe)
+    cmd = dag.add(env,lc)
+    if mbuild.verbose(2):
+        mbuild.msgb('BUILDING', "ENC2 config {} test program".format(config))
+    okay = wq_build(env, work_queue, dag)
+    if not okay:
+        xbc.cdie("XED ENC2 config {} test program build failed".format(config))
+    if mbuild.verbose(2):
+        mbuild.msgb("TESTPROG", "XED ENC2 config {} test program build succeeded".format(config))
+
 def _modify_search_path_mac(env, fn):
    """Make example tools refer to the libxed.so from the lib directory
    if doing and install. Mac only."""
@@ -2442,7 +2546,20 @@ def work(env):
     mbuild.cmkdir(mbuild.join(env['build_dir'], 'include-private'))
     work_queue = mbuild.work_queue_t(env['jobs']) 
 
-    build_libxed(env, work_queue)
+    input_files = build_libxed(env, work_queue)
+
+    configs = [ enc2_config_t(64,64),   # popular
+                enc2_config_t(32,32),   
+                enc2_config_t(16,16),   # infrequent
+                enc2_config_t(64,32),   # obscure 
+                enc2_config_t(32,16),   # more obscure
+                enc2_config_t(16,32) ]  # more obscure
+
+    test_libs = []
+    for config in configs[0:1]: # FIXME - pick config. just doing first config now
+        (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
+        test_libs.append((shd,link))
+    
     legal_header_tagging(env)
     build_examples(env)
     build_kit(env,work_queue)
