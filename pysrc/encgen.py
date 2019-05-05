@@ -255,10 +255,9 @@ def first_opnd_nonmem(ii):
 #            return op
 
 def op_mask_reg(op):
-    if op.lookupfn_name:
-        if 'MASK' in op.lookupfn_name:
-            return True
-    return False
+    return op_luf_start(op,'MASK')
+def op_masknot0(op):
+    return op_luf_start(op,'MASKNOT0')
     
         
 def op_scalable_v(op):
@@ -1218,8 +1217,9 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_gpr_one_scalable_one_fixed")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0)
-        fo.add_arg(arg_reg1)
+        opnd_types = get_opnd_types(env,ii,osz)
+        fo.add_arg(arg_reg0, opnd_types[0])
+        fo.add_arg(arg_reg1, opnd_types[1])
         emit_required_legacy_prefixes(ii,fo)
         if not ii.osz_required:
             if osz == 16 and env.mode != 16:
@@ -1239,13 +1239,13 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
             op0_bits = osz
         else:
             op0_bits = opsz_to_bits(opsz_codes[0])
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg0)'.format(f1,osz))
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
             
         if opsz_codes[1] in ['rv','ry']:
             op1_bits = osz
         else:
             op1_bits = opsz_to_bits(opsz_codes[1])
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,op1_bits))
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f2,op1_bits,var_reg1))
             
         emit_rex(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
@@ -1272,6 +1272,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
     global arg_imm8, var_imm8
 
     extra_names = _implicit_reg_names(ii)
+
     
     for osz in gen_osz_list(env.mode,osz_list):
         fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
@@ -1282,10 +1283,11 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_scalable_regs")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0)
-        fo.add_arg(arg_reg1)
+        opnd_types = get_opnd_types(env,ii,osz)
+        fo.add_arg(arg_reg0, opnd_types[0])
+        fo.add_arg(arg_reg1, opnd_types[1])
         if ii.has_imm8:
-            fo.add_arg(arg_imm8,'imm8')
+            fo.add_arg(arg_imm8,'int8')
         elif ii.has_immz:
             add_arg_immz(fo,osz)
                 
@@ -1303,8 +1305,8 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
             f1, f2 = 'reg','rm'
         else:
             f1, f2 = 'rm','reg'
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg0)'.format(f1,osz))
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,reg1)'.format(f2,osz))
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
+        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f2,osz,var_reg1))
         
         emit_rex(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
@@ -1337,8 +1339,8 @@ def create_legacy_two_gpr8_regs(env, ii):
         f1, f2 = 'reg','rm'
     else:
         f1, f2 = 'rm','reg'
-    fo.add_code_eol('enc_modrm_{}_gpr8(r,reg0)'.format(f1))
-    fo.add_code_eol('enc_modrm_{}_gpr8(r,reg1)'.format(f2))
+    fo.add_code_eol('enc_modrm_{}_gpr8(r,{})'.format(f1,var_reg0))
+    fo.add_code_eol('enc_modrm_{}_gpr8(r,{})'.format(f2,var_reg1))
     if env.mode == 64:
         fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
@@ -1397,8 +1399,63 @@ def emit_rex(env,fo, rexw_forced):
             fo.add_code_eol('emit_rex(r)')
         else:
             fo.add_code_eol('emit_rex_if_needed(r)')
-    
-def get_reg_type(op):
+
+
+# FIXME: the following four functions have a ton of overlap and should be
+# folded together somehow
+def get_opnd_types_short(ii):
+    types= []
+    for op in _gen_opnds(ii):
+        if op.oc2:
+            types.append(op.oc2)
+        elif op_luf_start(op,'GPRv'):
+            types.append('v')
+        elif op_luf_start(op,'GPRz'):
+            types.append('z')
+        elif op_luf_start(op,'GPRy'):
+            types.append('y')
+        else:
+            die("Unhandled op type {}".format(op))
+    return types
+
+def make_opnd_signature(ii):
+    s = []
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            s.append('x')
+        elif op_ymm(op):
+            s.append('y')
+        elif op_zmm(op):
+            s.append('z')
+        elif op_vgpr32(op):
+            s.append('r')
+        elif op_vgpr64(op):
+            s.append('r') #FIXME something else
+        elif op_gpr32(op):
+            s.append('r')
+        elif op_gpr64(op):
+            s.append('r') #FIXME something else
+        elif op_mem(op):
+            s.append('m')
+        elif op_imm8(op):
+            s.append('i')
+        elif op_imm16(op):
+            s.append('i') #FIXME something else?
+        elif op_imm8_2(op):
+            s.append('i') #FIXME something else?
+        elif op_mmx(op):
+            s.append('n') #FIXME something else
+        elif op_cr(op):
+            s.append('c')
+        elif op_dr(op):
+            s.append('d')
+        elif op_seg(op):
+            s.append('s')
+        else:
+            die("Unhandled operand {}".format(op))
+    return "".join(s)
+
+def get_reg_type_fixed(op):
     '''return a type suitable for use in an enc_modrm function'''
     if op_gpr32(op):
         return 'gpr32'
@@ -1411,6 +1468,97 @@ def get_reg_type(op):
     elif op_mmx(op):
         return 'mmx'
     die("UNHANDLED OPERAND TYPE {}".format(op))
+    
+orax = { 16:'ax', 32:'eax', 64:'rax' }
+oeax = { 16:'ax', 32:'eax', 64:'eax' }
+
+def get_opnd_types(env, ii, osz=0):
+    """Create meta-data about operands that can be used for generating
+       testing content."""
+    global orax, oeax
+    s = []
+    for op in _gen_opnds(ii):
+        if op_luf_start(op,'GPRv'):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append('gpr{}'.format(osz))
+        elif op_luf_start(op,'GPRy'):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append('gpr{}'.format(osz if osz > 16 else 32))
+        elif op_luf_start(op,'GPRz'):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append('gpr{}'.format(osz if osz < 64 else 32))
+        elif op_luf_start(op,'OrAX'):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append(orax[osz])
+        elif op_luf_start(op,'OrAX'):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append(oeax[osz])
+        elif op_luf_start(op,'ArAX'):
+            s.append(orax[env.asz])
+        elif op_immz(op):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append('imm{}'.format(osz if osz < 64 else 32))
+        elif op_immv(op):
+            if osz == 0:
+                die("Need OSZ != 0")
+            s.append('imm{}'.format(osz))
+        elif op_luf_start(op, 'A_GPR'):
+            s.append('gpr{}'.format(env.asz))
+            
+        elif op_implicit_specific_reg(op):
+            pass # FIXME - ignore?
+           
+        elif op_xmm(op):
+            s.append('xmm')
+        elif op_ymm(op):
+            s.append('ymm')
+        elif op_zmm(op):
+            s.append('zmm')
+        elif op_vgpr32(op):
+            s.append('gpr32')
+        elif op_vgpr64(op):
+            s.append('gpr64') 
+        elif op_gpr32(op):
+            s.append('gpr32')
+        elif op_gpr64(op):
+            s.append('gpr64') 
+        elif op_gpr8(op):
+            s.append('gpr8') 
+        elif op_gpr16(op):
+            s.append('gpr16') 
+        elif op_mem(op):
+            s.append('mem')
+        elif op_agen(op):  # LEA
+            s.append('agen')
+        elif op_imm8(op):
+            s.append('imm8')
+        elif op_imm16(op):
+            s.append('imm16') 
+        elif op_imm8_2(op):
+            s.append('imm8') 
+        elif op_mmx(op):
+            s.append('mmx')
+        elif op_cr(op):
+            s.append('cr')
+        elif op_dr(op):
+            s.append('dr')
+        elif op_seg(op):
+            s.append('seg')
+        elif op_masknot0(op): # must be before generic mask test below
+            s.append('kreg!0')
+        elif op_mask_reg(op):
+            s.append('kreg')
+        else:
+            die("Unhandled operand {}".format(op))
+    return s
+
+    
 
 def two_fixed_regs_opti8(ii): # also allows 2-imm8 SSE4 instr
     j,i,d,q,m,x=0,0,0,0,0,0
@@ -1451,8 +1599,9 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
     fo.add_comment("created by create_legacy_two_fixed_regs_opti8")
         
     fo.add_arg(arg_request,'req')
-    fo.add_arg(arg_reg0)
-    fo.add_arg(arg_reg1)
+    opnd_types = get_opnd_types(env,ii)
+    fo.add_arg(arg_reg0, opnd_types[0])
+    fo.add_arg(arg_reg1, opnd_types[1])
     cond_add_imm_args(ii,fo)
     
     emit_required_legacy_prefixes(ii,fo)
@@ -1467,7 +1616,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
     for i,op in enumerate(_gen_opnds(ii)):
         if op_imm8(op):
             break
-        reg_type = get_reg_type(op)
+        reg_type = get_reg_type_fixed(op)
         fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(locations[i], reg_type, regs[i]))
     emit_rex(env,fo,rexw_forced)
     emit_required_legacy_map_escapes(ii,fo)
@@ -1491,7 +1640,7 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
     fo.add_comment("created by create_legacy_one_mmx_reg_imm8")
         
     fo.add_arg(arg_request,'req')
-    fo.add_arg(arg_reg0)
+    fo.add_arg(arg_reg0, 'mmx')
     cond_add_imm_args(ii,fo)
     
     emit_required_legacy_prefixes(ii,fo)
@@ -1538,7 +1687,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
         f1, f2 = 'reg','rm'
     else:
         f1, f2 = 'rm','reg'
-    fo.add_code_eol('enc_modrm_{}_xmm(r,reg0)'.format(f1))
+    fo.add_code_eol('enc_modrm_{}_xmm(r,{})'.format(f1,var_reg0))
     fo.add_code_eol('set_mod(r,3)')
     if f2 == 'reg':
         if ii.reg_required != 'unspecified':
@@ -1806,6 +1955,7 @@ def create_legacy_orax_immz(env,ii):
     width_list = get_osz_list(env)
 
     rax_names = { 16: '_ax', 32:'_eax', 64:'_rax' }
+
     
     for osz in width_list:
         fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
@@ -1817,7 +1967,8 @@ def create_legacy_orax_immz(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_orax_immz")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0)
+        opnd_types = get_opnd_types(env,ii,osz)
+        fo.add_arg(arg_reg0,opnd_types[0])
         add_arg_immz(fo,osz)
 
         
@@ -1936,27 +2087,28 @@ def get_memsig(asz, using_indx, dispz):
     return memsig_str_32or64[using_indx][dispz]
 
 
-def add_memop_args(env, fo, use_index, dispsz, immw=0, reg=-1):
+def add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=-1, osz=0):
     """reg=-1 -> no reg opnds, 
        reg=0  -> first opnd is reg,
        reg=1  -> 2nd opnd is reg """
     global arg_reg0, arg_imm_dct
     global arg_base, arg_index, arg_scale
-    global arg_disp8, arg_disp16, arg_disp32 
+    global arg_disp8, arg_disp16, arg_disp32
     
+    opnd_types = get_opnd_types(env,ii,osz)
     if reg == 0:
-        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_reg0,opnd_types[0])
     fo.add_arg(arg_base, gprv_names[env.asz])
     if use_index:
         fo.add_arg(arg_index, gprv_names[env.asz])
         if env.asz in [32,64]:
-            fo.add_arg(arg_scale)  # a32, a64
+            fo.add_arg(arg_scale, 'scale')  # a32, a64
 
     if dispsz != 0:
         add_arg_disp(fo,dispsz)
 
     if reg == 1:
-        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_reg0, opnd_types[1])
 
     if immw:
         add_arg_immv(fo,immw)
@@ -1988,7 +2140,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_xmm_reg_one_mem_fixed")
         fo.add_arg(arg_request,'req')
-        add_memop_args(env, fo, use_index, dispsz, immw, reg=i)
+        add_memop_args(env, ii, fo, use_index, dispsz, immw, reg=i)
 
         rexw_forced = False
         if ii.eosz == 'o16' and env.mode in [32,64]:
@@ -2055,7 +2207,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_fixed")
         fo.add_arg(arg_request,'req')
-        add_memop_args(env, fo, use_index, dispsz, immw=0, reg=regn)
+        add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=regn)
 
         emit_required_legacy_prefixes(ii,fo)
 
@@ -2120,7 +2272,8 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
         fo.add_arg(arg_request,'req')
-        add_memop_args(env, fo, use_index, dispsz, immw, reg=regn)
+        add_memop_args(env, ii, fo, use_index, dispsz, immw, reg=regn,
+                       osz=osz_translate(width))
 
         rexw_forced = False
 
@@ -2176,7 +2329,7 @@ def create_legacy_far_xfer_mem(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment('created by create_legacy_far_xfer_mem')
         fo.add_arg(arg_request,'req')
-        add_memop_args(env, fo, use_index, dispsz)
+        add_memop_args(env, ii, fo, use_index, dispsz)
         rexw_forced = False
         if osz == 16 and env.mode != 16:
             fo.add_code_eol('emit(r,0x66)')
@@ -2202,6 +2355,17 @@ def create_legacy_far_xfer_mem(env,ii):
                      rexw_forced=rexw_forced,
                      space='legacy')
         add_enc_func(ii,fo)
+
+        
+def osz_translate(width):
+    if width == 'w':
+        return 16
+    elif width == 'd':
+        return 32
+    elif width == 'q':
+        return 64
+    return 0
+        
 
 def create_legacy_one_mem_common(env,ii,imm=0):
     """Handles one memop, fixed or scalable."""
@@ -2244,7 +2408,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             fo = make_function_object(env,ii,fname)
             fo.add_comment('created by create_legacy_one_mem_common')
             fo.add_arg(arg_request,'req')
-            add_memop_args(env, fo, use_index, dispsz, immw)
+            add_memop_args(env, ii, fo, use_index, dispsz, immw, osz=osz_translate(width))
 
             rexw_forced = False
 
@@ -2466,7 +2630,7 @@ def create_legacy_mem_seg(env,ii,op_info):
         fo.add_arg(arg_request,'req')
         for opi in op_info:
             if opi == 'mem':
-                add_memop_args(env, fo, use_index, dispsz) 
+                add_memop_args(env, ii, fo, use_index, dispsz) 
             elif opi == 'seg':
                 reg0 = 'seg'
                 fo.add_arg(arg_reg_type + reg0)
@@ -2610,20 +2774,6 @@ def has_memop(ii):
             return True
     return False
 
-def get_opnd_types(ii):
-    types = []
-    for op in _gen_opnds(ii):
-        if op.oc2:
-            types.append(op.oc2)
-        elif op_luf_start(op,'GPRv'):
-            types.append('v')
-        elif op_luf_start(op,'GPRz'):
-            types.append('z')
-        elif op_luf_start(op,'GPRy'):
-            types.append('y')
-        else:
-            die("Unhandled op type {}".format(op))
-    return types
 
 def get_opnds(ii):
     opnds = []
@@ -2636,7 +2786,7 @@ def create_legacy_crc32_mem(env,ii):
     global gpry_names, arg_request, enc_fn_prefix
     osz_list = get_osz_list(env)
     dispsz_list = get_dispsz_list(env)
-    opnd_types = get_opnd_types(ii)
+    opnd_types = get_opnd_types_short(ii)
     opnd_sig = "".join(opnd_types)
     ispace = itertools.product(osz_list, get_index_vals(), dispsz_list)
     for osz, use_index, dispsz in ispace:
@@ -2656,7 +2806,7 @@ def create_legacy_crc32_mem(env,ii):
             fo.add_arg(arg_reg_type + reg, reg)
         else:
             die("NOT REACHED")
-        add_memop_args(env, fo, use_index, dispsz)
+        add_memop_args(env, ii, fo, use_index, dispsz, osz=osz)
         
         rexw_forced = emit_legacy_osz(env,ii,fo,osz)
         fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(reg, reg))
@@ -2694,7 +2844,7 @@ def create_legacy_crc32_reg(env,ii):
     '''CRC32-reg (GPRy-GPR{v,b}) and LSL (GPRv+GPRz)'''
     global gprv_names, gpry_names, gprz_names
     osz_list = get_osz_list(env)
-    opnd_types = get_opnd_types(ii)
+    opnd_types = get_opnd_types_short(ii)
     opnd_sig = "".join(opnd_types)
     
     for osz in osz_list:
@@ -2748,7 +2898,7 @@ def is_movdir64(ii):
 
 def create_legacy_movdir64(env,ii):
     '''MOVDIR64B is a strange instr. It has 2 memops, one in an
-       address-space-sized GPR_R and the other a normal
+       address-space-sized A_GPR_R and the other a normal
        memop.'''
     global arg_request, enc_fn_prefix, gprv_names
     ispace = itertools.product( get_index_vals(), get_dispsz_list(env))
@@ -2764,7 +2914,7 @@ def create_legacy_movdir64(env,ii):
         
         reg = gpry_names[env.asz]  # abuse the gprv names
         fo.add_arg(arg_reg_type +  reg, reg)
-        add_memop_args(env, fo, use_index, dispsz)
+        add_memop_args(env, ii, fo, use_index, dispsz)
 
         # This operation is address-size modulated In 64b mode, 64b
         # addressing is the default. For non default 32b addressing in
@@ -3210,42 +3360,6 @@ def largest_vl_vex(ii): # and evex
         return 'ymm'
     return 'xmm'
 
-def make_opnd_signature(ii):
-    s = []
-    for op in _gen_opnds(ii):
-        if op_xmm(op):
-            s.append('x')
-        elif op_ymm(op):
-            s.append('y')
-        elif op_zmm(op):
-            s.append('z')
-        elif op_vgpr32(op):
-            s.append('r')
-        elif op_vgpr64(op):
-            s.append('r') #FIXME something else
-        elif op_gpr32(op):
-            s.append('r')
-        elif op_gpr64(op):
-            s.append('r') #FIXME something else
-        elif op_mem(op):
-            s.append('m')
-        elif op_imm8(op):
-            s.append('i')
-        elif op_imm16(op):
-            s.append('i') #FIXME something else?
-        elif op_imm8_2(op):
-            s.append('i') #FIXME something else?
-        elif op_mmx(op):
-            s.append('n') #FIXME something else
-        elif op_cr(op):
-            s.append('c')
-        elif op_dr(op):
-            s.append('d')
-        elif op_seg(op):
-            s.append('s')
-        else:
-            die("Unhandled operand {}".format(op))
-    return "".join(s)
 
 def get_type_size(op):
     a = re.sub(r'_.*','',op.lookupfn_name)
@@ -3269,12 +3383,13 @@ def create_vex_simd_reg(env,ii,nopnds):
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_simd_reg opnd_sig={} nopnds={}".format(opnd_sig,nopnds))
     fo.add_arg(arg_request,'req')
-    fo.add_arg(arg_reg0)
-    fo.add_arg(arg_reg1)
+    opnd_types = get_opnd_types(env,ii)
+    fo.add_arg(arg_reg0,opnd_types[0])
+    fo.add_arg(arg_reg1,opnd_types[1])
     if nopnds >= 3:
-        fo.add_arg(arg_reg2)
+        fo.add_arg(arg_reg2, opnd_types[2])
     if nopnds == 4:
-        fo.add_arg(arg_reg3)
+        fo.add_arg(arg_reg3, opnd_types[3])
     cond_add_imm_args(ii,fo)
 
     set_vex_pp(ii,fo)
@@ -3363,7 +3478,8 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         category += 'i'
         immw=8
     dispsz_list = get_dispsz_list(env)
-    
+    opnd_types = get_opnd_types(env,ii)
+
     ispace = itertools.product(get_index_vals(), dispsz_list)
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
@@ -3377,15 +3493,16 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_vex_simd_2reg_mem")
         fo.add_arg(arg_request,'req')
+
         if nopnds >= 2:
-            fo.add_arg(arg_reg0)
+            fo.add_arg(arg_reg0,opnd_types[0])
         if nopnds >= 3:
-            fo.add_arg(arg_reg1)
+            fo.add_arg(arg_reg1,opnd_types[1])
         if mempos == 3 and nopnds == 4: # mem last
-            fo.add_arg(arg_reg2)
-        add_memop_args(env, fo, use_index, dispsz, immw=0)
+            fo.add_arg(arg_reg2, opnd_types[2])
+        add_memop_args(env, ii, fo, use_index, dispsz, immw=0)
         if mempos == 2 and nopnds == 4: # reg last
-            fo.add_arg(arg_reg2)
+            fo.add_arg(arg_reg2, opnd_types[3])
         if immw:
             fo.add_arg(arg_imm8,'imm8')
 
@@ -3651,7 +3768,8 @@ def create_evex_3xyzmm(env,ii):
             reg_type_names.append('zmm')
 
     nregs = len(reg_type_names)
-    
+
+    opnd_types_org = get_opnd_types(env,ii)    
     for masking in mask_versions:
         fname = "{}_{}_{}{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
@@ -3660,16 +3778,26 @@ def create_evex_3xyzmm(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_evex_3xyzmm")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0)
+        opnd_types = copy.copy(opnd_types_org)
+
+        if 0: # FIXME REMOVE DEBUG CODE
+            print("XYII {}".format(ii.iclass))
+            for i,op in enumerate(_gen_opnds(ii)):
+                print("XYOP {}: {}".format(i,op))
+            for i,opt in enumerate(opnd_types):
+                print("XYOPTYPE {}: {}".format(i,opt))
+        
+        fo.add_arg(arg_reg0,opnd_types.pop(0))
         if masking:
             fo.add_arg(arg_kmask,'kreg')
             if not ii.write_masking_merging_only:
-                fo.add_arg(arg_zeroing)
-        fo.add_arg(arg_reg1)
+                fo.add_arg(arg_zeroing,'zeroing')
+            
+        fo.add_arg(arg_reg1,opnd_types.pop(0))
         if nregs == 3:
-            fo.add_arg(arg_reg2)
+            fo.add_arg(arg_reg2, opnd_types.pop(0))
         if imm8:
-            fo.add_arg(arg_imm8,'imm8')
+            fo.add_arg(arg_imm8,'int8')
         if rounding:
             fo.add_arg(arg_rcsae,'rcsae') 
 
@@ -3766,12 +3894,13 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
     else:
         bcast_vals = ['nobroadcast']
     bcast_variant_name = {'nobroadcast':'', 'broadcast':'_bcast' }
+    opnd_types_org = get_opnd_types(env,ii)
 
     # flatten a 4-deep nested loop using itertools.product()
     ispace = itertools.product(bcast_vals, get_index_vals(), dispsz_list, mask_versions)
     for broadcast, use_index, dispsz, masking in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-
+        opnd_types = copy.copy(opnd_types_org)
         fname = "{}_{}_{}{}_{}{}_a{}".format(enc_fn_prefix,
                                              ii.iclass.lower(),
                                              pattern_name,
@@ -3782,18 +3911,19 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_evex_1or2xyzmm_mem")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0)
+        fo.add_arg(arg_reg0, opnd_types.pop(0))
         if masking:
             fo.add_arg(arg_kmask,'kreg')
             if ii.write_masking_merging_only == False:
-                fo.add_arg(arg_zeroing)
+                fo.add_arg(arg_zeroing,'zeroing')
+
         if nregs == 2:
-            fo.add_arg(arg_reg1)
+            fo.add_arg(arg_reg1, opnd_types.pop(0))
         
-        add_memop_args(env, fo, use_index, dispsz) 
+        add_memop_args(env, ii, fo, use_index, dispsz) 
             
         if imm8:
-            fo.add_arg(arg_imm8,'imm8')
+            fo.add_arg(arg_imm8,'int8')
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
