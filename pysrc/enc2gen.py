@@ -164,11 +164,11 @@ bits_to_widths = {8:'b', 16:'w', 32:'d', 64:'q' }
 
 arg_immz_dct = { 0: '', 8: arg_imm8, 16: arg_imm16, 32: arg_imm32, 64: arg_imm32 }
 var_immz_dct = { 0: '', 8: var_imm8, 16: var_imm16, 32: var_imm32, 64: var_imm32 }
-arg_immz_meta = { 0: '', 8:'imm8', 16: 'imm16', 32: 'imm32', 64: 'imm32' }
+arg_immz_meta = { 0: '', 8:'int8', 16: 'int16', 32: 'int32', 64: 'int32' }
 
 arg_immv_dct = { 0: '', 8: arg_imm8, 16: arg_imm16, 32: arg_imm32, 64: arg_imm64 }
 var_immv_dct = { 0: '', 8: var_imm8, 16: var_imm16, 32: var_imm32, 64: var_imm64 }
-arg_immv_meta = { 0: '', 8:'imm8', 16: 'imm16', 32: 'imm32', 64: 'imm64' }
+arg_immv_meta = { 0: '', 8:'int8', 16: 'int16', 32: 'int32', 64: 'int64' }
 
 arg_dispv = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32, 64: arg_disp64 }  # index by dispsz
 var_dispv = { 8: arg_disp8, 16:var_disp16, 32:var_disp32, 64:var_disp64 }
@@ -957,9 +957,9 @@ def create_legacy_one_imm_fixed(env,ii):
 
     fo.add_arg(arg_request,'req')
     if op.oc2 == 'b':
-        fo.add_arg(arg_imm8,'imm8')
+        fo.add_arg(arg_imm8,'int8')
     elif op.oc2 == 'w':
-        fo.add_arg(arg_imm16,'imm16')
+        fo.add_arg(arg_imm16,'int16')
     else:
         die("not handling imm width {}".format(op.oc2))
         
@@ -991,7 +991,7 @@ def create_legacy_one_implicit_reg(env,ii,imm8=False):
 
     fo.add_arg(arg_request,'req')
     if imm8:
-        fo.add_arg(arg_imm8,'imm8')
+        fo.add_arg(arg_imm8,'int8')
     modrm_required = create_modrm_byte(ii,fo)
     emit_required_legacy_prefixes(ii,fo)
     emit_required_legacy_map_escapes(ii,fo)
@@ -1366,9 +1366,9 @@ def cond_emit_imm8(ii,fo):
 def cond_add_imm_args(ii,fo):
     global arg_imm8, arg_imm8_2
     if ii.has_imm8:
-        fo.add_arg(arg_imm8,'imm8')
+        fo.add_arg(arg_imm8,'int8')
     if ii.has_imm8_2:
-        fo.add_arg(arg_imm8_2,'imm8')    
+        fo.add_arg(arg_imm8_2,'int8')    
     
 
 def emit_rex(env,fo, rexw_forced):
@@ -1515,11 +1515,11 @@ def get_opnd_types(env, ii, osz=0):
         elif op_agen(op):  # LEA
             s.append('agen')
         elif op_imm8(op):
-            s.append('imm8')
+            s.append('int8')
         elif op_imm16(op):
-            s.append('imm16') 
+            s.append('int16') 
         elif op_imm8_2(op):
-            s.append('imm8') 
+            s.append('int8') 
         elif op_mmx(op):
             s.append('mmx')
         elif op_cr(op):
@@ -1849,7 +1849,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
         fo.add_comment("created by create_legacy_gpr_imm8")
         fo.add_arg(arg_request,'req')
         fo.add_arg(arg_reg0, gprv_names[osz])
-        fo.add_arg(arg_imm8,'imm8')
+        fo.add_arg(arg_imm8,'int8')
         emit_required_legacy_prefixes(ii,fo)
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
@@ -3482,7 +3482,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         if mempos == 2 and nopnds == 4: # reg last
             fo.add_arg(arg_reg2, opnd_types[3])
         if immw:
-            fo.add_arg(arg_imm8,'imm8')
+            fo.add_arg(arg_imm8,'int8')
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -3842,24 +3842,12 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
     if ii.write_masking:
         masking_allowed = True
 
-
-    op = first_opnd_nonmem(ii)
-    if op_luf_start(op,'XMM'):
-        vl = 'xmm'
-    elif op_luf_start(op,'YMM'):
-        vl = 'ymm'
-    elif op_luf_start(op,'ZMM'):
-        vl = 'zmm'
-    else:
-        die("SHOULD NOT REACH HERE")
-
-
+    vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
     vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
-
-    pattern_name = nregs*vl[0] + 'm'
-    if imm8:
-        pattern_name += 'i'
+    
+    opnd_types = get_opnd_types_short(ii)
+    opnd_sig = "".join(opnd_types)
 
     mask_versions = [False]
     if masking_allowed:
@@ -3873,7 +3861,8 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         bcast_vals = ['nobroadcast']
     bcast_variant_name = {'nobroadcast':'', 'broadcast':'_bcast' }
     opnd_types_org = get_opnd_types(env,ii)
-
+    arg_regs = [ arg_reg0, arg_reg1 ]
+    
     # flatten a 4-deep nested loop using itertools.product()
     ispace = itertools.product(bcast_vals, get_index_vals(), dispsz_list, mask_versions)
     for broadcast, use_index, dispsz, masking in ispace:
@@ -3881,7 +3870,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         opnd_types = copy.copy(opnd_types_org)
         fname = "{}_{}_{}{}_{}{}_a{}".format(enc_fn_prefix,
                                              ii.iclass.lower(),
-                                             pattern_name,
+                                             opnd_sig,
                                              mask_variant_name[masking],
                                              memaddrsig,
                                              bcast_variant_name[broadcast],
@@ -3889,19 +3878,28 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_evex_1or2xyzmm_mem")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0, opnd_types.pop(0))
-        if masking:
-            fo.add_arg(arg_kmask,'kreg')
-            if ii.write_masking_merging_only == False:
-                fo.add_arg(arg_zeroing,'zeroing')
 
-        if nregs == 2:
-            fo.add_arg(arg_reg1, opnd_types.pop(0))
-        
-        add_memop_args(env, ii, fo, use_index, dispsz) 
-            
-        if imm8:
-            fo.add_arg(arg_imm8,'int8')
+        # ==== ARGS =====
+
+        regn = 0
+        for i,optype in enumerate(opnd_types_org):
+            if optype in ['xmm','ymm','zmm']:
+                fo.add_arg(arg_regs[regn], opnd_types.pop(0))
+                regn += 1
+            elif optype in ['mem']:
+                add_memop_args(env, ii, fo, use_index, dispsz)
+                opnd_types.pop(0)
+            elif optype in 'int8':
+                fo.add_arg(arg_imm8,'int8')
+            else:
+                die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
+            # add masking after 0th argument. # FIXME scatter prefetches?
+            if i == 0 and  masking:
+                fo.add_arg(arg_kmask,'kreg')
+                if ii.write_masking_merging_only == False:
+                    fo.add_arg(arg_zeroing,'zeroing')
+
+        # ===== ENCODING ======
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
