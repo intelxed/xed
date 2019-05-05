@@ -284,9 +284,7 @@ class function_object_t(object):
       self.inline=inline
       self.dll_export = dll_export
       self.body = []
-      self.args = []
-      # meta information about the expected values of the corresponding argument
-      self.args_type = []
+      self.args = [] # list of pairs, (type+arg, meta type comment)
       self.const_member = False
       self.ref_return = False
       self.force_no_inline = force_no_inline
@@ -298,7 +296,7 @@ class function_object_t(object):
       return len(self.body)
 
    def add_arg(self, arg, arg_type=None):
-      self.args.append(arg)
+      self.args.append((arg,arg_type))
 
    def get_arg_num(self):
        return len(self.args)
@@ -349,13 +347,16 @@ class function_object_t(object):
       s.append(self.function_name)
       s.append('(')
       first_arg = True
-      for arg in  self.args:
+      for arg,arg_type in  self.args:
          if first_arg:
             first_arg = False
          else:
             s.append(', ')
-         s.append(arg)
-      if first_arg:
+         if arg_type:
+             s.append("{} /*{}*/".format(arg,arg_type))
+         else:
+             s.append(arg)
+      if first_arg: # no actual args so emit a "void"
          s.append('void')
       s.append(')')
       if self.const_member:
