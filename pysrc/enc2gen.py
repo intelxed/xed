@@ -4281,8 +4281,10 @@ def work():
             for ii in xeddb.recs:
                 func_list.extend(ii.enc_test_functions)
                 
-            config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)                
-            fn_prefix = 'xed-{}'.format(config_descriptor)
+            config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)
+            fn_prefix = 'xed-test-{}'.format(config_descriptor)
+            test_fn_hdr='{}.h'.format(fn_prefix)
+            enc2_fn_hdr='xed-{}.h'.format(config_descriptor)            
             gen_src_dir = os.path.join(args.gendir, config_descriptor, 'test', 'src')
             gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'test', 'hdr')
             mbuild.cmkdir(gen_src_dir)
@@ -4293,7 +4295,7 @@ def work():
                                                        args.xeddir,
                                                        gen_src_dir,
                                                        gen_hdr_dir,
-                                                       #other_headers = extra_headers,
+                                                       other_headers = [enc2_fn_hdr],
                                                        max_lines_per_file=15000)
 
             output_file_emitters.extend(file_emitters)
@@ -4305,11 +4307,13 @@ def work():
             fe = codegen.xed_file_emitter_t(args.xeddir,
                                             gen_src_dir,
                                             'testtable-m{}-a{}.c'.format(mode,asz))
-            #fe.add_header('xed/xed-types.h')
+
+            fe.add_header(test_fn_hdr)
             fe.start()
             # FIXME: include headers
-            array_name = 'test_functions_m{}_a{}'.format(mode,asz)                
-            fe.add_code('xed_uint32_t (*{})(xed_uint8_t* output_buffer)[] = {{'.format(array_name))
+            array_name = 'test_functions_m{}_a{}'.format(mode,asz)
+            fe.add_code_eol('typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer)')
+            fe.add_code('test_func_t {}[] = {{'.format(array_name))
             for fn in func_list:
                 fe.add_code('{},'.format(fn.get_function_name()))
             fe.add_code('0')
