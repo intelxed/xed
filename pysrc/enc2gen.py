@@ -91,6 +91,18 @@ var_base = 'base'
 arg_base = 'xed_reg_enum_t ' + var_base
 var_index = 'index'
 arg_index = 'xed_reg_enum_t ' + var_index
+
+var_indexx = 'index_xmm'
+arg_indexx = 'xed_reg_enum_t ' + var_indexx
+var_indexy = 'index_ymm'
+arg_indexy = 'xed_reg_enum_t ' + var_indexy
+var_indexz = 'index_zmm'
+arg_indexz = 'xed_reg_enum_t ' + var_indexz
+var_vsib_index_dct = { 'xmm': var_indexx,
+                       'ymm': var_indexy,
+                       'zmm': var_indexz }
+
+
 var_scale = 'scale'
 arg_scale = 'xed_uint_t ' + var_scale
 
@@ -151,8 +163,10 @@ arg_imm64 = 'xed_uint64_t ' + var_imm64
 # if I wanted to prune the number of memory variants, I could set
 # index_vals to just [True]. 
 index_vals = [False,True]
-def get_index_vals():
+def get_index_vals(ii):
     global index_vals
+    if ii.avx512_vsib or ii.avx_vsib:
+        return [True]
     return index_vals
 
 gprv_names = { 8:'gpr8', 16:'gpr16', 32:'gpr32', 64:'gpr64'} # added gpr8 for convenience
@@ -1044,7 +1058,7 @@ def create_legacy_one_nonmem_opnd(env,ii):
             op, "create_legacy_one_nonmem_opnd"))
 
 
-def scalable_implicit_operands(ii): #WRK
+def scalable_implicit_operands(ii): 
     for op in _gen_opnds(ii):
         if op_luf(op,'OeAX'):
             return True
@@ -2080,7 +2094,9 @@ def get_memsig(asz, using_indx, dispz):
 def add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=-1, osz=0):
     """reg=-1 -> no reg opnds, 
        reg=0  -> first opnd is reg,
-       reg=1  -> 2nd opnd is reg """
+       reg=1  -> 2nd opnd is reg. 
+    AVX or AVX512 vsib moots the use_index value"""
+    
     global arg_reg0, arg_imm_dct
     global arg_base, arg_index, arg_scale
     global arg_disp8, arg_disp16, arg_disp32
@@ -2088,9 +2104,18 @@ def add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=-1, osz=0):
     opnd_types = get_opnd_types(env,ii,osz)
     if reg == 0:
         fo.add_arg(arg_reg0,opnd_types[0])
+        
     fo.add_arg(arg_base, gprv_names[env.asz])
-    if use_index:
+    if ii.avx_vsib:
+        fo.add_arg("{} {}".format(arg_reg_type, var_vsib_index_dct[ii.avx_vsib]),
+                   ii.avx_vsib)
+    elif ii.avx512_vsib:
+        fo.add_arg("{} {}".format(arg_reg_type, var_vsib_index_dct[ii.avx512_vsib]),
+                   ii.avx512_vsib)
+    elif use_index:
         fo.add_arg(arg_index, gprv_names[env.asz])
+        
+    if use_index or ii.avx_vsib or ii.avx512_vsib:
         if env.asz in [32,64]:
             fo.add_arg(arg_scale, 'scale')  # a32, a64
 
@@ -2133,7 +2158,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
 
     dispsz_list = get_dispsz_list(env)
         
-    ispace = itertools.product(get_index_vals(), dispsz_list)
+    ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
@@ -2210,7 +2235,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
     
     widths = [width]
     mem_reg_order = 'mr' if regn==1 else 'rm'
-    ispace = itertools.product(widths, get_index_vals(), dispsz_list)
+    ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
@@ -2267,7 +2292,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         if op_gpry(op):
             gpry=True
     extra_names = _implicit_reg_names(ii)
-    ispace = itertools.product(widths, get_index_vals(), dispsz_list)
+    ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
         
         immw = 0
@@ -2331,7 +2356,7 @@ def create_legacy_far_xfer_mem(env,ii):
     osz_list = get_osz_list(env)
     dispsz_list = get_dispsz_list(env)
 
-    ispace = itertools.product(osz_list, get_index_vals(), dispsz_list)
+    ispace = itertools.product(osz_list, get_index_vals(ii), dispsz_list)
     for osz, use_index, dispsz in ispace:
         membytes = widths[osz]
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
@@ -2410,7 +2435,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             
         extra_names = _implicit_reg_names(ii)
 
-        ispace = itertools.product(get_index_vals(), dispsz_list)
+        ispace = itertools.product(get_index_vals(ii), dispsz_list)
         for use_index, dispsz in ispace:
             memaddrsig = get_memsig(env.asz, use_index, dispsz)
             fname = '{}_{}{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
@@ -2460,13 +2485,24 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             add_enc_func(ii,fo)
 
             
-def encode_mem_operand(env, ii, fo, use_index, dispsz):
-    global var_base, var_index, var_scale
-    
+def encode_mem_operand(env, ii, fo, use_index, dispsz): #WRK2
+    global var_base, var_index, var_scale, memsig_idx_32or64, var_vsib_index_dct
     # this may overwrite modrm.mod
     memaddrsig = get_memsig(env.asz, use_index, dispsz)
+    
+    if ii.avx_vsib:
+        memsig = memsig_idx_32or64[dispsz]
+        fo.add_code_eol('enc_avx_modrm_vsib_{}_{}_a{}(r,{},{},{})'.format(
+             ii.avx_vsib, memaddrsig, env.asz, var_base,
+            var_vsib_index_dct[ii.avx_vsib], var_scale))
 
-    if use_index:
+    elif ii.avx512_vsib:
+        memsig = memsig_idx_32or64[dispsz]
+        fo.add_code_eol('enc_avx512_modrm_vsib_{}_{}_a{}(r,{},{},{})'.format(
+            ii.avx512_vsib, memaddrsig, env.asz, var_base,
+            var_vsib_index_dct[ii.avx512_vsib], var_scale))
+
+    elif use_index:
         if env.asz == 16: # no scale
             fo.add_code_eol('enc_modrm_rm_mem_{}_a{}(r,{},{})'.format(
                 memaddrsig, env.asz, var_base, var_index))
@@ -2490,8 +2526,12 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
         
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
-    fo.add_code('if (get_has_sib(r))')
-    fo.add_code_eol('    emit_sib(r)')
+    if ii.avx_vsib or ii.avx512_vsib:
+        fo.add_code_eol('emit_sib(r)', 'for vsib')
+    else:
+        fo.add_code('if (get_has_sib(r))')
+        fo.add_code_eol('    emit_sib(r)')
+
 
     if dispsz == 8:
         fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
@@ -2633,7 +2673,7 @@ def create_legacy_mem_seg(env,ii,op_info):
     dispsz_list = get_dispsz_list(env)
 
     opnd_sig = make_opnd_signature(ii)
-    ispace = itertools.product(get_index_vals(), dispsz_list)
+    ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = '{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
@@ -2804,7 +2844,7 @@ def create_legacy_crc32_mem(env,ii):
     dispsz_list = get_dispsz_list(env)
     opnd_types = get_opnd_types_short(ii)
     opnd_sig = "".join(opnd_types)
-    ispace = itertools.product(osz_list, get_index_vals(), dispsz_list)
+    ispace = itertools.product(osz_list, get_index_vals(ii), dispsz_list)
     for osz, use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = '{}_{}_{}_{}_o{}_a{}'.format(enc_fn_prefix,
@@ -2917,7 +2957,7 @@ def create_legacy_movdir64(env,ii):
        address-space-sized A_GPR_R and the other a normal
        memop.'''
     global arg_request, enc_fn_prefix, gprv_names
-    ispace = itertools.product( get_index_vals(), get_dispsz_list(env))
+    ispace = itertools.product( get_index_vals(ii), get_dispsz_list(env))
     for use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = '{}_{}_{}_a{}'.format(enc_fn_prefix,
@@ -3497,7 +3537,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
     opnd_types_org = get_opnd_types(env,ii)
     arg_regs = [ arg_reg0, arg_reg1, arg_reg2 ]
 
-    ispace = itertools.product(get_index_vals(), dispsz_list)
+    ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
 
@@ -3891,8 +3931,8 @@ def create_evex_3xyzmm(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_evex_1or2xyzmm_mem(env, ii, nregs=2):  
-    """Allows imm8 also"""
+def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   #WRK
+    """Allows imm8 also. also handles VSIB"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -3929,7 +3969,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
     arg_regs = [ arg_reg0, arg_reg1 ]
     
     # flatten a 4-deep nested loop using itertools.product()
-    ispace = itertools.product(bcast_vals, get_index_vals(), dispsz_list, mask_versions)
+    ispace = itertools.product(bcast_vals, get_index_vals(ii), dispsz_list, mask_versions)
     for broadcast, use_index, dispsz, masking in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         opnd_types = copy.copy(opnd_types_org)
@@ -4073,6 +4113,11 @@ def prep_instruction(ii):
 
     
 def create_enc_fn(env, ii):
+    if env.asz == 16:
+        if ii.avx_vsib or ii.avx512_vsib:
+            ii.skipped = True
+            return
+        
     if ii.space == 'legacy':
         _enc_legacy(env,ii)
     elif ii.space == 'vex':
@@ -4135,20 +4180,10 @@ def spew(ii):
         elif op.bits and op.bits != '1':
             s.append('[{}]'.format(op.bits))
         if op.name == 'MEM0':
-            #if op.oc2:
-            #    s[-1] = s[-1] + '-' + op.oc2
-            #if op.xtype:
-            #    s[-1] = s[-1] + '-X:' + op.xtype
-            if 'UISA_VMODRM_XMM()' in ii.pattern:
-                s[-1] = s[-1] + '-uvx'
-            elif 'UISA_VMODRM_YMM()' in ii.pattern:
-                s[-1] = s[-1] + '-uvy'
-            elif 'UISA_VMODRM_ZMM()' in ii.pattern:
-                s[-1] = s[-1] + '-uvz'
-            elif 'VMODRM_XMM()' in ii.pattern:
-                s[-1] = s[-1] + '-vx'
-            elif 'VMODRM_YMM()' in ii.pattern:
-                s[-1] = s[-1] + '-nvy'
+            if ii.avx512_vsib:
+                s[-1] = s[-1] + '-uvsib-{}'.format(ii.avx512_vsib)
+            elif ii.avx_vsib:
+                s[-1] = s[-1] + '-vsib-{}'.format(ii.avx_vsib)
                 
     if ii.encoder_functions:            
         dbg("//DONE {}".format(" ".join(s)))
