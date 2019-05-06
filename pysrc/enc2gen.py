@@ -3868,6 +3868,10 @@ def create_evex_3xyzmm(env,ii):
             fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
         if var_r:
             fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(reg_type_names[ri], var_r))
+        elif ii.reg_required != 'unspecified':
+            if ii.reg_required: # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+            
         if var_b:
             fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(reg_type_names[bi], var_b))        
             
