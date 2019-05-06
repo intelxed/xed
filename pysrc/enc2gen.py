@@ -359,13 +359,13 @@ def one_gpr_reg_one_mem_fixed(ii): # FIXME starting with 'b', expand...
 
 simd_widths = ['b','w','xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'xuq', 'zd']
 
-def one_xmm_reg_one_mem_fixed_opti8(ii): 
+def one_xmm_reg_one_mem_fixed_opti8(ii): # allows gpr32, gpr64, mmx too
     global simd_widths
     i,r,n=0,0,0
     for op in _gen_opnds(ii):
         if op_mem(op) and op.oc2 in simd_widths:
             n = n + 1
-        elif op_reg(op) and op.oc2 in simd_widths:
+        elif (op_xmm(op) or op_mmx(op) or op_gpr32(op) or op_gpr64(op)) and op.oc2 in simd_widths:
             r = r + 1
         elif op_imm8(op):
             i = i + 1
@@ -843,6 +843,10 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
         add_enc_func(ii,fo)
         
 def add_enc_func(ii,fo):
+    # hack to cover AMD 3DNOW wherever they are created...
+    if ii.amd_3dnow_opcode:
+        fo.add_code_eol('emit_u8(r,{})'.format(ii.amd_3dnow_opcode), 'amd 3dnow opcode')
+
     dbg(fo.emit())
     ii.encoder_functions.append(fo)
 
@@ -1601,6 +1605,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
     cond_emit_imm8(ii,fo)
+    
     add_enc_func(ii,fo)
     
 
@@ -1868,6 +1873,11 @@ def create_legacy_gpr_imm8(env,ii,width_list):
             else:
                 f1, f2 = 'rm','reg'
             fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
+
+            if f2 == 'reg':
+                if ii.reg_required != 'unspecified':
+                    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+            
         emit_rex(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
@@ -2092,7 +2102,7 @@ def add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=-1, osz=0):
         add_arg_immv(fo,immw)
 
 def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
-    '''optional imm8'''
+    '''allows xmm, mmx, gpr32, gpr64 regs optional imm8'''
     global var_reg0
     
     op = first_opnd(ii)
@@ -2102,6 +2112,22 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     opsig = 'rm' if i==0 else 'mr'
     if ii.has_imm8:
         opsig = opsig + 'i'
+        
+    gpr32,gpr64,xmm,mmx = False,False,False,False
+    for op in _gen_opnds(ii):
+        if op_mmx(op):
+            mmx=True
+            break
+        if op_xmm(op):
+            xmm=True
+            break
+        if op_gpr32(op):
+            gpr32=True
+            break
+        if op_gpr64(op):
+            gpr64=True
+            break
+        
 
     dispsz_list = get_dispsz_list(env)
         
@@ -2136,10 +2162,20 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
             fo.add_code_eol('set_mod(r,{})'.format(mod))
 
         # the sole reg is reg0 whether it is first or 2nd operand...
-        fo.add_code_eol('enc_modrm_reg_xmm(r,{})'.format(var_reg0))
+        if xmm:
+            fo.add_code_eol('enc_modrm_reg_xmm(r,{})'.format(var_reg0))
+        elif mmx:
+            fo.add_code_eol('enc_modrm_reg_mmx(r,{})'.format(var_reg0))
+        elif gpr32:
+            fo.add_code_eol('enc_modrm_reg_gpr32(r,{})'.format(var_reg0))
+        elif gpr64:
+            fo.add_code_eol('enc_modrm_reg_gpr64(r,{})'.format(var_reg0))
+        else:
+            die("NOT REACHED")
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)
         finish_memop(env, ii, fo, dispsz, immw, rexw_forced, space='legacy')
+
         add_enc_func(ii,fo)
 
 
@@ -3128,7 +3164,7 @@ def _enc_legacy(env,ii):
         create_legacy_one_mem_common(env,ii,imm='8')
     elif one_mem_fixed_immz(ii): 
         create_legacy_one_mem_common(env,ii,imm='z')
-    elif one_xmm_reg_one_mem_fixed_opti8(ii):
+    elif one_xmm_reg_one_mem_fixed_opti8(ii): # allows gpr32, gpr64, mmx too
         create_legacy_one_xmm_reg_one_mem_fixed(env,ii)
     elif is_enter_instr(ii):
         create_legacy_enter(env,ii)        
