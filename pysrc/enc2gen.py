@@ -679,6 +679,10 @@ def emit_required_legacy_prefixes(ii,fo):
         fo.add_code_eol('emit(r,0xF3)', 'required by instr')
     if ii.osz_required:
         fo.add_code_eol('emit(r,0x66)', 'required by instr')
+        
+def emit_67_prefix(fo):
+    fo.add_code_eol('emit(r,0x67)', 'change EASZ')
+        
 def emit_required_legacy_map_escapes(ii,fo):
     if ii.map == 1:
         fo.add_code_eol('emit(r,0x0F)', 'escape map 1')
@@ -1122,11 +1126,11 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
     
     # twiddle ASZ if specified
     if env.mode == 64 and ii.easz == 'a32':
-        fo.add_code_eol('emit(r,0x67)')
+        emit_67_prefix(fo)
     elif env.mode == 32 and ii.easz == 'a16':
-        fo.add_code_eol('emit(r,0x67)')
+        emit_67_prefix(fo)
     elif env.mode == 16 and ii.easz == 'a32':
-        fo.add_code_eol('emit(r,0x67)')
+        emit_67_prefix(fo)
 
     # twiddle OSZ ... FIXME: might need to do something for oszall
     if not ii.osz_required:
@@ -2573,11 +2577,14 @@ def create_legacy_mov_without_modrm(env,ii):
     else:
         sz = opnds[1].oc2
         mem_reg_order = 'rm'
-        
+
+    # in XED, MEMDISPv is a misnomer - the displacement size is
+    # modulated by the EASZ! 
+    
     if env.mode in [16,32]:
         disp_widths = [16,32]
     else:
-        disp_widths = [16,32,64]
+        disp_widths = [32,64]
 
     rax_names = { 'b': '_al', 'w': '_ax', 'd':'_eax', 'q':'_rax' }
     
@@ -2601,15 +2608,11 @@ def create_legacy_mov_without_modrm(env,ii):
         fo.add_arg(arg_request,'req')
         add_arg_disp(fo,disp_width)
 
-
-        if disp_width == 16 and env.mode != 16:
-            fo.add_code_eol('emit(r,0x66)')
-        elif disp_width == 32 and  env.mode == 16:
-            fo.add_code_eol('emit(r,0x66)')
-        elif disp_width == 64 and  ii.default_64b == False:
-            # FIXME: OPTIMIZATION could just emit 0x48 since we know no other bits are set.
-            fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
-            fo.add_code_eol('emit_rex(r)') # no legacy prefixes required, shortcut
+        # MEMDISPv is EASZ-modulated
+        if disp_width == 16 and env.asz != 16:
+            emit_67_prefix(fo)
+        elif disp_width == 32 and  env.asz != 32:
+            emit_67_prefix(fo)
 
         emit_opcode(ii,fo)
         emit_disp(fo,disp_width)
@@ -2976,7 +2979,7 @@ def create_legacy_movdir64(env,ii):
         # addressing is the default. For non default 32b addressing in
         # 64b mode, we need a 67 prefix.
         if env.mode == 64 and env.asz == 32:
-            fo.add_code_eol('emit(r,0x67)')
+            emit_67_prefix(fo)
         # FIXME: These next two are wonky. In 32b mode, we usually,
         # but not always have 32b addressing. It is perfectly legit to
         # have 32b mode with 16b addressing in which case a 67 is not
@@ -2986,9 +2989,9 @@ def create_legacy_movdir64(env,ii):
         # addressing mode.
         #
         #elif env.mode == 32 and env.asz == 16:
-        #    fo.add_code_eol('emit(r,0x67)')
+        #    emit_67_prefix(fo)
         #elif env.mode == 16 and asz == 32:
-        #    fo.add_code_eol('emit(r,0x67)')
+        #    emit_67_prefix(fo)
         
         rexw_forced = False
         fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(reg, reg))
@@ -3022,7 +3025,7 @@ def create_legacy_umonitor(env,ii):
     # addressing is the default. For non default 32b addressing in
     # 64b mode, we need a 67 prefix.
     if env.mode == 64 and env.asz == 32:
-        fo.add_code_eol('emit(r,0x67)')
+        emit_67_prefix(fo)
     # FIXME: These next two are wonky. In 32b mode, we usually,
     # but not always have 32b addressing. It is perfectly legit to
     # have 32b mode with 16b addressing in which case a 67 is not
@@ -3032,9 +3035,9 @@ def create_legacy_umonitor(env,ii):
     # addressing mode.
     #
     #elif env.mode == 32 and env.asz == 16:
-    #    fo.add_code_eol('emit(r,0x67)')
+    #    emit_67_prefix(fo)
     #elif env.mode == 16 and asz == 32:
-    #    fo.add_code_eol('emit(r,0x67)')
+    #    emit_67_prefix(fo)
 
     fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(reg, reg))
     if ii.reg_required != 'unspecified':
@@ -3077,7 +3080,7 @@ def create_legacy_ArAX_implicit(env,ii):
     # addressing is the default. For non default 32b addressing in
     # 64b mode, we need a 67 prefix.
     if env.mode == 64 and env.asz == 32:
-        fo.add_code_eol('emit(r,0x67)')
+        emit_67_prefix(fo)
     # FIXME: These next two are wonky. In 32b mode, we usually,
     # but not always have 32b addressing. It is perfectly legit to
     # have 32b mode with 16b addressing in which case a 67 is not
@@ -3087,9 +3090,9 @@ def create_legacy_ArAX_implicit(env,ii):
     # addressing mode.
     #
     #elif env.mode == 32 and env.asz == 16:
-    #    fo.add_code_eol('emit(r,0x67)')
+    #    emit_67_prefix(fo)
     #elif env.mode == 16 and asz == 32:
-    #    fo.add_code_eol('emit(r,0x67)')
+    #    emit_67_prefix(fo)
 
 
     if ii.reg_required != 'unspecified':
