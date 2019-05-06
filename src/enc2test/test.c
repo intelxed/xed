@@ -97,17 +97,17 @@ int main(int argc, char** argv) {
     printf("Total tests %d\n",m);
     for(i=1;i<argc;i++) {
         test_id = (int)strtol(argv[i], (char **)NULL, 10);
-        if (test_id >  m) {
+        if (test_id >=  m) {
             printf("Test ID too large (range: 0...%d)\n",m-1);
             return 1;
         }
-            
+         
         if (execute_test(test_id)) {
-            printf("failed\n");
+            printf("test id %d failed\n", test_id);
             errors++;
         }
         else {
-            printf("success\n");
+            printf("test id %d success\n", test_id);
         }
     }
     if (argc==1) {
