@@ -105,63 +105,63 @@ void enc_evex_vvvv_reg_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_vvvv(r, ~(offset & 15));
-    set_evexvv(r, ~(offset>15));    
+    set_evexvv(r, !(offset>15));    
 }
 void enc_evex_modrm_reg_xmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, ~(offset >= 8));
-    set_evexrr(r, ~(offset >= 16));
+    set_rexr(r, !(offset >= 8));
+    set_evexrr(r, !(offset >= 16));
 }
 void enc_evex_modrm_rm_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, ~(offset >= 8));
-    set_rexx(r, ~(offset >= 16));
+    set_rexb(r, !(offset >= 8));
+    set_rexx(r, !(offset >= 16));
 }
 
 void enc_evex_vvvv_reg_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_vvvv(r, ~(offset & 15));
-    set_evexvv(r, ~(offset>15));    
+    set_evexvv(r, !(offset>15));    
 }
 void enc_evex_modrm_reg_ymm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, ~(offset >= 8));
-    set_evexrr(r, ~(offset >= 16));
+    set_rexr(r, !(offset >= 8));
+    set_evexrr(r, !(offset >= 16));
 }
 void enc_evex_modrm_rm_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, ~(offset >= 8));
-    set_rexx(r, ~(offset >= 16));
+    set_rexb(r, !(offset >= 8));
+    set_rexx(r, !(offset >= 16));
 }
 
 void enc_evex_vvvv_reg_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_vvvv(r, ~(offset & 15));
-    set_evexvv(r, ~(offset>15));    
+    set_evexvv(r, !(offset>15));    
 }
 void enc_evex_modrm_reg_zmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, ~(offset >= 8));
-    set_evexrr(r, ~(offset >= 16));
+    set_rexr(r, !(offset >= 8));
+    set_evexrr(r, !(offset >= 16));
 }
 void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, ~(offset >= 8));
-    set_rexx(r, ~(offset >= 16));
+    set_rexb(r, !(offset >= 8));
+    set_rexx(r, !(offset >= 16));
 }
 
 
