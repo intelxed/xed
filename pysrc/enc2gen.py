@@ -3831,6 +3831,8 @@ def create_evex_3xyzmm(env,ii):
             fo.add_arg(arg_rcsae,'rcsae') 
 
         set_vex_pp(ii,fo)
+        fo.add_code_eol('set_mod(r,3)')
+
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
         fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
         if ii.rexw_prefix == '1':
