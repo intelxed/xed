@@ -3414,6 +3414,8 @@ def create_vex_simd_reg(env,ii,nopnds):
     
     if ii.vl == '256': # ZERO INIT OPTIMIZATION
         fo.add_code_eol('set_vexl(r,1)')
+        
+    fo.add_code_eol('set_mod(r,3)')
 
     vars = [var_reg0, var_reg1, var_reg2, var_reg3]
 
@@ -3443,6 +3445,9 @@ def create_vex_simd_reg(env,ii,nopnds):
     if var_r:
         fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(sz_r, var_r))
         setregs += 1
+    elif ii.reg_required != 'unspecified':
+        if ii.reg_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
         
     if var_b:
         fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(sz_b, var_b))
