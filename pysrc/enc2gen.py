@@ -4303,14 +4303,15 @@ def work():
 
             
 
-            # emit a C file  initializing an array with test function names
+            # emit a C file initializing two arrays: one array with
+            # test function names, and another of the functdion names
+            # as strings so I can find them when I need to debug them.
             fe = codegen.xed_file_emitter_t(args.xeddir,
                                             gen_src_dir,
                                             'testtable-m{}-a{}.c'.format(mode,asz))
 
             fe.add_header(test_fn_hdr)
             fe.start()
-            # FIXME: include headers
             array_name = 'test_functions_m{}_a{}'.format(mode,asz)
             fe.add_code_eol('typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer)')
             fe.add_code('test_func_t {}[] = {{'.format(array_name))
@@ -4318,6 +4319,15 @@ def work():
                 fe.add_code('{},'.format(fn.get_function_name()))
             fe.add_code('0')
             fe.add_code('};')
+
+
+            fe.add_code('char const* {}_str[] = {{'.format(array_name))
+            for fn in func_list:
+                fe.add_code('"{}",'.format(fn.get_function_name()))
+            fe.add_code('0')
+            fe.add_code('};')
+
+            
             fe.close()
             output_file_emitters.append(fe)
 
