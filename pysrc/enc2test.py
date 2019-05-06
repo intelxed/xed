@@ -93,14 +93,19 @@ def  get_gpr16(env, ii):
 def  get_gpr8(env, ii):
     return 'XED_REG_BL'
 
+c = 0
+def get_bump_rcount():
+    global c
+    t = c
+    c = c + 1 if c < 6 else 0
+    return t
+
 def  get_xmm(env, ii):
-    return 'XED_REG_XMM0'
-
+    return 'XED_REG_XMM{}'.format(get_bump_rcount())
 def  get_ymm(env, ii):
-    return 'XED_REG_YMM1'
-
+    return 'XED_REG_YMM{}'.format(get_bump_rcount())
 def  get_zmm(env, ii):
-    return 'XED_REG_ZMM3'
+    return 'XED_REG_ZMM{}'.format(get_bump_rcount())
 
 def  get_kreg(env, ii):
     return 'XED_REG_K1'
