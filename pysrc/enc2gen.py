@@ -2485,7 +2485,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             add_enc_func(ii,fo)
 
             
-def encode_mem_operand(env, ii, fo, use_index, dispsz): #WRK2
+def encode_mem_operand(env, ii, fo, use_index, dispsz): 
     global var_base, var_index, var_scale, memsig_idx_32or64, var_vsib_index_dct
     # this may overwrite modrm.mod
     memaddrsig = get_memsig(env.asz, use_index, dispsz)
@@ -3941,11 +3941,9 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   #WRK
     global arg_zeroing, var_zeroing
     global arg_imm8, var_imm8
 
-    imm8,masking_allowed=False,False
+    imm8=False
     if ii.has_imm8:
         imm8 = True
-    if ii.write_masking:
-        masking_allowed = True
 
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
@@ -3955,9 +3953,13 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   #WRK
     opnd_sig = "".join(opnd_types)
 
     mask_versions = [False]
-    if masking_allowed:
-        mask_versions.append(True)
-
+    if ii.write_masking_notk0:
+        mask_versions = [True]
+    elif ii.write_masking:
+        mask_versions = [False, True]
+    else:
+        mask_versions = [False]
+        
     dispsz_list = get_dispsz_list(env)
     
     if ii.broadcast_allowed:
@@ -4000,7 +4002,12 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   #WRK
                 die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
             # add masking after 0th argument. # FIXME scatter prefetches?
             if i == 0 and  masking:
-                fo.add_arg(arg_kmask,'kreg')
+                if ii.write_masking_notk0:
+                    kreg_comment = 'kreg!0'
+                else:
+                    kreg_comment = 'kreg'
+                fo.add_arg(arg_kmask,kreg_comment)
+                    
                 if ii.write_masking_merging_only == False:
                     fo.add_arg(arg_zeroing,'zeroing')
 
