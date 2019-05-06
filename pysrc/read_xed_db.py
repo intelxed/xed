@@ -314,6 +314,11 @@ class xed_reader_t(object):
             v.opcode = opcode
             v.partial_opcode = False
 
+            v.amd_3dnow_opcode = None
+            # conditional test avoids prefetches and FEMMS.
+            if v.extension == '3DNOW' and v.category == '3DNOW':
+                v.amd_3dnow_opcode = pattern[-1]
+
             mp = map_pattern.search(v.pattern)
             if mp:
                 v.map = int(mp.group('map'))
