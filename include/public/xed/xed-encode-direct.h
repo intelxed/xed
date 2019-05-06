@@ -554,6 +554,78 @@ XED_DLL_EXPORT void enc_modrm_rm_mem_b_a64(xed_enc2_req_t* r,
 
 
 
+// 64b vsib addressing  
+// avx2:     {x,y}mm x {bis,bisd8,bisd32}
+// avx512: {x,y,z}mm x {bis,bisd8,bisd32}
+
+XED_DLL_EXPORT void enc_avx_modrm_vsib_xmm_bis_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_xmm_bisd8_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_xmm_bisd32_a64(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_ymm_bis_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_ymm_bisd8_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_ymm_bisd32_a64(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_xmm_bis_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_xmm_bisd8_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_xmm_bisd32_a64(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_ymm_bis_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_ymm_bisd8_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_ymm_bisd32_a64(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_zmm_bis_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_zmm_bisd8_a64(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_zmm_bisd32_a64(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+
+
+
 // 32b addressing
 
 XED_DLL_EXPORT void enc_modrm_rm_mem_bisd32_a32(xed_enc2_req_t* r,
@@ -580,6 +652,76 @@ XED_DLL_EXPORT void enc_modrm_rm_mem_bis_a32(xed_enc2_req_t* r,
 XED_DLL_EXPORT void enc_modrm_rm_mem_b_a32(xed_enc2_req_t* r,
                                            xed_reg_enum_t base);
                                       
+
+// 64b vsib addressing
+// avx2:     {x,y}mm x {bis,bisd8,bisd32}
+// avx512: {x,y,z}mm x {bis,bisd8,bisd32}
+
+XED_DLL_EXPORT void enc_avx_modrm_vsib_xmm_bis_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_xmm_bisd8_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_xmm_bisd32_a32(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_ymm_bis_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_ymm_bisd8_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx_modrm_vsib_ymm_bisd32_a32(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_xmm_bis_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_xmm_bisd8_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_xmm_bisd32_a32(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_ymm_bis_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_ymm_bisd8_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_ymm_bisd32_a32(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_zmm_bis_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_zmm_bisd8_a32(xed_enc2_req_t* r,
+                                                    xed_reg_enum_t base,
+                                                    xed_reg_enum_t indx,
+                                                    xed_uint_t scale);
+XED_DLL_EXPORT void enc_avx512_modrm_vsib_zmm_bisd32_a32(xed_enc2_req_t* r,
+                                                      xed_reg_enum_t base,
+                                                      xed_reg_enum_t indx,
+                                                      xed_uint_t scale);
+
 
 
 // 16b addressing
