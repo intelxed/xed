@@ -3349,12 +3349,15 @@ def two_ymm_and_mem(ii):
     return n==2 and m==1
 
 def set_vex_pp(ii,fo):
+    # XED encodes VEX_PREFIX=2,3 values for F2,F3 so they need to be recoded before emitting.
+    translate_pp_values = { 0:0, 1:1, 2:3, 3:2 }
     vex_prefix = re.compile(r'VEX_PREFIX=(?P<prefix>[0123])')
     m = vex_prefix.search(ii.pattern)
     if m:
-        ppval = m.group('prefix')
-        if ppval != 0:
-            fo.add_code_eol('set_vexpp(r,{})'.format(ppval))
+        ppval = int(m.group('prefix'))
+        real_pp = translate_pp_values[ppval]
+        if real_pp:
+            fo.add_code_eol('set_vexpp(r,{})'.format(real_pp))
     else:
         die("Could not find the VEX.PP pattern")
 
@@ -3563,6 +3566,8 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         encode_mem_operand(env, ii, fo, use_index, dispsz)
         emit_vex_prefix(ii,fo,register_only=False)
         finish_memop(env, ii, fo, dispsz, immw,  space='vex')
+        if var_se:
+            fo.add_code_eol('emit_se_imm8_reg(r)')
         add_enc_func(ii,fo)
             
 def create_vex_all_mask_reg(env,ii):
