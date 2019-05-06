@@ -131,6 +131,8 @@ arg_kreg2 = 'xed_reg_enum_t ' + var_kreg2
 
 var_rcsae = 'rcsae'
 arg_rcsae = 'xed_uint_t ' + var_rcsae
+var_sae = 'sae'
+arg_sae = 'xed_uint_t ' + var_sae
 var_zeroing = 'zeroing'
 arg_zeroing = 'xed_bool_t ' + var_zeroing
 
@@ -3764,11 +3766,14 @@ def create_evex_3xyzmm(env,ii):
     global arg_kmask, var_kmask
     global arg_zeroing, var_zeroing
     global arg_rcsae, var_rcsae
+    global arg_sae, var_sae
     global arg_imm8, var_imm8
     global vl2names
 
-    rounding,imm8,masking_allowed=False,False,False
-    if ii.rounding_form:
+    sae,rounding,imm8,masking_allowed=False,False,False,False
+    if ii.sae_form:
+        sae = True
+    elif ii.rounding_form:
         rounding = True
     if ii.has_imm8:
         imm8 = True
@@ -3782,7 +3787,9 @@ def create_evex_3xyzmm(env,ii):
     opnd_sig = make_opnd_signature(ii)
     if rounding:
         opnd_sig += 'rc'
-
+    elif sae:
+        opnd_sig += 'sae'
+        
     mask_versions = [False]
     if masking_allowed:
         mask_versions.append(True)
@@ -3828,18 +3835,26 @@ def create_evex_3xyzmm(env,ii):
         if imm8:
             fo.add_arg(arg_imm8,'int8')
         if rounding:
-            fo.add_arg(arg_rcsae,'rcsae') 
+            fo.add_arg(arg_rcsae,'rcsae')
+        # FIXME: we could force the SAE form to always set the EVEX.b bit.
+        if sae:
+            fo.add_arg(arg_sae,'sae') 
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_mod(r,3)')
 
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
-        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]),
+                        'VL={}'.format(ii.vl))
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
         if rounding:
             fo.add_code_eol('set_evexb(r,1)')
             fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
+        if sae:
+            fo.add_code_eol('set_evexb(r,{})'.format(var_sae))
+            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
+
             
         if masking:
             if not ii.write_masking_merging_only:
@@ -4036,6 +4051,7 @@ def prep_instruction(ii):
     ii.write_masking_notk0 = False
     ii.write_masking_merging_only = False # if true, no zeroing allowed
     ii.rounding_form = False
+    ii.sae_form = False
     ii.broadcast_allowed = False
     
     if ii.space == 'evex':
@@ -4052,6 +4068,8 @@ def prep_instruction(ii):
                 
         if 'AVX512_ROUND()' in ii.pattern:
             ii.rounding_form = True
+        if 'SAE()' in ii.pattern:
+            ii.sae_form = True
 
         for op in ii.parsed_operands:
             if op_mem(op):
@@ -4107,6 +4125,8 @@ def spew(ii):
     if ii.space == 'evex':
         if ii.rounding_form:
             s.append('rounding')
+        elif ii.sae_form:
+            s.append('sae')
         else:
             s.append('noround')
         
