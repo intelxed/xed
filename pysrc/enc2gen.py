@@ -3594,7 +3594,7 @@ def create_vex_all_mask_reg(env,ii):
 
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
-    if ii.vl == 256: # Not setting VL=128 since that is ZERO OPTIMIZATION
+    if ii.vl == '256': # Not setting VL=128 since that is ZERO OPTIMIZATION
         fo.add_code_eol('set_vexl(r,1)')
 
     vars = [var_kreg0, var_kreg1, var_kreg2]
@@ -3618,7 +3618,9 @@ def create_vex_all_mask_reg(env,ii):
     else:
         fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
     fo.add_code_eol('enc_vex_modrm_reg_kreg(r,{})'.format(var_r))
-    fo.add_code_eol('enc_vex_modrm_rm_kreg(r,{})'.format(var_b))        
+    fo.add_code_eol('enc_vex_modrm_rm_kreg(r,{})'.format(var_b))
+    fo.add_code_eol('set_mod(r,3)')
+
     emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
     fo.add_code_eol('emit_modrm(r)')
