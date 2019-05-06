@@ -101,6 +101,7 @@ class xed_reader_t(object):
         self._generate_explicit_operands()
         self._parse_operands()
         self._summarize_operands()
+        self._summarize_vsib()
         
         self.cpuid_map = {}
         if cpuid_filename:
@@ -233,6 +234,22 @@ class xed_reader_t(object):
                     v.has_immz = True
                 elif op.name == 'IMM1':
                     v.has_imm8_2 = True
+                    
+    def _summarize_vsib(self):
+        for v in self.recs:
+            v.avx_vsib = None
+            v.avx512_vsib = None
+            if 'UISA_VMODRM_XMM()' in v.pattern:
+                v.avx512_vsib = 'xmm'
+            elif 'UISA_VMODRM_YMM()' in v.pattern:
+                v.avx512_vsib = 'ymm'
+            elif 'UISA_VMODRM_ZMM()' in v.pattern:
+                v.avx512_vsib = 'zmm'
+            elif 'VMODRM_XMM()' in v.pattern:
+                v.avx_vsib = 'xmm'
+            elif 'VMODRM_YMM()' in v.pattern:
+                v.avx_vsib = 'ymm'
+
 
     def _parse_operands(self):
         '''set v.parsed_operands with list of operand_info_t objects (see opnds.py).'''
