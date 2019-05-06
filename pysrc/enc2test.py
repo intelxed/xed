@@ -113,11 +113,11 @@ def  get_x87(env, ii):
 def  get_mmx(env, ii):
     return 'XED_REG_MMX0'
 
-def  get_imm8(env, ii):
-    return '0xFF'
+def  get_imm8(env, ii):  # FIXME: signed vs unsigned. These are used for displacements too currently
+    return '0x7E'
 
 def  get_imm16(env, ii):
-    return '0xFEED'
+    return '0x7EED'
 
 def  get_imm32(env, ii):
     return '0xAABBCCDD'
