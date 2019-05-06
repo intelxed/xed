@@ -150,6 +150,8 @@ def  get_zeroing(env, ii): # 0(merging),1(zeroing)
 
 def  get_rcsae(env, ii):  # 0,1,2
     return '0x2'
+def  get_sae(env, ii):  # 0,1
+    return '1'
 
 def  get_scale(env, ii): # 1,2,4,8
     return '2'
@@ -197,6 +199,7 @@ arginfo2value_creator = {
      'seg': get_seg,
      'zeroing': get_zeroing,
      'rcsae': get_rcsae,
+     'sae': get_sae,    
      'scale': get_scale,
      'ax': get_ax,
      'eax': get_eax,
