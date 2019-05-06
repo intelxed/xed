@@ -3488,18 +3488,10 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
 
     op = first_opnd(ii)
     width = op.oc2
-    
-    xmm = op_xmm(first_opnd(ii))# if not xmm, then ymm
-    vlname = 'xmm' if xmm else 'ymm'
-    
-    mempos = find_mempos(ii)
-    category = (nopnds-1)* [vlname[0]]
-    category.insert(mempos, 'm')
-    category = "".join(category)
-
+    opsig = make_opnd_signature(ii)
+    vlname = 'ymm' if ii.vl == '256' else 'xmm'
     immw=0
     if ii.has_imm8:
-        category += 'i'
         immw=8
     dispsz_list = get_dispsz_list(env)
     opnd_types_org = get_opnd_types(env,ii)
@@ -3511,7 +3503,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
 
         fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                             ii.iclass.lower(),
-                                            category,
+                                            opsig,
                                             width,
                                             memaddrsig,
                                             env.asz)
@@ -3535,9 +3527,10 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
-        if not xmm:
-            fo.add_code_eol('set_vexl(r,1)')
 
+        if ii.vl == '256': # Not setting VL=128 since that is ZERO OPTIMIZATION
+            fo.add_code_eol('set_vexl(r,1)')
+        
         # FIXME function-ize this
         vars = [var_reg0, var_reg1, var_reg2]
         var_r, var_b, var_n, var_se = None,None,None,None
