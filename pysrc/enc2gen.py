@@ -4509,6 +4509,18 @@ def prep_instruction(ii):
                     ii.broadcast_allowed = True
                 break
 
+def xed_mode_removal(env,ii):
+    if 'CLDEMOTE=0' in ii.pattern:
+        return True
+    if 'LZCNT=0' in ii.pattern:
+        return True
+    if 'TZCNT=0' in ii.pattern:
+        return True
+    if 'WBNOINVD=0' in ii.pattern:
+        return True
+    if 'P4=0' in ii.pattern:
+        return True
+    return False
 
     
 def create_enc_fn(env, ii):
@@ -4516,7 +4528,10 @@ def create_enc_fn(env, ii):
         if ii.avx_vsib or ii.avx512_vsib:
             ii.skipped = True
             return
-        
+    if xed_mode_removal(env,ii):
+        ii.skipped = True
+        return
+    
     if ii.space == 'legacy':
         _enc_legacy(env,ii)
     elif ii.space == 'vex':
