@@ -1291,20 +1291,50 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
     global arg_imm8, var_imm8
 
     extra_names = _implicit_reg_names(ii)
+    
+    opsig = 'rvrv' if not (ii.has_immz or ii.has_imm8) else 'rvrvi'
+    if modrm_reg_first_operand(ii):
+        opnd_order = {0:'reg', 1:'rm'}
+    else:
+        opnd_order = {1:'reg', 0:'rm'}
+    var_regs = [var_reg0, var_reg1]
+    arg_regs = [arg_reg0, arg_reg1]
+    
+    # We have some funky NOPs that come through here, that have been
+    # redefined for CET. They were two operand, but one operand is now
+    # fixed via a MODRM.REG restriction and some become have MODRM.RM
+    # restriction as well, and no real operands. For those funky NOPs,
+    # we remove the corresponding operands. I *think* the REX.R and
+    # REX.B bits don't matter.
+    s = []
+    fixed = {'reg':False, 'rm':False}
+    if ii.iclass == 'NOP' and ii.iform == 'NOP_GPRv_GPRv_0F1E':
+        if ii.reg_required != 'unspecified':
+            s.append('reg{}'.format(ii.reg_required))
+            fixed['reg']=True
 
+        if ii.rm_required != 'unspecified':
+            s.append('rm{}'.format(ii.rm_required))
+            fixed['rm']=True
+        if s:
+            opsig = "".join(s)
+            
     
     for osz in gen_osz_list(env.mode,osz_list):
         fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
-                                      ii.iclass.lower(),
-                                      extra_names,
-                                      'rvrv' if not (ii.has_immz or ii.has_imm8) else 'rvrvi',
-                                      osz)
+                                        ii.iclass.lower(),
+                                        extra_names,
+                                        opsig,
+                                        osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_scalable_regs")
         fo.add_arg(arg_request,'req')
         opnd_types = get_opnd_types(env,ii,osz)
-        fo.add_arg(arg_reg0, opnd_types[0])
-        fo.add_arg(arg_reg1, opnd_types[1])
+
+        for i in [0,1]:        
+            if not fixed[opnd_order[i]]:
+                fo.add_arg(arg_regs[i], opnd_types[i])
+            
         if ii.has_imm8:
             fo.add_arg(arg_imm8,'int8')
         elif ii.has_immz:
@@ -1320,12 +1350,22 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
                 fo.add_code_eol('emit(r,0x66)')
 
         rexw_forced = cond_emit_rexw(env,ii,fo,osz)
-        if modrm_reg_first_operand(ii):
-            f1, f2 = 'reg','rm'
-        else:
-            f1, f2 = 'rm','reg'
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
-        fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f2,osz,var_reg1))
+        
+        if ii.mod_required == 3:
+            fo.add_code_eol('set_mod(r,3)')
+            
+
+        for i in [0,1]:
+            if not fixed[opnd_order[i]]:
+                fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(opnd_order[i],osz,var_regs[i]))
+
+        for slot in ['reg','rm']:
+            if fixed[slot]:
+                if slot == 'reg':
+                    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+                else:
+                    fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+                    
         
         emit_rex(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
