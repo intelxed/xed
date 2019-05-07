@@ -954,6 +954,16 @@ def create_legacy_relbr(env,ii):
         fo.add_comment("created by create_legacy_relbr")
         fo.add_arg(arg_request,'req')
         add_arg_disp(fo,osz)
+
+        #if ii.iclass in ['JCXZ','JECXZ','JRCXZ']:
+        if ii.easz != 'aszall':
+            if env.mode == 64 and ii.easz == 'a32':
+                emit_67_prefix(fo)
+            elif env.mode == 32 and ii.easz == 'a16':
+                emit_67_prefix(fo)
+            elif env.mode == 16 and ii.easz == 'a32':
+                emit_67_prefix(fo)
+        
         if op.oc2 == 'z':
             if env.mode in [32,64] and osz == 16:
                 fo.add_code_eol('emit(r,0x66)')
@@ -1137,10 +1147,12 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
         emit_67_prefix(fo)
 
     # twiddle OSZ ... FIXME: might need to do something for oszall
+    rexw_forced=False
     if not ii.osz_required:
         if env.mode == 64 and ii.eosz == 'o16':
             fo.add_code_eol('emit(r,0x66)')
         elif env.mode == 64 and ii.eosz == 'o64' and ii.default_64b == False:
+            rexw_forced = True
             fo.add_code_eol('set_rexw(r)')
         elif env.mode == 32 and ii.eosz == 'o16':
             fo.add_code_eol('emit(r,0x66)')
@@ -1155,7 +1167,8 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
             
 
     emit_required_legacy_prefixes(ii,fo)
-
+    if rexw_forced:
+        fo.add_code_eol('emit_rex(r)')
     emit_required_legacy_map_escapes(ii,fo)
     if ii.partial_opcode: 
         if ii.rm_required != 'unspecified':
@@ -1400,7 +1413,7 @@ def cond_add_imm_args(ii,fo):
         fo.add_arg(arg_imm8_2,'int8')    
     
 
-def emit_rex(env,fo, rexw_forced):
+def emit_rex(env, fo, rexw_forced):
     if env.mode == 64:
         if rexw_forced:
             fo.add_code_eol('emit_rex(r)')
@@ -3137,14 +3150,28 @@ def _enc_legacy(env,ii):
             # we don't need an encoder function for this form in 64b mode
             ii.encoder_skipped = True 
             return
+        if ii.easz == 'a16':
+            # 16b addressing not accessible from 64b mode
+            ii.encoder_skipped = True 
+            return
+            
     elif env.mode == 32:
         if ii.mode_restriction in [0,2]:
             # we don't need an encoder function for this form in 32b mode
             ii.encoder_skipped = True 
             return
+        if ii.easz == 'a64':
+            # 64b addressing not accessible from 64b mode
+            ii.encoder_skipped = True 
+            return
+
     elif env.mode == 16:
         if ii.mode_restriction in [1,2]:
             # we don't need an encoder function for this form in 16b mode
+            ii.encoder_skipped = True 
+            return
+        if ii.easz == 'a64':
+            # 64b addressing not accessible from 16b mode
             ii.encoder_skipped = True 
             return
         
