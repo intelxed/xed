@@ -4530,10 +4530,10 @@ def xed_mode_removal(env,ii):
 def create_enc_fn(env, ii):
     if env.asz == 16:
         if ii.avx_vsib or ii.avx512_vsib:
-            ii.skipped = True
+            ii.encoder_skipped = True
             return
     if xed_mode_removal(env,ii):
-        ii.skipped = True
+        ii.encoder_skipped = True
         return
     
     if ii.space == 'legacy':
