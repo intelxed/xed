@@ -863,7 +863,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
             emit_partial_opcode_variable_srm(ii,fo)
         else:
             emit_opcode(ii,fo)
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
         add_enc_func(ii,fo)
         
 def add_enc_func(ii,fo):
@@ -932,7 +932,7 @@ def create_legacy_one_gpr_fixed(env,ii,width_bits):
         fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
 
@@ -965,7 +965,7 @@ def create_legacy_relbr(env,ii):
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         if modrm_required:
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
         if osz == 8:
             fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
         elif osz == 16:
@@ -996,7 +996,7 @@ def create_legacy_one_imm_fixed(env,ii):
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     if modrm_required:
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
     if op.oc2 == 'b':
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
     elif op.oc2 == 'w':
@@ -1025,7 +1025,7 @@ def create_legacy_one_implicit_reg(env,ii,imm8=False):
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     if modrm_required:
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
     if imm8:
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
     add_enc_func(ii,fo)
@@ -1097,7 +1097,7 @@ def create_legacy_zero_operands_scalable(env,ii):
             die("NOT HANDLING  PARTIAL OPCODES YET in create_legacy_zero_operands_scalable")
         emit_opcode(ii,fo)
         if modrm_required:
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
         add_enc_func(ii,fo)
 
         
@@ -1167,7 +1167,7 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
     else:
         emit_opcode(ii,fo)
         if modrm_required:
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
     add_enc_func(ii,fo)
 
     
@@ -1259,7 +1259,7 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
             die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
         else:
             emit_opcode(ii,fo)
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
         add_enc_func(ii,fo)
 
 
@@ -1320,7 +1320,8 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
             die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
         else:
             emit_opcode(ii,fo)
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
+
         cond_emit_imm8(ii,fo)
         if ii.has_immz:
             emit_immz(fo,osz)
@@ -1355,7 +1356,7 @@ def create_legacy_two_gpr8_regs(env, ii):
         die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
     else:
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
     add_enc_func(ii,fo)
 
 def add_arg_disp(fo,dispsz): 
@@ -1629,7 +1630,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
     emit_rex(env,fo,rexw_forced)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     cond_emit_imm8(ii,fo)
     
     add_enc_func(ii,fo)
@@ -1668,7 +1669,7 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
 
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     cond_emit_imm8(ii,fo)
     add_enc_func(ii,fo)
 
@@ -1709,7 +1710,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
         fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     cond_emit_imm8(ii,fo)
     add_enc_func(ii,fo)
 
@@ -1731,7 +1732,7 @@ def create_legacy_two_x87_reg(env,ii):
     fo.add_code_eol('enc_modrm_rm_x87(r,{})'.format(var_reg0))
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
     
@@ -1755,7 +1756,7 @@ def create_legacy_one_x87_reg(env,ii):
     fo.add_code_eol('enc_modrm_rm_x87(r,{})'.format(var_reg0))
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
     
@@ -1910,7 +1911,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
             emit_partial_opcode_variable_srm(ii,fo)
         else:
             emit_opcode(ii,fo)
-            fo.add_code_eol('emit_modrm(r)')
+            emit_modrm(fo)
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
         add_enc_func(ii,fo)
 
@@ -1954,7 +1955,7 @@ def create_legacy_gprv_immz(env,ii):
         emit_rex(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
         emit_immz(fo,osz)
         add_enc_func(ii,fo)
 
@@ -2535,13 +2536,12 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
 
         
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     if ii.avx_vsib or ii.avx512_vsib:
         fo.add_code_eol('emit_sib(r)', 'for vsib')
     else:
         fo.add_code('if (get_has_sib(r))')
         fo.add_code_eol('    emit_sib(r)')
-
 
     if dispsz == 8:
         fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
@@ -2552,14 +2552,23 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
     elif dispsz == 0:
         # if form has no displacment, then we sometimes have to
         # add a zero displacement to create an allowed modrm/sib
-        # encoding.  
-        fo.add_code('if (get_has_disp8(r))')
-        fo.add_code_eol('   emit_i8(r,0)')
-        fo.add_code('else if (get_has_disp32(r))')
-        fo.add_code_eol('   emit_i32(r,0)')
+        # encoding.
+        emit_synthetic_disp(fo)
     if immw:
         emit_immv(fo,immw)
+        
+def emit_modrm(fo):
+    fo.add_code_eol('emit_modrm(r)')
     
+def emit_sib(fo):
+    fo.add_code('if (get_has_sib(r))') 
+    fo.add_code_eol('    emit_sib(r)')
+
+def emit_synthetic_disp(fo):
+    fo.add_code('if (get_has_disp8(r))')
+    fo.add_code_eol('   emit_i8(r,0)')
+    fo.add_code('else if (get_has_disp32(r))')
+    fo.add_code_eol('   emit_i32(r,0)')
 
 def mov_without_modrm(ii):
     if ii.iclass == 'MOV' and not ii.has_modrm:
@@ -2672,7 +2681,7 @@ def create_legacy_gprv_seg(env,ii,op_info):
             fo.add_code_eol('emit_rex_if_needed(r)')
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
         add_enc_func(ii,fo)
             
 
@@ -2762,7 +2771,7 @@ def create_mov_seg(env,ii):
         fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
 def create_mov_cr_dr(env,ii): 
@@ -2798,7 +2807,7 @@ def create_mov_cr_dr(env,ii):
         fo.add_code_eol('emit_rex_if_needed(r)')
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
     
@@ -2944,7 +2953,7 @@ def create_legacy_crc32_reg(env,ii):
         emit_rex(env, fo, rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
         add_enc_func(ii,fo)
             
 
@@ -3058,7 +3067,7 @@ def create_legacy_umonitor(env,ii):
     emit_rex(env,fo,rexw_forced=False)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
 def is_ArAX_implicit(ii): # allows one implicit fixed reg
@@ -3117,7 +3126,7 @@ def create_legacy_ArAX_implicit(env,ii):
     #emit_rex(env,fo,rexw_forced=False)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
     
@@ -3513,7 +3522,7 @@ def create_vex_simd_reg(env,ii,nopnds):
 
     emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     if ii.has_imm8:
         cond_emit_imm8(ii,fo)
     elif var_se:
@@ -3672,7 +3681,7 @@ def create_vex_all_mask_reg(env,ii):
 
     emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
-    fo.add_code_eol('emit_modrm(r)')
+    emit_modrm(fo)
     add_enc_func(ii,fo)
 
         
@@ -3934,7 +3943,7 @@ def create_evex_3xyzmm(env,ii):
             
         fo.add_code_eol('emit_evex(r)')
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
+        emit_modrm(fo)
         if imm8:
             fo.add_code_eol('emit(r,{})'.format(var_imm8))
         add_enc_func(ii,fo)
@@ -4227,13 +4236,9 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
 
         fo.add_code_eol('emit_evex(r)')
         emit_opcode(ii,fo)
-        fo.add_code_eol('emit_modrm(r)')
-        fo.add_code('if (get_has_sib(r))') # FIXME: refactor
-        fo.add_code_eol('    emit_sib(r)')
-        fo.add_code('if (get_has_disp8(r))')
-        fo.add_code_eol('   emit_i8(r,0)')
-        fo.add_code('else if (get_has_disp32(r))')
-        fo.add_code_eol('   emit_i32(r,0)')
+        emit_modrm(fo)
+        emit_sib(fo)
+        emit_synthetic_disp(fo)
         cond_emit_imm8(ii,fo)
             
         add_enc_func(ii,fo)
