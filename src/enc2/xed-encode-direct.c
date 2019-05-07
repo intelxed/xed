@@ -26,8 +26,10 @@ END_LEGAL */
 #include "xed-reg-class.h"
 #include "xed-encode-direct.h"
 
+#if !defined(_MSC_VER)
 // Turn off unused-function warning for this file while we are doing early development
-#pragma GCC diagnostic ignored "-Wunused-function"
+# pragma GCC diagnostic ignored "-Wunused-function"
+#endif
 
 /// evex register for evex-VSIB
 void enc_evex_vindex_xmm(xed_enc2_req_t* r,
@@ -459,6 +461,7 @@ void enc_error(xed_enc2_req_t* r, char const* msg) {
     // requires compilation with --messages --asserts
     XED2DIE((xed_log_file,"%s\n", msg));
     xed_assert(0);
+    (void) r; (void)msg;
 }
 
 
