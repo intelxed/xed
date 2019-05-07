@@ -63,7 +63,7 @@ int execute_test(int test_id) {
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err == XED_ERROR_NONE) {
         if (xed_decoded_inst_get_iclass(&xedd) != test_functions_m64_a64_iclass[test_id]) {
-            printf("\ttest id %d ICLASS MISMATCH: %s (%s)\n", test_id,
+            printf("\ttest id %d ICLASS MISMATCH: observed: %s expected: %s\n", test_id,
                    xed_iclass_enum_t2str( xed_decoded_inst_get_iclass(&xedd) ),
                    xed_iclass_enum_t2str( test_functions_m64_a64_iclass[test_id] ) );
             printf("\t");
