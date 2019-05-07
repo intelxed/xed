@@ -1499,6 +1499,11 @@ def make_opnd_signature(ii):
             s.append('r') #FIXME something else
         elif op_mem(op):
             s.append('m')
+            # add the index reg width for sparse ops (scatter,gather)
+            if ii.avx_vsib:
+                s.append(ii.avx_vsib[0])
+            if ii.avx512_vsib:
+                s.append(ii.avx512_vsib[0])
         elif op_imm8(op):
             s.append('i')
         elif op_imm16(op):
