@@ -773,12 +773,14 @@ def create_modrm_byte(ii,fo):
     return modrm_required
 
 numbered_functions = 0
-def make_function_object(env, ii,fname, return_value='void'):
+def make_function_object(env, ii, fname, return_value='void'):
     global numbered_functions
     
     if 'AMDONLY' in ii.attributes:
         fname += '_amd'
-
+    if ii.space == 'evex':
+        fname += '_e'
+        
     if fname in env.function_names:
         numbered_functions += 1
         t = env.function_names[fname] + 1
