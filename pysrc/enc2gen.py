@@ -2023,7 +2023,6 @@ def create_legacy_gprv_immz(env,ii):
 def create_legacy_orax_immz(env,ii): 
     """Handles OrAX+IMMz. No MODRM byte"""
     global enc_fn_prefix, arg_request
-    global arg_reg0,  var_reg0
     global arg_imm16
     global arg_imm32
 
@@ -2043,7 +2042,8 @@ def create_legacy_orax_immz(env,ii):
         fo.add_comment("created by create_legacy_orax_immz")
         fo.add_arg(arg_request,'req')
         opnd_types = get_opnd_types(env,ii,osz)
-        fo.add_arg(arg_reg0,opnd_types[0])
+        # no need to mention the implicit OrAX arg... we don't use it for anything
+        #fo.add_arg(arg_reg0,opnd_types[0])
         add_arg_immz(fo,osz)
 
         
