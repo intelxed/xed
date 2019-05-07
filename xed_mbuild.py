@@ -631,6 +631,7 @@ def mkenv():
                                  static_stripped=False,
                                  set_copyright=False,
                                  asan=False,
+                                 enc2=False,
                                  first_lib=None,
                                  last_lib=None)
 
@@ -920,6 +921,10 @@ def xed_args(env):
                           action="store_true",
                           dest="asan",
                           help="Use Address Sanitizer (on linux)")
+    env.parser.add_option("--enc2", 
+                          action="store_true",
+                          dest="enc2",
+                          help="Build the enc2 fast encoder. Longer build.")
 
     env.parse_args(env['xed_defaults'])
 
@@ -2548,17 +2553,18 @@ def work(env):
 
     input_files = build_libxed(env, work_queue)
 
-    configs = [ enc2_config_t(64,64),   # popular
-                enc2_config_t(32,32),   
-                enc2_config_t(16,16),   # infrequent
-                enc2_config_t(64,32),   # obscure 
-                enc2_config_t(32,16),   # more obscure
-                enc2_config_t(16,32) ]  # more obscure
+    if env['enc2']:
+        configs = [ enc2_config_t(64,64),   # popular
+                    enc2_config_t(32,32),   
+                    enc2_config_t(16,16),   # infrequent
+                    enc2_config_t(64,32),   # obscure 
+                    enc2_config_t(32,16),   # more obscure
+                    enc2_config_t(16,32) ]  # more obscure
 
-    test_libs = []
-    for config in configs[0:1]: # FIXME - pick config. just doing first config now
-        (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
-        test_libs.append((shd,lnk))
+        test_libs = []
+        for config in configs[0:1]: # FIXME - pick config. just doing first config now
+            (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
+            test_libs.append((shd,lnk))
     
     legal_header_tagging(env)
     build_examples(env)
