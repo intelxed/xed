@@ -499,10 +499,52 @@ class xed_reader_t(object):
         return new_line
     def _process_lines(self,fn):
         r = self._process_input_lines(fn)
-
         r = self._expand_compound_values(r)
+        r = self._process_udeletes(r)
+        r = self._remove_replaced_versions(r)
         return r
+    def _remove_replaced_versions(self,recs):
+        # versions are based on iclasses
+        dropped = 0
+        iclass_version = collections.defaultdict(int)
+        iclass_dct = collections.defaultdict(list) 
+        n = [] # new list of records we build here
+        for r in recs:
+            if not hasattr(r,'version'):
+                # not versioned -- just keep it
+                n.append(r)
+                continue
+            else:
+                version = int(r.version)
+                if iclass_version[r.iclass] < version:
+                    dropped += len(iclass_dct[r.iclass])
+                    iclass_dct[r.iclass] = [r]   # replace older versions of stuff
+                    iclass_version[r.iclass] = version # set new version
+                elif iclass_version[r.iclass] == version:
+                    iclass_dct[r.iclass].append(r) # more of same
+                elif iclass_version[r.iclass] > version:
+                    # drop this record, version number too low
+                    dropped += 1  
 
+        msgb("VERSION DELETES", "dropped {} versioned records".format(dropped))
+        # add the versioned ones to the list of records
+        for iclass in iclass_dct.keys():
+            for r in iclass_dct[iclass]:
+                n.append(r)
+        return n
+
+    def _process_udeletes(self,recs):
+        dropped = 0
+        n = []
+        for r in recs:
+            if hasattr(r,'uname'):
+                if r.uname in self.deleted_unames:
+                    dropped += 1
+                    continue
+            n.append(r)
+        msgb("UDELETES", "dropped {} udelete records".format(dropped))
+        return n
+    
     def _expand_compound_value(self, in_rec):
         """ v is dictionary of lists. return a list of those with one element per list"""
         if len(in_rec['OPERANDS']) !=  len(in_rec['PATTERN']):
