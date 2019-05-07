@@ -63,13 +63,15 @@ int execute_test(int test_id) {
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
     // set some modern decode mode behavior
     xed3_operand_set_cet(&xedd, 1);
+    xed3_operand_set_cldemote(&xedd, 1);
     xed3_operand_set_wbnoinvd(&xedd, 1);
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err == XED_ERROR_NONE) {
         if (xed_decoded_inst_get_iclass(&xedd) != test_functions_m64_a64_iclass[test_id]) {
-            printf("\ttest id %d ICLASS MISMATCH: observed: %s expected: %s\n", test_id,
+            printf("\ttest id %d ICLASS MISMATCH: observed: %s expected: %s (%s)\n", test_id,
                    xed_iclass_enum_t2str( xed_decoded_inst_get_iclass(&xedd) ),
-                   xed_iclass_enum_t2str( test_functions_m64_a64_iclass[test_id] ) );
+                   xed_iclass_enum_t2str( test_functions_m64_a64_iclass[test_id] ),
+                   fn_name);
             printf("\t");
             dump(output_buffer,enclen);
             printf("\n");
