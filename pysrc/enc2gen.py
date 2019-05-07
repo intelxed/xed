@@ -3629,34 +3629,34 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         add_enc_func(ii,fo)
             
 def create_vex_all_mask_reg(env,ii):
+    '''Allows optional imm8'''
     global enc_fn_prefix, arg_request
     global arg_kreg0, var_kreg0
     global arg_kreg1, var_kreg1
     global arg_kreg2, var_kreg2
-    
-    nopnds = 0
-    for op in _gen_opnds(ii):
-        nopnds = nopnds + 1
-        
+
+    opsig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
-                              str(nopnds) + 'k')
-        
+                              opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_all_mask_reg")
     fo.add_arg(arg_request,'req')
     fo.add_arg(arg_kreg0,'kreg')
-    fo.add_arg(arg_kreg1,'kreg')
-    if nopnds == 3:
+    if 2*'k' in opsig:
+        fo.add_arg(arg_kreg1,'kreg')
+    if 3*'k' in opsig:
         fo.add_arg(arg_kreg2,'kreg')
-
+    if ii.has_imm8:
+        add_arg_immv(fo,8)
+        
     set_vex_pp(ii,fo)
     fo.add_code_eol('set_map(r,{})'.format(ii.map))
     if ii.vl == '256': # Not setting VL=128 since that is ZERO OPTIMIZATION
         fo.add_code_eol('set_vexl(r,1)')
 
     vars = [var_kreg0, var_kreg1, var_kreg2]
-    
+    var_r,var_b,var_n=None,None,None
     for i,op in enumerate(_gen_opnds(ii)):
         if op.lookupfn_name:
             if op.lookupfn_name.endswith('_R'):
@@ -3664,25 +3664,36 @@ def create_vex_all_mask_reg(env,ii):
             elif op.lookupfn_name.endswith('_B'):
                 var_b = vars[i]
             elif op.lookupfn_name.endswith('_N'):
-                if nopnds == 2:
-                    die("Unexpected VVVV operand in 2 operand instr: {}".format(ii.iclass))
                 var_n = vars[i]
             else:
                 die("SHOULD NOT REACH HERE")
     if ii.rexw_prefix == '1':
         fo.add_code_eol('set_rexw(r)')
-    if nopnds == 3:   
+    if var_n:
         fo.add_code_eol('enc_vex_vvvv_kreg(r,{})'.format(var_n))
     else:
         fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
-    fo.add_code_eol('enc_vex_modrm_reg_kreg(r,{})'.format(var_r))
-    fo.add_code_eol('enc_vex_modrm_rm_kreg(r,{})'.format(var_b))
+
+    if var_r:
+        fo.add_code_eol('enc_vex_modrm_reg_kreg(r,{})'.format(var_r))
+    elif ii.reg_required != 'unspecified':
+        if ii.reg_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+
+    if var_b:
+        fo.add_code_eol('enc_vex_modrm_rm_kreg(r,{})'.format(var_b))
+    elif ii.rm_required != 'unspecified':
+        if ii.rm_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+    
     fo.add_code_eol('set_mod(r,3)')
 
     emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
     emit_modrm(fo)
     add_enc_func(ii,fo)
+    if ii.has_imm8:
+        cond_emit_imm8(ii,fo)
 
         
 def _enc_vex(env,ii):
@@ -3706,7 +3717,7 @@ def _enc_vex(env,ii):
         create_vex_simd_2reg_mem(env,ii, nopnds=4) # allows imm8
     elif vex_just_mem(ii):
         create_vex_simd_2reg_mem(env,ii, nopnds=1) 
-    elif vex_all_mask_reg(ii):
+    elif vex_all_mask_reg(ii): # allows imm8
         create_vex_all_mask_reg(env,ii)
     elif vex_vzero(ii):
         create_vex_vzero(env,ii)
@@ -3732,14 +3743,16 @@ def create_vex_vzero(env,ii):
     add_enc_func(ii,fo)
 
     
-def vex_all_mask_reg(ii):
-    k = 0
+def vex_all_mask_reg(ii): # allow imm8
+    i,k = 0,0
     for op in _gen_opnds(ii):
         if op_mask_reg(op):
-            k = k + 1
+            k += 1
+        elif op_imm8(op):
+            i += 1
         else:
             return False
-    return k>=2
+    return k>=2 and i<=1
     
 
 def evex_2or3xyzmm(ii): # allows for mixing widths of registers
