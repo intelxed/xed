@@ -4047,8 +4047,9 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
     mask_variant_name  = { False:'', True: '_msk' }
     vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
     
-    opnd_types = get_opnd_types_short(ii)
-    opnd_sig = "".join(opnd_types)
+    #opnd_types = get_opnd_types_short(ii)
+    #opnd_sig = "".join(opnd_types)
+    opnd_sig = make_opnd_signature(ii)
 
     mask_versions = [False]
     if ii.write_masking_notk0:
