@@ -77,15 +77,15 @@ void enc_evex_modrm_reg_kreg(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,1);
-    set_evexrr(r,1);
+    //set_rexr(r,0);  // ZERO OPTIMIZATION
+    //set_evexrr(r,0);
 }
 void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r,1);
-    set_rexx(r,1);
+    //set_rexb(r,0);   // ZERO OPTIMIZATION
+    //set_rexx(r,0);
 }
 
 void enc_vex_vvvv_kreg(xed_enc2_req_t* r,     

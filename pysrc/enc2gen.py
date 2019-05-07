@@ -213,15 +213,15 @@ def get_modval(dispsz):
 def _gen_opnds(ii): # generator
     # filter out write-mask operands and suppressed operands
     for op in ii.parsed_operands:
-        if op.lookupfn_name == 'MASK1':
-            continue
-        if op.lookupfn_name == 'MASKNOT0':
+        if op.lookupfn_name in [ 'MASK1', 'MASKNOT0']:
             continue
         if op.visibility == 'SUPPRESSED':
             continue
         if op.name == 'BCAST':
             continue
         yield op
+
+        
 def _gen_opnds_nomem(ii): # generator
     # filter out write-mask operands and suppressed operands and memops
     for op in ii.parsed_operands:
@@ -1433,6 +1433,8 @@ def make_opnd_signature(ii):
             s.append('y')
         elif op_zmm(op):
             s.append('z')
+        elif op_mask_reg(op):
+            s.append('k')
         elif op_vgpr32(op):
             s.append('r')
         elif op_vgpr64(op):
@@ -3938,7 +3940,7 @@ def create_evex_3xyzmm(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   #WRK
+def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   
     """Allows imm8 also. also handles VSIB"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -4076,6 +4078,166 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   #WRK
         finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='evex')
         add_enc_func(ii,fo)
 
+def evex_mask_dest_reg_only(ii): # optional imm8
+    i,m,xyz=0,0,0
+    for op in _gen_opnds(ii):
+        if op_mask_reg(op):
+            m += 1
+        elif op_xmm(op) or op_ymm(op) or op_zmm(op):
+            xyz += 1
+        elif op_imm8(op):
+            i += 1
+        else:
+            return False
+    return m==1 and xyz > 0 and i <= 1
+
+
+#WRK 
+def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_reg1,  var_reg1
+    
+    global arg_kmask, var_kmask # write mask
+    global arg_kreg0, var_kreg0 # normal operand
+    global arg_zeroing, var_zeroing
+    global arg_imm8, var_imm8
+
+    imm8 = True if ii.has_imm8 else False
+    vl = vl2names[ii.vl]
+    mask_variant_name  = { False:'', True: '_msk' }
+    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
+    opnd_sig = make_opnd_signature(ii)
+
+    mask_versions = [False]
+    if ii.write_masking_notk0:
+        mask_versions = [True]
+    elif ii.write_masking:
+        mask_versions = [False, True]
+    else:
+        mask_versions = [False]
+        
+    opnd_types_org = get_opnd_types(env,ii)
+    arg_regs = [ arg_reg0, arg_reg1 ]
+
+    for masking in mask_versions:
+        opnd_types = copy.copy(opnd_types_org)
+        fname = "{}_{}_{}{}_a{}".format(enc_fn_prefix,
+                                             ii.iclass.lower(),
+                                             opnd_sig,
+                                             mask_variant_name[masking],
+                                             env.asz)
+        fo = make_function_object(env,ii,fname)
+        fo.add_comment("created by create_evex_evex_mask_dest_reg_only")
+        fo.add_arg(arg_request,'req')
+
+        # ==== ARGS =====
+
+        regn = 0
+        for i,optype in enumerate(opnd_types_org):
+            if optype in [ 'kreg', 'kreg!0' ]:
+                fo.add_arg(arg_kreg0, optype)
+                opnd_types.pop(0)
+            elif optype in ['xmm','ymm','zmm']:
+                fo.add_arg(arg_regs[regn], opnd_types.pop(0))
+                regn += 1
+            elif optype in ['mem']:
+                die("NOT REACHED")
+            elif optype in 'int8':
+                fo.add_arg(arg_imm8,'int8')
+            else:
+                die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
+            # add masking after 0th argument. # FIXME scatter prefetches?
+            if i == 0 and  masking:
+                if ii.write_masking_notk0:
+                    kreg_comment = 'kreg!0'
+                else:
+                    kreg_comment = 'kreg'
+                fo.add_arg(arg_kmask,kreg_comment)
+                    
+                if ii.write_masking_merging_only == False:
+                    fo.add_arg(arg_zeroing,'zeroing')
+
+        # ===== ENCODING ======
+
+        set_vex_pp(ii,fo)
+        fo.add_code_eol('set_map(r,{})'.format(ii.map))
+        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        if ii.rexw_prefix == '1':
+            fo.add_code_eol('set_rexw(r)')
+            
+        if masking:
+            if not ii.write_masking_merging_only:
+                fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
+            fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
+            
+        # ENCODE REGISTERS
+        vars = [var_reg0, var_reg1, var_reg2]
+        kvars = [var_kreg0, var_kreg1, var_kreg2]        
+        i, var_r, var_b, var_n = 0, None, None, None
+        j, kvar_r, kvar_b, kvar_n = 0, None, None, None
+        for op in _gen_opnds_nomem(ii):
+            if op.lookupfn_name:
+                if op.lookupfn_name.endswith('_R3'):
+                    var_r = vars[i]
+                    i += 1
+                elif op.lookupfn_name.endswith('_B3'):
+                    var_b = vars[i]
+                    i += 1
+                elif op.lookupfn_name.endswith('_N3'):
+                    var_n = vars[i]
+                    i += 1
+                elif op_luf(op,'MASK_R'):
+                    kvar_r = kvars[j]
+                    j += 1
+                elif op_luf(op,'MASK_B'):
+                    kvar_b = kvars[j]
+                    j += 1
+                elif op_luf(op,'MASK_N'):
+                    kvar_n = kvars[j]
+                    j += 1
+                else:
+                    die("SHOULD NOT REACH HERE")
+        if var_n:
+            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+        elif kvar_n:
+            fo.add_code_eol('enc_evex_vvvv_kreg(r,{})'.format(kvar_n))
+        else:
+            fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+            fo.add_code_eol('set_evexvv(r,1)',"must be 1")
+            
+        if var_r:
+            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
+        elif kvar_r:
+            fo.add_code_eol('enc_evex_modrm_reg_kreg(r,{})'.format(kvar_r))
+        else:
+            # some instructions use _N3 as dest (like rotates)
+            #fo.add_code_eol('set_rexr(r,1)')
+            #fo.add_code_eol('set_evexrr(r,1)')
+            if ii.reg_required != 'unspecified':
+                if ii.reg_required: # ZERO INIT OPTIMIZATION
+                    fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+                    
+        if var_b:
+            fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(vl, var_b))        
+        elif kvar_b:
+            fo.add_code_eol('enc_evex_modrm_rm_kreg(r,{})'.format(kvar_b))        
+
+        fo.add_code_eol('set_mod(r,3)')
+
+        fo.add_code_eol('emit_evex(r)')
+        emit_opcode(ii,fo)
+        fo.add_code_eol('emit_modrm(r)')
+        fo.add_code('if (get_has_sib(r))') # FIXME: refactor
+        fo.add_code_eol('    emit_sib(r)')
+        fo.add_code('if (get_has_disp8(r))')
+        fo.add_code_eol('   emit_i8(r,0)')
+        fo.add_code('else if (get_has_disp32(r))')
+        fo.add_code_eol('   emit_i32(r,0)')
+        cond_emit_imm8(ii,fo)
+            
+        add_enc_func(ii,fo)
+    
         
 def _enc_evex(env,ii):
     # handles rounding, norounding, imm8, no-imm8, masking/nomasking
@@ -4085,6 +4247,8 @@ def _enc_evex(env,ii):
         create_evex_1or2xyzmm_mem(env, ii, nregs=2)
     elif evex_1xyzmm_mem(ii): 
         create_evex_1or2xyzmm_mem(env, ii, nregs=1)
+    elif evex_mask_dest_reg_only(ii): 
+        create_evex_evex_mask_dest_reg_only(env, ii)
 
         
 def _enc_xop(env,ii):
