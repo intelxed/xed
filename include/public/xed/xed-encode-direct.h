@@ -445,6 +445,21 @@ XED_DLL_EXPORT void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
                                           xed_reg_enum_t dst);
 
 
+XED_DLL_EXPORT void enc_evex_vvvv_reg_gpr32(xed_enc2_req_t* r,
+                                            xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_reg_gpr32(xed_enc2_req_t* r,
+                                             xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_rm_gpr32(xed_enc2_req_t* r,
+                                            xed_reg_enum_t dst);
+
+XED_DLL_EXPORT void enc_evex_vvvv_reg_gpr64(xed_enc2_req_t* r,
+                                            xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_reg_gpr64(xed_enc2_req_t* r,
+                                             xed_reg_enum_t dst);
+XED_DLL_EXPORT void enc_evex_modrm_rm_gpr64(xed_enc2_req_t* r,
+                                            xed_reg_enum_t dst);
+
+
 
 
 XED_DLL_EXPORT void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
