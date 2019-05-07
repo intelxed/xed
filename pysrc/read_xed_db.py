@@ -511,9 +511,8 @@ class xed_reader_t(object):
         n = [] # new list of records we build here
         for r in recs:
             if not hasattr(r,'version'):
-                # not versioned -- just keep it
-                n.append(r)
-                continue
+                # "not versioned" is version 0, most stuff...
+                iclass_dct[r.iclass].append(r)
             else:
                 version = int(r.version)
                 if iclass_version[r.iclass] < version:
