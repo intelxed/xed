@@ -2496,6 +2496,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         widths = [op.oc2]
 
     immz_dict = { 'w': 16, 'd': 32, 'q': 32 }
+    nwidths = len(widths)
     for width in widths:
 
         immw = 0
@@ -2505,15 +2506,19 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             immw = immz_dict[width]
             
         extra_names = _implicit_reg_names(ii)
-
+        #fwidth = "{}_".format(width) if (nwidths>1 or width in ['b','w','d','q']) else ''
+        fwidth = "{}_".format(width)
+        
         ispace = itertools.product(get_index_vals(ii), dispsz_list)
         for use_index, dispsz in ispace:
             memaddrsig = get_memsig(env.asz, use_index, dispsz)
-            fname = '{}_{}{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
+
+            
+            fname = '{}_{}{}_{}_{}{}_a{}'.format(enc_fn_prefix,
                                                   ii.iclass.lower(),
                                                   extra_names,
                                                   'memi{}'.format(immw) if imm else 'mem',
-                                                  width,
+                                                  fwidth,
                                                   memaddrsig,
                                                   env.asz)
 
@@ -3192,35 +3197,6 @@ def create_legacy_ArAX_implicit(env,ii):
     
         
 def _enc_legacy(env,ii):
-    if env.mode == 64:
-        if ii.mode_restriction == 'not64' or ii.mode_restriction in [0,1]:
-            # we don't need an encoder function for this form in 64b mode
-            ii.encoder_skipped = True 
-            return
-        if ii.easz == 'a16':
-            # 16b addressing not accessible from 64b mode
-            ii.encoder_skipped = True 
-            return
-            
-    elif env.mode == 32:
-        if ii.mode_restriction in [0,2]:
-            # we don't need an encoder function for this form in 32b mode
-            ii.encoder_skipped = True 
-            return
-        if ii.easz == 'a64':
-            # 64b addressing not accessible from 64b mode
-            ii.encoder_skipped = True 
-            return
-
-    elif env.mode == 16:
-        if ii.mode_restriction in [1,2]:
-            # we don't need an encoder function for this form in 16b mode
-            ii.encoder_skipped = True 
-            return
-        if ii.easz == 'a64':
-            # 64b addressing not accessible from 16b mode
-            ii.encoder_skipped = True 
-            return
         
     if is_ArAX_implicit(ii): # must be before one_nonmem_operand and zero_operands
         create_legacy_ArAX_implicit(env,ii)
@@ -3633,10 +3609,9 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
 
-        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+        fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                             ii.iclass.lower(),
                                             opsig,
-                                            width,
                                             memaddrsig,
                                             env.asz)
         fo = make_function_object(env,ii,fname)
@@ -3828,6 +3803,29 @@ def vex_all_mask_reg(ii): # allow imm8
             return False
     return k>=2 and i<=1
     
+def evex_xyzmm_and_gpr(ii):
+    i,d,q,x,y,z=0,0,0,0,0,0
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            x += 1
+        elif op_ymm(op):
+            y += 1
+        elif op_zmm(op):
+            z +=1
+        elif op_imm8(op):
+            i += 1
+        elif op_gpr32(op):
+            d += 1
+        elif op_gpr64(op):
+            q += 1
+        else:
+            return False
+    simd = x + y + z 
+    gprs = d + q
+    return gprs == 1 and simd > 0 and simd < 3 and i <= 1
+
+    
+
 
 def evex_2or3xyzmm(ii): # allows for mixing widths of registers
     x,y,z=0,0,0
@@ -3894,9 +3892,8 @@ def evex_1xyzmm_mem(ii):
             return False
     return m==1 and (x+y+z)==1
 
-
-def create_evex_3xyzmm(env,ii):
-    '''Handles 1,2,3 mixed type x/y/zmm regs plus optional imm8, optional rcsae'''
+def create_evex_xyzmm_and_gpr(env,ii): #WRK
+    '''1,2,or3 xyzmm regs and 1 gpr32/64 and optional imm8 '''
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -3940,6 +3937,10 @@ def create_evex_3xyzmm(env,ii):
             reg_type_names.append('ymm')
         elif op_zmm(op):
             reg_type_names.append('zmm')
+        elif op_gpr32(op):
+            reg_type_names.append('gpr32')
+        elif op_gpr64(op):
+            reg_type_names.append('gpr64')
 
     nregs = len(reg_type_names)
 
@@ -3950,17 +3951,10 @@ def create_evex_3xyzmm(env,ii):
                                     opnd_sig,
                                     mask_variant_name[masking])
         fo = make_function_object(env,ii,fname)
-        fo.add_comment("created by create_evex_3xyzmm")
+        fo.add_comment("created by create_evex_xyzmm_and_gpr")
         fo.add_arg(arg_request,'req')
         opnd_types = copy.copy(opnd_types_org)
 
-        if 0: # FIXME REMOVE DEBUG CODE
-            print("XYII {}".format(ii.iclass))
-            for i,op in enumerate(_gen_opnds(ii)):
-                print("XYOP {}: {}".format(i,op))
-            for i,opt in enumerate(opnd_types):
-                print("XYOPTYPE {}: {}".format(i,opt))
-        
         fo.add_arg(arg_reg0,opnd_types.pop(0))
         if masking:
             fo.add_arg(arg_kmask,'kreg')
@@ -3992,7 +3986,6 @@ def create_evex_3xyzmm(env,ii):
         if sae:
             fo.add_code_eol('set_evexb(r,{})'.format(var_sae))
             # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
-
             
         if masking:
             if not ii.write_masking_merging_only:
@@ -4004,21 +3997,20 @@ def create_evex_3xyzmm(env,ii):
         var_r, var_b, var_n = None, None, None
         for i,op in enumerate(_gen_opnds(ii)):
             if op.lookupfn_name:
-                if op.lookupfn_name.endswith('_R3'):
+                if op.lookupfn_name.endswith('_R3') or op.lookupfn_name.endswith('_R'):
                     var_r, ri = vars[i], i
-                elif op.lookupfn_name.endswith('_B3'):
+                elif op.lookupfn_name.endswith('_B3') or op.lookupfn_name.endswith('_B'):
                     var_b, bi = vars[i], i
-                elif op.lookupfn_name.endswith('_N3'):
+                elif op.lookupfn_name.endswith('_N3') or op.lookupfn_name.endswith('_N'):
                     var_n, ni = vars[i], i
                 else:
                     die("SHOULD NOT REACH HERE")
         if var_n:
             fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(reg_type_names[ni], var_n))
         else:
-            if nregs == 3:
-                die("SHOULD NOT REACH HERE")
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
-            fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
+            fo.add_code_eol('set_evexvv(r,1)',"must be 1")
+            
         if var_r:
             fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(reg_type_names[ri], var_r))
         elif ii.reg_required != 'unspecified':
@@ -4027,6 +4019,9 @@ def create_evex_3xyzmm(env,ii):
             
         if var_b:
             fo.add_code_eol('enc_evex_modrm_rm_{}(r,{})'.format(reg_type_names[bi], var_b))        
+        elif ii.rm_required != 'unspecified':
+            if ii.rm_required: # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
             
         fo.add_code_eol('emit_evex(r)')
         emit_opcode(ii,fo)
@@ -4344,8 +4339,6 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
         add_enc_func(ii,fo)
 
 
-
-#WRK 
 def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -4509,7 +4502,9 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
 def _enc_evex(env,ii):
     # handles rounding, norounding, imm8, no-imm8, masking/nomasking
     if evex_2or3xyzmm(ii):
-        create_evex_3xyzmm(env, ii)
+        create_evex_xyzmm_and_gpr(env,ii)
+    elif evex_xyzmm_and_gpr(ii):
+        create_evex_xyzmm_and_gpr(env,ii)
     elif evex_2xyzmm_mem(ii): 
         create_evex_1or2xyzmm_mem(env, ii, nregs=2)
     elif evex_1xyzmm_mem(ii): 
@@ -4580,10 +4575,41 @@ def create_enc_fn(env, ii):
         if ii.avx_vsib or ii.avx512_vsib:
             ii.encoder_skipped = True
             return
+        
     if xed_mode_removal(env,ii):
         ii.encoder_skipped = True
         return
     
+    elif env.mode == 64:
+        if ii.mode_restriction == 'not64' or ii.mode_restriction in [0,1]:
+            # we don't need an encoder function for this form in 64b mode
+            ii.encoder_skipped = True 
+            return
+        if ii.easz == 'a16':
+            # 16b addressing not accessible from 64b mode
+            ii.encoder_skipped = True 
+            return
+            
+    elif env.mode == 32:
+        if ii.mode_restriction in [0,2]:
+            # we don't need an encoder function for this form in 32b mode
+            ii.encoder_skipped = True 
+            return
+        if ii.easz == 'a64':
+            # 64b addressing not accessible from 64b mode
+            ii.encoder_skipped = True 
+            return
+
+    elif env.mode == 16:
+        if ii.mode_restriction in [1,2]:
+            # we don't need an encoder function for this form in 16b mode
+            ii.encoder_skipped = True 
+            return
+        if ii.easz == 'a64':
+            # 64b addressing not accessible from 16b mode
+            ii.encoder_skipped = True 
+            return
+
     if ii.space == 'legacy':
         _enc_legacy(env,ii)
     elif ii.space == 'vex':
@@ -4683,9 +4709,10 @@ def gather_stats(db):
                 generated_fns += gen_fn
             
     skipped = skipped_mpx + skipped_fns
-    tot_focus = handled + unhandled # not counting various skipped
+    tot_focus = handled + unhandled + skipped # not counting various skipped
     dbg("// Forms:       {:4d}".format(forms))
     dbg("// Handled:     {:4d}  ({:6.2f}%)".format(handled, 100.0*handled/tot_focus ))
+    dbg("// Irrelevant:  {:4d}  ({:6.2f}%)".format(skipped, 100.0*skipped/tot_focus ))
     dbg("// Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/tot_focus))
     dbg("// Numbered functions:           {:5d}".format(numbered_functions))
     dbg("// Generated Encoding functions: {:5d}".format(generated_fns))
