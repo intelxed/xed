@@ -178,6 +178,49 @@ void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
 }
 
 
+
+void enc_evex_vvvv_reg_gpr32(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
+    set_vvvv(r, ~(offset & 15));
+    set_evexvv(r,1);
+}
+void enc_evex_modrm_reg_gpr32(xed_enc2_req_t* r,
+                              xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r, (offset >= 8));
+}
+void enc_evex_modrm_rm_gpr32(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
+    set_rm(r, offset & 7);
+    set_rexb(r, (offset >= 8));
+}
+
+
+
+void enc_evex_vvvv_reg_gpr64(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
+    set_vvvv(r, ~(offset & 15));
+    set_evexvv(r,1);
+}
+void enc_evex_modrm_reg_gpr64(xed_enc2_req_t* r,
+                              xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r, (offset >= 8));
+}
+void enc_evex_modrm_rm_gpr64(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
+    set_rm(r, offset & 7);
+    set_rexb(r, (offset >= 8));
+}
+
+
+
 /// AVX register
 
 void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
