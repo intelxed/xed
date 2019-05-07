@@ -4520,6 +4520,10 @@ def xed_mode_removal(env,ii):
         return True
     if 'P4=0' in ii.pattern:
         return True
+    if 'MODEP5=1' in ii.pattern:
+        return True
+    if 'CET=0' in ii.pattern:
+        return True
     return False
 
     
