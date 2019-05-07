@@ -59,7 +59,11 @@ int execute_test(int test_id) {
         return 1;
     }
     
+    
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
+    // set some modern decode mode behavior
+    xed3_operand_set_cet(&xedd, 1);
+    xed3_operand_set_wbnoinvd(&xedd, 1);
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err == XED_ERROR_NONE) {
         if (xed_decoded_inst_get_iclass(&xedd) != test_functions_m64_a64_iclass[test_id]) {
