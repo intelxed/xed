@@ -3413,9 +3413,11 @@ def get_type_size(op):
     return re.sub(r'^[Vv]','',a).lower()
 
 
-def count_operands(ii):
+def count_operands(ii): # skip imm8
     x = 0
     for op in _gen_opnds(ii):
+        if op_imm8(op):
+            continue
         x += 1
     return x
 
@@ -3430,7 +3432,7 @@ def create_vex_simd_reg(env,ii): #WRK
     global arg_reg2,  var_reg2
     global arg_reg3,  var_reg3
 
-    nopnds = count_operands(ii)
+    nopnds = count_operands(ii) # not imm8
     opnd_sig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
