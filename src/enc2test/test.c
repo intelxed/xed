@@ -28,6 +28,13 @@ extern char const* test_functions_m64_a64_str[];
 
 xed_state_t dstate;
 
+static void dump(xed_uint8_t* buf, xed_uint32_t len) {
+    xed_uint_t i;
+    for(i=0;i<len;i++) {
+        printf("%02x ",buf[i]);
+    }
+}
+
 int execute_test(int test_id) {
     xed_decoded_inst_t xedd;
     xed_uint32_t enclen;
@@ -44,14 +51,20 @@ int execute_test(int test_id) {
     // that we can do more validation about the iclass and operands.
     
     if (enclen > XED_MAX_INSTRUCTION_BYTES) {
-        printf("\t test id %d ERROR: %s (%s)\n", test_id, "ENCODE TOO LONG", fn_name);
+        printf("\ttest id %d ERROR: %s (%s)\n", test_id, "ENCODE TOO LONG", fn_name);
+        printf("\t");
+        dump(output_buffer,enclen);
+        printf("\n");
         return 1;
     }
     
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err != XED_ERROR_NONE) {
-        printf("\t test id %d ERROR: %s (%s)\n", test_id, xed_error_enum_t2str(err), fn_name);
+        printf("\ttest id %d ERROR: %s (%s)\n", test_id, xed_error_enum_t2str(err), fn_name);
+        printf("\t");
+        dump(output_buffer,enclen);
+        printf("\n");
         return 1;
     }
     return 0;
