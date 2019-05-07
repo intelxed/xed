@@ -4754,8 +4754,12 @@ def work():
 
             msge("Writing encoder 'test' functions to .c and .h files")
             func_list = []
+            iclasses = []
             for ii in xeddb.recs:
                 func_list.extend(ii.enc_test_functions)
+                n = len(ii.enc_test_functions)
+                if n:
+                    iclasses.extend(n*[ii.iclass])
                 
             config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)
             fn_prefix = 'xed-test-{}'.format(config_descriptor)
@@ -4803,6 +4807,11 @@ def work():
             fe.add_code('0')
             fe.add_code('};')
 
+            fe.add_code('const xed_iclass_enum_t {}_iclass[] = {{'.format(array_name))
+            for iclass in iclasses:
+                fe.add_code('XED_ICLASS_{},'.format(iclass))
+            fe.add_code('XED_ICLASS_INVALID')
+            fe.add_code('};')
             
             fe.close()
             output_file_emitters.append(fe)

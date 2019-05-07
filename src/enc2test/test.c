@@ -25,6 +25,7 @@ typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
 
 extern test_func_t test_functions_m64_a64[];
 extern char const* test_functions_m64_a64_str[];
+extern const xed_iclass_enum_t test_functions_m64_a64_iclass[];
 
 xed_state_t dstate;
 
@@ -60,13 +61,26 @@ int execute_test(int test_id) {
     
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
     err = xed_decode(&xedd, output_buffer, enclen);
-    if (err != XED_ERROR_NONE) {
+    if (err == XED_ERROR_NONE) {
+        if (xed_decoded_inst_get_iclass(&xedd) != test_functions_m64_a64_iclass[test_id]) {
+            printf("\ttest id %d ICLASS MISMATCH: %s (%s)\n", test_id,
+                   xed_iclass_enum_t2str( xed_decoded_inst_get_iclass(&xedd) ),
+                   xed_iclass_enum_t2str( test_functions_m64_a64_iclass[test_id] ) );
+            printf("\t");
+            dump(output_buffer,enclen);
+            printf("\n");
+            return 1;
+        }
+    }
+    else {
         printf("\ttest id %d ERROR: %s (%s)\n", test_id, xed_error_enum_t2str(err), fn_name);
         printf("\t");
         dump(output_buffer,enclen);
         printf("\n");
         return 1;
     }
+
+    
     return 0;
 }
 
