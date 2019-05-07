@@ -772,14 +772,18 @@ def create_modrm_byte(ii,fo):
             fo.add_code_eol('set_rm(r,{})'.format(rm))
     return modrm_required
 
+numbered_functions = 0
 def make_function_object(env, ii,fname, return_value='void'):
+    global numbered_functions
+    
     if 'AMDONLY' in ii.attributes:
         fname += '_amd'
 
     if fname in env.function_names:
+        numbered_functions += 1
         t = env.function_names[fname] + 1
         env.function_names[fname] = t
-        fname = fname + '_vr' + str(t)
+        fname = '{}_vr{}'.format(fname,t)
         msge("Numbered function name for: {}".format(fname))
     else:
         env.function_names[fname] = 0
@@ -4204,6 +4208,7 @@ def spew(ii):
 
 
 def gather_stats(db):
+    global numbered_functions
     unhandled = 0
     forms = len(db)
     generated_fns = 0
@@ -4230,6 +4235,7 @@ def gather_stats(db):
     dbg("// Forms:       {:4d}".format(forms))
     dbg("// Handled:     {:4d}  ({:6.2f}%)".format(handled, 100.0*handled/tot_focus ))
     dbg("// Not handled: {:4d}  ({:6.2f}%)".format(unhandled, 100.0*unhandled/tot_focus))
+    dbg("// Numbered functions:           {:5d}".format(numbered_functions))
     dbg("// Generated Encoding functions: {:5d}".format(generated_fns))
     dbg("// Skipped Encoding functions:   {:5d}".format(skipped_fns))
     dbg("// Skipped MPX instr:            {:5d}".format(skipped_mpx))
