@@ -3410,6 +3410,7 @@ def largest_vl_vex(ii): # and evex
 
 def get_type_size(op):
     a = re.sub(r'_.*','',op.lookupfn_name)
+    a = re.sub('MASK','kreg',a)
     return re.sub(r'^[Vv]','',a).lower()
 
 
@@ -3422,7 +3423,7 @@ def count_operands(ii): # skip imm8
     return x
 
 
-def create_vex_simd_reg(env,ii): #WRK
+def create_vex_simd_reg(env,ii):
     """Handle 2/3/4 xymm or gprs regs and optional imm8.  This is coded to
        allow different type and size for each operand.  Different
        x/ymm show up on converts. Also handles 2-imm8 SSE4a instr.   """
@@ -3603,7 +3604,72 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=3):
         if var_se:
             fo.add_code_eol('emit_se_imm8_reg(r)')
         add_enc_func(ii,fo)
+
+
+def create_vex_one_mask_reg_and_one_gpr(env,ii):  #WRK
+    # FIXME: REFACTOR NOTE: could combine with create_vex_all_mask_reg
+    #  if we handle 3 reg args and optional imm8.
+    global arg_reg0, arg_reg1, var_reg0, var_reg1
+    opsig = make_opnd_signature(ii)
+    opnd_types = get_opnd_types(env,ii)
+    arg_regs = [ arg_reg0, arg_reg1 ]
+    var_regs = [ var_reg0, var_reg1 ]
+
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                              ii.iclass.lower(),
+                              opsig)
+    fo = make_function_object(env,ii,fname)
+    fo.add_comment("created by create_vex_all_mask_reg")
+    fo.add_arg(arg_request,'req')
+    
+    for i,op in enumerate(opnd_types):
+        fo.add_arg(arg_regs[i], opnd_types[i])
+        
+    set_vex_pp(ii,fo)
+    fo.add_code_eol('set_map(r,{})'.format(ii.map))
+    if ii.vl == '256': # ZERO INIT OPTIMIZATION
+        fo.add_code_eol('set_vexl(r,1)')
+        
+    var_r, var_b, var_n = None,None,None
+    for i,op in enumerate(_gen_opnds(ii)): 
+        if op.lookupfn_name:
+            if op.lookupfn_name.endswith('_R'):
+                var_r,sz_r = var_regs[i],get_type_size(op)
+            elif op.lookupfn_name.endswith('_B'):
+                var_b,sz_b = var_regs[i],get_type_size(op)
+            elif op.lookupfn_name.endswith('_N'):
+                var_n,sz_n = var_regs[i],get_type_size(op)
+            else:
+                die("SHOULD NOT REACH HERE")
+                
+    fo.add_code_eol('set_mod(r,3)')
+    if ii.rexw_prefix == '1':
+        fo.add_code_eol('set_rexw(r)')
+
+    if var_n:
+        fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(sz_n, var_n))
+    else:
+        fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+        
+    if var_r:
+        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(sz_r, var_r))
+    elif ii.reg_required != 'unspecified':
+        if ii.reg_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+        
+    if var_b:
+        fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(sz_b, var_b))
+    elif ii.rm_required != 'unspecified':
+        if ii.rm_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
             
+    # FIXME: if kreg in MODRM.RM, we know we don't need to check rex.b
+    # before picking c4/c5. MINOR PERF OPTIMIZATION
+    emit_vex_prefix(ii,fo,register_only=True)
+    emit_opcode(ii,fo)
+    emit_modrm(fo)
+    add_enc_func(ii,fo)
+        
 def create_vex_all_mask_reg(env,ii):
     '''Allows optional imm8'''
     global enc_fn_prefix, arg_request
@@ -3667,10 +3733,9 @@ def create_vex_all_mask_reg(env,ii):
     emit_vex_prefix(ii,fo,register_only=True)
     emit_opcode(ii,fo)
     emit_modrm(fo)
-    add_enc_func(ii,fo)
     if ii.has_imm8:
         cond_emit_imm8(ii,fo)
-
+    add_enc_func(ii,fo)
         
 def _enc_vex(env,ii):
     if several_xymm_gpr_imm8(ii):
@@ -3685,6 +3750,8 @@ def _enc_vex(env,ii):
         create_vex_simd_2reg_mem(env,ii, nopnds=1) 
     elif vex_all_mask_reg(ii): # allows imm8
         create_vex_all_mask_reg(env,ii)
+    elif vex_one_mask_reg_and_one_gpr(ii):
+        create_vex_one_mask_reg_and_one_gpr(env,ii)
     elif vex_vzero(ii):
         create_vex_vzero(env,ii)
         
@@ -3719,6 +3786,17 @@ def vex_all_mask_reg(ii): # allow imm8
         else:
             return False
     return k>=2 and i<=1
+
+def vex_one_mask_reg_and_one_gpr(ii): 
+    g,k = 0,0
+    for op in _gen_opnds(ii):
+        if op_mask_reg(op):
+            k += 1
+        elif op_gpr32(op) or op_gpr64(op):
+            g += 1
+        else:
+            return False
+    return k == 1 and g == 1
     
 def evex_xyzmm_and_gpr(ii):
     i,d,q,x,y,z=0,0,0,0,0,0
