@@ -65,9 +65,10 @@ gpr8_m64  = gpr8_not64  + "R8B R9B R10B R11B R12B R13B R14B R15B".split()
 
 gpr8h = "AH CH DH BH".split()
 
-MMX = [ 'MMX{}'.format(i) for i in range(0,8)]
+mmx = [ 'MMX{}'.format(i) for i in range(0,8)]
 x87 = [ 'ST{}'.format(i) for i in range(0,8)]
 kreg = [ 'K{}'.format(i) for i in range(0,8)]
+kreg_not0 = [ 'K{}'.format(i) for i in range(1,8)]
 xmm_m64 = [ 'XMM{}'.format(i) for i in range(0,32)]
 ymm_m64 = [ 'YMM{}'.format(i) for i in range(0,32)]
 zmm_m64 = [ 'ZMM{}'.format(i) for i in range(0,32)]
@@ -76,48 +77,127 @@ ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
 zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
 
 seg = 'ES CS SS DS FS GS'.split()
-cr_64 = 'CR0 CR2 CR3 CR4 CR8'
-cr_not64 = 'CR0 CR2 CR3 CR4' 
+cr_64 = 'CR0 CR2 CR3 CR4 CR8'.split()
+cr_not64 = 'CR0 CR2 CR3 CR4'.split()
 dr = [ 'DR{}'.format(i) for i in range(0,8)]
 
+rcsae = [0,1,2,3]
+sae = [0,1]
+scale = [1,2,4,8]
+zeroing = [0,1]
+
+
+def set_test_gen_counters(env):
+    env.test_gen_counters = collections.defaultdict(int)
+
+    env.test_gen_regs = {
+        'gpr64': gpr64,
+        'gpr32': gpr32_m64 if env.mode==64 else gpr32_not64,
+        'gpr16': gpr16_m64 if env.mode==64 else gpr16_not64,
+        'gpr8':  gpr8_m64  if env.mode==64 else gpr8_not64,
+        'gpr8h': gpr8h,
+        'mmx' :  mmx,
+        'x87' :  x87,
+        'kreg':  kreg,
+        'kreg!0': kreg_not0,
+        'xmm':  xmm_m64 if env.mode==64 else xmm_not64,
+        'ymm':  ymm_m64 if env.mode==64 else ymm_not64,
+        'zmm':  zmm_m64 if env.mode==64 else zmm_not64,
+        'seg':  seg,
+        'cr' :  cr_64 if env.mode==64 else cr_not64,
+        'dr' :  dr,
+        'rcsae' : rcsae,
+        'sae' : sae,
+        'zeroing': zeroing,
+        'scale' : scale
+        }
+
+    env.test_gen_reg_limit = {}
+    for k in env.test_gen_regs.keys():
+        env.test_gen_reg_limit[k] = len(env.test_gen_regs[k])
+
+
+def get_bump(env, regkind):
+    v = env.test_gen_counters[regkind]
+    testreg = env.test_gen_regs[regkind][v]
+
+    # increment and roll the counter based on the limits for tht reg kind
+    n = v + 1
+    if n >= env.test_gen_reg_limit[regkind]:
+        n = 0
+    env.test_gen_counters[regkind] = n
+    return testreg
+
+def gen_reg(env,regkind):
+    return 'XED_REG_{}'.format(get_bump(env,regkind))
+def gen_int(env,regkind):
+    return '{}'.format(get_bump(env,regkind))
 
 # can vary output randomly, vary by number of calls in this
 # instruction, etc.
 def  get_gpr64(env, ii):
-    return 'XED_REG_RBX'
+    return gen_reg(env,'gpr64')
 def  get_gpr32(env, ii):
-    return 'XED_REG_ECX'
+    return gen_reg(env,'gpr32')
 def  get_gpr16(env, ii):
-    return 'XED_REG_DX'
-
-def  get_gpr8(env, ii):
-    return 'XED_REG_BL'
-
-c = 0
-def get_bump_rcount():
-    global c
-    t = c
-    c = c + 1 if c < 6 else 0
-    return t
+    return gen_reg(env,'gpr16')
+def  get_gpr8(env, ii):  # FIXME: figure out how to use gpr8h values
+    return gen_reg(env,'gpr8')
 
 def  get_xmm(env, ii):
-    return 'XED_REG_XMM{}'.format(get_bump_rcount())
+    return gen_reg(env,'xmm')
 def  get_ymm(env, ii):
-    return 'XED_REG_YMM{}'.format(get_bump_rcount())
+    return gen_reg(env,'ymm')
 def  get_zmm(env, ii):
-    return 'XED_REG_ZMM{}'.format(get_bump_rcount())
+    return gen_reg(env,'zmm')
 
 def  get_kreg(env, ii):
-    return 'XED_REG_K1'
+    return gen_reg(env,'kreg')
 def  get_kreg_not0(env, ii):
-    return 'XED_REG_K2'
+    return gen_reg(env,'kreg!0')
 
 def  get_x87(env, ii):
-    return 'XED_REG_ST1'
+    return gen_reg(env,'x87')
 
 def  get_mmx(env, ii):
-    return 'XED_REG_MMX0'
+    return gen_reg(env,'mmx')
 
+def  get_cr(env, ii):
+    return gen_reg(env,'cr')
+
+def  get_dr(env, ii):
+    return gen_reg(env,'dr')
+
+def  get_seg(env, ii):
+    return gen_reg(env,'seg')
+
+
+# INTEGER VALUES
+def  get_zeroing(env, ii): # 0(merging),1(zeroing)
+    return gen_int(env,'zeroing')
+
+def  get_rcsae(env, ii):  # 0,1,2
+    return gen_int(env,'rcsae')
+
+def  get_sae(env, ii):  # 0,1
+    return gen_int(env,'sae')
+
+def  get_scale(env, ii): # 1,2,4,8
+    return gen_int(env,'scale')
+
+
+# FIXED VALUES
+def  get_ax(env, ii): # always this value
+    return 'XED_REG_AX'
+
+def  get_eax(env, ii): # always this value
+    return 'XED_REG_EAX'
+
+def  get_rax(env, ii): # always this value
+    return 'XED_REG_RAX'
+    
+
+# IMMEDIATES AND DISPLACMENTS - FIXME VARY THESE
 def  get_imm8(env, ii):  # FIXME: signed vs unsigned. These are used for displacements too currently
     return '0x7E'
 
@@ -140,36 +220,6 @@ def  get_disp32(env, ii):
 
 def  get_disp64(env, ii):
     return '0x1122334455667788'
-
-def  get_cr(env, ii):
-    return 'XED_REG_CR4'
-
-def  get_dr(env, ii):
-    return 'XED_REG_DR0'
-
-def  get_seg(env, ii):
-    return 'XED_REG_FS'
-
-def  get_zeroing(env, ii): # 0(merging),1(zeroing)
-    return '1'
-
-def  get_rcsae(env, ii):  # 0,1,2
-    return '0x2'
-def  get_sae(env, ii):  # 0,1
-    return '1'
-
-def  get_scale(env, ii): # 1,2,4,8
-    return '2'
-
-def  get_ax(env, ii): # always this value
-    return 'XED_REG_AX'
-
-def  get_eax(env, ii): # always this value
-    return 'XED_REG_EAX'
-
-def  get_rax(env, ii): # always this value
-    return 'XED_REG_RAX'
-    
 
 
 arginfo2value_creator = {
@@ -281,6 +331,7 @@ def create_test_fn_main(env, ii):
     ii.enc_test_functions = []
 
     for encfn in ii.encoder_functions:
-        _create_enc_test_functions(env, ii, encfn)
+        for n in range(0,env.tests_per_form):
+            _create_enc_test_functions(env, ii, encfn)
 
     
