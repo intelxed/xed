@@ -95,17 +95,17 @@ void enc_vex_vvvv_kreg(xed_enc2_req_t* r,
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
     set_vvvv(r, ~(offset & 7));
 }
-void enc_vex_modrm_reg_kreg(xed_enc2_req_t* r,
-                            xed_reg_enum_t dst) { ///VEX
+void enc_modrm_reg_kreg(xed_enc2_req_t* r,
+                        xed_reg_enum_t dst) { ///VEX
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,1);
+    set_rexr(r,0); // gets inverted on vex emit
 }
-void enc_vex_modrm_rm_kreg(xed_enc2_req_t* r,
-                           xed_reg_enum_t dst) { ///VEX
+void enc_modrm_rm_kreg(xed_enc2_req_t* r,
+                       xed_reg_enum_t dst) { ///VEX
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST; 
     set_rm(r, offset & 7);
-    set_rexb(r,1);
+    set_rexb(r,0); // gets inverted on vex emit
 }
 
 
