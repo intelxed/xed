@@ -3815,10 +3815,12 @@ def evex_2or3xyzmm(ii): # allows for mixing widths of registers
     return sum == 2 or sum == 3
 
 
-def evex_012xyzmm_mem(ii): #allow imm8
-    i,x,y,z,m=0,0,0,0,0
+def evex_012xyzmm_mem(ii): #allow imm8 and kreg op
+    k,i,x, y,z,m = 0,0,0, 0,0,0
     for op in _gen_opnds(ii):
-        if op_xmm(op):
+        if op_mask_reg(op):
+            k += 1
+        elif op_xmm(op):
             x += 1
         elif op_ymm(op):
             y += 1
@@ -3831,7 +3833,7 @@ def evex_012xyzmm_mem(ii): #allow imm8
         else:
             return False
         simd = x+y+z
-    return m==1 and simd<3 and i<=1
+    return m==1 and simd<3 and i<=1 and k <= 1
 
 
 def create_evex_xyzmm_and_gpr(env,ii): 
@@ -3982,7 +3984,9 @@ def create_evex_xyzmm_mem(env, ii):   #WRK
     global arg_kmask, var_kmask
     global arg_zeroing, var_zeroing
     global arg_imm8, var_imm8
-
+    var_regs = [var_reg0, var_reg1, var_reg2]
+    arg_regs = [ arg_reg0, arg_reg1, arg_reg2 ]
+    
     imm8=False
     if ii.has_imm8:
         imm8 = True
@@ -4008,7 +4012,7 @@ def create_evex_xyzmm_mem(env, ii):   #WRK
         bcast_vals = ['nobroadcast']
     bcast_variant_name = {'nobroadcast':'', 'broadcast':'_bcast' }
     opnd_types_org = get_opnd_types(env,ii)
-    arg_regs = [ arg_reg0, arg_reg1 ]
+
     
     # flatten a 4-deep nested loop using itertools.product()
     ispace = itertools.product(bcast_vals, get_index_vals(ii), dispsz_list, mask_versions)
@@ -4030,7 +4034,7 @@ def create_evex_xyzmm_mem(env, ii):   #WRK
 
         regn = 0
         for i,optype in enumerate(opnd_types_org):
-            if optype in ['xmm','ymm','zmm']:
+            if optype in ['xmm','ymm','zmm','kreg']:
                 fo.add_arg(arg_regs[regn], opnd_types.pop(0))
                 regn += 1
             elif optype in ['mem']:
@@ -4067,26 +4071,27 @@ def create_evex_xyzmm_mem(env, ii):   #WRK
             fo.add_code_eol('set_evexb(r,1)')
             
         # ENCODE REGISTERS
-        vars = [var_reg0, var_reg1, var_reg2]
+
         var_r, var_b, var_n = None, None, None
+        sz_r,  sz_b,  sz_n  = None, None, None
         for i,op in enumerate(_gen_opnds_nomem(ii)):
             if op.lookupfn_name:
-                if op.lookupfn_name.endswith('_R3'):
-                    var_r = vars[i]
-                elif op.lookupfn_name.endswith('_B3'):
-                    var_b = vars[i]
-                elif op.lookupfn_name.endswith('_N3'):
-                    var_n = vars[i]
+                if op.lookupfn_name.endswith('_R3') or op.lookupfn_name.endswith('_R'):
+                    var_r,sz_r = var_regs[i], get_type_size(op)
+                elif op.lookupfn_name.endswith('_B3') or op.lookupfn_name.endswith('_B'):
+                    var_b,sz_b = var_regs[i], get_type_size(op)
+                elif op.lookupfn_name.endswith('_N3') or op.lookupfn_name.endswith('_N'):
+                    var_n,sz_n = var_regs[i], get_type_size(op)
                 else:
                     die("SHOULD NOT REACH HERE")
         if var_n:
-            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
+            fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(sz_n, var_n))
         else:
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
             fo.add_code_eol('set_evexvv(r,1)',"must be 1")
             
         if var_r:
-            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
+            fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(sz_r, var_r))
         else:
             # some instructions use _N3 as dest (like rotates)
             #fo.add_code_eol('set_rexr(r,1)')
@@ -4443,7 +4448,7 @@ def _enc_evex(env,ii):
     elif evex_xyzmm_and_gpr(ii):
         create_evex_xyzmm_and_gpr(env,ii)
 
-    elif evex_012xyzmm_mem(ii):  # opt imm8, very broad coverage
+    elif evex_012xyzmm_mem(ii):  # opt imm8, very broad coverage including kreg(dest) ops
         create_evex_xyzmm_mem(env, ii)
         
     elif evex_mask_dest_reg_only(ii): 
