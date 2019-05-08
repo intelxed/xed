@@ -3339,59 +3339,8 @@ def several_xymm_gpr_mem_imm8(ii): # optional imm8
 
 
 
-def two_xymm_and_mem(ii): # allow imm8
-    i,m,x,y = 0,0,0,0
-    for op in _gen_opnds(ii):
-        if op_reg(op) and op_xmm(op):
-            x += 1
-        elif op_reg(op) and op_ymm(op):
-            y += 1
-        elif op_imm8(op):
-            i += 1
-        elif op_mem(op):
-            m += 1
-        else:
-            return False
-    return  m==1 and ((x==2 and y==0) or (x==0 and y==2)) and i<=1
 
-def vex_just_mem(ii):
-    m = 0
-    for op in _gen_opnds(ii):
-        if op_mem(op):
-            m += 1
-        else:
-            return False
-    return  m==1
     
-def three_xymm_and_mem(ii): # optional imm8
-    i,m,x,y = 0,0,0,0
-    for op in _gen_opnds(ii):
-        if op_reg(op) and op_xmm(op):
-            x += 1
-        elif op_reg(op) and op_ymm(op):
-            y += 1
-        elif op_imm8(op):
-            i += 1
-        elif op_mem(op):
-            m += 1
-        else:
-            return False
-    return  m==1 and ((x==3 and y==0) or (x==0 and y==3))  and i <= 1
-
-def one_xymm_and_mem(ii): # allow imm8
-    i,m,x,y = 0,0,0,0
-    for op in _gen_opnds(ii):
-        if op_reg(op) and op_xmm(op):
-            x += 1
-        elif op_reg(op) and op_ymm(op):
-            y += 1
-        elif op_imm8(op):
-            i += 1
-        elif op_mem(op):
-            m += 1
-        else:
-            return False
-    return  m==1 and ((x==1 and y==0) or (x==0 and y==1)) and i<=1
 
 def two_ymm_and_mem(ii):
     m,n = 0,0
@@ -3777,19 +3726,8 @@ def create_vex_all_mask_reg(env,ii):
 def _enc_vex(env,ii):
     if several_xymm_gpr_imm8(ii):
         create_vex_simd_reg(env,ii)
-        
     elif several_xymm_gpr_mem_imm8(ii):
         create_vex_simd_2reg_mem(env,ii) # allows imm8
-    # FIXME next 4 subsumed
-    elif two_xymm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii) 
-    elif one_xymm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii) 
-    elif three_xymm_and_mem(ii):
-        create_vex_simd_2reg_mem(env,ii) 
-    elif vex_just_mem(ii):
-        create_vex_simd_2reg_mem(env,ii)
-        
     elif vex_all_mask_reg(ii): # allows imm8
         create_vex_all_mask_reg(env,ii)
     elif vex_one_mask_reg_and_one_gpr(ii):
