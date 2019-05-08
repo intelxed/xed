@@ -77,6 +77,7 @@ ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
 zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
 
 seg = 'ES CS SS DS FS GS'.split()
+seg_no_cs = 'ES SS DS FS GS'.split()
 cr_64 = 'CR0 CR2 CR3 CR4 CR8'.split()
 cr_not64 = 'CR0 CR2 CR3 CR4'.split()
 dr = [ 'DR{}'.format(i) for i in range(0,8)]
@@ -98,12 +99,17 @@ def set_test_gen_counters(env):
         'gpr8h': gpr8h,
         'mmx' :  mmx,
         'x87' :  x87,
-        'kreg':  kreg,
+        # FIXME: avoiding k0 to avoid uncontrolled interactions ith
+        #zeroing bit. XED ILD checks for evex.aaa=0b000 with evex.z=1.
+        #'kreg': kreg,
+        'kreg':  kreg_not0, 
         'kreg!0': kreg_not0,
         'xmm':  xmm_m64 if env.mode==64 else xmm_not64,
         'ymm':  ymm_m64 if env.mode==64 else ymm_not64,
         'zmm':  zmm_m64 if env.mode==64 else zmm_not64,
-        'seg':  seg,
+        # FIXME: avoiding CS because of MOV SEG limitation
+        #'seg':  seg,
+        'seg':  seg_no_cs,
         'cr' :  cr_64 if env.mode==64 else cr_not64,
         'dr' :  dr,
         'rcsae' : rcsae,
