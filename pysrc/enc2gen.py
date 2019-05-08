@@ -3312,10 +3312,12 @@ def several_xymm_gpr_imm8(ii): # optional imm8
 
 
 def several_xymm_gpr_mem_imm8(ii): # optional imm8
-    m,i,x,y,d,q = 0,0,0,0,0,0
+    m,i,x,y,d,q,k = 0,0,0,0,0,0,0
     for op in _gen_opnds(ii):
         if op_mem(op):
             m += 1
+        elif op_mask_reg(op):
+            k += 1
         elif op_reg(op) and op_xmm(op):
             x += 1
         elif op_reg(op) and op_ymm(op):
@@ -3332,15 +3334,9 @@ def several_xymm_gpr_mem_imm8(ii): # optional imm8
     gpr =  d + q
     if m==1 and simd == 4 and gpr == 0:
         return True
-    sum = simd + gpr
-    return m==1 and simd <= 3 and gpr <= 3  and i<=1 and sum<=3 and (sum>0 or m==1)
+    sum = simd + gpr + k
+    return m==1 and simd <= 3 and gpr <= 3  and k <= 1 and i<=1 and sum<=3 and (sum>0 or m==1)
 
-
-
-
-
-
-    
 
 def two_ymm_and_mem(ii):
     m,n = 0,0
@@ -3489,8 +3485,8 @@ def find_mempos(ii):
             return i
     die("NOT REACHED")
     
-def create_vex_simd_2reg_mem(env,ii, nopnds=0):  #WRK
-    """0, 1, 2 or 3 xmm/ymm/gpr32/gpr64 and memory. allows imm8 optionally"""
+def create_vex_regs_mem(env,ii):  #WRK
+    """0, 1, 2 or 3 xmm/ymm/gpr32/gpr64/kreg and 1 memory operand. allows imm8 optionally"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -3521,13 +3517,13 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=0):  #WRK
                                             memaddrsig,
                                             env.asz)
         fo = make_function_object(env,ii,fname)
-        fo.add_comment("created by create_vex_simd_2reg_mem")
+        fo.add_comment("created by create_vex_regs_mem")
         fo.add_arg(arg_request,'req')
         opnd_types = copy.copy(opnd_types_org)
 
         regn = 0
         for i,optype in enumerate(opnd_types_org):
-            if optype in ['xmm','ymm','zmm', 'gpr32', 'gpr64']:
+            if optype in ['xmm','ymm','zmm', 'gpr32', 'gpr64', 'kreg']:
                 fo.add_arg(arg_regs[regn], opnd_types.pop(0))
                 regn += 1
             elif optype in ['mem']:
@@ -3567,10 +3563,10 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=0):  #WRK
         if var_n == None:
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
         else:
-            fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(vlname, var_n))
+            fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(sz_n, var_n))
             
         if var_r:
-            fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(vlname, var_r))
+            fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(sz_r, var_r))
         elif ii.reg_required != 'unspecified':
             if ii.reg_required: # ZERO INIT OPTIMIZATION
                 fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
@@ -3582,7 +3578,7 @@ def create_vex_simd_2reg_mem(env,ii, nopnds=0):  #WRK
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
                 
         if var_se:
-            fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(vlname, var_se))
+            fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(sz_se, var_se))
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)
         emit_vex_prefix(ii,fo,register_only=False)
@@ -3726,8 +3722,8 @@ def create_vex_all_mask_reg(env,ii):
 def _enc_vex(env,ii):
     if several_xymm_gpr_imm8(ii):
         create_vex_simd_reg(env,ii)
-    elif several_xymm_gpr_mem_imm8(ii):
-        create_vex_simd_2reg_mem(env,ii) # allows imm8
+    elif several_xymm_gpr_mem_imm8(ii): # very generic
+        create_vex_regs_mem(env,ii)
     elif vex_all_mask_reg(ii): # allows imm8
         create_vex_all_mask_reg(env,ii)
     elif vex_one_mask_reg_and_one_gpr(ii):
