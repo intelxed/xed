@@ -83,7 +83,6 @@ cr_not64 = 'CR0 CR2 CR3 CR4'.split()
 dr = [ 'DR{}'.format(i) for i in range(0,8)]
 
 rcsae = [0,1,2,3]
-sae = [0,1]
 scale = [1,2,4,8]
 zeroing = [0,1]
 
@@ -113,7 +112,6 @@ def set_test_gen_counters(env):
         'cr' :  cr_64 if env.mode==64 else cr_not64,
         'dr' :  dr,
         'rcsae' : rcsae,
-        'sae' : sae,
         'zeroing': zeroing,
         'scale' : scale
         }
@@ -184,9 +182,6 @@ def  get_zeroing(env, ii): # 0(merging),1(zeroing)
 
 def  get_rcsae(env, ii):  # 0,1,2
     return gen_int(env,'rcsae')
-
-def  get_sae(env, ii):  # 0,1
-    return gen_int(env,'sae')
 
 def  get_scale(env, ii): # 1,2,4,8
     return gen_int(env,'scale')
@@ -260,7 +255,6 @@ arginfo2value_creator = {
      'seg': get_seg,
      'zeroing': get_zeroing,
      'rcsae': get_rcsae,
-     'sae': get_sae,    
      'scale': get_scale,
      'ax': get_ax,
      'eax': get_eax,
