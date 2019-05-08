@@ -3774,7 +3774,8 @@ def vex_one_mask_reg_and_one_gpr(ii):
         else:
             return False
     return k == 1 and g == 1
-    
+
+
 def evex_xyzmm_and_gpr(ii):
     i,d,q,x,y,z=0,0,0,0,0,0
     for op in _gen_opnds(ii):
@@ -3797,8 +3798,6 @@ def evex_xyzmm_and_gpr(ii):
     return gprs == 1 and simd > 0 and simd < 3 and i <= 1
 
     
-
-
 def evex_2or3xyzmm(ii): # allows for mixing widths of registers
     x,y,z=0,0,0
     for op in _gen_opnds(ii):
@@ -3815,21 +3814,6 @@ def evex_2or3xyzmm(ii): # allows for mixing widths of registers
     sum = x + y + z
     return sum == 2 or sum == 3
 
-
-def evex_2xyzmm(ii): 
-    x,y,z=0,0,0
-    for op in _gen_opnds(ii):
-        if op_xmm(op):
-            x = x + 1
-        elif op_ymm(op):
-            y = y + 1
-        elif op_zmm(op):
-            z = z + 1
-        elif op_imm8(op):
-            continue
-        else:
-            return False
-    return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
 
 def evex_012xyzmm_mem(ii): #allow imm8
     i,x,y,z,m=0,0,0,0,0
@@ -3849,49 +3833,6 @@ def evex_012xyzmm_mem(ii): #allow imm8
         simd = x+y+z
     return m==1 and simd<3 and i<=1
 
-def evex_2xyzmm_mem(ii): 
-    x,y,z,m=0,0,0,0
-    for op in _gen_opnds(ii):
-        if op_xmm(op):
-            x = x + 1
-        elif op_ymm(op):
-            y = y + 1
-        elif op_zmm(op):
-            z = z + 1
-        elif op_imm8(op):
-            continue
-        elif op_mem(op):
-            m += 1
-        else:
-            return False
-    return m==1 and ((x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0))
-
-
-def evex_1xyzmm_mem(ii): 
-    x,y,z,m=0,0,0,0
-    for op in _gen_opnds(ii):
-        if op_xmm(op):
-            x = x + 1
-        elif op_ymm(op):
-            y = y + 1
-        elif op_zmm(op):
-            z = z + 1
-        elif op_imm8(op):
-            continue
-        elif op_mem(op):
-            m += 1
-        else:
-            return False
-    return m==1 and (x+y+z)==1
-
-def evex_no_regs_one_mem(ii): 
-    m=0
-    for op in _gen_opnds(ii):
-        if op_mem(op):
-            m += 1
-        else:
-            return False
-    return m==1
 
 def create_evex_xyzmm_and_gpr(env,ii): 
     '''1,2,or3 xyzmm regs and 1 gpr32/64 and optional imm8 '''
