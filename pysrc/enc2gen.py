@@ -3485,7 +3485,7 @@ def find_mempos(ii):
             return i
     die("NOT REACHED")
     
-def create_vex_regs_mem(env,ii):  #WRK
+def create_vex_regs_mem(env,ii): 
     """0, 1, 2 or 3 xmm/ymm/gpr32/gpr64/kreg and 1 memory operand. allows imm8 optionally"""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -3831,6 +3831,24 @@ def evex_2xyzmm(ii):
             return False
     return (x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0)
 
+def evex_012xyzmm_mem(ii): #allow imm8
+    i,x,y,z,m=0,0,0,0,0
+    for op in _gen_opnds(ii):
+        if op_xmm(op):
+            x += 1
+        elif op_ymm(op):
+            y += 1
+        elif op_zmm(op):
+            z += 1
+        elif op_imm8(op):
+            i += 1
+        elif op_mem(op):
+            m += 1
+        else:
+            return False
+        simd = x+y+z
+    return m==1 and simd<3 and i<=1
+
 def evex_2xyzmm_mem(ii): 
     x,y,z,m=0,0,0,0
     for op in _gen_opnds(ii):
@@ -3847,6 +3865,8 @@ def evex_2xyzmm_mem(ii):
         else:
             return False
     return m==1 and ((x==0 and y==0 and z==2) or (x==0 and y==2 and z==0) or (x==2 and y==0 and z==0))
+
+
 def evex_1xyzmm_mem(ii): 
     x,y,z,m=0,0,0,0
     for op in _gen_opnds(ii):
@@ -3863,6 +3883,15 @@ def evex_1xyzmm_mem(ii):
         else:
             return False
     return m==1 and (x+y+z)==1
+
+def evex_no_regs_one_mem(ii): 
+    m=0
+    for op in _gen_opnds(ii):
+        if op_mem(op):
+            m += 1
+        else:
+            return False
+    return m==1
 
 def create_evex_xyzmm_and_gpr(env,ii): 
     '''1,2,or3 xyzmm regs and 1 gpr32/64 and optional imm8 '''
@@ -4003,8 +4032,8 @@ def create_evex_xyzmm_and_gpr(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_evex_1or2xyzmm_mem(env, ii, nregs=2):   
-    """Allows imm8 also. also handles VSIB"""
+def create_evex_xyzmm_mem(env, ii):   #WRK
+    """Handles 0,1,2 simd regs and one memop (including vsib) Allows imm8 also."""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -4053,7 +4082,7 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
                                              bcast_variant_name[broadcast],
                                              env.asz)
         fo = make_function_object(env,ii,fname)
-        fo.add_comment("created by create_evex_1or2xyzmm_mem")
+        fo.add_comment("created by create_evex_xyzmm_mem")
         fo.add_arg(arg_request,'req')
 
         # ==== ARGS =====
@@ -4112,10 +4141,9 @@ def create_evex_1or2xyzmm_mem(env, ii, nregs=2):
         if var_n:
             fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(vl, var_n))
         else:
-            if nregs == 3:
-                die("SHOULD NOT REACH HERE")
             fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
-            fo.add_code_eol('set_evexvv(r,1)',"must be 1")            
+            fo.add_code_eol('set_evexvv(r,1)',"must be 1")
+            
         if var_r:
             fo.add_code_eol('enc_evex_modrm_reg_{}(r,{})'.format(vl, var_r))
         else:
@@ -4473,10 +4501,10 @@ def _enc_evex(env,ii):
         create_evex_xyzmm_and_gpr(env,ii)
     elif evex_xyzmm_and_gpr(ii):
         create_evex_xyzmm_and_gpr(env,ii)
-    elif evex_2xyzmm_mem(ii): 
-        create_evex_1or2xyzmm_mem(env, ii, nregs=2)
-    elif evex_1xyzmm_mem(ii): 
-        create_evex_1or2xyzmm_mem(env, ii, nregs=1)
+
+    elif evex_012xyzmm_mem(ii):  # opt imm8, very broad coverage
+        create_evex_xyzmm_mem(env, ii)
+        
     elif evex_mask_dest_reg_only(ii): 
         create_evex_evex_mask_dest_reg_only(env, ii)
     elif evex_mask_dest_mem(ii): 
