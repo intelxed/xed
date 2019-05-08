@@ -4779,11 +4779,16 @@ def work():
 
 
     output_file_emitters = []
+
+
     
     #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:
         for asz in prune_asz_list_for_mode(mode,args.asz_list):
             env = enc_env_t(mode, asz)
+            enc2test.set_test_gen_counters(env)
+            env.tests_per_form = 1
+            
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
                 create_enc_fn(env, ii)
