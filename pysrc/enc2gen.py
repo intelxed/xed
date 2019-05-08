@@ -786,7 +786,7 @@ def make_function_object(env, ii, fname, return_value='void'):
         t = env.function_names[fname] + 1
         env.function_names[fname] = t
         fname = '{}_vr{}'.format(fname,t)
-        msge("Numbered function name for: {}".format(fname))
+        #msge("Numbered function name for: {}".format(fname))
     else:
         env.function_names[fname] = 0
 
