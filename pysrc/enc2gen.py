@@ -143,8 +143,6 @@ arg_kreg2 = 'xed_reg_enum_t ' + var_kreg2
 
 var_rcsae = 'rcsae'
 arg_rcsae = 'xed_uint_t ' + var_rcsae
-var_sae = 'sae'
-arg_sae = 'xed_uint_t ' + var_sae
 var_zeroing = 'zeroing'
 arg_zeroing = 'xed_bool_t ' + var_zeroing
 
@@ -3850,7 +3848,6 @@ def create_evex_xyzmm_and_gpr(env,ii):
     global arg_kmask, var_kmask
     global arg_zeroing, var_zeroing
     global arg_rcsae, var_rcsae
-    global arg_sae, var_sae
     global arg_imm8, var_imm8
     global vl2names
 
@@ -3917,9 +3914,6 @@ def create_evex_xyzmm_and_gpr(env,ii):
             fo.add_arg(arg_imm8,'int8')
         if rounding:
             fo.add_arg(arg_rcsae,'rcsae')
-        # FIXME: we could force the SAE form to always set the EVEX.b bit.
-        if sae:
-            fo.add_arg(arg_sae,'sae') 
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_mod(r,3)')
@@ -3933,7 +3927,7 @@ def create_evex_xyzmm_and_gpr(env,ii):
             fo.add_code_eol('set_evexb(r,1)')
             fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
         if sae:
-            fo.add_code_eol('set_evexb(r,{})'.format(var_sae))
+            fo.add_code_eol('set_evexb(r,1)')
             # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
             
         if masking:
