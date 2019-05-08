@@ -3815,8 +3815,8 @@ def evex_2or3xyzmm(ii): # allows for mixing widths of registers
     return sum == 2 or sum == 3
 
 
-def evex_012xyzmm_mem(ii): #allow imm8 and kreg op
-    k,i,x, y,z,m = 0,0,0, 0,0,0
+def evex_regs_mem(ii): #allow imm8 and kreg, gpr
+    d,q, k,i,x, y,z,m = 0,0, 0,0,0, 0,0,0
     for op in _gen_opnds(ii):
         if op_mask_reg(op):
             k += 1
@@ -3830,10 +3830,15 @@ def evex_012xyzmm_mem(ii): #allow imm8 and kreg op
             i += 1
         elif op_mem(op):
             m += 1
+        elif op_gpr32(op) or op_vgpr32(op):
+            d += 1
+        elif op_gpr64(op) or op_vgpr64(op):
+            q += 1
         else:
             return False
         simd = x+y+z
-    return m==1 and simd<3 and i<=1 and k <= 1
+        gpr = d+q
+    return m==1 and (gpr+simd)<3 and i<=1 and k <= 1
 
 
 def create_evex_xyzmm_and_gpr(env,ii): 
@@ -3975,8 +3980,8 @@ def create_evex_xyzmm_and_gpr(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_evex_xyzmm_mem(env, ii):   #WRK
-    """Handles 0,1,2 simd regs and one memop (including vsib) Allows imm8 also."""
+def create_evex_regs_mem(env, ii):   #WRK
+    """Handles 0,1,2 simd/gpr regs and one memop (including vsib) Allows imm8 also."""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
@@ -4027,14 +4032,14 @@ def create_evex_xyzmm_mem(env, ii):   #WRK
                                              bcast_variant_name[broadcast],
                                              env.asz)
         fo = make_function_object(env,ii,fname)
-        fo.add_comment("created by create_evex_xyzmm_mem")
+        fo.add_comment("created by create_evex_regs_mem")
         fo.add_arg(arg_request,'req')
 
         # ==== ARGS =====
 
         regn = 0
         for i,optype in enumerate(opnd_types_org):
-            if optype in ['xmm','ymm','zmm','kreg']:
+            if optype in ['xmm','ymm','zmm','kreg','gpr32','gpr64']:
                 fo.add_arg(arg_regs[regn], opnd_types.pop(0))
                 regn += 1
             elif optype in ['mem']:
@@ -4448,8 +4453,8 @@ def _enc_evex(env,ii):
     elif evex_xyzmm_and_gpr(ii):
         create_evex_xyzmm_and_gpr(env,ii)
 
-    elif evex_012xyzmm_mem(ii):  # opt imm8, very broad coverage including kreg(dest) ops
-        create_evex_xyzmm_mem(env, ii)
+    elif evex_regs_mem(ii):  # opt imm8, very broad coverage including kreg(dest) ops
+        create_evex_regs_mem(env, ii)
         
     elif evex_mask_dest_reg_only(ii): 
         create_evex_evex_mask_dest_reg_only(env, ii)
