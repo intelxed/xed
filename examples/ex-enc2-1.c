@@ -1,7 +1,20 @@
-/// compilation:  
-///    clang       -I kits/kit/include  ex-enc2-1.c  -L kits/kit/lib -lxed -lxed-enc2-m64-a64
-/// or with the decoder (larger binary)
-///    clang -DECO -I kits/kit/include  ex-enc2-1.c  -L kits/kit/lib -lxed -lxed-enc2-m64-a64
+/*BEGIN_LEGAL 
+
+Copyright (c) 2019 Intel Corporation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+END_LEGAL */
 
 #include "xed/xed-interface.h"
 #include "xed/xed-enc2-m64-a64.h"
