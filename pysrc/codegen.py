@@ -456,7 +456,12 @@ def emit_function_list(func_list,
    """
    file_number = 0;
    fe = None
-   fn_header = "%s.h" % (fn_prefix)
+   
+   fn_header = "{}.h".format(fn_prefix)
+   companion_header = fn_header
+   if not is_private_header:
+       companion_header = mbuild.join('xed',fn_header)
+       
    fe_list = []
    fe_header = xed_file_emitter_t(xeddir,hgendir,fn_header,shell_file=False,namespace=namespace, is_private=is_private_header)
    if extra_public_headers:
@@ -477,7 +482,7 @@ def emit_function_list(func_list,
             fe.close()
          fn = "%s-%d.c" % (fn_prefix, file_number)
          fe = xed_file_emitter_t(xeddir,gendir, fn, shell_file=False, namespace=namespace)
-         fe.add_header(fn_header)
+         fe.add_header(companion_header)
          for header in other_headers:
             fe.add_header(header)
          fe.start()

@@ -456,7 +456,7 @@ def make_lib_dll(env,base):
 def _xed_lib_dir_join(env, s):
     return mbuild.join(env['xed_lib_dir'],s)
 
-def get_libxed_names(env,work_queue):
+def get_libxed_names(env):
     libxed_lib, libxed_dll = make_lib_dll(env,'xed')
     env['link_libxed'] = _xed_lib_dir_join(env,libxed_lib)
     env['shd_libxed']  = _xed_lib_dir_join(env,libxed_dll)

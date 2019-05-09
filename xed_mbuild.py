@@ -1876,11 +1876,17 @@ def build_examples(env):
     env_ex['CPPPATH'] = [] # clear out libxed-build headers.
     env_ex['src_dir'] = mbuild.join(env['src_dir'], 'examples')
     env_ex['xed_lib_dir'] = env['build_dir']
-    env_ex['xed_inc_dir'] = env['build_dir']
+    env_ex['xed_inc_dir'] = [env['build_dir']]
 
     env_ex['set_copyright'] = False
     if env.on_windows():
         env_ex['set_copyright'] = env['set_copyright']
+
+    if env['enc2']:
+        env_ex['xed_enc2_libs'] = []
+        for config in env['enc2_configs']:
+            env_ex['xed_inc_dir'].append(   mbuild.join(env['build_dir'], str(config), 'hdr')   )
+            env_ex['xed_enc2_libs'].extend( mbuild.glob(mbuild.join(env['build_dir'], str(config), 'libxed-enc2-*')))
     
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
