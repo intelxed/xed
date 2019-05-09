@@ -26,6 +26,7 @@ import glob
 import re
 import argparse
 import itertools
+import collections
 
 import find_dir # finds mbuild and adds it to sys.path
 import mbuild
@@ -4822,14 +4823,21 @@ def work():
 
             
             msge("Writing encoder 'encode' functions to .c and .h files")
-            func_list = []
+
+            # group the instructions by encoding space to allow for
+            # better link-time garbage collection.
+            func_lists = collections.defaultdict(list)
             for ii in xeddb.recs:
-                func_list.extend(ii.encoder_functions)
+                func_lists[ii.space].extend(ii.encoder_functions)
+            func_list = []
+            for space in func_lists.keys():
+                func_list.extend(func_lists[space])
+                
             config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)                
             fn_prefix = 'xed-{}'.format(config_descriptor)
             
             gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
-            gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr')
+            gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr', 'xed')
             mbuild.cmkdir(gen_src_dir)
             mbuild.cmkdir(gen_hdr_dir)
                                        
@@ -4855,6 +4863,7 @@ def work():
             iclasses = []
             for ii in xeddb.recs:
                 func_list.extend(ii.enc_test_functions)
+                # this is for the validation test to check  the iclass after decode
                 n = len(ii.enc_test_functions)
                 if n:
                     iclasses.extend(n*[ii.iclass])
@@ -4862,7 +4871,7 @@ def work():
             config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)
             fn_prefix = 'xed-test-{}'.format(config_descriptor)
             test_fn_hdr='{}.h'.format(fn_prefix)
-            enc2_fn_hdr='xed-{}.h'.format(config_descriptor)            
+            enc2_fn_hdr='xed/xed-{}.h'.format(config_descriptor)            
             gen_src_dir = os.path.join(args.gendir, config_descriptor, 'test', 'src')
             gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'test', 'hdr')
             mbuild.cmkdir(gen_src_dir)
