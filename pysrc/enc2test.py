@@ -119,6 +119,11 @@ def set_test_gen_counters(env):
     env.test_gen_reg_limit = {}
     for k in env.test_gen_regs.keys():
         env.test_gen_reg_limit[k] = len(env.test_gen_regs[k])
+        
+    # the xmm,ymm,zmm regs have the same limit. Just using zmm to get
+    # a limit value
+    env.test_gen_reg_limit['simd_unified'] = len(env.test_gen_regs['zmm'])
+
 
 
 def get_bump(env, regkind):
@@ -131,6 +136,31 @@ def get_bump(env, regkind):
         n = 0
     env.test_gen_counters[regkind] = n
     return testreg
+
+
+def get_bump_unified(env,regkind):
+    '''Gathers require that we use different regs for the simd registers
+    but often gathers use different vector length reg for the
+    different things if addresses and data are different sizes. So we
+    make a common counter that gathers can use to avoid accidental
+    independent counters lining up for xmm,ymm and zmm... which does
+    happen.'''
+    
+    special_regkind = 'simd_unified'
+    v = env.test_gen_counters[special_regkind]
+    testreg = env.test_gen_regs[regkind][v] # use regkind to get the register name
+
+    # increment and roll the counter based on the limits for tht reg kind
+    n = v + 1
+    if n >= env.test_gen_reg_limit[special_regkind]:
+        n = 0
+    env.test_gen_counters[special_regkind] = n
+    return testreg
+
+    
+
+def  gen_reg_simd_unified(env,regkind):
+    return 'XED_REG_{}'.format(get_bump_unified(env,regkind))
 
 def gen_reg(env,regkind):
     return 'XED_REG_{}'.format(get_bump(env,regkind))
@@ -148,11 +178,21 @@ def  get_gpr16(env, ii):
 def  get_gpr8(env, ii):  # FIXME: figure out how to use gpr8h values
     return gen_reg(env,'gpr8')
 
+
+def is_gather(ii):
+    return 'GATHER' in ii.iclass
+
 def  get_xmm(env, ii):
+    if is_gather(ii):
+        return gen_reg_simd_unified(env,'xmm')
     return gen_reg(env,'xmm')
 def  get_ymm(env, ii):
+    if is_gather(ii):
+        return gen_reg_simd_unified(env,'ymm')
     return gen_reg(env,'ymm')
 def  get_zmm(env, ii):
+    if is_gather(ii):
+        return gen_reg_simd_unified(env,'zmm')
     return gen_reg(env,'zmm')
 
 def  get_kreg(env, ii):
