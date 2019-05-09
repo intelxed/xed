@@ -789,6 +789,8 @@ def make_function_object(env, ii, fname, return_value='void'):
         env.function_names[fname] = 0
 
     fo = codegen.function_object_t(fname, return_value)
+    if ii.iform:
+        fo.add_comment(ii.iform)
     return fo
 
 def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  
@@ -1308,7 +1310,8 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
     # REX.B bits don't matter.
     s = []
     fixed = {'reg':False, 'rm':False}
-    if ii.iclass == 'NOP' and ii.iform == 'NOP_GPRv_GPRv_0F1E':
+    if ii.iclass == 'NOP' and ii.iform in [ 'NOP_MEMv_GPRv_0F1C',
+                                            'NOP_GPRv_GPRv_0F1E' ]:
         if ii.reg_required != 'unspecified':
             s.append('reg{}'.format(ii.reg_required))
             fixed['reg']=True
@@ -2338,13 +2341,12 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):  
+def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):   #WRK
     """GPRv-MEMv, MEMv-GPRv, GPRy-MEMv, MEMv-GPRy w/optional imm8 or immz.  This
        will work with anything that has one scalable register operand
        and another fixed or scalable memory operand. """
-
     # The GPRy stuff is not working yet
-    global var_reg0, widths_to_bits, widths_to_bits_y
+    global arg_reg0, var_reg0, widths_to_bits, widths_to_bits_y
     dispsz_list = get_dispsz_list(env)
 
     op = first_opnd(ii)
@@ -2361,13 +2363,18 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         if op_gpry(op):
             gpry=True
     extra_names = _implicit_reg_names(ii)
+
+    fixed_reg = False
+    if ii.iclass == 'NOP' and ii.iform.startswith('NOP_MEMv_GPRv_0F1C'):
+        if ii.reg_required != 'unspecified':
+            fixed_reg = True
+    immw = 8  if ii.has_imm8 else 0
+    
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
-        
-        immw = 0
-        if ii.has_imm8:
-            immw = 8
-        elif ii.has_immz:
+        opnd_types_org = get_opnd_types(env,ii, osz_translate(width))        
+        opnd_types  = copy.copy(opnd_types_org)
+        if ii.has_immz:
             immw = 16 if width == 16 else 32
             
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
@@ -2382,8 +2389,20 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
         fo.add_arg(arg_request,'req')
-        add_memop_args(env, ii, fo, use_index, dispsz, immw, reg=regn,
-                       osz=osz_translate(width))
+
+        for i,optype in enumerate(opnd_types_org):
+            if optype.startswith('gpr'):
+                if not fixed_reg:
+                    fo.add_arg(arg_reg0, opnd_types.pop(0))
+            elif optype in ['mem', 'agen']:
+                add_memop_args(env, ii, fo, use_index, dispsz, immw=0, osz=osz_translate(width))
+                opnd_types.pop(0)
+            elif optype.startswith('int') or optype.startswith('imm'):
+                add_arg_immv(fo,immw)
+                opnd_types.pop(0) # imm8 is last so we technically can skip this pop
+            else:
+                die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
+
 
         rexw_forced = False
 
@@ -2401,9 +2420,15 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         if mod:  # ZERO-INIT OPTIMIZATION
             fo.add_code_eol('set_mod(r,{})'.format(mod))
 
-        d=widths_to_bits_y if gpry else widths_to_bits
-        fo.add_code_eol('enc_modrm_reg_gpr{}(r,{})'.format(d[width],
-                                                           var_reg0))
+
+        if ii.reg_required != 'unspecified':
+            if ii.reg_required: # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required),
+                                'reg opcode extension')
+        else:
+            d=widths_to_bits_y if gpry else widths_to_bits
+            fo.add_code_eol('enc_modrm_reg_gpr{}(r,{})'.format(d[width],
+                                                               var_reg0))
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)
 
@@ -3974,7 +3999,7 @@ def create_evex_xyzmm_and_gpr(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_evex_regs_mem(env, ii):   #WRK
+def create_evex_regs_mem(env, ii):   
     """Handles 0,1,2 simd/gpr regs and one memop (including vsib) Allows imm8 also."""
     global enc_fn_prefix, arg_request
     global arg_reg0,  var_reg0
@@ -4564,6 +4589,10 @@ def create_enc_fn(env, ii):
         
 def spew(ii):
     s = [ii.iclass.lower()]
+    if ii.iform:
+        s.append(ii.iform)
+    else:
+        s.append("NOIFORM")
     s.append(ii.space)
     s.append(ii.isa_set)
     s.append(hex(ii.opcode_base10))
