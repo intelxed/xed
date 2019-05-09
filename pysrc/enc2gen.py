@@ -4839,7 +4839,9 @@ def work():
                                                        gen_src_dir,
                                                        gen_hdr_dir,
                                                        #other_headers = extra_headers,
-                                                       max_lines_per_file=15000)
+                                                       max_lines_per_file=15000,
+                                                       is_private_header=False,
+                                                       extra_public_headers=['xed/xed-interface.h'])
 
             output_file_emitters.extend(file_emitters)
 

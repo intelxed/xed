@@ -1974,19 +1974,34 @@ def _gen_lib_names(env):
     libnames = []
     for base_lib in ['xed', 'xed-ild']:
         # use base_lib to trigger mbuild expansion
-        env['base_lib']=base_lib  
-        libnames.extend(env.expand(libnames_template))
+        env['base_lib']=base_lib
+        lib1 = [ env.expand(x) for x in libnames_template ]
+        lib2 = [ mbuild.join(env['build_dir'], x) for x in lib1 ]
+        libnames.extend(lib2)
 
-    libs = [ mbuild.join(env['build_dir'], x) for x in libnames]
-    libs = list(filter(lambda x: os.path.exists(x), libs))
+    if env['enc2']:
+        for config in env['enc2_configs']:
+            c = str(config) # used in template expansion
+            env['base_lib'] = 'xed-{}'.format(c)
+            lib1 = [ env.expand(x) for x in libnames_template ]
+            lib2 = [ mbuild.join(env['build_dir'], c, x ) for x in lib1 ]
+            libnames.extend(lib2)
+    
+    libs = list(filter(lambda x: os.path.exists(x), libnames))
     return libs
 
 do_system_copy = True
 
 def _copy_generated_headers(env, dest):
     global do_system_copy
-    gen_inc = mbuild.join(mbuild.join(env['build_dir'],'*.h'))
-    gincs= mbuild.glob(gen_inc)
+    gen_inc = mbuild.join(env['build_dir'],'*.h')
+    gincs = mbuild.glob(gen_inc)
+
+    if env['enc2']:
+        for config in env['enc2_configs']:
+            gen_inc = mbuild.join(env['build_dir'], str(config), 'hdr', '*.h')
+            gincs += mbuild.glob(gen_inc) 
+    
     if len(gincs) == 0:
         xbc.cdie("No generated include headers found for install")
     for  h in gincs:
@@ -2553,18 +2568,21 @@ def work(env):
 
     input_files = build_libxed(env, work_queue)
 
+    env['enc2_configs'] = [] # used for installing kits
     if env['enc2']:
         configs = [ enc2_config_t(64,64),   # popular
-                    enc2_config_t(32,32),   
-                    enc2_config_t(16,16),   # infrequent
-                    enc2_config_t(64,32),   # obscure 
-                    enc2_config_t(32,16),   # more obscure
-                    enc2_config_t(16,32) ]  # more obscure
+                    #enc2_config_t(32,32),   
+                    #enc2_config_t(16,16),   # infrequent
+                    #enc2_config_t(64,32),   # obscure 
+                    #enc2_config_t(32,16),   # more obscure
+                    #enc2_config_t(16,32)   # more obscure
+                   ]
 
         test_libs = []
-        for config in configs[0:1]: # FIXME - pick config. just doing first config now
+        for config in configs[0:1]: 
             (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
             test_libs.append((shd,lnk))
+            env['enc2_configs'].append(config)
     
     legal_header_tagging(env)
     build_examples(env)

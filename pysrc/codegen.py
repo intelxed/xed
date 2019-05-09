@@ -431,7 +431,9 @@ def emit_function_list(func_list,
                        hgendir,
                        namespace=None,
                        other_headers=[],
-                       max_lines_per_file=3000):
+                       max_lines_per_file=3000,
+                       is_private_header=True,
+                       extra_public_headers=[]):
    """Emit a list of functions to a numbered sequence of
    files. Breaking them up when the files get too big.
 
@@ -456,7 +458,9 @@ def emit_function_list(func_list,
    fe = None
    fn_header = "%s.h" % (fn_prefix)
    fe_list = []
-   fe_header = xed_file_emitter_t(xeddir,hgendir,fn_header,shell_file=False,namespace=namespace)
+   fe_header = xed_file_emitter_t(xeddir,hgendir,fn_header,shell_file=False,namespace=namespace, is_private=is_private_header)
+   if extra_public_headers:
+       fe_header.add_header(extra_public_headers)
    fe_header.start()
    fe_list.append(fe_header)
 
