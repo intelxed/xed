@@ -31,7 +31,6 @@ import re
 import shutil
 import copy
 import time
-import glob
 import types
 import optparse
 import collections
@@ -1919,7 +1918,7 @@ def build_examples(env):
         env_ex['set_copyright'] = env['set_copyright']
 
     if env['enc2']:
-        env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, 'libxed-enc2-*')
+        env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, '*xed-enc2-*')
     
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)

@@ -104,4 +104,5 @@ int main(int argc, char** argv) {
     printf("ERROR: %s\n", xed_error_enum_t2str(err));
     return 1;
 #endif
+    (void)argc; (void)argv;
 }
