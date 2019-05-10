@@ -1815,7 +1815,7 @@ def build_enc2_test(arg_env, work_queue, config):
     if mbuild.verbose(2):
         mbuild.msgb("TESTPROG", "XED ENC2 config {} test program build succeeded".format(config))
 
-def _modify_search_path_mac(env, fn):
+def _modify_search_path_mac(env, fn, tgt=None):
    """Make example tools refer to the libxed.so from the lib directory
    if doing and install. Mac only."""
    if not env['shared']:
@@ -1825,7 +1825,12 @@ def _modify_search_path_mac(env, fn):
    if not xbc.installing(env):
       return
    env['odll'] = '%(build_dir)s/libxed.dylib'
-   env['ndll'] = '"@loader_path/../lib/libxed.dylib"'
+   
+   if tgt:
+       env['ndll'] = tgt
+   else:
+       env['ndll'] = '"@loader_path/../lib/libxed.dylib"'
+       
    cmd = 'install_name_tool -change %(odll)s %(ndll)s ' + fn
    cmd = env.expand(cmd)
    env['odll'] = None
