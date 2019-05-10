@@ -24,7 +24,6 @@ import re
 import shutil
 import copy
 import time
-import glob
 import types
 import optparse
 import mbuild 
@@ -422,7 +421,7 @@ def strip_file(env,fn,options=''):
     fne = env.expand(fn)
     mbuild.msgb("STRIPPING", fne)
     strip_cmd = " ".join([env['strip'], options, fne])
-    mbuild.msgb("STRIP CMD", strip_cmd)
+    #mbuild.msgb("STRIP CMD", strip_cmd)
     (retcode,stdout,stderr) = mbuild.run_command(strip_cmd)
     if retcode != 0:
        dump_lines("strip stdout", stdout)

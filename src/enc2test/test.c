@@ -17,7 +17,7 @@ Copyright (c) 2019 Intel Corporation
 END_LEGAL */
 
 #include "xed-interface.h"
-#include "enc2-m64-a64/hdr/xed-enc2-m64-a64.h"
+#include "enc2-m64-a64/hdr/xed/xed-enc2-m64-a64.h"
 #include <stdio.h>
 #include <stdlib.h>
 

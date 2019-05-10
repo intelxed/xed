@@ -24,7 +24,6 @@ import re
 import shutil
 import copy
 import time
-import glob
 import types
 import optparse
 # sys.path is set up by calling script (mfile.py ususally)
@@ -248,20 +247,13 @@ def init(env):
     if nchk(env,'xed_lib_dir'):
         env['xed_lib_dir'] = '../lib'
     if nchk(env,'xed_enc2_libs'):
-        env['xed_enc2_libs'] = mbuild.glob(mbuild.join(env['xed_lib_dir'],'libxed-enc2-*'))
+        env['xed_enc2_libs'] = mbuild.glob(env['xed_lib_dir'],'libxed-enc2-*')
     if nchk(env,'xed_inc_dir'):
         env['xed_inc_dir'] = ['../include']
     if nchk(env,'xed_dir'):
         env['xed_dir'] = '..'
-    
-    fx = mbuild.join(env['xed_dir'], "include","public") # static headers
-    if os.path.exists(fx):
-       env.add_include_dir(fx)
-    fx = mbuild.join(env['xed_dir'], "include","public",'xed') 
-    if os.path.exists(fx):
-       env.add_include_dir(fx)
     env.add_include_dir( env['src_dir'] )  # examples dir
-    for inc in  env['xed_inc_dir']: # generated headers
+    for inc in  env['xed_inc_dir']: 
         env.add_include_dir( inc )
 
 def _wk_show_errors_only():
@@ -312,8 +304,8 @@ def build_examples(env, work_queue):
     env.add_to_var('LINKFLAGS', env['example_linkflags'])
     env.add_to_var('CCFLAGS', env['example_flags'])
     env.add_to_var('CXXFLAGS', env['example_flags'])
-    # put the examples in their own subdirectory
-    env['build_dir'] = mbuild.join(env['build_dir'],'examples')
+    # put the examples in their own subdirectory # FIXME REMOVE ME
+    #env['build_dir'] = mbuild.join(env['build_dir'],'examples','obj')
     mbuild.cmkdir(env['build_dir'])
 
     link_libxed = env['link_libxed']
@@ -399,7 +391,7 @@ def build_examples(env, work_queue):
     enc2_examples = []
     small_examples = ['xed-size.c']
     if env['enc2']:
-        enc2_examples += [ 'ex-enc2-1.c' ]
+        enc2_examples += [ 'xed-enc2-1.c' ]
     if env['encoder']:
        small_examples += ['xed-ex5-enc.c']
        other_c_examples += ['xed-ex3.c']
