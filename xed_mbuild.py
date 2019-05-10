@@ -1784,19 +1784,25 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
         
     return (env['shd_testlib'], env['link_testlib'])
 
-def build_enc2_test(env, work_queue, config):
+def build_enc2_test(arg_env, work_queue, config):
     '''Build the enc2 tester program for the specified config '''
     # this env has build_dir set to the current mode/asz config
+    env = copy.deepcopy(arg_env)
+    env['shared']=False 
+    
     env['config'] = str(config)
     exe         = mbuild.join(env['build_dir'],'enc2tester-%(config)s%(EXEEXT)s')
     gen_src     = mbuild.glob(env['build_dir'],'test','src','*.c')
     gen_hdr_dir = mbuild.join(env['build_dir'],'test','hdr')
     static_src  = mbuild.glob(env['src_dir'],'src','enc2test','*.c')
 
-    # FIXME: shared build
     dag = mbuild.dag_t('xedenc2test-{}'.format(config), env=env)
     env.add_include_dir(gen_hdr_dir)
     objs = env.compile( dag, gen_src + static_src )
+
+    if env.on_linux() and arg_env['shared']:
+        env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../kit/lib'"
+    
     lc = env.link(objs + [env['link_testlib'], env['link_libxed']], exe)
     cmd = dag.add(env,lc)
     if mbuild.verbose(2):
@@ -1804,6 +1810,8 @@ def build_enc2_test(env, work_queue, config):
     okay = wq_build(env, work_queue, dag)
     if not okay:
         xbc.cdie("XED ENC2 config {} test program build failed".format(config))
+    if env.on_mac():
+        _modify_search_path_mac(env, exe, '@loader_path/../kit/lib')
     if mbuild.verbose(2):
         mbuild.msgb("TESTPROG", "XED ENC2 config {} test program build succeeded".format(config))
 
