@@ -1928,7 +1928,7 @@ def copy_dynamic_libs_to_kit(env):
         return
     
     ikit = env['ikit']
-    ikit.extlib = mbuild.join(ikit,'extlib')
+    ikit.extlib = mbuild.join(ikit.kit,'extlib')
     mbuild.cmkdir(ikit.extlib)
     executables = mbuild.glob(ikit.bin,'*')
 
