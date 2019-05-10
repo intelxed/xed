@@ -2436,7 +2436,7 @@ def _test_cmdline_decoder(env,osenv):
        works. Returns 0 on success, and nonzero on failure."""
 
     output_file = env.build_dir_join('CMDLINE.OUT.txt')
-    cmd = "%(build_dir)s/examples/xed -n 1000 -i %(build_dir)s/examples/xed%(OBJEXT)s"
+    cmd = "%(build_dir)s/kit/examples/obj/xed -n 1000 -i %(build_dir)s/kit/examples/obj/xed%(OBJEXT)s"
     cmd  = env.expand_string(cmd)
     (retval, output, oerror) = mbuild.run_command_output_file(cmd,
                                                               output_file,
@@ -2456,7 +2456,7 @@ def _run_canned_tests(env,osenv):
     """Run the tests from the tests subdirectory"""
     retval = 0 # success
     env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))        
-    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/examples " 
+    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/kit/examples/obj " 
 
     dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
     if env['cet']:
