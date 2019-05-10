@@ -789,7 +789,7 @@ def make_function_object(env, ii, fname, return_value='void'):
     else:
         env.function_names[fname] = 0
 
-    fo = codegen.function_object_t(fname, return_value)
+    fo = codegen.function_object_t(fname, return_value, dll_export=True)
     if ii.iform:
         fo.add_comment(ii.iform)
     return fo
