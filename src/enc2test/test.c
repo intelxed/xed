@@ -17,6 +17,7 @@ Copyright (c) 2019 Intel Corporation
 END_LEGAL */
 
 #include "xed-interface.h"
+#include "xed-get-time.h"
 #include "enc2-m64-a64/hdr/xed/xed-enc2-m64-a64.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +37,7 @@ static void dump(xed_uint8_t* buf, xed_uint32_t len) {
     }
 }
 
+xed_uint64_t total = 0;
 int execute_test(int test_id) {
     xed_decoded_inst_t xedd;
     xed_uint32_t enclen;
@@ -43,10 +45,17 @@ int execute_test(int test_id) {
     test_func_t* p = test_functions_m64_a64;
     xed_uint8_t output_buffer[2*XED_MAX_INSTRUCTION_BYTES];
     char const* fn_name = test_functions_m64_a64_str[test_id];
+    xed_uint64_t t1, t2, delta;
 
-    
+    t1 = xed_get_time();
     //printf("Calling test function %d\n",test_id);
     enclen = (*p[test_id])(output_buffer);
+    t2 = xed_get_time();
+    if (t2>t1) {
+        delta = t2-t1;
+        total += delta;
+    }
+            
     
     // This stuff should problably move in to the individual tests so
     // that we can do more validation about the iclass and operands.
@@ -95,7 +104,10 @@ int test_m64_a64(void) {
     xed_uint32_t test_id=0;
     xed_uint32_t errors = 0;
     test_func_t* p = test_functions_m64_a64;
+    xed_uint64_t t1, t2, delta;
     
+
+    t1 = xed_get_time();
     while(*p) {
         if (execute_test(test_id)) {
             printf("test %d failed\n", test_id);
@@ -104,9 +116,15 @@ int test_m64_a64(void) {
         p++;
         test_id++;
     }
+    t2 = xed_get_time();
+    delta = t2-t1;
+
 
     printf("Tests:  %6d\n", test_id);
     printf("Errors: %6d\n", errors);
+    printf("Cycles: " XED_FMT_LU "\n", delta);
+    printf("Cycles/(enc+dec) : %.1lf\n", 1.0*delta/test_id);
+    printf("Cycles/encode    : %.1lf\n", 1.0*total/test_id);
     return errors;
 }
 
