@@ -1912,7 +1912,7 @@ def build_examples(env):
 
     if env['enc2']:
         env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, '*xed-enc2-*')
-    
+
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
     except Exception as e:
@@ -2111,26 +2111,9 @@ def system_install(env, work_queue):
     for fn in mbuild.glob(include,'*.h'):
         mbuild.make_read_only(fn)
 
-    
-def create_kit_structure(env, work_queue):
-    '''Build the XED kit. env['install_dir'] is the kit name, passed in or
-       created here. If not installing we set up the working kit'''
-
-    wkit = dummy_obj_t()
-
-    # add a default legal header if we are building a kit and none is
-    # specified.
-    legal_header = _get_legal_header(env)
-    
-    wkit.kit = mbuild.join(env['build_dir'], 'kit')
-    if os.path.exists(wkit.kit):
-        mbuild.remove_tree(wkit.kit)
-    mbuild.cmkdir(wkit.kit)
-    env['wkit'] = wkit
-    kits = [wkit]
+def create_install_kit_structure(env, work_queue):
     if xbc.installing(env):
         ikit = dummy_obj_t()
-        kits.append(ikit)
         env['ikit'] = ikit
         
         if env['install_dir']:
@@ -2146,26 +2129,45 @@ def create_kit_structure(env, work_queue):
         if os.path.exists(ikit.kit): # start clean
             mbuild.remove_tree(ikit.kit)
         mbuild.cmkdir(ikit.kit)
+        _make_kit_libs(env, ikit)
 
+def _prep_kit_dirs(env):
     def pr(x):
         return (x,x)
+    env['kit_dirs'] = [ ('include_top',mbuild.join('include')),
+                        ('include_xed',mbuild.join('include','xed')),
+                        ('mbuild', mbuild.join('mbuild','mbuild')),
+                        pr('lib'),
+                        pr('examples'),
+                        pr('bin'),
+                        pr('doc'),
+                        pr('misc') ]
     
-    kit_dirs = [ ('include_top',mbuild.join('include')),
-                 ('include_xed',mbuild.join('include','xed')),
-                 ('mbuild', mbuild.join('mbuild','mbuild')),
-                 pr('lib'),
-                 pr('examples'),
-                 pr('bin'),
-                 pr('doc'),
-                 pr('misc') ]
+def _make_kit_libs(env,some_kit):
+    for key,pth in env['kit_dirs']:
+        d = mbuild.join(some_kit.kit,pth)
+        setattr(some_kit, key, d)
+        mbuild.cmkdir(d)
     
-    env['kit_dirs'] = kit_dirs
+def create_working_kit_structure(env, work_queue):
+    '''Create directories and copy files in to the XED "working" kit.'''
+
+    wkit = dummy_obj_t()
+
+    # add a default legal header if we are building a kit and none is
+    # specified.
+    legal_header = _get_legal_header(env)
     
-    for tkit in kits:
-        for key,pth in kit_dirs:
-            d = mbuild.join(tkit.kit,pth)
-            setattr(tkit, key, d)
-            mbuild.cmkdir(d)
+    wkit.kit = mbuild.join(env['build_dir'], 'kit')
+    
+    # We are not going to start clean because otherwise
+    # examples rebuild on each rebuild.
+    #if os.path.exists(wkit.kit):
+    #    mbuild.remove_tree(wkit.kit)
+    
+    mbuild.cmkdir(wkit.kit)
+    env['wkit'] = wkit
+    _make_kit_libs(env, wkit)
 
     boilerplate = env.src_dir_join([ 'LICENSE', 'README.md' ])
     for f in boilerplate:
@@ -2639,7 +2641,9 @@ def work(env):
     
     legal_header_tagging(env)
 
-    create_kit_structure(env,work_queue)
+    _prep_kit_dirs(env)
+    create_working_kit_structure(env,work_queue) # wkit
+    create_install_kit_structure(env,work_queue) # ikit
     build_examples(env) # in the working kit now
     copy_working_kit_to_install_dir(env)
     # put the doxygen in working kit, if not installing, and the final
