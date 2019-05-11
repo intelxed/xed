@@ -1,4 +1,4 @@
 build: off
 
 test_script:
-    - python ci.py
+    - C:\Python37\python ci.py
