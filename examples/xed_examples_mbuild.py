@@ -294,8 +294,6 @@ def build_examples(env, work_queue):
     env.add_to_var('LINKFLAGS', env['example_linkflags'])
     env.add_to_var('CCFLAGS', env['example_flags'])
     env.add_to_var('CXXFLAGS', env['example_flags'])
-    # put the examples in their own subdirectory # FIXME REMOVE ME
-    #env['build_dir'] = mbuild.join(env['build_dir'],'examples','obj')
     mbuild.cmkdir(env['build_dir'])
 
     link_libxed = env['link_libxed']
