@@ -216,7 +216,7 @@ def xed_args(env):
     env.parser.add_option("--enc2-lib", 
                           action='append',
                           dest="xed_enc2_libs",
-                          help="Names and paths to XED enc2 libraries.")
+                          help="Filenames (with paths) of the XED enc2 libraries.")
     env.parser.add_option("--inc-dir", 
                           action="append",
                           dest="xed_inc_dir",
@@ -247,7 +247,7 @@ def init(env):
     if nchk(env,'xed_lib_dir'):
         env['xed_lib_dir'] = '../lib'
     if nchk(env,'xed_enc2_libs'):
-        env['xed_enc2_libs'] = mbuild.glob(env['xed_lib_dir'],'libxed-enc2-*')
+        env['xed_enc2_libs'] = mbuild.glob(env['xed_lib_dir'],'*xed-enc2-*')
     if nchk(env,'xed_inc_dir'):
         env['xed_inc_dir'] = ['../include']
     if nchk(env,'xed_dir'):
@@ -263,20 +263,10 @@ def _wk_show_errors_only():
     return True # show errors only.
 
 
-
 def _add_libxed_rpath(env):
-   """Make example tools refer to the libxed.so from the lib directory
-   if doing an install"""
-   if not env['shared']:
-      return
-   if not env.on_linux():
-      return 
-   if env['android']:
-      return 
-   if xbc.installing(env):
-      env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../lib'"
-   else:
-      env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/..'"
+   """Make example tools refer to the libxed.so from the lib directory"""
+   if env['shared'] and env.on_linux() and not env['android']:
+       env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../lib'"
 
 
 def build_asmparse(env, dag, otherobj):
@@ -340,7 +330,13 @@ def build_examples(env, work_queue):
                           'xed-disas-hex.c',
                           'xed-symbol-table.c']
     if env.on_windows() and env['set_copyright']:
+        # AUTOMATICALLY UPDATE YEAR IN THE RC FILE
+        year = time.strftime("%Y")
+        lines = open(env.src_dir_join('xed-rc-template.txt')).readlines()
+        lines = [ re.sub('%%YEAR%%',year,x) for x in lines ]
+        xbc.write_file(env.src_dir_join('xed.rc'), lines)
         xed_cmdline_files.append("xed.rc")
+        
     extra_libs = []    
     if env['decoder']:
 

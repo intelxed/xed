@@ -54,6 +54,13 @@ def cdie(s):
 def cexit(r=0):
     raise xed_exception_t("exit", r)
 
+def write_file(fn, stream):
+    """Write stream to fn"""
+    mbuild.msgb("WRITING", fn)
+    f = open(fn,'w')
+    f.writelines(stream)
+    f.close()
+
 def add_to_flags(env,s):
     env.add_to_var('CCFLAGS',s)
     env.add_to_var('CXXFLAGS',s)

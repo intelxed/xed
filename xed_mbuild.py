@@ -77,13 +77,6 @@ def check_mbuild_file(mbuild_file, sig_file):
         mbuild.msgb("MBUILD INPUT FILE", "appears to have changes.")
     return retval
 
-def _write_file(fn, stream):
-    """Write stream to fn"""
-    mbuild.msgb("WRITING", fn)
-    f = open(fn,'w')
-    f.writelines(stream)
-    f.close()
-
 ###########################################################################
 # generators
     
@@ -332,8 +325,8 @@ def run_decode_generator(gc, env):
                                                         separate_stderr=True)
     oo = env.build_dir_join('DEC-OUT.txt')
     oe = env.build_dir_join('DEC-ERR.txt')
-    _write_file(oo, output)
-    _write_file(oe, error_output)
+    xbc.write_file(oo, output)
+    xbc.write_file(oe, error_output)
 
     if retval == 0:
         list_of_files = read_file_list(gc.dec_output_file)
@@ -361,8 +354,8 @@ def run_encode_generator(gc, env):
                                                         separate_stderr=True)
     oo = env.build_dir_join('ENC-OUT.txt')
     oe = env.build_dir_join('ENC-ERR.txt')
-    _write_file(oo, output)
-    _write_file(oe, error_output)
+    xbc.write_file(oo, output)
+    xbc.write_file(oe, error_output)
 
     if retval == 0:
         list_of_files = read_file_list(gc.enc_output_file)
@@ -400,8 +393,8 @@ def run_encode_generator2(args, env):
                                                         separate_stderr=True)
     oo = env.build_dir_join('ENC2-OUT.txt')
     oe = env.build_dir_join('ENC2-ERR.txt')
-    _write_file(oo, output)
-    _write_file(oe, error_output)
+    xbc.write_file(oo, output)
+    xbc.write_file(oe, error_output)
 
     if retval == 0:
         list_of_files = read_file_list(args.enc2_output_file)
@@ -2232,17 +2225,17 @@ def create_kit_structure(env, work_queue):
                 mbuild.copy_file(pdb,wkit.lib)
 
     # copy examples source
-    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', 'README.txt', '*.rc']:
+    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', '*.txt']:
         esrc = mbuild.glob(env['src_dir'],'examples',ext)
         if len(esrc) == 0:
-            xbc.cdie( "No standard examples to install")
+            xbc.cdie( "No examples files to install with extension {}".format(ext))
         for  s in esrc:
             mbuild.copy_file(s,wkit.examples)
 
             # legal header stuff
             base = os.path.basename(s)
             tgt = mbuild.join(wkit.examples,base)
-            if 'LICENSE' not in tgt and not tgt.endswith('.rc'):
+            if 'LICENSE' not in tgt and not 'rc-template' in tgt:
                 apply_legal_header2(tgt, legal_header)
                 
     _copy_nongenerated_headers(env,wkit.include_xed)
