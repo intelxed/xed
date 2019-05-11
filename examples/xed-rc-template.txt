@@ -13,7 +13,7 @@ BEGIN
         VALUE "FileDescription", "Intel XED Executable"
         VALUE "FileVersion", ""
         VALUE "InternalName", "Intel XED Executable"
-        VALUE "LegalCopyright", "Copyright (C) 2002-2019, Intel Corporation. All rights reserved."
+        VALUE "LegalCopyright", "Copyright (C) 2002-%%YEAR%%, Intel Corporation. All rights reserved."
         VALUE "ProductName", "Intel XED"
       END 
     END 
