@@ -2232,7 +2232,7 @@ def create_kit_structure(env, work_queue):
                 mbuild.copy_file(pdb,wkit.lib)
 
     # copy examples source
-    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', 'README.txt']:
+    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', 'README.txt', '*.rc']:
         esrc = mbuild.glob(env['src_dir'],'examples',ext)
         if len(esrc) == 0:
             xbc.cdie( "No standard examples to install")
@@ -2242,7 +2242,7 @@ def create_kit_structure(env, work_queue):
             # legal header stuff
             base = os.path.basename(s)
             tgt = mbuild.join(wkit.examples,base)
-            if 'LICENSE' not in tgt:
+            if 'LICENSE' not in tgt and not tgt.endswith('.rc'):
                 apply_legal_header2(tgt, legal_header)
                 
     _copy_nongenerated_headers(env,wkit.include_xed)
