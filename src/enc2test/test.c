@@ -21,6 +21,7 @@ END_LEGAL */
 #include "enc2-m64-a64/hdr/xed/xed-enc2-m64-a64.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "xed-histogram.h"
 
 typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
 
@@ -30,6 +31,8 @@ extern const xed_iclass_enum_t test_functions_m64_a64_iclass[];
 
 xed_state_t dstate;
 
+xed_histogram_t histo;
+
 static void dump(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
     for(i=0;i<len;i++) {
@@ -38,6 +41,7 @@ static void dump(xed_uint8_t* buf, xed_uint32_t len) {
 }
 
 xed_uint64_t total = 0;
+xed_uint_t reps = 100;
 int execute_test(int test_id) {
     xed_decoded_inst_t xedd;
     xed_uint32_t enclen;
@@ -46,14 +50,19 @@ int execute_test(int test_id) {
     xed_uint8_t output_buffer[2*XED_MAX_INSTRUCTION_BYTES];
     char const* fn_name = test_functions_m64_a64_str[test_id];
     xed_uint64_t t1, t2, delta;
+    xed_uint_t i;
 
-    t1 = xed_get_time();
-    //printf("Calling test function %d\n",test_id);
-    enclen = (*p[test_id])(output_buffer);
-    t2 = xed_get_time();
-    if (t2>t1) {
-        delta = t2-t1;
-        total += delta;
+    for(i=0;i<reps;i++)    {
+        t1 = xed_get_time();
+        //printf("Calling test function %d\n",test_id);
+        enclen = (*p[test_id])(output_buffer);
+        t2 = xed_get_time();
+        if (t2>t1) {
+            delta = t2-t1;
+            total += delta;
+        }
+        if (i > 3)
+            xed_histogram_update(&histo, t1, t2);
     }
             
     
@@ -120,11 +129,12 @@ int test_m64_a64(void) {
     delta = t2-t1;
 
 
-    printf("Tests:  %6d\n", test_id);
-    printf("Errors: %6d\n", errors);
+    printf("Tests:   %6d\n", test_id);
+    printf("Repeats: %6d\n", reps);
+    printf("Errors:  %6d\n", errors);
     printf("Cycles: " XED_FMT_LU "\n", delta);
-    printf("Cycles/(enc+dec) : %.1lf\n", 1.0*delta/test_id);
-    printf("Cycles/encode    : %.1lf\n", 1.0*total/test_id);
+    printf("Cycles/(enc+dec) : %7.1lf\n", 1.0*delta/(reps*test_id));
+    printf("Cycles/encode    : %7.1lf\n", 1.0*total/(reps*test_id));
     return errors;
 }
 
@@ -137,6 +147,8 @@ int main(int argc, char** argv) {
     //dstate.mmode=XED_MACHINE_MODE_LEGACY_16;
     //dstate.stack_addr_width=XED_ADDRESS_WIDTH_16b;
     //dstate.stack_addr_width=XED_ADDRESS_WIDTH_32b;
+    
+    xed_histogram_initialize(&histo);
 
     // count tests
     test_func_t* p = test_functions_m64_a64;
@@ -165,5 +177,6 @@ int main(int argc, char** argv) {
         printf("Testing all...\n");
         errors = test_m64_a64(); // test all
     }
+    xed_histogram_dump(&histo, 1);
     return errors>0;
 }
