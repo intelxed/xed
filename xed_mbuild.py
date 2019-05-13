@@ -1424,17 +1424,18 @@ def _remove_src_list(lst, list_to_remove):
     return nlist
 
 def add_encoder_command(env, gc, gen_dag, prep):
-    enc_py = ['pysrc/genutil.py', 'pysrc/encutil.py',
-              'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
-              'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',
-              'pysrc/codegen.py', 'pysrc/ild_nt.py', 'pysrc/actions.py',
-              'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
-              'pysrc/constraint_vec_gen.py', 'pysrc/xedhash.py',
-              'pysrc/ild_phash.py', 'pysrc/actions_codegen.py',
-              'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
-              'pysrc/func_gen.py', 'pysrc/refine_regs.py',
-              'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
-              'pysrc/scatter.py', 'pysrc/ins_emit.py']
+    enc_py = [ 'pysrc/read-encfile.py',
+               'pysrc/genutil.py', 'pysrc/encutil.py',
+               'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
+               'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',
+               'pysrc/codegen.py', 'pysrc/ild_nt.py', 'pysrc/actions.py',
+               'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
+               'pysrc/constraint_vec_gen.py', 'pysrc/xedhash.py',
+               'pysrc/ild_phash.py', 'pysrc/actions_codegen.py',
+               'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
+               'pysrc/func_gen.py', 'pysrc/refine_regs.py',
+               'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
+               'pysrc/scatter.py', 'pysrc/ins_emit.py']
 
     enc_py = env.src_dir_join(enc_py)
     gc.enc_hash_file = env.build_dir_join('.mbuild.hash.xedencgen')
@@ -1512,7 +1513,8 @@ def add_encoder2_command(env, dag, input_files, config):
 #  importfinder.py is too slow to use on every build, over 20seconds/run.
 
 def add_decoder_command(env, gc, gen_dag, prep):
-    dec_py =['pysrc/actions.py', 'pysrc/genutil.py',
+    dec_py =['pysrc/generator.py',
+             'pysrc/actions.py', 'pysrc/genutil.py',
              'pysrc/ild_easz.py', 'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
              'pysrc/encutil.py', 'pysrc/verbosity.py', 'pysrc/ild_eosz.py',
              'pysrc/xedhash.py', 'pysrc/ild_phash.py',
