@@ -1139,6 +1139,24 @@ class instruction_info_t(partitionable_info_t):
             return
       die("Did not find stack push/pop operand")
 
+   def is_vex(self):
+       for bit in self.ipattern.bits: # bit_info_t
+           #print("XXR: {} {}  {} {} {}".format(self.iclass, bit.btype, bit.token, bit.test, bit.requirement))
+           if bit.btype == 'operand' and  bit.token == 'VEXVALID' and bit.requirement == 1 and bit.test == 'eq':
+               return True
+       return False
+   def is_evex(self):
+       for bit in self.ipattern.bits: # bit_info_t
+           if bit.btype == 'operand' and bit.token == 'VEXVALID' and bit.requirement == 2 and bit.test == 'eq':
+               return True
+       return False
+   def get_map(self):
+       for bit in self.ipattern.bits: # bit_info_t
+           if bit.token == 'MAP' and bit.test == 'eq':
+               return bit.requirement
+       return 0
+
+
    def dump_structured(self):
        """Return a list of strings representing the instruction in a
        structured way"""
@@ -5123,6 +5141,10 @@ class all_generator_info_t(object):
       
       self.data_table_file=None
       self.operand_sequence_file=None
+
+      # set by scan_maps
+      self.max_map_vex = 0
+      self.max_map_evex = 0
       
       # dict "iclass:extension" -> ( iclass,extension, 
       #                               category, iform_enum, properties-list)
@@ -5263,9 +5285,18 @@ class all_generator_info_t(object):
       if start:
           fp.start()
       return fp
-   
 
-      
+
+   def scan_maps(self):
+       for generator in self.generator_list:
+           for ii in generator.parser_output.instructions:
+               if genutil.field_check(ii, 'iclass'):
+                   if ii.is_vex():
+                       self.max_map_vex = max(self.max_map_vex, ii.get_map())
+                   elif ii.is_evex():
+                       self.max_map_evex = max(self.max_map_evex, ii.get_map())
+
+                        
    def code_gen_table_sizes(self):
       """Write the file that has the declarations of the tables that we
       fill in in the generator"""
@@ -5326,6 +5357,9 @@ class all_generator_info_t(object):
       fi.add_code("#define XED_MAX_DECORATIONS_PER_OPERAND %d" % 
                   (self.max_decorations_per_operand))
 
+      self.scan_maps()
+      fi.add_code("#define XED_MAX_MAP_VEX  {}".format(self.max_map_vex))
+      fi.add_code("#define XED_MAX_MAP_EVEX {}".format(self.max_map_evex))
       fi.close()
 
       
@@ -6415,12 +6449,8 @@ def main():
    
    # emit functions to identify AVX and AVX512 instruction groups
    classifier.work(agi) 
-   
    gen_ild(agi)
    gen_cpuid_map(agi)
-
-   #encgen.work(agi)
-   
    agi.close_output_files()
    agi.dump_generated_files()
 
