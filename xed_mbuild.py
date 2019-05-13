@@ -639,6 +639,7 @@ def mkenv():
                                  set_copyright=False,
                                  asan=False,
                                  enc2=False,
+                                 enc2_test=False,
                                  first_lib=None,
                                  last_lib=None)
 
@@ -932,6 +933,10 @@ def xed_args(env):
                           action="store_true",
                           dest="enc2",
                           help="Build the enc2 fast encoder. Longer build.")
+    env.parser.add_option("--enc2-test", 
+                          action="store_true",
+                          dest="enc2_test",
+                          help="Build the enc2 fast encoder *tests*. Longer build.")
 
     env.parse_args(env['xed_defaults'])
 
@@ -1492,7 +1497,7 @@ def add_encoder2_command(env, dag, input_files, config):
     enc2args.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES-{}.txt'.format(config))
     enc2args.config = config
     if os.path.exists(enc2args.enc2_output_file):
-        need_to_rebuild_enc = need_to_rebuild(enc2args.enc2_output_file,
+        need_to_rebuild_enc = encoder2need_to_rebuild(enc2args.enc2_output_file,
                                               enc2args.enc2_hash_file)
         if need_to_rebuild_enc:
             mbuild.remove_file(enc2args.enc2_output_file)
@@ -1774,7 +1779,8 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
     if mbuild.verbose(2):
         mbuild.msgb("LIBRARY", "XED ENC2 build succeeded")
 
-    build_enc2_test(env,work_queue, config)
+    if env['enc2_test']:
+        build_enc2_test(env,work_queue, config)
         
     return (env['shd_testlib'], env['link_testlib'])
 
@@ -2600,6 +2606,8 @@ def macro_args(env):
         env.add_to_var('CXXFLAGS', fcmd)
         env.add_to_var('CCFLAGS', fcmd)
         env.add_to_var('LINKFLAGS', fcmd)
+    if env['enc2_test']:
+        env['enc']=True
 
 def work(env):
     """External entry point for non-command line invocations.
