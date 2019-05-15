@@ -17,17 +17,34 @@ Copyright (c) 2019 Intel Corporation
 END_LEGAL */
 #include "xed-types.h"
 #include "xed-reg-enum.h"
+#include "xed/xed-encode-check.h"
 #include <stdarg.h>  //varargs va_list etc.
 #include <stdlib.h>  //abort()
 #include <stdio.h>  //vfprintf()
 
 /// Check functions
 
+static xed_user_abort_handler_t* user_abort_handler = 0;
+
+void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn) {
+    user_abort_handler = fn;
+}
+
 static void xed_enc2_error(const char* fmt, ...) { 
     va_list args;
-    va_start(args, fmt);
-    vprintf(fmt, args);
-    va_end(args);
+
+    if (user_abort_handler) {
+        va_start(args, fmt);
+        (*user_abort_handler)(fmt, args);
+        va_end(args);
+    }
+    else {
+        printf("XED ENC2 ERROR: ");
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+        printf(".\n");
+    }
     abort(); 
 }
 
@@ -132,7 +149,7 @@ void xed_enc2_invalid_zmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argnam
         xed_enc2_error("Bad zmm %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
 }
 
-xed_bool_t enc2_check_args_set = 1;
+xed_bool_t xed_enc2_check_args = 1;
 void xed_enc2_check_args_set(xed_bool_t on) {
-    enc2_check_args_set = on;
+    xed_enc2_check_args = on;
 }

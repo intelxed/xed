@@ -1490,7 +1490,8 @@ def add_encoder2_command(env, dag, input_files, config):
               'pysrc/patterns.py',
               'pysrc/gen_setup.py',              
               'pysrc/enc2gen.py',
-              'pysrc/enc2test.py' ]
+              'pysrc/enc2test.py',
+              'pysrc/enc2argcheck.py' ]
 
     enc2args = dummy_obj_t()
     enc_py = env.src_dir_join(enc_py)
@@ -1752,16 +1753,17 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
     if not okay:
         xbc.cdie("[%s] failed. dying..." % phase)
 
+
+    # The unchecked enc2 library
     lib, dll = xbc.make_lib_dll(env,'xed-{}'.format(config))
     x = mbuild.join(env['build_dir'], lib)
-    env['shd_testlib']  = x
-    env['link_testlib'] = x
+    env['shd_enc2_lib']  = x
+    env['link_enc2_lib'] = x
     if  env['shared']:
-        env['shd_testlib']  = mbuild.join(env['build_dir'], dll)
+        env['shd_enc2_lib']  = mbuild.join(env['build_dir'], dll)
         # use gcc for making the shared object
         env['CXX_COMPILER']= env['CC_COMPILER']
 
-    # For the enc2 library:
     gen_src    = mbuild.glob(env['build_dir'],'src','*.c')
     hdr_dir    = mbuild.join(env['build_dir'],'hdr')
     static_src = mbuild.glob(env['src_dir'],'src','enc2','*.c')
@@ -1770,10 +1772,32 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
     env.add_include_dir(hdr_dir)
     objs = env.compile( dag, gen_src + static_src)
     if env['shared']:
-        u = env.dynamic_lib(objs, env['shd_testlib'])
+        u = env.dynamic_lib(objs, env['shd_enc2_lib'])
     else:
-        u = env.static_lib(objs, env['link_testlib'])
+        u = env.static_lib(objs, env['link_enc2_lib'])
     dag.add(env,u)
+
+
+    # The *checked* enc2 library
+    lib_chk, dll_chk = xbc.make_lib_dll(env,'xed-chk-{}'.format(config))
+    x = mbuild.join(env['build_dir'], lib_chk)
+    env['shd_chk_lib']  = x
+    env['link_chk_lib'] = x
+    if  env['shared']:
+        env['shd_chk_lib']  = mbuild.join(env['build_dir'], dll_chk)
+
+    gen_src    = mbuild.glob(env['build_dir'],'src-chk','*.c')
+    static_src = mbuild.glob(env['src_dir'],'src','enc2chk','*.c')
+    
+    objs = env.compile( dag, gen_src + static_src)
+    if env['shared']:
+        u = env.dynamic_lib(objs, env['shd_chk_lib'])
+    else:
+        u = env.static_lib(objs, env['link_chk_lib'])
+    dag.add(env,u)
+
+
+    
     okay = wq_build(env, work_queue, dag)
     if not okay:
         xbc.cdie("XED ENC2Library build failed")
@@ -1783,7 +1807,8 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
     if env['enc2_test']:
         build_enc2_test(env,work_queue, config)
         
-    return (env['shd_testlib'], env['link_testlib'])
+    return (env['shd_enc2_lib'], env['link_enc2_lib'],
+            env['shd_chk_lib'],  env['link_chk_lib']    )
 
 def build_enc2_test(arg_env, work_queue, config):
     '''Build the enc2 tester program for the specified config '''
@@ -1804,7 +1829,7 @@ def build_enc2_test(arg_env, work_queue, config):
     if env.on_linux() and arg_env['shared']:
         env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../kit/lib'"
     
-    lc = env.link(objs + [env['link_testlib'], env['link_libxed']], exe)
+    lc = env.link(objs + [env['link_enc2_lib'], env['link_libxed']], exe)
     cmd = dag.add(env,lc)
     if mbuild.verbose(2):
         mbuild.msgb('BUILDING', "ENC2 config {} test program".format(config))
@@ -1920,7 +1945,7 @@ def build_examples(env):
         env_ex['set_copyright'] = env['set_copyright']
 
     if env['enc2']:
-        env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, '*xed-enc2-*')
+        env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, '*xed-*enc2-*')
 
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
@@ -2029,6 +2054,11 @@ def _gen_lib_names(env):
             lib1 = [ env.expand(x) for x in libnames_template ]
             lib2 = [ mbuild.join(env['build_dir'], c, x ) for x in lib1 ]
             libnames.extend(lib2)
+            
+            env['base_lib'] = 'xed-chk-{}'.format(c)
+            lib1 = [ env.expand(x) for x in libnames_template ]
+            lib2 = [ mbuild.join(env['build_dir'], c, x ) for x in lib1 ]
+            libnames.extend(lib2)
     
     libs = list(filter(lambda x: os.path.exists(x), libnames))
     return libs
@@ -2126,6 +2156,10 @@ def create_install_kit_structure(env, work_queue):
         env['ikit'] = ikit
         
         if env['install_dir']:
+            if env['install_dir'] == env['build_dir']:
+                xbc.die("install_dir cannot have same value as build_dir")
+            if env['install_dir'] == env['wkit'].kit:
+                xbc.die("install_dir cannot have same value as build_dir working kit")
             ikit.kit = env['install_dir']
         else:
             date = time.strftime("%Y-%m-%d")
@@ -2167,7 +2201,7 @@ def create_working_kit_structure(env, work_queue):
     # specified.
     legal_header = _get_legal_header(env)
     
-    wkit.kit = mbuild.join(env['build_dir'], 'kit')
+    wkit.kit = mbuild.join(env['build_dir'], 'wkit')
     
     # We are not going to start clean because otherwise
     # examples rebuild on each rebuild.
@@ -2256,6 +2290,8 @@ def create_working_kit_structure(env, work_queue):
 def copy_working_kit_to_install_dir(env):
     def keeper(fn):
         if fn in ['obj','__pycache__']:
+            return False
+        if fn.endswith('.pyc'):
             return False
         if os.path.isdir(fn):
             return False
@@ -2645,8 +2681,8 @@ def work(env):
 
         test_libs = []
         for config in configs[0:1]: 
-            (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
-            test_libs.append((shd,lnk))
+            (shd_enc2,lnk_enc2, shd_chk, lnk_chk) = build_libxedenc2(env, work_queue, input_files, config)
+            test_libs.append((shd_enc2, lnk_enc2, shd_chk, lnk_chk))
             env['enc2_configs'].append(config)
     legal_header_tagging(env)
     _prep_kit_dirs(env)

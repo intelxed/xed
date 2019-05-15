@@ -60,9 +60,9 @@ def _create_enc_arg_check_function(env, ii, encfn):
 
     for argtype,argname,arginfo in args:
         chk_fn.add_arg('{} {}'.format(argtype, argname), arginfo)
-        
-    chk_fn.add_code('if (xed_enc2_check_args) {')
-    chk_fn.add_code_eol('   const char* pfn = "{}"'.format(  chk_fn.get_function_name() ))
+
+
+    args_to_check = False
     for argtype,argname,arginfo in args:
         if not arginfo:
             die("NO ARGINFO FOR {} {} in {}".format(argtype, argname, ii.iclass))
@@ -73,13 +73,26 @@ def _create_enc_arg_check_function(env, ii, encfn):
         elif 'imm' in arginfo:
             continue # don't check the integer arguments
         else:
-            chk_fn.add_code_eol('   xed_enc2_invalid_{}({}, {},"{}",pfn)'.format(
-                _fixup_arg_type(arginfo),
-                env.mode,
-                argname,
-                argname))
+            args_to_check = True
+            break
 
-    chk_fn.add_code('}') # end of "if (xed_enc2_check_args) ..." clause
+    if args_to_check:
+        chk_fn.add_code('if (xed_enc2_check_args) {')
+        chk_fn.add_code_eol('   const char* pfn = "{}"'.format(  chk_fn.get_function_name() ))
+        for argtype,argname,arginfo in args:
+            if arginfo == 'req':
+                continue # don't check the request structure
+            elif 'int' in arginfo:
+                continue # don't check the integer arguments
+            elif 'imm' in arginfo:
+                continue # don't check the integer arguments
+            else:
+                chk_fn.add_code_eol('   xed_enc2_invalid_{}({}, {},"{}",pfn)'.format(
+                    _fixup_arg_type(arginfo),
+                    env.mode,
+                    argname,
+                    argname))
+        chk_fn.add_code('}') # end of "if (xed_enc2_check_args) ..." clause
             
     # call encoder function call
     s = []
@@ -91,6 +104,8 @@ def _create_enc_arg_check_function(env, ii, encfn):
         s.append("{} /*{}*/".format(argname,arginfo))
     s.append( ')' )
     chk_fn.add_code_eol(''.join(s))
+
+    
 
     _add_arg_check_function(ii, chk_fn)
     

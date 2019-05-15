@@ -50,6 +50,7 @@ END_LEGAL */
 # include "xed-encoder-hl.h"
 # include "xed-patch.h"
 # include "xed-encode-direct.h"
+# include "xed-encode-check.h"
 #endif
 
 #include "xed-util.h"
