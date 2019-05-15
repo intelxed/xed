@@ -21,7 +21,6 @@ END_LEGAL */
 # define XED_ENCODE_CHECK_H
 #include "xed-common-hdrs.h"
 #include "xed-types.h"
-#include <stdarg.h>
 
 
 /// turn off (or on) argument checking if using the checked encoder interface.
