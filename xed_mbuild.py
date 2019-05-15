@@ -1667,7 +1667,8 @@ def build_libxed(env,work_queue):
         generated_library_sources = _remove_src(generated_library_sources,
                                                 'xed-iform-map-init.c')
     if env['encoder']:
-         nongen_lib_sources.extend(_get_src(env,'enc'))
+         for d in ['enc','enc2','enc2chk']:
+             nongen_lib_sources.extend(_get_src(env,d))
     if env['encoder'] and env['decoder']:
          nongen_lib_sources.extend(_get_src(env,'encdec'))
 
@@ -1766,11 +1767,10 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
 
     gen_src    = mbuild.glob(env['build_dir'],'src','*.c')
     hdr_dir    = mbuild.join(env['build_dir'],'hdr')
-    static_src = mbuild.glob(env['src_dir'],'src','enc2','*.c')
     
     dag = mbuild.dag_t('xedenc2lib-{}'.format(config), env=env)
     env.add_include_dir(hdr_dir)
-    objs = env.compile( dag, gen_src + static_src)
+    objs = env.compile( dag, gen_src)
     if env['shared']:
         u = env.dynamic_lib(objs, env['shd_enc2_lib'])
     else:
@@ -1787,9 +1787,8 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
         env['shd_chk_lib']  = mbuild.join(env['build_dir'], dll_chk)
 
     gen_src    = mbuild.glob(env['build_dir'],'src-chk','*.c')
-    static_src = mbuild.glob(env['src_dir'],'src','enc2chk','*.c')
     
-    objs = env.compile( dag, gen_src + static_src)
+    objs = env.compile( dag, gen_src)
     if env['shared']:
         u = env.dynamic_lib(objs, env['shd_chk_lib'])
     else:
