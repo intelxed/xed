@@ -19,10 +19,11 @@ END_LEGAL */
 #include "xed-reg-enum.h"
 #include <stdarg.h>  //varargs va_list etc.
 #include <stdlib.h>  //abort()
+#include <stdio.h>  //vfprintf()
 
 /// Check functions
 
-static void xed_enc2_error(conat char* fmt, ...) { 
+static void xed_enc2_error(const char* fmt, ...) { 
     va_list args;
     va_start(args, fmt);
     vprintf(fmt, args);
@@ -46,7 +47,7 @@ void xed_enc2_invalid_cr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname
     }
 }
 void xed_enc2_invalid_dr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
-    if (reg < XED_REG_D0 || reg > XED_REG_DR7) 
+    if (reg < XED_REG_DR0 || reg > XED_REG_DR7) 
         xed_enc2_error("Bad dr %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
     (void)mode;
 }
@@ -75,7 +76,7 @@ void xed_enc2_invalid_gpr8(xed_uint_t mode, xed_reg_enum_t reg,const char* argna
     if ( (reg < XED_REG_GPR8_FIRST || reg > XED_REG_GPR8_LAST) &&
          (reg < XED_REG_GPR8h_FIRST || reg > XED_REG_GPR8h_LAST) )
         xed_enc2_error("Bad gpr8 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
-    if (mode != 64 && reg >= XED_REG_R8B || (reg >= XED_REG_SPL && reg <= XED_REG_DIL)) 
+    if (mode != 64 && (reg >= XED_REG_R8B || (reg >= XED_REG_SPL && reg <= XED_REG_DIL)))
         xed_enc2_error("Bad gpr8 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
 }
 void xed_enc2_invalid_kreg(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
@@ -119,7 +120,7 @@ void xed_enc2_invalid_ymm(xed_uint_t mode, xed_reg_enum_t reg,const char* argnam
         xed_enc2_error("Bad ymm reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
     if (mode != 64 && reg >= XED_REG_YMM8)
         xed_enc2_error("Bad ymm %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
-}p
+}
 void xed_enc2_invalid_zeroing(xed_uint_t mode, xed_uint_t zeroing,const char* argname,const char* pfn) {
     if (zeroing != 0 && zeroing != 1)
         xed_enc2_error("Bad zeroing value %d arg_name %s in function %s", zeroing, argname, pfn);

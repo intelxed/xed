@@ -712,3 +712,4 @@ xed_uint8_t emit_partial_opcode_and_rmreg_gpr64(xed_enc2_req_t* r,
                                                 xed_uint8_t opcode,
                                                 xed_reg_enum_t rmreg);
 
+#endif
