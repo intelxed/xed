@@ -1477,7 +1477,8 @@ class enc2_config_t(object):
     
     def __str__(self):
         return 'enc2-m{}-a{}'.format(self.mode,self.asz)
-
+    def cpp_define(self):
+        return 'XED_ENC2_CONFIG_M{}_A{}'.format(self.mode, self.asz)
     
 def add_encoder2_command(env, dag, input_files, config):
     enc_py = ['pysrc/genutil.py',
@@ -1821,6 +1822,8 @@ def build_enc2_test(arg_env, work_queue, config):
     gen_hdr_dir = mbuild.join(env['build_dir'],'test','hdr')
     static_src  = mbuild.glob(env['src_dir'],'src','enc2test','*.c')
 
+    env.add_define(config.cpp_define())
+    
     dag = mbuild.dag_t('xedenc2test-{}'.format(config), env=env)
     env.add_include_dir(gen_hdr_dir)
     objs = env.compile( dag, gen_src + static_src )
@@ -2685,7 +2688,7 @@ def work(env):
     env['enc2_configs'] = [] # used for installing kits
     if env['enc2']:
         configs = [ enc2_config_t(64,64),   # popular
-                    #enc2_config_t(32,32),   
+                    enc2_config_t(32,32),   
                     #enc2_config_t(16,16),   # infrequent
                     #enc2_config_t(64,32),   # obscure 
                     #enc2_config_t(32,16),   # more obscure
@@ -2693,7 +2696,7 @@ def work(env):
                    ]
 
         test_libs = []
-        for config in configs[0:1]: 
+        for config in configs: 
             (shd_enc2,lnk_enc2, shd_chk, lnk_chk) = build_libxedenc2(env, work_queue, input_files, config)
             test_libs.append((shd_enc2, lnk_enc2, shd_chk, lnk_chk))
             env['enc2_configs'].append(config)
