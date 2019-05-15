@@ -25,6 +25,9 @@ END_LEGAL */
 #include "xed-operand-accessors.h"
 #include "xed-reg-class.h"
 #include "xed-encode-direct.h"
+#include <stdarg.h>  // va_list, etc
+#include <stdlib.h>  //abort()
+#include <stdio.h>  //vfprintf()
 
 #if !defined(_MSC_VER)
 // Turn off unused-function warning for this file while we are doing early development
@@ -457,18 +460,42 @@ void emit_modrm_sib(xed_enc2_req_t* r) {
         emit_sib(r);
 }
 
-void enc_error(xed_enc2_req_t* r, char const* msg) {
-    // requires compilation with --messages --asserts
-    XED2DIE((xed_log_file,"%s\n", msg));
-    xed_assert(0);
-    (void) r; (void)msg;
+////////////////////////////////////////
+
+/// ERROR HANDLING
+
+static xed_user_abort_handler_t* user_abort_handler = 0;
+
+void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn) {
+    user_abort_handler = fn;
 }
+
+void xed_enc2_error(const char* fmt, ...) { 
+    va_list args;
+
+    if (user_abort_handler) {
+        va_start(args, fmt);
+        (*user_abort_handler)(fmt, args);
+        va_end(args);
+    }
+    else {
+        printf("XED ENC2 ERROR: ");
+        va_start(args, fmt);
+        vprintf(fmt, args);
+        va_end(args);
+        printf(".\n");
+    }
+    abort(); 
+}
+
+
+///////////////////////////////////
 
 
 static void scale_test_and_set(xed_enc2_req_t* r, xed_uint_t scale) {
     xed_uint8_t e = scale_encode[scale];
     if (scale > 8 || e > 8)
-        enc_error(r, "bad scale value");
+        xed_enc2_error( "bad scale value");
     set_sibscale(r, e);
 }
 
@@ -486,11 +513,11 @@ static void enc_modrm_rm_mem_disp_a64_internal(xed_enc2_req_t* r,
 
     if (base == XED_REG_RIP) {
         if (get_mod(r) == 1)
-            enc_error(r,"Wrong size displacement for RIP relative addressing");
+            xed_enc2_error("Wrong size displacement for RIP relative addressing");
         set_mod(r,0); // disp32 for RIP-rel
         set_rm(r,5);
         if (indx != XED_REG_INVALID)
-            enc_error(r, "cannot have index register with RIP as base");
+            xed_enc2_error( "cannot have index register with RIP as base");
     }
     else if (base == XED_REG_INVALID ||
              base == XED_REG_RSP ||
@@ -518,7 +545,7 @@ static void enc_modrm_rm_mem_disp_a64_internal(xed_enc2_req_t* r,
         else {
             offset_indx = indx - XED_REG_GPR64_FIRST;
             if (indx == XED_REG_RSP)
-                enc_error(r, "bad index register == RSP");
+                xed_enc2_error( "bad index register == RSP");
             set_sibindex(r,offset_indx & 7);
             set_rexx(r,offset_indx >= 8);
 
@@ -543,7 +570,7 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
         set_has_disp32(r);// supply a fake zero valued disp
         set_rm(r,5);
         if (indx != XED_REG_INVALID)
-            enc_error(r, "cannot have index register with RIP as base");
+            xed_enc2_error( "cannot have index register with RIP as base");
     }
     else if (base == XED_REG_INVALID ||
              base == XED_REG_RSP ||
@@ -575,7 +602,7 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
         else {
             offset_indx = indx - XED_REG_GPR64_FIRST;
             if (indx == XED_REG_RSP)
-                enc_error(r, "bad index register == RSP");
+                xed_enc2_error( "bad index register == RSP");
             set_sibindex(r,offset_indx & 7);
             set_rexx(r,offset_indx >= 8);
 
@@ -849,7 +876,7 @@ static void enc_modrm_rm_mem_disp_a32_internal(xed_enc2_req_t* r,
         else {
             offset_indx = indx - XED_REG_GPR32_FIRST;
             if (indx == XED_REG_ESP)
-                enc_error(r, "bad index register == ESP");
+                xed_enc2_error( "bad index register == ESP");
             set_sibindex(r,offset_indx & 7);
             set_rexx(r,offset_indx >= 8);
 
@@ -904,7 +931,7 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
         else {
             offset_indx = indx - XED_REG_GPR32_FIRST;
             if (indx == XED_REG_ESP)
-                enc_error(r, "bad index register == ESP");
+                xed_enc2_error( "bad index register == ESP");
             set_sibindex(r,offset_indx & 7);
             set_rexx(r,offset_indx >= 8);
                            
@@ -1167,14 +1194,14 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_DI:            set_rm(r,1); break;
           case XED_REG_INVALID:       set_rm(r,7); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_BP:
         switch(indx) {
           case XED_REG_SI:            set_rm(r,2); break;
           case XED_REG_DI:            set_rm(r,3); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_INVALID:  // look at index
         switch(indx) {
@@ -1183,7 +1210,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_DI:            set_rm(r,5); break;
           case XED_REG_INVALID:       set_rm(r,6); break; // disp16!
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_SI:
         switch(indx) {
@@ -1191,7 +1218,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_BP:            set_rm(r,3); break;
           case XED_REG_INVALID:       set_rm(r,4); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_DI:
         switch(indx) {
@@ -1199,10 +1226,10 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_BP:            set_rm(r,3); break;
           case XED_REG_INVALID:       set_rm(r,5); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       default:
-        enc_error(r,"Bad 16b base reg");
+        xed_enc2_error("Bad 16b base reg");
     }
 }
 
@@ -1221,7 +1248,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_DI:            set_rm(r,1); break;
           case XED_REG_INVALID:       set_rm(r,7); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_BP:
         switch(indx) {
@@ -1229,7 +1256,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_DI:            set_rm(r,3); break;
           case XED_REG_INVALID:       set_rm(r,6); break; 
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_INVALID:  // look at index
         switch(indx) {
@@ -1239,7 +1266,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_DI:            set_rm(r,5); break;
 
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_SI:
         switch(indx) {
@@ -1247,7 +1274,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_BP:            set_rm(r,3); break;
           case XED_REG_INVALID:       set_rm(r,4); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       case XED_REG_DI:
         switch(indx) {
@@ -1255,10 +1282,10 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_BP:            set_rm(r,3); break;
           case XED_REG_INVALID:       set_rm(r,5); break;
           default:
-            enc_error(r,"Bad 16b index reg");
+            xed_enc2_error("Bad 16b index reg");
         }
       default:
-        enc_error(r,"Bad 16b base reg");
+        xed_enc2_error("Bad 16b base reg");
     }
 }
 

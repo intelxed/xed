@@ -28,13 +28,4 @@ END_LEGAL */
 /// values 1, 0
 XED_DLL_EXPORT void xed_enc2_check_args_set(xed_bool_t on);
 
-typedef void (xed_user_abort_handler_t)(const char * restrict format, va_list args);
-
-/// Set a function taking a variable-number-of-arguments (stdarg) to handle
-/// the errors and die.  The argument are like printf with a format string
-/// followed by a varaible number of arguments.
-
-XED_DLL_EXPORT void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn);
-
-
 #endif
