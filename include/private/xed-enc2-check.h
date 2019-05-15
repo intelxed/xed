@@ -30,6 +30,11 @@ void xed_enc2_invalid_seg(xed_uint_t mode, xed_reg_enum_t reg,const char* argnam
 void xed_enc2_invalid_gpr16(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_gpr32(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_gpr64(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_gpr16_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_gpr32_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_gpr64_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+
+
 void xed_enc2_invalid_gpr8(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_kreg(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_kreg_not0(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);

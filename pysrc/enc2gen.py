@@ -169,6 +169,7 @@ def get_index_vals(ii):
         return [True]
     return index_vals
 
+gprv_index_names = { 16:'gpr16_index', 32:'gpr32_index', 64:'gpr64_index'}
 gprv_names = { 8:'gpr8', 16:'gpr16', 32:'gpr32', 64:'gpr64'} # added gpr8 for convenience
 gpry_names = { 16:'gpr32', 32:'gpr32', 64:'gpr64'}
 gprz_names = { 16:'gpr16', 32:'gpr32', 64:'gpr32'}
@@ -2187,7 +2188,7 @@ def add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=-1, osz=0):
         fo.add_arg("{} {}".format(arg_reg_type, var_vsib_index_dct[ii.avx512_vsib]),
                    ii.avx512_vsib)
     elif use_index:
-        fo.add_arg(arg_index, gprv_names[env.asz])
+        fo.add_arg(arg_index, gprv_index_names[env.asz])
         
     if use_index or ii.avx_vsib or ii.avx512_vsib:
         if env.asz in [32,64]:
