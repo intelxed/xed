@@ -1826,7 +1826,7 @@ def build_enc2_test(arg_env, work_queue, config):
     env.add_include_dir(gen_hdr_dir)
     objs = env.compile( dag, gen_src + static_src )
 
-    if env.on_linux() and arg_env['shared']:
+    if env.on_linux() and env['shared']:
         env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../wkit/lib'"
     
     lc = env.link(objs + [env['link_enc2_lib'], env['link_libxed']], exe)
@@ -1836,7 +1836,7 @@ def build_enc2_test(arg_env, work_queue, config):
     okay = wq_build(env, work_queue, dag)
     if not okay:
         xbc.cdie("XED ENC2 config {} test program build failed".format(config))
-    if env.on_mac():
+    if env.on_mac() and env['shared']:
         _modify_search_path_mac(env, exe, '@loader_path/../wkit/lib')
     if mbuild.verbose(2):
         mbuild.msgb("TESTPROG", "XED ENC2 config {} test program build succeeded".format(config))
@@ -1878,8 +1878,9 @@ def _test_perf(env):
         return
 
     # find the XED command line tool binary
-    xed = None    
-    for exe in env['example_exes']:
+    xed = None
+    wkit = env['wkit']
+    for exe in mbuild.glob(wkit.bin, '*'):
         if 'xed' == os.path.basename(exe):
             xed = exe
     if not xed:
@@ -1897,13 +1898,12 @@ def _test_perf(env):
 def _get_xed_min_size(env):
     if not env.on_linux():
         return
-    
+    wkit = env['wkit']
     xed_min = None    
     #check if we have xed-min test
-    for exe in env['example_exes']:
+    for exe in mbuild.glob(wkit.bin, '*'):
         if 'xed-min' in exe:
             xed_min = exe
-
     if not xed_min:
         return 
     
@@ -1919,16 +1919,31 @@ def _get_xed_min_size(env):
     if d:
         elf_sizes.print_table(d)
 
+def _clean_out_wkit_bin(env):        
+    wkit = env['wkit']
+    for f in mbuild.glob(wkit.bin,'*'):
+        mbuild.remove_file(f)
+
+def _copy_examples_to_bin(env,xkit):
+    for f in env['example_exes']:
+        if os.path.exists(f):
+            mbuild.copy_file(f,xkit.bin)
+            _modify_search_path_mac(env,
+                                    mbuild.join( xkit.bin, os.path.basename(f)))
     
+def _test_examples(env):
+    _get_xed_min_size(env)
+    _test_perf(env)
+
+
 def build_examples(env):
-    '''Build examples in the kit'''
+    '''Build examples in the kit. Copy executables to wkit.bin'''
 
     env['example_exes'] = []
     if not set(['examples','cmdline']).intersection(env['targets']):
         return
     
     wkit = env['wkit']
-    
     sys.path.insert(0, wkit.examples )
     import xed_examples_mbuild
     env_ex = copy.deepcopy(env)
@@ -1954,9 +1969,7 @@ def build_examples(env):
         
     if 'example_exes' in env_ex:
         env['example_exes'] = env_ex['example_exes']
-        
-    _get_xed_min_size(env_ex)
-    _test_perf(env_ex)
+
 
 def copy_dynamic_libs_to_kit(env):
     """Copy *all* the dynamic libs that ldd finds to the extlib dir in the
@@ -2186,7 +2199,7 @@ def _prep_kit_dirs(env):
                         pr('doc'),
                         pr('misc') ]
     
-def _make_kit_libs(env,some_kit):
+def _make_kit_dirs(env,some_kit):
     for key,pth in env['kit_dirs']:
         d = mbuild.join(some_kit.kit,pth)
         setattr(some_kit, key, d)
@@ -2205,13 +2218,12 @@ def create_working_kit_structure(env, work_queue):
     
     # We are not going to start clean because otherwise
     # examples rebuild on each rebuild.
-    #if os.path.exists(wkit.kit):
-    #    mbuild.remove_tree(wkit.kit)
     
     mbuild.cmkdir(wkit.kit)
     env['wkit'] = wkit
-    _make_kit_libs(env, wkit)
-
+    _make_kit_dirs(env, wkit)
+    _clean_out_wkit_bin(env)
+    
     boilerplate = env.src_dir_join([ 'LICENSE', 'README.md' ])
     for f in boilerplate:
         if os.path.exists(f):
@@ -2248,7 +2260,7 @@ def create_working_kit_structure(env, work_queue):
             mbuild.msgb("trying to find dll", dll)
             if os.path.exists(dll):
                 mbuild.copy_file(dll,wkit.bin)
-            
+
     # copy the libraries. (DLL goes in bin)
     libs = _gen_lib_names(env)
     if len(libs) == 0:
@@ -2310,16 +2322,14 @@ def copy_working_kit_to_install_dir(env):
                     mbuild.copy_file(f,dst)
         
         # copy the examples that we just built
-        example_exes = env['example_exes']
-        if len(example_exes) > 0:
-            for f in example_exes:
-                if os.path.exists(f):
-                    if not env['debug']:
-                        xbc.strip_file(env,f)
-                    mbuild.copy_file(f,ikit.bin)
-                    _modify_search_path_mac(env, 
-                                            mbuild.join( ikit.bin, 
-                                                         os.path.basename(f)))
+        for f in env['example_exes']:
+            if os.path.exists(f):
+                if not env['debug']:
+                    xbc.strip_file(env,f)
+                mbuild.copy_file(f,ikit.bin)
+                _modify_search_path_mac(env, 
+                                        mbuild.join( ikit.bin, 
+                                                     os.path.basename(f)))
         # for things in the bin, gather their dynamic libs 
         copy_dynamic_libs_to_kit(env)
 
@@ -2476,7 +2486,7 @@ def _test_cmdline_decoder(env,osenv):
 
     output_file = env.build_dir_join('CMDLINE.OUT.txt')
     wkit = env['wkit']
-    cmd = "{}/obj/xed -n 1000 -i {}/obj/xed%(OBJEXT)s".format(wkit.examples, wkit.examples)
+    cmd = "{}/xed -n 1000 -i {}/obj/xed%(OBJEXT)s".format(wkit.bin, wkit.examples)
     cmd  = env.expand_string(cmd)
     (retval, output, oerror) = mbuild.run_command_output_file(cmd,
                                                               output_file,
@@ -2497,7 +2507,7 @@ def _run_canned_tests(env,osenv):
     retval = 0 # success
     env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))
     wkit = env['wkit']
-    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {}/obj ".format(wkit.examples)
+    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
     dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
     if env['cet']:
@@ -2690,7 +2700,11 @@ def work(env):
     _prep_kit_dirs(env)
     create_working_kit_structure(env,work_queue) # wkit
     create_install_kit_structure(env,work_queue) # ikit
+
     build_examples(env) # in the working kit now
+    _copy_examples_to_bin(env,env['wkit'])
+    _test_examples(env)
+
     copy_working_kit_to_install_dir(env)
     # put the doxygen in working kit, if not installing, and the final
     # kit if installing.
