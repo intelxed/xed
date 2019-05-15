@@ -2475,7 +2475,6 @@ def _test_cmdline_decoder(env,osenv):
        works. Returns 0 on success, and nonzero on failure."""
 
     output_file = env.build_dir_join('CMDLINE.OUT.txt')
-    cmd = "%(build_dir)s/wkit/examples/obj/xed -n 1000 -i %(build_dir)s/wkit/examples/obj/xed%(OBJEXT)s"
     wkit = env['wkit']
     cmd = "{}/obj/xed -n 1000 -i {}/obj/xed%(OBJEXT)s".format(wkit.examples, wkit.examples)
     cmd  = env.expand_string(cmd)
@@ -2496,8 +2495,9 @@ def _test_cmdline_decoder(env,osenv):
 def _run_canned_tests(env,osenv):
     """Run the tests from the tests subdirectory"""
     retval = 0 # success
-    env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))        
-    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/wkit/examples/obj " 
+    env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))
+    wkit = env['wkit']
+    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {}/obj ".format(wkit.examples)
 
     dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
     if env['cet']:
