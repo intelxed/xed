@@ -44,7 +44,7 @@ xed_uint64_t total = 0;
 xed_uint_t reps = 100;
 int execute_test(int test_id) {
     xed_decoded_inst_t xedd;
-    xed_uint32_t enclen;
+    xed_uint32_t enclen=0;
     xed_error_enum_t err;
     test_func_t* p = test_functions_m64_a64;
     xed_uint8_t output_buffer[2*XED_MAX_INSTRUCTION_BYTES];
