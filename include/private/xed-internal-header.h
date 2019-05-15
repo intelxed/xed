@@ -37,6 +37,7 @@ END_LEGAL */
 #if defined(XED_ENCODER)
 # include "xed-encode-isa-functions.h"
 # include "xed-encode-direct.h"
+# include "xed-enc2-private.h"
 # include "xed-enc2-check.h"
 #endif
 
