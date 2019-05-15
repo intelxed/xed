@@ -154,6 +154,10 @@ var_imm8_2 = 'imm8_2'
 arg_imm8_2 = 'xed_uint8_t ' + var_imm8_2
 var_imm16 = 'imm16'
 arg_imm16 = 'xed_uint16_t ' + var_imm16
+var_imm16_2 = 'imm16_2'
+arg_imm16_2 = 'xed_uint16_t ' + var_imm16_2
+
+
 var_imm32 = 'imm32'
 arg_imm32 = 'xed_uint32_t ' + var_imm32
 var_imm64 = 'imm64'
@@ -189,6 +193,9 @@ arg_immv_meta = { 0: '', 8:'int8', 16: 'int16', 32: 'int32', 64: 'int64' }
 
 arg_dispv = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32, 64: arg_disp64 }  # index by dispsz
 var_dispv = { 8: arg_disp8, 16:var_disp16, 32:var_disp32, 64:var_disp64 }
+arg_dispz = { 16: arg_disp16, 32: arg_disp32, 64: arg_disp32 }  # index by dispsz
+tag_dispz = { 16: 'int16', 32: 'int32', 64: 'int32' }  # index by dispsz
+var_dispz = { 16:var_disp16, 32:var_disp32, 64:var_disp32 }
 arg_dispv_meta = { 8:'int8', 16:'int16', 32:'int32', 64:'int64' }
 
 widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
@@ -407,6 +414,13 @@ def is_far_xfer_mem(ii):
         for op in _gen_opnds(ii):
             if op_mem(op) and op.oc2 in ['p','p2']:
                 return True
+    return False
+def is_far_xfer_nonmem(ii):
+    if 'FAR_XFER' in ii.attributes:
+        for op in _gen_opnds(ii):
+            if op_mem(op):
+                return False
+        return True
     return False
             
 
@@ -2344,7 +2358,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):   #WRK
+def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):   
     """GPRv-MEMv, MEMv-GPRv, GPRy-MEMv, MEMv-GPRy w/optional imm8 or immz.  This
        will work with anything that has one scalable register operand
        and another fixed or scalable memory operand. """
@@ -2437,7 +2451,33 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):   #WRK
 
         finish_memop(env, ii, fo,  dispsz, immw, rexw_forced=rexw_forced, space='legacy')
         add_enc_func(ii,fo)
+def create_legacy_far_xfer_nonmem(env,ii):  # WRK
+    '''call far and jmp far via ptr+imm. BRDISPz + IMMw'''
+    global var_immz_dct, argv_immz_dct,arg_immz_meta, var_imm16_2, arg_imm16_2
 
+    for osz in [16,32]:
+        fname = '{}_{}_o{}_a{}'.format(enc_fn_prefix,
+                                       ii.iclass.lower(),
+                                       osz,
+                                       env.asz)
+
+        fo = make_function_object(env,ii,fname)
+        fo.add_comment('created by create_legacy_far_xfer_nonmem')
+        fo.add_arg(arg_request,'req')
+        fo.add_arg(arg_immz_dct[osz],arg_immz_meta[osz])
+        fo.add_arg(arg_imm16_2,'int16')
+
+        if osz == 16 and env.mode != 16:
+            fo.add_code_eol('emit(r,0x66)')
+        elif osz == 32 and  env.mode == 16:
+            fo.add_code_eol('emit(r,0x66)')
+        emit_required_legacy_prefixes(ii,fo)
+        emit_opcode(ii,fo)
+        emit_immz(fo,osz);
+        fo.add_code_eol('emit_i16(r,{})'.format(var_imm16_2))
+        add_enc_func(ii,fo)
+
+    
 def create_legacy_far_xfer_mem(env,ii):
     '''call far and jmp far via memop. p has widths 4/6/6 bytes. p2 has 4/6/10 widths'''
     # FIXME: functio naming conflict in 32vs64 modes. Could use osz instead of "mem#BYTES"
@@ -3290,6 +3330,8 @@ def _enc_legacy(env,ii):
     elif orax_immz(ii):
         create_legacy_orax_immz(env,ii)
         
+    elif is_far_xfer_nonmem(ii): 
+        create_legacy_far_xfer_nonmem(env,ii)
     elif is_far_xfer_mem(ii): 
         create_legacy_far_xfer_mem(env,ii)
     elif one_mem_common(ii): # b,w,d,q,dq, v,y
