@@ -25,6 +25,6 @@ END_LEGAL */
 
 /// turn off (or on) argument checking if using the checked encoder interface.
 /// values 1, 0
-XED_DLL_EXPORT void xed_enc2_check_args_set(xed_bool_t on);
+XED_DLL_EXPORT void xed_enc2_set_check_args(xed_bool_t on);
 
 #endif
