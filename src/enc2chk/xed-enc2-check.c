@@ -65,6 +65,30 @@ void xed_enc2_invalid_gpr64(xed_uint_t mode, xed_reg_enum_t reg,const char* argn
     if (reg < XED_REG_GPR64_FIRST || reg > XED_REG_GPR64_LAST) 
         xed_enc2_error("Bad gpr64 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
 }
+
+void xed_enc2_invalid_gpr16_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
+    if (reg != XED_REG_SI && reg != XED_REG_DI) 
+        xed_enc2_error("Bad gpr16 index %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    (void)mode;
+}
+
+void xed_enc2_invalid_gpr32_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
+    if (reg < XED_REG_GPR32_FIRST || reg > XED_REG_GPR32_LAST) 
+        xed_enc2_error("Bad gpr32 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    if (mode != 64 && reg >= XED_REG_R8D) 
+        xed_enc2_error("Bad gpr32 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    if (reg == XED_REG_ESP) 
+        xed_enc2_error("Cannot use ESP as gpr32_index, arg_name %s in function %s", argname, pfn);
+}
+void xed_enc2_invalid_gpr64_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
+    if (reg < XED_REG_GPR64_FIRST || reg > XED_REG_GPR64_LAST) 
+        xed_enc2_error("Bad gpr64 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    if (reg == XED_REG_RSP) 
+        xed_enc2_error("Cannot use RSP as gpr64_index, arg_name %s in function %s", argname, pfn);
+}
+
+
+
 void xed_enc2_invalid_gpr8(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     if ( (reg < XED_REG_GPR8_FIRST || reg > XED_REG_GPR8_LAST) &&
          (reg < XED_REG_GPR8h_FIRST || reg > XED_REG_GPR8h_LAST) )

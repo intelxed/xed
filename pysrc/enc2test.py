@@ -54,11 +54,16 @@ def _add_test_function(ii,fo):
 
 # generate all the register names
 gpr64 = "RAX RCX RDX RBX RSI RDI RBP RSP R8 R9 R10 R11 R12 R13 R14 R15".split()
+gpr64_index = "RAX RCX RDX RBX RSI RDI RBP R8 R9 R10 R11 R12 R13 R14 R15".split()
 
 gpr32_not64 = "EAX ECX EDX EBX ESI EDI EBP ESP".split()
+gpr32_index_not64 = "EAX ECX EDX EBX ESI EDI EBP".split()
+
 gpr16_not64 = "AX CX DX BX SI DI BP SP".split()
+gpr16_index = "SI DI".split()
 gpr8_not64  = "AL CL DL BL SIL DIL BPL SPL".split()
 
+gpr32_index_m64 = gpr32_index_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
 gpr32_m64 = gpr32_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
 gpr16_m64 = gpr16_not64 + "R8W R9W R10W R11W R12W R13W R14W R15W".split()
 gpr8_m64  = gpr8_not64  + "R8B R9B R10B R11B R12B R13B R14B R15B".split()
@@ -91,6 +96,10 @@ def set_test_gen_counters(env):
     env.test_gen_counters = collections.defaultdict(int)
 
     env.test_gen_regs = {
+        # the index versions skip ESP/RSP as it cannot be an index register
+        'gpr64_index': gpr64_index,
+        'gpr32_index': gpr32_index_m64 if env.mode==64 else gpr32_index_not64,
+        'gpr16_index': gpr16_index,
         'gpr64': gpr64,
         'gpr32': gpr32_m64 if env.mode==64 else gpr32_not64,
         'gpr16': gpr16_m64 if env.mode==64 else gpr16_not64,
@@ -169,10 +178,19 @@ def gen_int(env,regkind):
 
 # can vary output randomly, vary by number of calls in this
 # instruction, etc.
+def  get_gpr64_index(env, ii):
+    return gen_reg(env,'gpr64_index')
+def  get_gpr32_index(env, ii):
+    return gen_reg(env,'gpr32_index')
+def  get_gpr16_index(env, ii):
+    return gen_reg(env,'gpr16_index')
+
 def  get_gpr64(env, ii):
     return gen_reg(env,'gpr64')
 def  get_gpr32(env, ii):
     return gen_reg(env,'gpr32')
+
+
 def  get_gpr16(env, ii):
     return gen_reg(env,'gpr16')
 def  get_gpr8(env, ii):  # FIXME: figure out how to use gpr8h values
@@ -264,6 +282,9 @@ def  get_disp64(env, ii):
 
 
 arginfo2value_creator = {
+     'gpr64_index': get_gpr64_index,
+     'gpr32_index': get_gpr32_index,
+     'gpr16_index': get_gpr16_index,
      'gpr64': get_gpr64,
      'gpr32': get_gpr32,
      'gpr16': get_gpr16,
