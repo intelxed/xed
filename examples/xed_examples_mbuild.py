@@ -435,7 +435,8 @@ def build_examples(env, work_queue):
         example_exes.append(ex_compile_and_link(  env_c,
                                                   examples_dag,
                                                   example,
-                                                  [ link_libxed ] + env['xed_enc2_libs']  ))
+                                                  env['xed_enc2_libs'] + [link_libxed]  ))
+        
     if mbuild.verbose(3):
         mbuild.msgb("ALL EXAMPLES", "\n\t".join(example_exes))
 
