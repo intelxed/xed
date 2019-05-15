@@ -97,4 +97,7 @@ typedef void (xed_user_abort_handler_t)(const char* format, va_list args);
 
 XED_DLL_EXPORT void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn);
 
+
+XED_DLL_EXPORT void xed_enc2_error(const char* fmt, ...);
+
 #endif
