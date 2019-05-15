@@ -73,7 +73,7 @@ static void dump(xed_uint8_t* buf, xed_uint32_t len) {
         printf("%02x ",buf[i]);
 }
 
-void my_error_handler(const char * restrict fmt, va_list args) {
+void my_error_handler(const char* fmt, va_list args) {
     printf("LOCAL HANDLER FOR XED ENC2 ERROR: ");
     vprintf(fmt, args);
     printf(".\n");
