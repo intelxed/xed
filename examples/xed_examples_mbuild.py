@@ -247,7 +247,7 @@ def init(env):
     if nchk(env,'xed_lib_dir'):
         env['xed_lib_dir'] = '../lib'
     if nchk(env,'xed_enc2_libs'):
-        env['xed_enc2_libs'] = mbuild.glob(env['xed_lib_dir'],'*xed-enc2-*')
+        env['xed_enc2_libs'] = mbuild.glob(env['xed_lib_dir'],'*xed-*enc2-*')
     if nchk(env,'xed_inc_dir'):
         env['xed_inc_dir'] = ['../include']
     if nchk(env,'xed_dir'):
@@ -385,7 +385,8 @@ def build_examples(env, work_queue):
     enc2_examples = []
     small_examples = ['xed-size.c']
     if env['enc2']:
-        enc2_examples += [ 'xed-enc2-1.c' ]
+        enc2_examples += [ 'xed-enc2-1.c',
+                           'xed-enc2-2.c' ]
     if env['encoder']:
        small_examples += ['xed-ex5-enc.c']
        other_c_examples += ['xed-ex3.c']

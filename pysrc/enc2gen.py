@@ -4720,7 +4720,9 @@ def emit_encode_functions(args,
                           xeddb,
                           function_type_name='encode',
                           fn_list_attr='encoder_functions',
-                          config_prefix='enc2'):
+                          config_prefix='',
+                          srcdir='src',
+                          extra_headers=[]):
     msge("Writing encoder '{}' functions to .c and .h files".format(function_type_name))
     # group the instructions by encoding space to allow for
     # better link-time garbage collection.
@@ -4731,10 +4733,10 @@ def emit_encode_functions(args,
     for space in func_lists.keys():
         func_list.extend(func_lists[space])
 
-    config_descriptor = '{}-m{}-a{}'.format(config_prefix, env.mode, env.asz)                
-    fn_prefix = 'xed-{}'.format(config_descriptor)
+    config_descriptor = 'enc2-m{}-a{}'.format(env.mode, env.asz)                
+    fn_prefix = 'xed-{}{}'.format(config_prefix,config_descriptor)
 
-    gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
+    gen_src_dir = os.path.join(args.gendir, config_descriptor, srcdir)
     gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr', 'xed')
     mbuild.cmkdir(gen_src_dir)
     mbuild.cmkdir(gen_hdr_dir)
@@ -4744,7 +4746,7 @@ def emit_encode_functions(args,
                                                args.xeddir,
                                                gen_src_dir,
                                                gen_hdr_dir,
-                                               #other_headers = extra_headers,
+                                               other_headers = extra_headers,
                                                max_lines_per_file=15000,
                                                is_private_header=False,
                                                extra_public_headers=['xed/xed-interface.h'])
@@ -4868,7 +4870,8 @@ def work():
                                         xeddb,
                                         function_type_name='encode',
                                         fn_list_attr='encoder_functions',
-                                        config_prefix='enc2')
+                                        config_prefix='',
+                                        srcdir='src')
             output_file_emitters.extend(fel)
             
             fel = emit_encode_functions(args,
@@ -4876,7 +4879,9 @@ def work():
                                         xeddb,
                                         function_type_name='encoder-check',
                                         fn_list_attr='enc_arg_check_functions',
-                                        config_prefix='enc2-chk')
+                                        config_prefix='chk-',
+                                        srcdir='src-chk',
+                                        extra_headers = [ 'xed/xed-enc2-m{}-a{}.h'.format(env.mode, env.asz) ])
             output_file_emitters.extend(fel)
 
 

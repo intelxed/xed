@@ -22,7 +22,7 @@ END_LEGAL */
 #include "xed-types.h"
 #include "xed-reg-enum.h"
 
-extern xed_bool_t enc2_check_args_set;
+extern xed_bool_t xed_enc2_check_args;
 
 void xed_enc2_invalid_cr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_dr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);

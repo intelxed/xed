@@ -85,10 +85,4 @@ static XED_INLINE xed_uint32_t xed_enc2_encoded_length(xed_enc2_req_t* r) {
     return r->s.cursor;
 }
 
-
-/// turn off (or on) argument checking if using the checked encoder interface.
-/// values 1, 0
-XED_DLL_EXPORT void xed_enc2_check_args_set(xed_bool_t on);
-
-
 #endif
