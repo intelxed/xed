@@ -31,7 +31,7 @@ from enc2common import *
 def _make_arg_check_function_object(env, enc_fn):
     encoder_fn = enc_fn.get_function_name()
     fname = '{}_chk'.format(encoder_fn)
-    fo = codegen.function_object_t(fname, return_type='void')
+    fo = codegen.function_object_t(fname, return_type='void', dll_export=True)
     return fo
 
 
