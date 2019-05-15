@@ -96,6 +96,8 @@ int main(int argc, char** argv) {
     dstate.mmode=XED_MACHINE_MODE_LONG_64;
 #endif
     xed_enc2_set_error_handler(my_error_handler);
+    // uncomment this line to disable runtime checking
+    //xed_enc2_set_check_args(0);
     
     enclen = test_0_xed_enc_lea_rm_q_bisd32_a64(output_buffer);
     
