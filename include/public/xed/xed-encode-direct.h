@@ -89,7 +89,7 @@ static XED_INLINE xed_uint32_t xed_enc2_encoded_length(xed_enc2_req_t* r) {
 
 
 
-typedef void (xed_user_abort_handler_t)(const char * restrict format, va_list args);
+typedef void (xed_user_abort_handler_t)(const char* format, va_list args);
 
 /// Set a function taking a variable-number-of-arguments (stdarg) to handle
 /// the errors and die.  The argument are like printf with a format string
