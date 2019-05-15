@@ -18,35 +18,11 @@ END_LEGAL */
 #include "xed-types.h"
 #include "xed-reg-enum.h"
 #include "xed/xed-encode-check.h"
-#include <stdarg.h>  //varargs va_list etc.
-#include <stdlib.h>  //abort()
-#include <stdio.h>  //vfprintf()
+#include "xed/xed-encode-direct.h"
+#include "xed-enc2-private.h"
 
 /// Check functions
 
-static xed_user_abort_handler_t* user_abort_handler = 0;
-
-void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn) {
-    user_abort_handler = fn;
-}
-
-static void xed_enc2_error(const char* fmt, ...) { 
-    va_list args;
-
-    if (user_abort_handler) {
-        va_start(args, fmt);
-        (*user_abort_handler)(fmt, args);
-        va_end(args);
-    }
-    else {
-        printf("XED ENC2 ERROR: ");
-        va_start(args, fmt);
-        vprintf(fmt, args);
-        va_end(args);
-        printf(".\n");
-    }
-    abort(); 
-}
 
 void xed_enc2_invalid_cr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     switch(reg) {

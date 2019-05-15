@@ -482,7 +482,10 @@ void enc_modrm_reg_seg(xed_enc2_req_t* r,
 
 void emit_modrm_sib(xed_enc2_req_t* r);
 
-void enc_error(xed_enc2_req_t* r, char const* msg);
+
+
+// ERROR HANDLING
+void xed_enc2_error(const char* fmt, ...);
 
 
 // 64b addressing

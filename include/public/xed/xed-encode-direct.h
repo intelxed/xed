@@ -20,8 +20,10 @@ END_LEGAL */
 #ifndef XED_ENCODE_DIRECT_H
 # define XED_ENCODE_DIRECT_H
 #include "xed-common-hdrs.h"
+#include "xed-portability.h"
 #include "xed-types.h"
 #include "xed-error-enum.h"
+#include <stdarg.h>
 
 typedef struct {
     xed_uint8_t* itext;
@@ -84,5 +86,15 @@ static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r, xed_uint8_t* outpu
 static XED_INLINE xed_uint32_t xed_enc2_encoded_length(xed_enc2_req_t* r) {
     return r->s.cursor;
 }
+
+
+
+typedef void (xed_user_abort_handler_t)(const char * restrict format, va_list args);
+
+/// Set a function taking a variable-number-of-arguments (stdarg) to handle
+/// the errors and die.  The argument are like printf with a format string
+/// followed by a varaible number of arguments.
+
+XED_DLL_EXPORT void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn);
 
 #endif
