@@ -2536,6 +2536,8 @@ def _run_canned_tests(env,osenv):
         codes.append('XOP')
     if env['via_enabled']:
         codes.append('VIA')
+    if env['amd_enabled']:
+        codes.append('AMD')
     for c in codes:
         cmd += ' -c ' + c
 
