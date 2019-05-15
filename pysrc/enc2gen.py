@@ -300,6 +300,10 @@ def op_gpr32(op):
 def op_gpr64(op):
     return op_luf_start(op,'GPR64')
 
+def op_ptr(op):
+    if 'PTR' in op.name:
+        return True
+    return False
 def op_reg(op):
     if 'REG' in op.name:
         return True
@@ -416,12 +420,17 @@ def is_far_xfer_mem(ii):
                 return True
     return False
 def is_far_xfer_nonmem(ii):
+    p,i=0,0
     if 'FAR_XFER' in ii.attributes:
         for op in _gen_opnds(ii):
-            if op_mem(op):
+            if op_ptr(op):
+                p =+ 1
+            elif op_imm16(op):
+                i += 1
+            else:
                 return False
         return True
-    return False
+    return i==1 and p==1
             
 
 def op_reg_invalid(op):
@@ -1029,8 +1038,7 @@ def create_legacy_one_imm_fixed(env,ii):
     if op.oc2 == 'b':
         fo.add_code_eol('emit(r,{})'.format(var_imm8))
     elif op.oc2 == 'w':
-        fo.add_code_eol('emit(r,{}&0xFF)'.format(var_imm16))
-        fo.add_code_eol('emit(r,({}>>8)&0xFF)'.format(var_imm16))
+        fo.add_code_eol('emit_i16(r,{})'.format(var_imm16))
 
     add_enc_func(ii,fo)
 
