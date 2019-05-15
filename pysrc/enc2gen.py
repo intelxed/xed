@@ -373,13 +373,13 @@ def one_gpr_reg_one_mem_scalable(ii):
             return False
     return n==1 and r==1
 
-def one_gpr_reg_one_mem_fixed(ii): # FIXME starting with 'b', expand...
+def one_gpr_reg_one_mem_fixed(ii):
     n,r = 0,0
     for op in _gen_opnds(ii):
-        # FIXME: sloppy could bemixing b and d operands
-        if op_mem(op) and op.oc2 in ['b','d', 'q','dq']:
+        # FIXME: sloppy could bemixing b and d operands, for example
+        if op_mem(op) and op.oc2 in ['b', 'w', 'd', 'q','dq']:
             n += 1
-        elif op_gpr8(op) or op_gpr32(op) or op_gpr64(op):
+        elif op_gpr8(op) or op_gpr16(op) or op_gpr32(op) or op_gpr64(op):
             r += 1
         else:
             return False
@@ -2324,7 +2324,7 @@ def get_reg_width(op):
     die("NOT REACHED")
             
 def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):   
-    """REGb-GPRb or GPRb-REGb also GPR32-MEMd, GPR64-MEMq or MEMdq to start"""
+    """REGb-GPRb or GPRb-REGb also GPR32-MEMd, GPR64-MEMq or MEMdq  and MEMw+GPR16"""
     global var_reg0, widths_to_bits
     dispsz_list = get_dispsz_list(env)
 
@@ -2337,7 +2337,6 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
     if width == None:
         _dump_fields(ii)
         die("Bad search for width")
-        
     
     widths = [width]
     mem_reg_order = 'mr' if regn==1 else 'rm'
