@@ -2185,7 +2185,7 @@ def create_install_kit_structure(env, work_queue):
         if os.path.exists(ikit.kit): # start clean
             mbuild.remove_tree(ikit.kit)
         mbuild.cmkdir(ikit.kit)
-        _make_kit_libs(env, ikit)
+        _make_kit_dirs(env, ikit)
 
 def _prep_kit_dirs(env):
     def pr(x):
