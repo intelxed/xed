@@ -19,6 +19,7 @@ END_LEGAL */
 #include "xed-interface.h"
 #include "xed-get-time.h"
 #include "enc2-m64-a64/hdr/xed/xed-enc2-m64-a64.h"
+#include "enc2-m32-a32/hdr/xed/xed-enc2-m32-a32.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include "xed-histogram.h"
@@ -28,6 +29,11 @@ typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
 extern test_func_t test_functions_m64_a64[];
 extern char const* test_functions_m64_a64_str[];
 extern const xed_iclass_enum_t test_functions_m64_a64_iclass[];
+
+extern test_func_t test_functions_m32_a32[];
+extern char const* test_functions_m32_a32_str[];
+extern const xed_iclass_enum_t test_functions_m32_a32_iclass[];
+
 
 xed_state_t dstate;
 
@@ -42,20 +48,18 @@ static void dump(xed_uint8_t* buf, xed_uint32_t len) {
 
 xed_uint64_t total = 0;
 xed_uint_t reps = 100;
-int execute_test(int test_id) {
+int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass_enum_t ref_iclass) {
     xed_decoded_inst_t xedd;
     xed_uint32_t enclen=0;
     xed_error_enum_t err;
-    test_func_t* p = test_functions_m64_a64;
     xed_uint8_t output_buffer[2*XED_MAX_INSTRUCTION_BYTES];
-    char const* fn_name = test_functions_m64_a64_str[test_id];
     xed_uint64_t t1, t2, delta;
     xed_uint_t i;
 
     for(i=0;i<reps;i++)    {
         t1 = xed_get_time();
         //printf("Calling test function %d\n",test_id);
-        enclen = (*p[test_id])(output_buffer);
+        enclen = (*base[test_id])(output_buffer);
         t2 = xed_get_time();
         if (t2>t1) {
             delta = t2-t1;
@@ -85,10 +89,10 @@ int execute_test(int test_id) {
     xed3_operand_set_wbnoinvd(&xedd, 1);
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err == XED_ERROR_NONE) {
-        if (xed_decoded_inst_get_iclass(&xedd) != test_functions_m64_a64_iclass[test_id]) {
+        if (xed_decoded_inst_get_iclass(&xedd) != ref_iclass) {
             printf("\ttest id %d ICLASS MISMATCH: observed: %s expected: %s (%s)\n", test_id,
                    xed_iclass_enum_t2str( xed_decoded_inst_get_iclass(&xedd) ),
-                   xed_iclass_enum_t2str( test_functions_m64_a64_iclass[test_id] ),
+                   xed_iclass_enum_t2str( ref_iclass ),
                    fn_name);
             printf("\t");
             dump(output_buffer,enclen);
@@ -104,21 +108,21 @@ int execute_test(int test_id) {
         return 1;
     }
 
-    
     return 0;
 }
 
 
-int test_m64_a64(void) {
+int test_all(test_func_t* base, const char** str_table, const xed_iclass_enum_t* iclass_table) {
     xed_uint32_t test_id=0;
     xed_uint32_t errors = 0;
-    test_func_t* p = test_functions_m64_a64;
     xed_uint64_t t1, t2, delta;
+    test_func_t* p = base;
     
-
     t1 = xed_get_time();
     while(*p) {
-        if (execute_test(test_id)) {
+        char const* fn_name = str_table[test_id];
+        const xed_iclass_enum_t ref_iclass = iclass_table[test_id];
+        if (execute_test(test_id, base, fn_name, ref_iclass)) {
             printf("test %d failed\n", test_id);
             errors++;
         }
@@ -138,8 +142,19 @@ int test_m64_a64(void) {
     return errors;
 }
 
+
 int main(int argc, char** argv) {
     int i=0, m=0, test_id=0, errors=0;
+#if defined(XED_ENC2_CONFIG_M64_A64)
+    test_func_t* base = test_functions_m64_a64;
+    const char** str_table = test_functions_m64_a64_str;
+    xed_iclass_enum_t const* iclass_table = test_functions_m64_a64_iclass;
+#elif defined(XED_ENC2_CONFIG_M32_A32)
+    test_func_t* base = test_functions_m32_a32;
+    const char** str_table = test_functions_m32_a32_str;
+    xed_iclass_enum_t const* iclass_table = test_functions_m32_a32_iclass;
+#endif
+    
     xed_tables_init();    
     xed_state_zero(&dstate);
     dstate.mmode=XED_MACHINE_MODE_LONG_64;
@@ -151,11 +166,13 @@ int main(int argc, char** argv) {
     xed_histogram_initialize(&histo);
 
     // count tests
-    test_func_t* p = test_functions_m64_a64;
+    test_func_t* p = base;
     while (*p) {
         i++;
         p++;
     }
+
+
     m = i;
     printf("Total tests %d\n",m);
     for(i=1;i<argc;i++) {
@@ -164,8 +181,10 @@ int main(int argc, char** argv) {
             printf("Test ID too large (range: 0...%d)\n",m-1);
             return 1;
         }
-         
-        if (execute_test(test_id)) {
+        
+        char const* fn_name = str_table[test_id];
+        xed_iclass_enum_t ref_iclass = iclass_table[test_id];
+        if (execute_test(test_id, base, fn_name, ref_iclass)) {
             printf("test id %d failed\n", test_id);
             errors++;
         }
@@ -175,7 +194,7 @@ int main(int argc, char** argv) {
     }
     if (argc==1) {
         printf("Testing all...\n");
-        errors = test_m64_a64(); // test all
+        errors = test_all(base, str_table, iclass_table);
     }
     xed_histogram_dump(&histo, 1);
     return errors>0;
