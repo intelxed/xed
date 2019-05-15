@@ -308,8 +308,8 @@ DEC ENC              ; BUILDDIR/xed -64 -de  0f1bff
 DEC ENC              ; BUILDDIR/xed -64 -de  f30f1bff
 DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 bd 79 f2 45
 DEC AVX AMD          ; BUILDDIR/xed -64 -d c4 c3 bd 79 f2 45
-DEC AVX              ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45
-DEC ENC AVX          ; BUILDDIR/xed -64 -de c4 c3 39 79 f2 45
+DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45
+DEC ENC AVX AMD      ; BUILDDIR/xed -64 -de c4 c3 39 79 f2 45
 DEC AVX              ; BUILDDIR/xed -d c5 fd 57 c0
 DEC ENC AVX          ; BUILDDIR/xed -64 -de c5 fd 57 c0
 ENC AVX              ; BUILDDIR/xed-ex3 -64 vxorpd ymm0 ymm0 ymm0
