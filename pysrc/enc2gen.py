@@ -404,7 +404,7 @@ def one_xmm_reg_one_mem_fixed_opti8(ii): # allows gpr32, gpr64, mmx too
 def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
     n = 0
     for op in _gen_opnds(ii):
-        if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y',
+        if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y', 's',
                                      'mem14','mem28','mem94','mem108',
                                      'mxsave', 'mprefetch',
                                      'mem16', 's64', 'mfpxenv' ]:
@@ -2566,6 +2566,8 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         widths = ['d']
         if env.mode == 64:
             widths.append('q')
+    elif op.oc2 == 's':
+        widths = ['w','d']
     else:
         widths = [op.oc2]
 
@@ -2586,7 +2588,6 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         ispace = itertools.product(get_index_vals(ii), dispsz_list)
         for use_index, dispsz in ispace:
             memaddrsig = get_memsig(env.asz, use_index, dispsz)
-
             
             fname = '{}_{}{}_{}_{}{}_a{}'.format(enc_fn_prefix,
                                                   ii.iclass.lower(),
@@ -2603,7 +2604,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
 
             rexw_forced = False
 
-            if op.oc2 in [ 'y','v']:                  # handle scalable ops
+            if op.oc2 in [ 'y','v', 's']:                  # handle scalable ops
                 if width == 'w' and env.mode != 16:
                     fo.add_code_eol('emit(r,0x66)')
                 elif width == 'd' and  env.mode == 16:
