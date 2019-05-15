@@ -36,6 +36,7 @@ import codegen
 import read_xed_db
 import gen_setup
 import enc2test
+import enc2argcheck
 
 from enc2common import *
 
@@ -4706,13 +4707,52 @@ class enc_env_t(object):
     
 
 def dump_output_file_names(fn, fe_list):
-    global output_file_emitters
     ofn = os.path.join(fn)
     o = open(ofn,"w")
     for fe in fe_list:
         o.write(fe.full_file_name + "\n")
     o.close()
 
+
+
+def emit_encode_functions(args,
+                          env,
+                          xeddb,
+                          function_type_name='encode',
+                          fn_list_attr='encoder_functions',
+                          config_prefix='enc2'):
+    msge("Writing encoder '{}' functions to .c and .h files".format(function_type_name))
+    # group the instructions by encoding space to allow for
+    # better link-time garbage collection.
+    func_lists = collections.defaultdict(list)
+    for ii in xeddb.recs:
+        func_lists[ii.space].extend( getattr(ii, fn_list_attr) )
+    func_list = []
+    for space in func_lists.keys():
+        func_list.extend(func_lists[space])
+
+    config_descriptor = '{}-m{}-a{}'.format(config_prefix, env.mode, env.asz)                
+    fn_prefix = 'xed-{}'.format(config_descriptor)
+
+    gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
+    gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr', 'xed')
+    mbuild.cmkdir(gen_src_dir)
+    mbuild.cmkdir(gen_hdr_dir)
+
+    file_emitters = codegen.emit_function_list(func_list,
+                                               fn_prefix,
+                                               args.xeddir,
+                                               gen_src_dir,
+                                               gen_hdr_dir,
+                                               #other_headers = extra_headers,
+                                               max_lines_per_file=15000,
+                                               is_private_header=False,
+                                               extra_public_headers=['xed/xed-interface.h'])
+
+    return file_emitters
+
+
+    
 def work():
     
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
@@ -4815,47 +4855,29 @@ def work():
             
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
-                create_enc_fn(env, ii)
+                # create encoder function. sets ii.encoder_functions
+                create_enc_fn(env, ii) 
                 spew(ii)
+                # create test(s) sets ii.enc_test_functions
                 enc2test.create_test_fn_main(env, ii)
+                # create arg checkers.  sets ii.enc_arg_check_functions
+                enc2argcheck.create_arg_check_fn_main(env, ii) 
 
-
-
+            fel = emit_encode_functions(args,
+                                        env,
+                                        xeddb,
+                                        function_type_name='encode',
+                                        fn_list_attr='encoder_functions',
+                                        config_prefix='enc2')
+            output_file_emitters.extend(fel)
             
-            msge("Writing encoder 'encode' functions to .c and .h files")
-
-            # group the instructions by encoding space to allow for
-            # better link-time garbage collection.
-            func_lists = collections.defaultdict(list)
-            for ii in xeddb.recs:
-                func_lists[ii.space].extend(ii.encoder_functions)
-            func_list = []
-            for space in func_lists.keys():
-                func_list.extend(func_lists[space])
-                
-            config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)                
-            fn_prefix = 'xed-{}'.format(config_descriptor)
-            
-            gen_src_dir = os.path.join(args.gendir, config_descriptor, 'src')
-            gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'hdr', 'xed')
-            mbuild.cmkdir(gen_src_dir)
-            mbuild.cmkdir(gen_hdr_dir)
-                                       
-            file_emitters = codegen.emit_function_list(func_list,
-                                                       fn_prefix,
-                                                       args.xeddir,
-                                                       gen_src_dir,
-                                                       gen_hdr_dir,
-                                                       #other_headers = extra_headers,
-                                                       max_lines_per_file=15000,
-                                                       is_private_header=False,
-                                                       extra_public_headers=['xed/xed-interface.h'])
-
-            output_file_emitters.extend(file_emitters)
-
-
-
-
+            fel = emit_encode_functions(args,
+                                        env,
+                                        xeddb,
+                                        function_type_name='encoder-check',
+                                        fn_list_attr='enc_arg_check_functions',
+                                        config_prefix='enc2-chk')
+            output_file_emitters.extend(fel)
 
 
             msge("Writing encoder 'test' functions to .c and .h files")
