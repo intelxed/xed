@@ -1217,7 +1217,7 @@ def two_fixed_gprs(ii):
     c = 0 # operand count, avoid stray stuff
     for op in _gen_opnds(ii):
         c += 1
-        for w in [32,64]:
+        for w in [16,32,64]:
             if op_luf_start(op,'GPR{}'.format(w)):
                 if not width:
                     width = w
@@ -1305,7 +1305,9 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
 
 def create_legacy_two_fixed_gprs(env,ii):
     op = first_opnd(ii)
-    if op_luf_start(op,'GPR32'):
+    if op_luf_start(op,'GPR16'):
+        create_legacy_two_scalable_regs(env,ii,[16])
+    elif op_luf_start(op,'GPR32'):
         create_legacy_two_scalable_regs(env,ii,[32])
     elif op_luf_start(op,'GPR64'):
         create_legacy_two_scalable_regs(env,ii,[64])
@@ -1318,8 +1320,14 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
     global arg_imm8, var_imm8
 
     extra_names = _implicit_reg_names(ii)
+
+    if len(osz_list) == 1:
+        opsig = 2*'r{}'.format(osz_list[0])
+    else:
+        opsig = 2*'rv'
+    if ii.has_immz or ii.has_imm8:
+        opsig += 'i'
     
-    opsig = 'rvrv' if not (ii.has_immz or ii.has_imm8) else 'rvrvi'
     if modrm_reg_first_operand(ii):
         opnd_order = {0:'reg', 1:'rm'}
     else:
@@ -1371,8 +1379,9 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
         emit_required_legacy_prefixes(ii,fo)
         if not ii.osz_required:
             if osz == 16 and env.mode != 16:
-                # add a 66 prefix outside of 16b mode, to create 16b osz
-                fo.add_code_eol('emit(r,0x66)')
+                if ii.iclass not in ['ARPL']: # FIXME: make a generic property default16b  or something...
+                    # add a 66 prefix outside of 16b mode, to create 16b osz
+                    fo.add_code_eol('emit(r,0x66)')
             if osz == 32 and env.mode == 16:
                 # add a 66 prefix outside inside 16b mode to create 32b osz
                 fo.add_code_eol('emit(r,0x66)')
