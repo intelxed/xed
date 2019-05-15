@@ -827,4 +827,7 @@ XED_DLL_EXPORT xed_uint8_t emit_partial_opcode_and_rmreg_gpr64(xed_enc2_req_t* r
                                                                xed_uint8_t opcode,
                                                                xed_reg_enum_t rmreg);
 
+/// turn off (or on) argument checking if using the checked encoder interface.
+/// values 1, 0
+XED_DLL_EXPORT void xed_enc2_check_args_set(xed_bool_t on);
 #endif

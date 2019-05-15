@@ -567,8 +567,9 @@ def make_doxygen_api(env, work_queue, install_dir):
     
 def mkenv():
     """External entry point: create the environment"""
-    if not mbuild.check_python_version(3,4):
-        xbc.cdie("Need python 3.4.x or later")
+    if 0: # change this 1 to  0 if you must use python 2.7
+        if not mbuild.check_python_version(3,4):
+            xbc.cdie("Need python 3.4.x or later.  Suggested >= 3.7")
 
     # create an environment, parse args
     env = mbuild.env_t()
@@ -2220,7 +2221,6 @@ def create_working_kit_structure(env, work_queue):
         xbc.cdie("No libraries found for install")
 
     for f in libs:
-        print(f)
         if f.find('.dll') != -1:
             mbuild.copy_file(f, wkit.bin)
         else:
@@ -2648,9 +2648,7 @@ def work(env):
             (shd,lnk) = build_libxedenc2(env, work_queue, input_files, config)
             test_libs.append((shd,lnk))
             env['enc2_configs'].append(config)
-    
     legal_header_tagging(env)
-
     _prep_kit_dirs(env)
     create_working_kit_structure(env,work_queue) # wkit
     create_install_kit_structure(env,work_queue) # ikit
