@@ -287,6 +287,8 @@ def op_cr(op):
     return op_luf_start(op,'CR')
 def op_dr(op):
     return op_luf_start(op,'DR')
+def op_gprz(op):
+    return op_luf_start(op,'GPRz')
 def op_gprv(op):
     return op_luf_start(op,'GPRv')
 def op_gpry(op):
@@ -366,9 +368,19 @@ def one_gpr_reg_one_mem_scalable(ii):
     n,r = 0,0
     for op in _gen_opnds(ii):
         if op_agen(op) or (op_mem(op) and op.oc2 in ['v']):
-            n = n + 1
+            n += 1
         elif op_gprv(op):
-            r = r + 1
+            r += 1
+        else:
+            return False
+    return n==1 and r==1
+def one_gpr_reg_one_mem_zp(ii):
+    n,r = 0,0
+    for op in _gen_opnds(ii):
+        if op_mem(op) and op.oc2 in ['p','z']:
+            n += 1
+        elif op_gprz(op):
+            r += 1
         else:
             return False
     return n==1 and r==1
@@ -3294,6 +3306,8 @@ def _enc_legacy(env,ii):
     elif mov_without_modrm(ii):  # A0...A3, not B0,B8
         create_legacy_mov_without_modrm(env,ii)
         
+    elif one_gpr_reg_one_mem_zp(ii):
+        create_legacy_one_gpr_reg_one_mem_scalable(env,ii)
     elif one_gpr_reg_one_mem_scalable(ii):
         create_legacy_one_gpr_reg_one_mem_scalable(env,ii)
     elif one_scalable_gpr_and_one_mem(ii): # mem fixed or scalable, optional imm8,immz
