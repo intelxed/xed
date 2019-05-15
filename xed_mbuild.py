@@ -1827,7 +1827,7 @@ def build_enc2_test(arg_env, work_queue, config):
     objs = env.compile( dag, gen_src + static_src )
 
     if env.on_linux() and arg_env['shared']:
-        env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../kit/lib'"
+        env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../wkit/lib'"
     
     lc = env.link(objs + [env['link_enc2_lib'], env['link_libxed']], exe)
     cmd = dag.add(env,lc)
@@ -1837,7 +1837,7 @@ def build_enc2_test(arg_env, work_queue, config):
     if not okay:
         xbc.cdie("XED ENC2 config {} test program build failed".format(config))
     if env.on_mac():
-        _modify_search_path_mac(env, exe, '@loader_path/../kit/lib')
+        _modify_search_path_mac(env, exe, '@loader_path/../wkit/lib')
     if mbuild.verbose(2):
         mbuild.msgb("TESTPROG", "XED ENC2 config {} test program build succeeded".format(config))
 
@@ -2475,7 +2475,9 @@ def _test_cmdline_decoder(env,osenv):
        works. Returns 0 on success, and nonzero on failure."""
 
     output_file = env.build_dir_join('CMDLINE.OUT.txt')
-    cmd = "%(build_dir)s/kit/examples/obj/xed -n 1000 -i %(build_dir)s/kit/examples/obj/xed%(OBJEXT)s"
+    cmd = "%(build_dir)s/wkit/examples/obj/xed -n 1000 -i %(build_dir)s/wkit/examples/obj/xed%(OBJEXT)s"
+    wkit = env['wkit']
+    cmd = "{}/obj/xed -n 1000 -i {}/obj/xed%(OBJEXT)s".format(wkit.examples, wkit.examples)
     cmd  = env.expand_string(cmd)
     (retval, output, oerror) = mbuild.run_command_output_file(cmd,
                                                               output_file,
@@ -2495,7 +2497,7 @@ def _run_canned_tests(env,osenv):
     """Run the tests from the tests subdirectory"""
     retval = 0 # success
     env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))        
-    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/kit/examples/obj " 
+    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/wkit/examples/obj " 
 
     dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
     if env['cet']:
