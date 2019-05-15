@@ -64,6 +64,7 @@ void xed_enc2_invalid_gpr32(xed_uint_t mode, xed_reg_enum_t reg,const char* argn
 void xed_enc2_invalid_gpr64(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     if (reg < XED_REG_GPR64_FIRST || reg > XED_REG_GPR64_LAST) 
         xed_enc2_error("Bad gpr64 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    (void) mode;
 }
 
 void xed_enc2_invalid_gpr16_index(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
@@ -85,6 +86,7 @@ void xed_enc2_invalid_gpr64_index(xed_uint_t mode, xed_reg_enum_t reg,const char
         xed_enc2_error("Bad gpr64 %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
     if (reg == XED_REG_RSP) 
         xed_enc2_error("Cannot use RSP as gpr64_index, arg_name %s in function %s", argname, pfn);
+    (void) mode;
 }
 
 
@@ -141,6 +143,7 @@ void xed_enc2_invalid_ymm(xed_uint_t mode, xed_reg_enum_t reg,const char* argnam
 void xed_enc2_invalid_zeroing(xed_uint_t mode, xed_uint_t zeroing,const char* argname,const char* pfn) {
     if (zeroing != 0 && zeroing != 1)
         xed_enc2_error("Bad zeroing value %d arg_name %s in function %s", zeroing, argname, pfn);
+    (void) mode;
 }
 void xed_enc2_invalid_zmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     if (reg < XED_REG_ZMM_FIRST || reg > XED_REG_ZMM_LAST) 
