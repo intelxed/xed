@@ -418,7 +418,7 @@ xed_patch_relbr
 xed_patch_disp
 xed_enc2_error
 xed_enc2_set_error_handler
-xed_enc2_check_args_set
+xed_enc2_set_check_args
 xed_enc2_invalid_cr
 xed_enc2_invalid_dr
 xed_enc2_invalid_gpr16

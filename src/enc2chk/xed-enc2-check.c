@@ -153,6 +153,6 @@ void xed_enc2_invalid_zmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argnam
 }
 
 xed_bool_t xed_enc2_check_args = 1;
-void xed_enc2_check_args_set(xed_bool_t on) {
+void xed_enc2_set_check_args(xed_bool_t on) {
     xed_enc2_check_args = on;
 }
