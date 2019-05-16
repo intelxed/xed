@@ -1470,6 +1470,14 @@ def add_arg_immz(fo,osz):
 def add_arg_immv(fo,osz): 
     global arg_immv_dct, arg_immv_meta
     fo.add_arg(arg_immv_dct[osz], arg_immv_meta[osz])
+
+vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }    
+def set_evexll_vl(ii,fo,vl):
+    global vlmap
+    if not ii.rounding_form and not ii.sae_form:
+        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]),
+                        'VL={}'.format(ii.vl))
+
     
 def emit_immz(fo,osz):
     global var_immz_dct
@@ -3964,7 +3972,6 @@ def create_evex_xyzmm_and_gpr(env,ii):
         
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
 
     opnd_sig = make_opnd_signature(ii)
     if rounding:
@@ -4020,8 +4027,7 @@ def create_evex_xyzmm_and_gpr(env,ii):
         fo.add_code_eol('set_mod(r,3)')
 
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
-        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]),
-                        'VL={}'.format(ii.vl))
+        set_evexll_vl(ii,fo,vl)
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
         if rounding:
@@ -4093,7 +4099,6 @@ def create_evex_regs_mem(env, ii):
 
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
     
     opnd_sig = make_opnd_signature(ii)
     mask_versions = [False]
@@ -4159,7 +4164,7 @@ def create_evex_regs_mem(env, ii):
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
-        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        set_evexll_vl(ii,fo,vl)
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
             
@@ -4255,7 +4260,6 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
     opnd_sig = make_opnd_signature(ii)
 
     mask_versions = [False]
@@ -4311,7 +4315,7 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
-        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        set_evexll_vl(ii,fo,vl)
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
             
@@ -4395,7 +4399,6 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }
     opnd_sig = make_opnd_signature(ii)
 
     mask_versions = [False]
@@ -4465,7 +4468,7 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
-        fo.add_code_eol('set_evexll(r,{})'.format(vlmap[vl]))
+        set_evexll_vl(ii,fo,vl)
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
             
