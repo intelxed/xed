@@ -4781,10 +4781,12 @@ def gather_stats(db):
 
 # object used for the env we pass to the generator
 class enc_env_t(object):
-    def __init__(self, mode, asz):
+    def __init__(self, mode, asz, test_checked_interface=False):
         self.mode = mode
         self.asz = asz
         self.function_names = {}
+        self.test_checked_interface = test_checked_interface
+        self.tests_per_form = 1
     def __str__(self):
         s = []
         s.append("mode {}".format(self.mode))
@@ -4866,6 +4868,10 @@ def work():
                             action="store_true",
                             default=False,
                             help='all modes and addressing')
+    arg_parser.add_argument('-chk',
+                            action="store_true",
+                            default=False,
+                            help='Test checked interface')
     arg_parser.add_argument('--gendir',
                             help='output directory, default: "obj"',
                             default='obj')
@@ -4940,6 +4946,7 @@ def work():
             env = enc_env_t(mode, asz)
             enc2test.set_test_gen_counters(env)
             env.tests_per_form = 1
+            env.test_checked_interface = args.chk
             
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
@@ -4984,7 +4991,8 @@ def work():
             config_descriptor = 'enc2-m{}-a{}'.format(mode,asz)
             fn_prefix = 'xed-test-{}'.format(config_descriptor)
             test_fn_hdr='{}.h'.format(fn_prefix)
-            enc2_fn_hdr='xed/xed-{}.h'.format(config_descriptor)            
+            enc2_fn_hdr='xed/xed-{}.h'.format(config_descriptor)
+            enc2_chk_fn_hdr='xed/xed-chk-{}.h'.format(config_descriptor)            
             gen_src_dir = os.path.join(args.gendir, config_descriptor, 'test', 'src')
             gen_hdr_dir = os.path.join(args.gendir, config_descriptor, 'test', 'hdr')
             mbuild.cmkdir(gen_src_dir)
@@ -4995,7 +5003,7 @@ def work():
                                                        args.xeddir,
                                                        gen_src_dir,
                                                        gen_hdr_dir,
-                                                       other_headers = [enc2_fn_hdr],
+                                                       other_headers = [enc2_fn_hdr, enc2_chk_fn_hdr],
                                                        max_lines_per_file=15000)
 
             output_file_emitters.extend(file_emitters)

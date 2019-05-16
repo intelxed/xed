@@ -18,22 +18,25 @@ END_LEGAL */
 
 #include "xed-interface.h"
 #include "xed-get-time.h"
-#include "enc2-m64-a64/hdr/xed/xed-enc2-m64-a64.h"
+#if defined(XED_ENC2_CONFIG_M64_A64)
+# include "enc2-m64-a64/hdr/xed/xed-enc2-m64-a64.h"
+#elif defined(XED_ENC2_CONFIG_M32_A32)
 #include "enc2-m32-a32/hdr/xed/xed-enc2-m32-a32.h"
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include "xed-histogram.h"
 
 typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
-
+#if defined(XED_ENC2_CONFIG_M64_A64)
 extern test_func_t test_functions_m64_a64[];
 extern char const* test_functions_m64_a64_str[];
 extern const xed_iclass_enum_t test_functions_m64_a64_iclass[];
-
+#elif  defined(XED_ENC2_CONFIG_M32_A32)
 extern test_func_t test_functions_m32_a32[];
 extern char const* test_functions_m32_a32_str[];
 extern const xed_iclass_enum_t test_functions_m32_a32_iclass[];
-
+#endif
 
 xed_state_t dstate;
 

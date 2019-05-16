@@ -41,6 +41,8 @@ def _make_test_function_object(env, enc_fn):
     encoder_fn = enc_fn.get_function_name()
     versions = env.test_function_names[encoder_fn]
     fname = 'test_{}_{}'.format(versions, encoder_fn)
+    if env.test_checked_interface:
+        fname = '{}_chk'.format(fname)
     env.test_function_names[encoder_fn] += 1
     
     fo = codegen.function_object_t(fname, return_type='xed_uint32_t')
@@ -61,12 +63,12 @@ gpr32_index_not64 = "EAX ECX EDX EBX ESI EDI EBP".split()
 
 gpr16_not64 = "AX CX DX BX SI DI BP SP".split()
 gpr16_index = "SI DI".split()
-gpr8_not64  = "AL CL DL BL SIL DIL BPL SPL".split()
+gpr8_not64  = "AL CL DL BL".split()
 
 gpr32_index_m64 = gpr32_index_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
 gpr32_m64 = gpr32_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
 gpr16_m64 = gpr16_not64 + "R8W R9W R10W R11W R12W R13W R14W R15W".split()
-gpr8_m64  = gpr8_not64  + "R8B R9B R10B R11B R12B R13B R14B R15B".split()
+gpr8_m64  = gpr8_not64  + "SIL DIL BPL SPL R8B R9B R10B R11B R12B R13B R14B R15B".split()
 
 gpr8h = "AH CH DH BH".split()
 
@@ -372,7 +374,10 @@ def _create_enc_test_functions(env, ii, encfn):
     
     # test function call
     s = []
-    s.append(  encfn.get_function_name() )
+    fname =  encfn.get_function_name()
+    if env.test_checked_interface:
+        fname = '{}_chk'.format(fname)
+    s.append(  fname )
     s.append( '(' )
     for i,(argtype,argname,arginfo) in enumerate(args):
         if i>0:
