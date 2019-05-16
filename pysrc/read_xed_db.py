@@ -222,6 +222,8 @@ class xed_reader_t(object):
                 return '256'
             elif 'VL=2' in pattern:
                 return '512'
+            elif 'FIX_ROUND_LEN512' in pattern:
+                return '512'
             elif space == 'vex':
                 return 'LIG'
             elif space == 'evex':
