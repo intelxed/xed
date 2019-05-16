@@ -661,11 +661,11 @@ void enc_modrm_rm_mem_b_a64(xed_enc2_req_t* r,
 
 // 64b avx2 vsib
 
-static void enc_modrm_vsib_xmm_bis_a64_internal_nodisp(xed_enc2_req_t* r,
-                                                       xed_reg_enum_t base,
-                                                       xed_reg_enum_t indx,
-                                                       xed_uint_t scale,
-                                                       xed_reg_enum_t vreg_first) {
+static void enc_modrm_vsib_bis_a64_internal_nodisp(xed_enc2_req_t* r,
+                                                   xed_reg_enum_t base,
+                                                   xed_reg_enum_t indx,
+                                                   xed_uint_t scale,
+                                                   xed_reg_enum_t vreg_first) {
     const xed_uint_t index_offset = indx-vreg_first;
     const xed_uint_t base_offset  = base-XED_REG_GPR64_FIRST;
     set_mod(r,0); // no-disp (may be overwritten if funky base specified)
@@ -673,7 +673,7 @@ static void enc_modrm_vsib_xmm_bis_a64_internal_nodisp(xed_enc2_req_t* r,
     set_has_sib(r);
 
     
-    set_sibindex(r, index_offset & 7); // encode xmm as sibscale
+    set_sibindex(r, index_offset & 7); // encode x/y/zmm as sibscale
     set_rexx(r, index_offset >= 8);
     set_evexvv(r, !(index_offset >= 16));
     
@@ -711,7 +711,7 @@ void enc_avx_modrm_vsib_xmm_bis_a64(xed_enc2_req_t* r,
                                     xed_reg_enum_t base,
                                     xed_reg_enum_t indx,
                                     xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
+    enc_modrm_vsib_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
 }
 
 
@@ -738,7 +738,7 @@ void enc_avx_modrm_vsib_ymm_bis_a64(xed_enc2_req_t* r,
                                     xed_reg_enum_t base,
                                     xed_reg_enum_t indx,
                                     xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
+    enc_modrm_vsib_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
 }
 
 void enc_avx_modrm_vsib_ymm_bisd8_a64(xed_enc2_req_t* r,
@@ -766,14 +766,14 @@ void enc_avx512_modrm_vsib_xmm_bis_a64(xed_enc2_req_t* r,
                                        xed_reg_enum_t base,
                                        xed_reg_enum_t indx,
                                        xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
+    enc_modrm_vsib_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
 }
 
 void enc_avx512_modrm_vsib_xmm_bisd8_a64(xed_enc2_req_t* r,
                                          xed_reg_enum_t base,
                                          xed_reg_enum_t indx,
                                          xed_uint_t scale) {
-    enc_modrm_vsib_a64_internal_disp(r,base,indx,scale, XED_REG_YMM_FIRST);
+    enc_modrm_vsib_a64_internal_disp(r,base,indx,scale, XED_REG_XMM_FIRST);
     set_mod(r,1); // disp8
     set_has_disp8(r); 
 }
@@ -792,7 +792,7 @@ void enc_avx512_modrm_vsib_ymm_bis_a64(xed_enc2_req_t* r,
                                        xed_reg_enum_t base,
                                        xed_reg_enum_t indx,
                                        xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
+    enc_modrm_vsib_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
 }
 
 void enc_avx512_modrm_vsib_ymm_bisd8_a64(xed_enc2_req_t* r,
@@ -818,7 +818,7 @@ void enc_avx512_modrm_vsib_zmm_bis_a64(xed_enc2_req_t* r,
                                        xed_reg_enum_t base,
                                        xed_reg_enum_t indx,
                                        xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_ZMM_FIRST);
+    enc_modrm_vsib_bis_a64_internal_nodisp(r,base,indx,scale,XED_REG_ZMM_FIRST);
 }
 
 void enc_avx512_modrm_vsib_zmm_bisd8_a64(xed_enc2_req_t* r,
@@ -994,11 +994,11 @@ void enc_modrm_rm_mem_b_a32(xed_enc2_req_t* r,
 
 
 
-static void enc_modrm_vsib_xmm_bis_a32_internal_nodisp(xed_enc2_req_t* r,
-                                                       xed_reg_enum_t base,
-                                                       xed_reg_enum_t indx,
-                                                       xed_uint_t scale,
-                                                       xed_reg_enum_t vreg_first) {
+static void enc_modrm_vsib_bis_a32_internal_nodisp(xed_enc2_req_t* r,
+                                                   xed_reg_enum_t base,
+                                                   xed_reg_enum_t indx,
+                                                   xed_uint_t scale,
+                                                   xed_reg_enum_t vreg_first) {
     const xed_uint_t index_offset = indx-vreg_first;
     const xed_uint_t base_offset  = base-XED_REG_GPR32_FIRST;
     set_mod(r,0); // no-disp (may be overwritten if funky base specified)
@@ -1011,7 +1011,7 @@ static void enc_modrm_vsib_xmm_bis_a32_internal_nodisp(xed_enc2_req_t* r,
     
     scale_test_and_set(r,scale);
 
-    if (base == XED_REG_RBP || base == XED_REG_R13) {
+    if (base == XED_REG_EBP || base == XED_REG_R13D) {
         set_mod(r,1);              // overwriting earlier setting
         set_has_disp8(r);          // force a disp8 with value 0.
     }
@@ -1043,7 +1043,7 @@ void enc_avx_modrm_vsib_xmm_bis_a32(xed_enc2_req_t* r,
                                     xed_reg_enum_t base,
                                     xed_reg_enum_t indx,
                                     xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
+    enc_modrm_vsib_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
 }
 
 
@@ -1070,7 +1070,7 @@ void enc_avx_modrm_vsib_ymm_bis_a32(xed_enc2_req_t* r,
                                     xed_reg_enum_t base,
                                     xed_reg_enum_t indx,
                                     xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
+    enc_modrm_vsib_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
 }
 
 void enc_avx_modrm_vsib_ymm_bisd8_a32(xed_enc2_req_t* r,
@@ -1098,14 +1098,14 @@ void enc_avx512_modrm_vsib_xmm_bis_a32(xed_enc2_req_t* r,
                                        xed_reg_enum_t base,
                                        xed_reg_enum_t indx,
                                        xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
+    enc_modrm_vsib_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_XMM_FIRST);
 }
 
 void enc_avx512_modrm_vsib_xmm_bisd8_a32(xed_enc2_req_t* r,
                                          xed_reg_enum_t base,
                                          xed_reg_enum_t indx,
                                          xed_uint_t scale) {
-    enc_modrm_vsib_a32_internal_disp(r,base,indx,scale, XED_REG_YMM_FIRST);
+    enc_modrm_vsib_a32_internal_disp(r,base,indx,scale, XED_REG_XMM_FIRST);
     set_mod(r,1); // disp8
     set_has_disp8(r); 
 }
@@ -1124,7 +1124,7 @@ void enc_avx512_modrm_vsib_ymm_bis_a32(xed_enc2_req_t* r,
                                        xed_reg_enum_t base,
                                        xed_reg_enum_t indx,
                                        xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
+    enc_modrm_vsib_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_YMM_FIRST);
 }
 
 void enc_avx512_modrm_vsib_ymm_bisd8_a32(xed_enc2_req_t* r,
@@ -1150,7 +1150,7 @@ void enc_avx512_modrm_vsib_zmm_bis_a32(xed_enc2_req_t* r,
                                        xed_reg_enum_t base,
                                        xed_reg_enum_t indx,
                                        xed_uint_t scale) {
-    enc_modrm_vsib_xmm_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_ZMM_FIRST);
+    enc_modrm_vsib_bis_a32_internal_nodisp(r,base,indx,scale,XED_REG_ZMM_FIRST);
 }
 
 void enc_avx512_modrm_vsib_zmm_bisd8_a32(xed_enc2_req_t* r,
