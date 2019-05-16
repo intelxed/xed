@@ -567,9 +567,11 @@ def make_doxygen_api(env, work_queue, install_dir):
     
 def mkenv():
     """External entry point: create the environment"""
-    if 0: # change this 1 to  0 if you must use python 2.7
+    if not mbuild.check_python_version(2,7):
+        xbc.cdie("Need python 2.7 or later.  Suggested >= 3.7")
+    if sys.version_info.major >= 3:
         if not mbuild.check_python_version(3,4):
-            xbc.cdie("Need python 3.4.x or later.  Suggested >= 3.7")
+            xbc.cdie("Need python 3.4 or later.  Suggested >= 3.7")
 
     # create an environment, parse args
     env = mbuild.env_t()
