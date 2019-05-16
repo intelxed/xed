@@ -232,7 +232,7 @@ class generator_inputs_t(object):
         return ' '.join(s)
 
     def encode_command(self, xedsrc, extra_args=None, amd_enabled=True):
-        """Produce a encoder generator command"""
+        """Produce an encoder generator command"""
         s = []
         s.append( '%(pythonarg)s' )
         # s.append("-3") # python3.0 compliance checking using python2.6
@@ -365,13 +365,15 @@ def run_encode_generator(gc, env):
     return (retval, [] )
 
 def _encode_command2(args):
-    """Produce a encoder2 generator command"""
+    """Produce an encoder2 generator command."""
     s = []
     s.append( '%(pythonarg)s' )
     s.append( aq(mbuild.join(args.xeddir, 'pysrc', 'enc2gen.py')))
     s.append('--xeddir %s' % aq(args.xeddir))
     s.append('--gendir %s' % aq(args.gendir))
-    s.extend( args.config.as_args() )  
+    s.extend( args.config.as_args() )
+    if args.test_checked_interface:
+        s.append('-chk' )  
     s.append('--output-file-list %s' % aq(args.enc2_output_file))
     return ' '.join(s)
 
@@ -643,6 +645,7 @@ def mkenv():
                                  asan=False,
                                  enc2=False,
                                  enc2_test=False,
+                                 enc2_test_checked=False,
                                  first_lib=None,
                                  last_lib=None)
 
@@ -940,6 +943,10 @@ def xed_args(env):
                           action="store_true",
                           dest="enc2_test",
                           help="Build the enc2 fast encoder *tests*. Longer build.")
+    env.parser.add_option("--enc2-test-checked", 
+                          action="store_true",
+                          dest="enc2_test_checked",
+                          help="Build the enc2 fast encoder *tests*. Test the checked interface. Longer build.")
 
     env.parse_args(env['xed_defaults'])
 
@@ -1501,6 +1508,7 @@ def add_encoder2_command(env, dag, input_files, config):
     enc2args.enc2_hash_file   = env.build_dir_join('.mbuild.hash.xedencgen2-{}'.format(config))
     enc2args.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES-{}.txt'.format(config))
     enc2args.config = config
+    enc2args.test_checked_interface = env['enc2_test_checked']
     if os.path.exists(enc2args.enc2_output_file):
         need_to_rebuild_enc = need_to_rebuild(enc2args.enc2_output_file,
                                               enc2args.enc2_hash_file)
@@ -1807,7 +1815,7 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
         mbuild.msgb("LIBRARY", "XED ENC2 build succeeded")
 
     if env['enc2_test']:
-        build_enc2_test(env,work_queue, config)
+        build_enc2_test(env, work_queue, config)
         
     return (env['shd_enc2_lib'], env['link_enc2_lib'],
             env['shd_chk_lib'],  env['link_chk_lib']    )
@@ -1833,7 +1841,7 @@ def build_enc2_test(arg_env, work_queue, config):
     if env.on_linux() and env['shared']:
         env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../wkit/lib'"
     
-    lc = env.link(objs + [env['link_enc2_lib'], env['link_libxed']], exe)
+    lc = env.link(objs + [ env['link_chk_lib'], env['link_enc2_lib'], env['link_libxed']], exe)
     cmd = dag.add(env,lc)
     if mbuild.verbose(2):
         mbuild.msgb('BUILDING', "ENC2 config {} test program".format(config))
@@ -2660,7 +2668,11 @@ def macro_args(env):
         env.add_to_var('CXXFLAGS', fcmd)
         env.add_to_var('CCFLAGS', fcmd)
         env.add_to_var('LINKFLAGS', fcmd)
+        
+    if env['enc2_test_checked']:
+        env['enc2_test']=True
     if env['enc2_test']:
+        env['enc2']=True
         env['enc']=True
 
 def work(env):
