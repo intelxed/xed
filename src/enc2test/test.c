@@ -157,11 +157,14 @@ int main(int argc, char** argv) {
     
     xed_tables_init();    
     xed_state_zero(&dstate);
+#if defined(XED_ENC2_CONFIG_M64_A64)
     dstate.mmode=XED_MACHINE_MODE_LONG_64;
-    //dstate.mmode=XED_MACHINE_MODE_LEGACY_32;
+#elif defined(XED_ENC2_CONFIG_M32_A32)
+    dstate.mmode=XED_MACHINE_MODE_LEGACY_32;
+    dstate.stack_addr_width=XED_ADDRESS_WIDTH_32b;
+#endif
     //dstate.mmode=XED_MACHINE_MODE_LEGACY_16;
     //dstate.stack_addr_width=XED_ADDRESS_WIDTH_16b;
-    //dstate.stack_addr_width=XED_ADDRESS_WIDTH_32b;
     
     xed_histogram_initialize(&histo);
 
