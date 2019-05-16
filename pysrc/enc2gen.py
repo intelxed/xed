@@ -4641,8 +4641,8 @@ def create_enc_fn(env, ii):
             # 64b addressing not accessible from 64b mode
             ii.encoder_skipped = True 
             return
-        if ii.space == 'legacy' and ii.rexw_prefix == '1':
-            # legacy ops with REX.W=1 are 64b mode only
+        if ii.space == 'legacy' and (ii.eosz == 'o64' or ii.rexw_prefix == '1'):
+            # legacy ops with REX.W=1 or EOSZ=3 are 64b mode only
             ii.encoder_skipped = True 
             return
             
@@ -4656,8 +4656,8 @@ def create_enc_fn(env, ii):
             # 64b addressing not accessible from 16b mode
             ii.encoder_skipped = True 
             return
-        if ii.space == 'legacy' and ii.rexw_prefix == '1':
-            # legacy ops with REX.W=1 are 64b mode only
+        if ii.space == 'legacy' and (ii.eosz == 'o64' or ii.rexw_prefix == '1'):
+            # legacy ops with REX.W=1 or EOSZ=3 are 64b mode only
             ii.encoder_skipped = True 
             return
 
