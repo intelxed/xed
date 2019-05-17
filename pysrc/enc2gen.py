@@ -397,7 +397,7 @@ def one_gpr_reg_one_mem_fixed(ii):
             return False
     return n==1 and r==1
 
-simd_widths = ['b','w','xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'xuq', 'zd']
+simd_widths = ['b','w','xud', 'qq', 'dq', 'q', 'ps','pd', 'ss', 'sd', 'd', 'm384', 'm512', 'xuq', 'zd']
 
 def one_xmm_reg_one_mem_fixed_opti8(ii): # allows gpr32, gpr64, mmx too
     global simd_widths
@@ -418,8 +418,9 @@ def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
     for op in _gen_opnds(ii):
         if op_mem(op) and op.oc2 in ['b','w','d','q','dq','v', 'y', 's',
                                      'mem14','mem28','mem94','mem108',
-                                     'mxsave', 'mprefetch',
-                                     'mem16', 's64', 'mfpxenv' ]:
+                                     'mxsave', 'mprefetch', 
+                                     'mem16', 's64', 'mfpxenv',
+                                     'm384', 'm512' ]:
             n = n + 1
         else:
             return False
