@@ -88,6 +88,10 @@ static XED_INLINE xed_uint32_t xed_enc2_encoded_length(xed_enc2_req_t* r) {
 }
 
 
+/// Emit a legacy segment prefix byte in to the specified request's output buffer.
+XED_DLL_EXPORT void emit_seg_prefix(xed_enc2_req_t* r,
+                                    xed_reg_enum_t reg);
+
 
 typedef void (xed_user_abort_handler_t)(const char* format, va_list args);
 
