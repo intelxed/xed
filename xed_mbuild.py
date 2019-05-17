@@ -606,6 +606,8 @@ def mkenv():
                                  cpx=True,
                                  cnl=True,
                                  icl=True,
+                                 tgl=True,
+                                 spr=True,
                                  future=True,
                                  knl=True,
                                  knm=True,
@@ -810,6 +812,14 @@ def xed_args(env):
                           action="store_false", 
                           dest="icl", 
                           help="Do not include ICL.")
+    env.parser.add_option("--no-tgl",
+                          action="store_false", 
+                          dest="tgl", 
+                          help="Do not include TGL.")
+    env.parser.add_option("--no-spr",
+                          action="store_false", 
+                          dest="spr", 
+                          help="Do not include SPR.")
     env.parser.add_option("--no-future",
                           action="store_false", 
                           dest="future", 
@@ -1250,7 +1260,7 @@ def _configure_libxed_extensions(env):
     if env['avx']:
         env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl']):
+    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['knc']:
         env.add_define('XED_SUPPORTS_KNC')
@@ -1372,6 +1382,14 @@ def _configure_libxed_extensions(env):
         if env['cpx']:
             _add_normal_ext(env,'cpx')
             _add_normal_ext(env,'bf16')
+        if env['tgl']:
+            _add_normal_ext(env,'tgl')
+            _add_normal_ext(env,'cet')
+            _add_normal_ext(env,'movdir')
+            _add_normal_ext(env,'vp2intersect')
+        if env['spr']:
+            _add_normal_ext(env,'spr')
+            _add_normal_ext(env,'enqcmd')
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
@@ -2595,7 +2613,7 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, KNL, KNM Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, SPR, KNL, KNM Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
@@ -2603,6 +2621,8 @@ def verify_args(env):
         env['skx'] = False
         env['clx'] = False
         env['cpx'] = False
+        env['tgl'] = False
+        env['spr'] = False
         env['cnl'] = False
         env['icl'] = False
         env['knl'] = False
@@ -2622,6 +2642,8 @@ def verify_args(env):
         env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
+        env['tgl'] = False
+        env['spr'] = False
         env['knl'] = False
         env['knm'] = False
         env['future'] = False
@@ -2642,8 +2664,13 @@ def verify_args(env):
     if not env['cnl']:
         env['icl'] = False
     if not env['icl']:
+        env['tgl'] = False
+    if not env['tgl']:
+        env['cet'] = False
+        env['spr'] = False
+    if not env['spr']:
         env['future'] = False
-
+        
     if env['knc']: 
         mbuild.warn("Disabling AVX512, FUTURE, for KNC build\n\n\n")
         env['knl'] = False
@@ -2653,11 +2680,10 @@ def verify_args(env):
         env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
+        env['tgl'] = False
+        env['spr'] = False
         env['future'] = False
         
-    if not env['future']:
-        env['cet'] = False
-
     if env['use_elf_dwarf_precompiled']:
        env['use_elf_dwarf'] = True
        

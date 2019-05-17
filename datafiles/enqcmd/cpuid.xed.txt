@@ -15,10 +15,5 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+XED_ISA_SET_ENQCMD:   enqcmd.7.0.ecx.29
 
-# This is intentionally *completely* inaccurate but Intel is not
-# saying which chips will have these instructions publicly at this
-# time and I had to put the new instructions on some chip so I made
-# somethign up. 
-
-FUTURE: ALL_OF(SPR) PT
