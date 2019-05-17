@@ -15,10 +15,6 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-# This is intentionally *completely* inaccurate but Intel is not
-# saying which chips will have these instructions publicly at this
-# time and I had to put the new instructions on some chip so I made
-# somethign up. 
-
-FUTURE: ALL_OF(SPR) PT
+XED_ISA_SET_AVX512_VP2INTERSECT_128:   avx512_vp2intersect.7.0.edx.8 avx512vl.7.0.ebx.31
+XED_ISA_SET_AVX512_VP2INTERSECT_256:   avx512_vp2intersect.7.0.edx.8 avx512vl.7.0.ebx.31
+XED_ISA_SET_AVX512_VP2INTERSECT_512:   avx512_vp2intersect.7.0.edx.8
