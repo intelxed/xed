@@ -1361,4 +1361,15 @@ xed_uint8_t emit_partial_opcode_and_rmreg_gpr64(xed_enc2_req_t* r,
 }
 
 
+void emit_seg_prefix(xed_enc2_req_t* r,
+                     xed_reg_enum_t reg) {
+    static const xed_uint8_t seg_prefixes[] = { 0x26, 0x2e, 0x36, 0x3e, 0x64, 0x65 };
+    if (reg >= XED_REG_ES && reg <= XED_REG_GS) {
+        xed_uint_t offset = reg - XED_REG_ES;
+        emit_u8(r,seg_prefixes[offset]);
+    }
+    else {
+        xed_enc2_error("Bad segment register prefix");
+    }
+}
 
