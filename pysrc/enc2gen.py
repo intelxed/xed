@@ -3136,12 +3136,12 @@ def create_legacy_crc32(env,ii):
 
 
 
-def is_movdir64(ii):
-    return ii.iclass == 'MOVDIR64B'
+def is_movdir64_or_enqcmd(ii):
+    return ii.iclass in [ 'MOVDIR64B', 'ENQCMD', 'ENQCMDS']
 
-def create_legacy_movdir64(env,ii):
-    '''MOVDIR64B is a strange instr. It has 2 memops, one in an
-       address-space-sized A_GPR_R and the other a normal
+def create_legacy_movdir64_or_enqcmd(env,ii):
+    '''MOVDIR64B and ENQCMD* are a little unusual. They have 2 memops, one
+       in an address-space-sized A_GPR_R and the other a normal
        memop.'''
     global arg_request, enc_fn_prefix, gprv_names
     ispace = itertools.product( get_index_vals(ii), get_dispsz_list(env))
@@ -3392,8 +3392,8 @@ def _enc_legacy(env,ii):
         create_mov_seg(env,ii)        
     elif is_mov_crc32(ii) or is_lsl_regreg(ii):
         create_legacy_crc32(env,ii)
-    elif is_movdir64(ii):
-        create_legacy_movdir64(env,ii)
+    elif is_movdir64_or_enqcmd(ii):
+        create_legacy_movdir64_or_enqcmd(env,ii)
 
 
 def several_xymm_gpr_imm8(ii): # optional imm8
