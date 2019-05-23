@@ -559,7 +559,7 @@ def make_doxygen_api(env, work_queue, install_dir):
     inputs.append(subs['XED_INPUT_TOP'])
 
     kitdir = get_kit(e2)
-    inputs.extend(  mbuild.glob(kitdir,'include','*'))
+    inputs.extend(  mbuild.glob(kitdir,'include', 'xed', '*'))
     inputs.extend(  mbuild.glob(kitdir,'examples','*.c'))
     inputs.extend(  mbuild.glob(kitdir,'examples','*.cpp'))
     inputs.extend(  mbuild.glob(kitdir,'examples','*.[Hh]'))
