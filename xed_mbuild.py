@@ -962,10 +962,6 @@ def xed_args(env):
 
 def init_once(env):
     xbc.init_once(env)
-    if 'doc' in env['targets']:
-        if 'install' not in env['targets']:
-            xbc.cdie( "Doxygen API will not get built if not building a\n" +
-                       """XED kit using the "install" command line target.""")
     
 def init(env):
     if env['pythonarg']:
