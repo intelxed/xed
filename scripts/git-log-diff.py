@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #BEGIN_LEGAL
 #
 #Copyright (c) 2019 Intel Corporation
@@ -29,7 +29,8 @@ import subprocess
 
 def setup():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-l", "--lines", default=30, help="number of lines to grab")
+    parser.add_argument("-la", "--linesa", default=30, help="number of lines to grab from branch A")
+    parser.add_argument("-lb", "--linesb", default=30, help="number of lines to grab from branch B")    
     parser.add_argument("-p", "--pick", default=False, action='store_true', help="number of lines to grab")
     parser.add_argument("abr", help="A branch")
     parser.add_argument("bbr", help="B branch")
@@ -59,22 +60,26 @@ def compare(args, abr, bbr, alines, blines):
             
         if found == False:
             if first:
-                print "Present in {}, missing from {}:\n".format(abr,bbr)
+                print("Present in {}, missing from {}:\n".format(abr,bbr))
                 first = False
-            print "   {}".format(" ".join(a))
-            picks.append(a[0])
-    print
+            keep = True
+            if '(I)' in a[1]:
+                keep = False
+            print("{}  {}".format("    " if keep else "DROP", " ".join(a)))
+            if keep:
+                picks.append((a[0],a[1]))
+    print()
     
     if args.pick:
         picks.reverse()
-        for p in picks:
-            print "  git cherry-pick -x  {}".format(p)
-        print
+        for commitid, descr in picks:
+            print("  git cherry-pick -x  {}  # {}".format(commitid, descr))
+        print()
 
 def main():
     args = setup()
-    alines = parse_file(args.abr, args.lines)
-    blines = parse_file(args.bbr, args.lines)
+    alines = parse_file(args.abr, args.linesa)
+    blines = parse_file(args.bbr, args.linesb)
     compare(args,args.abr, args.bbr, alines, blines)
     compare(args,args.bbr, args.abr, blines, alines)
     return 0
