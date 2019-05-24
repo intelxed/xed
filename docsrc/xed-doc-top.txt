@@ -870,13 +870,17 @@ xed_uint32_t create_lea_64b(xed_uint8_t* output_buffer)
     xed_enc_lea_rm_q_bisd32_a64_chk(&request,
                                     dest,
                                     base, index, scale, disp32);
-    return xed_enc2_encoded_length(r);
+    return xed_enc2_encoded_length(&request);
 }
 @endcode
+
 The call to #xed_enc2_req_t_init() zeros out the request structure and
-sets up the pointer to the output buffer.  The call to
+sets up the pointer to the output buffer.  It is very important to
+zero the request structure before using it as much of the ENC2 code is
+optimized to not set zero-valued bits to zero.  The call to
 #xed_enc2_encoded_length() returns the number of bytes placed in the
-output buffer. This is useful for subsequent encoder requrests.
+output buffer. Getting the length of the encoding is useful for
+setting the correct buffer pointer for subsequent encoder requests.
 
 
 See examples/xed-enc2-1.c and
