@@ -59,28 +59,28 @@ static XED_INLINE void set_has_sib(xed_enc2_req_t* r) {
 
 
 static XED_INLINE void set_rexw(xed_enc2_req_t* r) {
-    r->s.u.s.rexw = 1;
+    r->s.rexw = 1;
 }
 static XED_INLINE void set_rexr(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.u.s.rexr = v;
+    r->s.rexr = v;
 }
 static XED_INLINE void set_rexb(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.u.s.rexb = v;
+    r->s.rexb = v;
 }
 static XED_INLINE void set_rexx(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.u.s.rexx = v;
+    r->s.rexx = v;
 }
 static XED_INLINE xed_uint_t get_rexw(xed_enc2_req_t* r) {
-    return r->s.u.s.rexw;
+    return r->s.rexw;
 }
 static XED_INLINE xed_uint_t get_rexx(xed_enc2_req_t* r) {
-    return r->s.u.s.rexx;
+    return r->s.rexx;
 }
 static XED_INLINE xed_uint_t get_rexr(xed_enc2_req_t* r) {
-    return r->s.u.s.rexr;
+    return r->s.rexr;
 }
 static XED_INLINE xed_uint_t get_rexb(xed_enc2_req_t* r) {
-    return r->s.u.s.rexb;
+    return r->s.rexb;
 }
 
 static XED_INLINE void set_mod(xed_enc2_req_t* r, xed_uint_t v) {
@@ -295,7 +295,7 @@ static XED_INLINE void set_need_rex(xed_enc2_req_t* r) {
     r->s.need_rex = 1;
 }
 static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
-    if (r->s.u.rex || r->s.need_rex)
+    if (r->s.rexw || r->s.rexr || r->s.rexb || r->s.rexx || r->s.need_rex)
         emit_rex(r);
 }
 

@@ -41,8 +41,26 @@ static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffe
     return xed_enc2_encoded_length(r);
 }
 
+xed_uint32_t test_0_xed_enc_vpblendvb_xxxx(xed_uint8_t* output_buffer)
+{
+    xed_enc2_req_t* r;
+    xed_reg_enum_t reg0;
+    xed_reg_enum_t reg1;
+    xed_reg_enum_t reg2;
+    xed_reg_enum_t reg3;
+    xed_enc2_req_t request;
+    xed_enc2_req_t_init(&request, output_buffer);
+    r = &request;
+    reg0 = XED_REG_XMM6;
+    reg1 = XED_REG_XMM7;
+    reg2 = XED_REG_XMM8;
+    reg3 = XED_REG_XMM9;
+    xed_enc_vpblendvb_xxxx(r /*req*/,reg0 /*xmm*/,reg1 /*xmm*/,reg2 /*xmm*/,reg3 /*xmm*/);
+    return xed_enc2_encoded_length(r);
+}
+
 // The decoder drags in a lot of stuff to the final executable.
-//#define DECO
+#define DECO
 
 #if defined(DECO)
 static void disassemble(xed_decoded_inst_t* xedd)
@@ -64,6 +82,25 @@ static void disassemble(xed_decoded_inst_t* xedd)
     else
         printf("Disassembly: %%ERROR%%\n");
 }
+
+static int decode(xed_uint8_t* buf, xed_uint32_t len) {
+    xed_decoded_inst_t xedd;
+    xed_error_enum_t err;
+    xed_state_t dstate;
+    
+    xed_tables_init();       
+    xed_state_zero(&dstate);
+    dstate.mmode=XED_MACHINE_MODE_LONG_64;
+
+    xed_decoded_inst_zero_set_mode(&xedd, &dstate);
+    err = xed_decode(&xedd, buf, len);
+    if (err == XED_ERROR_NONE) {
+        disassemble(&xedd);
+        return 0;
+    }
+    printf("ERROR: %s\n", xed_error_enum_t2str(err));
+    return 1;
+}
 #endif
 
 static void dump(xed_uint8_t* buf, xed_uint32_t len) {
@@ -72,37 +109,31 @@ static void dump(xed_uint8_t* buf, xed_uint32_t len) {
         printf("%02x ",buf[i]);
 }
 
-
 int main(int argc, char** argv) {
-#if defined(DECO)
-    xed_decoded_inst_t xedd;
-    xed_error_enum_t err;
-    xed_state_t dstate;
-#endif
     xed_uint8_t output_buffer[XED_MAX_INSTRUCTION_BYTES];
     xed_uint32_t enclen;
+    int retval=0, r=0;
     
-#if defined(DECO)
-    xed_tables_init();       
-    xed_state_zero(&dstate);
-    dstate.mmode=XED_MACHINE_MODE_LONG_64;
-#endif
-
     enclen = test_0_xed_enc_lea_rm_q_bisd32_a64(output_buffer);
-    
     printf("Encoded: ");
     dump(output_buffer, enclen);
     printf("\n");
-
 #if defined(DECO)
-    xed_decoded_inst_zero_set_mode(&xedd, &dstate);
-    err = xed_decode(&xedd, output_buffer, enclen);
-    if (err == XED_ERROR_NONE) {
-        disassemble(&xedd);
-        return 0;
-    }
-    printf("ERROR: %s\n", xed_error_enum_t2str(err));
-    return 1;
+    r =  decode(output_buffer, enclen);
+    retval += r;
+    printf("decode returned %d\n",r);
 #endif
+
+    enclen = test_0_xed_enc_vpblendvb_xxxx(output_buffer);
+    printf("Encoded: ");
+    dump(output_buffer, enclen);
+    printf("\n");
+#if defined(DECO)
+    r = decode(output_buffer, enclen);
+    retval += r;
+    printf("decode returned %d\n",r);
+#endif
+    
+    return retval;
     (void)argc; (void)argv;
 }
