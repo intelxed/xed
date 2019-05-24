@@ -424,12 +424,12 @@ void enc_srm_gpr64(xed_enc2_req_t* r,
 void enc_imm8_reg_xmm(xed_enc2_req_t* r, // _SE imm8 reg
                       xed_reg_enum_t dst) { 
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
-    set_imm8_reg(r, offset);
+    set_imm8_reg(r, offset<<4);
 }
 void enc_imm8_reg_ymm(xed_enc2_req_t* r,  // _SE imm8 reg
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
-    set_imm8_reg(r, offset);
+    set_imm8_reg(r, offset<<4);
 }
 
 // CRs and DRs, SEG regs

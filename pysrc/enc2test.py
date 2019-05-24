@@ -76,9 +76,14 @@ mmx = [ 'MMX{}'.format(i) for i in range(0,8)]
 x87 = [ 'ST{}'.format(i) for i in range(0,8)]
 kreg = [ 'K{}'.format(i) for i in range(0,8)]
 kreg_not0 = [ 'K{}'.format(i) for i in range(1,8)]
-xmm_m64 = [ 'XMM{}'.format(i) for i in range(0,32)]
-ymm_m64 = [ 'YMM{}'.format(i) for i in range(0,32)]
-zmm_m64 = [ 'ZMM{}'.format(i) for i in range(0,32)]
+
+xmm_vex_m64 = [ 'XMM{}'.format(i) for i in range(0,16)]
+ymm_vex_m64 = [ 'YMM{}'.format(i) for i in range(0,16)]
+
+xmm_evex_m64 = [ 'XMM{}'.format(i) for i in range(0,32)]
+ymm_evex_m64 = [ 'YMM{}'.format(i) for i in range(0,32)]
+zmm_evex_m64 = [ 'ZMM{}'.format(i) for i in range(0,32)]
+
 xmm_not64 = [ 'XMM{}'.format(i) for i in range(0,8)]
 ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
 zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
@@ -114,9 +119,13 @@ def set_test_gen_counters(env):
         #'kreg': kreg,
         'kreg':  kreg_not0, 
         'kreg!0': kreg_not0,
-        'xmm':  xmm_m64 if env.mode==64 else xmm_not64,
-        'ymm':  ymm_m64 if env.mode==64 else ymm_not64,
-        'zmm':  zmm_m64 if env.mode==64 else zmm_not64,
+        
+        'xmm':  xmm_vex_m64 if env.mode==64 else xmm_not64,
+        'ymm':  ymm_vex_m64 if env.mode==64 else ymm_not64,
+        
+        'xmm_evex':  xmm_evex_m64 if env.mode==64 else xmm_not64,
+        'ymm_evex':  ymm_evex_m64 if env.mode==64 else ymm_not64,
+        'zmm_evex':  zmm_evex_m64 if env.mode==64 else zmm_not64,
         # FIXME: avoiding CS because of MOV SEG limitation
         #'seg':  seg,
         'seg':  seg_no_cs,
@@ -133,7 +142,8 @@ def set_test_gen_counters(env):
         
     # the xmm,ymm,zmm regs have the same limit. Just using zmm to get
     # a limit value
-    env.test_gen_reg_limit['simd_unified'] = len(env.test_gen_regs['zmm'])
+    env.test_gen_reg_limit['simd_unified'] = len(env.test_gen_regs['xmm'])
+    env.test_gen_reg_limit['simd_unified_evex'] = len(env.test_gen_regs['zmm_evex'])
 
 
 
@@ -149,17 +159,24 @@ def get_bump(env, regkind):
     return testreg
 
 
-def get_bump_unified(env,regkind):
+def get_bump_unified(env,regkind,evex):
     '''Gathers require that we use different regs for the simd registers
     but often gathers use different vector length reg for the
     different things if addresses and data are different sizes. So we
     make a common counter that gathers can use to avoid accidental
     independent counters lining up for xmm,ymm and zmm... which does
     happen.'''
-    
-    special_regkind = 'simd_unified'
+
+    if evex:
+        special_regkind = 'simd_unified_evex'
+    else:
+        special_regkind = 'simd_unified'
     v = env.test_gen_counters[special_regkind]
-    testreg = env.test_gen_regs[regkind][v] # use regkind to get the register name
+    try:
+        testreg = env.test_gen_regs[regkind][v] # use regkind to get the register name
+    except:
+        sys.stderr.write("ERROR: EVEX={} REGKIND={} V={}\n".format(evex,regkind,v))
+        sys.exit(1)
 
     # increment and roll the counter based on the limits for tht reg kind
     n = v + 1
@@ -170,8 +187,8 @@ def get_bump_unified(env,regkind):
 
     
 
-def  gen_reg_simd_unified(env,regkind):
-    return 'XED_REG_{}'.format(get_bump_unified(env,regkind))
+def  gen_reg_simd_unified(env,regkind, evex=True):
+    return 'XED_REG_{}'.format(get_bump_unified(env,regkind,evex))
 
 def gen_reg(env,regkind):
     return 'XED_REG_{}'.format(get_bump(env,regkind))
@@ -204,16 +221,29 @@ def is_gather(ii):
 
 def  get_xmm(env, ii):
     if is_gather(ii):
-        return gen_reg_simd_unified(env,'xmm')
+        if ii.space == 'evex':
+            return gen_reg_simd_unified(env,'xmm_evex', True)
+        return gen_reg_simd_unified(env,'xmm', False)
+        
+    if ii.space == 'evex':
+        return gen_reg(env,'xmm_evex')
     return gen_reg(env,'xmm')
+    
+
 def  get_ymm(env, ii):
     if is_gather(ii):
-        return gen_reg_simd_unified(env,'ymm')
+        if ii.space == 'evex':
+            return gen_reg_simd_unified(env,'ymm_evex', True)
+        return gen_reg_simd_unified(env,'ymm', False)
+    
+    if ii.space == 'evex':
+        return gen_reg(env,'ymm_evex')
     return gen_reg(env,'ymm')
+
 def  get_zmm(env, ii):
     if is_gather(ii):
-        return gen_reg_simd_unified(env,'zmm')
-    return gen_reg(env,'zmm')
+        return gen_reg_simd_unified(env,'zmm_evex', True)
+    return gen_reg(env,'zmm_evex')
 
 def  get_kreg(env, ii):
     return gen_reg(env,'kreg')
