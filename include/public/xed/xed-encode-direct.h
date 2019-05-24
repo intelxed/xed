@@ -25,6 +25,8 @@ END_LEGAL */
 #include "xed-error-enum.h"
 #include <stdarg.h>
 
+/// This structure is filled in by the various XED ENC2 functions. It
+/// should not be directly manipulated by user code.
 typedef struct {
     xed_uint8_t* itext;  // supplied by user during init
     xed_uint32_t cursor; // where we write next byte
@@ -64,6 +66,8 @@ typedef struct {
 
 } xed_enc2_req_payload_t;
 
+
+/// A wrapper for #xed_enc2_req_payload_t .
 typedef union {
     xed_enc2_req_payload_t s;
     xed_uint32_t flat[(sizeof(xed_enc2_req_payload_t)+3)/sizeof(xed_uint32_t)];
@@ -96,7 +100,11 @@ typedef void (xed_user_abort_handler_t)(const char* format, va_list args);
 /// followed by a varaible number of arguments.
 XED_DLL_EXPORT void xed_enc2_set_error_handler(xed_user_abort_handler_t* fn);
 
-
+/// The error handler routine. This function is called by encoder functions
+/// upon detecting argument errors. It fist attempts to call the
+/// user-registered handler (configured by #xed_enc2_set_error_handler() ),
+/// or if no user handler is set, then this function calls printf() and
+/// then abort(). If the user handler returns, abort() is still called.
 XED_DLL_EXPORT void xed_enc2_error(const char* fmt, ...);
 
 #endif
