@@ -24,26 +24,26 @@ END_LEGAL */
 
 static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffer)
 {
-    xed_enc2_req_t* r;
-    xed_reg_enum_t reg0;
+    xed_reg_enum_t dest;
     xed_reg_enum_t base;
     xed_reg_enum_t index;
     xed_uint_t scale;
     xed_int32_t disp32;
     xed_enc2_req_t request;
     xed_enc2_req_t_init(&request, output_buffer);
-    r = &request;
-    reg0 = XED_REG_XMM5; // INTENTIONAL ERROR FOR EXAMPLE. THIS SHOULD BE A GPR LIKE R11
+    dest = XED_REG_XMM5; // INTENTIONAL ERROR FOR EXAMPLE. THIS SHOULD BE A GPR LIKE R11
     base = XED_REG_R12;
     index = XED_REG_R13;
     scale = 1;
     disp32 = 0x11223344;
-    xed_enc_lea_rm_q_bisd32_a64_chk(r /*req*/,reg0 /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
-    return xed_enc2_encoded_length(r);
+    xed_enc_lea_rm_q_bisd32_a64_chk(&request /*req*/,dest /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
+    return xed_enc2_encoded_length(&request);
 }
 
+
+
 // The decoder drags in a lot of stuff to the final executable.
-//#define DECO
+#define DECO
 
 #if defined(DECO)
 static void disassemble(xed_decoded_inst_t* xedd)
@@ -65,6 +65,28 @@ static void disassemble(xed_decoded_inst_t* xedd)
     else
         printf("Disassembly: %%ERROR%%\n");
 }
+
+static int decode(xed_uint8_t* buf, xed_uint32_t len) {
+    xed_decoded_inst_t xedd;
+    xed_error_enum_t err;
+    xed_state_t dstate;
+    static int first = 1;
+    if (first) {
+        xed_tables_init();
+        first = 0;
+    }
+    xed_state_zero(&dstate);
+    dstate.mmode=XED_MACHINE_MODE_LONG_64;
+
+    xed_decoded_inst_zero_set_mode(&xedd, &dstate);
+    err = xed_decode(&xedd, buf, len);
+    if (err == XED_ERROR_NONE) {
+        disassemble(&xedd);
+        return 0;
+    }
+    printf("ERROR: %s\n", xed_error_enum_t2str(err));
+    return 1;
+}
 #endif
 
 static void dump(xed_uint8_t* buf, xed_uint32_t len) {
@@ -82,38 +104,21 @@ void my_error_handler(const char* fmt, va_list args) {
 
 
 int main(int argc, char** argv) {
-#if defined(DECO)
-    xed_decoded_inst_t xedd;
-    xed_error_enum_t err;
-    xed_state_t dstate;
-#endif
     xed_uint8_t output_buffer[XED_MAX_INSTRUCTION_BYTES];
     xed_uint32_t enclen;
-    
-#if defined(DECO)
-    xed_tables_init();       
-    xed_state_zero(&dstate);
-    dstate.mmode=XED_MACHINE_MODE_LONG_64;
-#endif
+    int retval=0;
     xed_enc2_set_error_handler(my_error_handler);
     // uncomment this line to disable runtime checking
     //xed_enc2_set_check_args(0);
     
     enclen = test_0_xed_enc_lea_rm_q_bisd32_a64(output_buffer);
-    
     printf("Encoded: ");
     dump(output_buffer, enclen);
     printf("\n");
-
 #if defined(DECO)
-    xed_decoded_inst_zero_set_mode(&xedd, &dstate);
-    err = xed_decode(&xedd, output_buffer, enclen);
-    if (err == XED_ERROR_NONE) {
-        disassemble(&xedd);
-        return 0;
-    }
-    printf("ERROR: %s\n", xed_error_enum_t2str(err));
-    return 1;
+    retval =  decode(output_buffer, enclen);
+    printf("decode returned %d\n",retval);
 #endif
+    return retval;
     (void)argc; (void)argv;
 }

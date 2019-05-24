@@ -87,8 +87,11 @@ static int decode(xed_uint8_t* buf, xed_uint32_t len) {
     xed_decoded_inst_t xedd;
     xed_error_enum_t err;
     xed_state_t dstate;
-    
-    xed_tables_init();       
+    static int first = 1;
+    if (first) {
+        xed_tables_init();
+        first = 0;
+    }
     xed_state_zero(&dstate);
     dstate.mmode=XED_MACHINE_MODE_LONG_64;
 
@@ -113,7 +116,8 @@ int main(int argc, char** argv) {
     xed_uint8_t output_buffer[XED_MAX_INSTRUCTION_BYTES];
     xed_uint32_t enclen;
     int retval=0, r=0;
-    
+
+    // encode an LEA instruction
     enclen = test_0_xed_enc_lea_rm_q_bisd32_a64(output_buffer);
     printf("Encoded: ");
     dump(output_buffer, enclen);
@@ -123,7 +127,8 @@ int main(int argc, char** argv) {
     retval += r;
     printf("decode returned %d\n",r);
 #endif
-
+    
+    // encode an VPBLENDVB instruction with 4 xmm regs
     enclen = test_0_xed_enc_vpblendvb_xxxx(output_buffer);
     printf("Encoded: ");
     dump(output_buffer, enclen);
