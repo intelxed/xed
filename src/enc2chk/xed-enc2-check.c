@@ -134,6 +134,18 @@ void xed_enc2_invalid_xmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argnam
     if (mode != 64 && reg >= XED_REG_XMM8)
         xed_enc2_error("Bad xmm %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
 }
+void xed_enc2_invalid_xmm_avx(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
+    if (reg < XED_REG_XMM_FIRST || reg > XED_REG_XMM15) 
+        xed_enc2_error("Bad xmm reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    if (mode != 64 && reg >= XED_REG_XMM8)
+        xed_enc2_error("Bad xmm %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+}
+void xed_enc2_invalid_ymm_avx(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
+    if (reg < XED_REG_YMM_FIRST || reg > XED_REG_YMM15) 
+        xed_enc2_error("Bad ymm reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    if (mode != 64 && reg >= XED_REG_YMM8)
+        xed_enc2_error("Bad ymm %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+}
 void xed_enc2_invalid_ymm(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     if (reg < XED_REG_YMM_FIRST || reg > XED_REG_YMM_LAST) 
         xed_enc2_error("Bad ymm reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
