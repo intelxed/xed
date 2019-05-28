@@ -41,7 +41,10 @@ def _add_arg_check_function(ii,fo):
     dbg(fo.emit())
 
     
-def _fixup_arg_type(s):
+def _fixup_arg_type(ii,s):
+    if ii.space == 'vex':
+        if s in ['xmm','ymm']:
+            return "{}_avx".format(s)
     if s == 'kreg!0':
         return 'kreg_not0'
     return s
@@ -88,7 +91,7 @@ def _create_enc_arg_check_function(env, ii, encfn):
                 continue # don't check the integer arguments
             else:
                 chk_fn.add_code_eol('   xed_enc2_invalid_{}({}, {},"{}",pfn)'.format(
-                    _fixup_arg_type(arginfo),
+                    _fixup_arg_type(ii,arginfo),
                     env.mode,
                     argname,
                     argname))

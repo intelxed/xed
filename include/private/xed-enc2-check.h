@@ -41,7 +41,9 @@ void xed_enc2_invalid_kreg_not0(xed_uint_t mode, xed_reg_enum_t reg,const char* 
 void xed_enc2_invalid_mmx(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_x87(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_xmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_xmm_avx(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_ymm(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_ymm_avx(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_zmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_rcsae(xed_uint_t mode, xed_uint_t rcsae,const char* argname,const char* pfn);
 void xed_enc2_invalid_scale(xed_uint_t mode, xed_uint_t scale,const char* argname,const char* pfn);
