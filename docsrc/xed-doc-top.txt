@@ -829,7 +829,9 @@ enc2-m64-a64/
                     xed-enc2-m64-a64.h
 @endcode
 
-
+Given the large size of the generated ENC2 headers, doxygen
+documentation is not created for those header files. Please view the
+headers directly in your editor.
 
 Even with the unchecked interface, some register checking is done the
 addressing registers.  In the x86 encoding system, some choices of
