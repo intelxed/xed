@@ -147,6 +147,7 @@ process_segment32( xed_uint_t* sectoff,
         }
     }
     *sectoff += sc->nsects;
+    (void) bytes; (void) vmaddr;
 }
 
 
@@ -197,6 +198,7 @@ process_segment64( xed_uint_t* sectoff,
 
     }
     *sectoff += sc->nsects;
+    (void) bytes; (void) vmaddr;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -232,6 +234,7 @@ void process_symbols32(xed_disas_info_t* decode_info,
         }
         p++;
     }
+    (void)decode_info;
 }
 
 void process_symbols64(xed_disas_info_t* decode_info,
@@ -265,6 +268,7 @@ void process_symbols64(xed_disas_info_t* decode_info,
         }
         p++;
     }
+    (void)decode_info;
 }
 
 
@@ -374,7 +378,7 @@ void process64(xed_disas_info_t* decode_info,
 
 void
 process_macho(xed_uint8_t* start,
-              unsigned int length,
+              unsigned int length, // FIXME: Use this! Trusting internal consistency of headers
               xed_disas_info_t* decode_info)
 
 {
@@ -430,6 +434,7 @@ process_macho(xed_uint8_t* start,
             xedex_derror("Could not find mach header");
       } // for
 
+    (void) length;
 }
 
 void xed_disas_macho_init(void) {
