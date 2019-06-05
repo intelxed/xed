@@ -40,6 +40,11 @@ import enc2argcheck
 
 from enc2common import *
 
+import traceback
+def get_fname(depth=1): # default is current caller
+    #return sys._getframe(depth).f_code.co_name
+    return traceback.extract_stack(None, depth+1)[0][2]
+
 
 gpr_nt_widths_dict = {}
 # list indexed by OSZ (o16,o32,o64)
@@ -426,6 +431,12 @@ def one_mem_common(ii): # b,w,d,q,dq, v, y, etc.
             return False
     return n==1
 
+def is_gather_prefetch(ii):
+    if 'GATHER' in ii.attributes:
+        if 'PREFETCH' in ii.attributes:
+            return True
+    return False
+
 def is_far_xfer_mem(ii):
     if 'FAR_XFER' in ii.attributes:
         for op in _gen_opnds(ii):
@@ -809,9 +820,17 @@ def create_modrm_byte(ii,fo):
             fo.add_code_eol('set_rm(r,{})'.format(rm))
     return modrm_required
 
+numbered_function_creators = collections.defaultdict(int)
+def dump_numbered_function_creators():
+    global numbered_function_creators
+    for k,val in sorted(numbered_function_creators.items(),
+                        key=lambda x: x[1]):
+        print("NUMBERED FN CREATORS: {:5d} {:30s}".format(val,k))
+        
 numbered_functions = 0
 def make_function_object(env, ii, fname, return_value='void'):
     global numbered_functions
+    global numbered_function_creators
     
     if 'AMDONLY' in ii.attributes:
         fname += '_amd'
@@ -823,7 +842,8 @@ def make_function_object(env, ii, fname, return_value='void'):
         t = env.function_names[fname] + 1
         env.function_names[fname] = t
         fname = '{}_vr{}'.format(fname,t)
-        #msge("Numbered function name for: {}".format(fname))
+        numbered_function_creators[get_fname(2)] += 1
+        #msge("Numbered function name for: {} from {}".format(fname, get_fname(2)))
     else:
         env.function_names[fname] = 0
 
@@ -853,21 +873,25 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
         rexw_forced = False
 
         if env.mode == 64 and osz == 16:
+            if ii.eosz == 'osznot16':
+                warn("SKIPPING 16b version for: {} / {}".format(ii.iclass, ii.iform))
+                continue # skip 16b version for this instruction
             fo.add_code_eol('emit(r,0x66)')
         elif env.mode == 64 and osz == 32 and ii.default_64b == True:
             continue # not encodable
         elif env.mode == 64 and osz == 64 and ii.default_64b == False:
+            if ii.eosz == 'osznot64':
+                warn("SKIPPING 64b version for: {} / {}".format(ii.iclass, ii.iform))
+                continue # skip 64b version for this instruction
             fo.add_code_eol('set_rexw(r)')
             rexw_forced = True
         elif env.mode == 32 and osz == 16:
+            if ii.eosz == 'osznot16':
+                warn("SKIPPING 16b version for: {} / {}".format(ii.iclass, ii.iform))
+                continue # skip 16b version for this instruction
             fo.add_code_eol('emit(r,0x66)')
         elif env.mode == 16 and osz == 32:
             fo.add_code_eol('emit(r,0x66)')
-        elif ii.eosz in ['osznot16', 'osznot64']:  #FIXME
-            fo.add_comment("Check handling of {}".format(ii.eosz))
-            warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
-        elif ii.eosz in ['oszall']: 
-            pass
 
         if modrm_reg_first_operand(ii):
             f1, f2 = 'reg','rm'
@@ -1186,11 +1210,13 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
     elif env.mode == 16 and ii.easz == 'a32':
         emit_67_prefix(fo)
 
-    # twiddle OSZ ... FIXME: might need to do something for oszall
+    # twiddle OSZ
     rexw_forced=False
     if not ii.osz_required:
         if env.mode == 64 and ii.eosz == 'o16':
             fo.add_code_eol('emit(r,0x66)')
+        elif env.mode == 64 and ii.eosz == 'o32' and ii.default_64b == True:
+            return # skip this one. cannot do 32b osz in 64b mode if default to 64b
         elif env.mode == 64 and ii.eosz == 'o64' and ii.default_64b == False:
             rexw_forced = True
             fo.add_code_eol('set_rexw(r)')
@@ -1198,13 +1224,13 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
             fo.add_code_eol('emit(r,0x66)')
         elif env.mode == 16 and ii.eosz == 'o16':
             fo.add_code_eol('emit(r,0x66)')
-        elif ii.eosz in ['osznot16', 'osznot64']:  #FIXME
-            fo.add_comment("Check handling of {}".format(ii.eosz))
-            warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
-        elif ii.eosz in ['oszall']:  # FIXME
-            fo.add_comment("Check handling of oszall.")
-            warn("Check handling of {} for: {} / {}".format(ii.eosz, ii.iclass, ii.iform))
-            
+        elif ii.eosz == 'oszall':  # works in any OSZ. no prefixes required
+            pass
+        elif env.mode == 64 and ii.eosz == 'osznot64':
+            return
+        elif ii.eosz == 'osznot16':
+            pass
+
 
     emit_required_legacy_prefixes(ii,fo)
     if rexw_forced:
@@ -1637,7 +1663,7 @@ def get_opnd_types(env, ii, osz=0):
             s.append('gpr{}'.format(env.asz))
             
         elif op_implicit_specific_reg(op):
-            pass # FIXME - ignore?
+            pass # ignore
            
         elif op_xmm(op):
             s.append('xmm')
@@ -1736,7 +1762,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
         locations = ['rm', 'reg']
     regs = [ var_reg0, var_reg1]
 
-    rexw_forced = cond_emit_rexw(env,ii,fo,osz=0) # FIXME: CHECK -NO OSZ?
+    rexw_forced = cond_emit_rexw(env,ii,fo,osz=0) # legit
     fo.add_code_eol('set_mod(r,3)')
     for i,op in enumerate(_gen_opnds(ii)):
         if op_imm8(op):
@@ -1986,6 +2012,7 @@ def gprv_implicit_orax(ii):
     
 
 def create_legacy_gpr_imm8(env,ii,width_list):
+    '''gpr8 or gprv with imm8. nothing fancy'''
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0, arg_imm8,  var_imm8, gprv_names
     
     for osz in gen_osz_list(env.mode,width_list):
@@ -2002,11 +2029,12 @@ def create_legacy_gpr_imm8(env,ii,width_list):
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
             fo.add_code_eol('emit(r,0x66)')
-        if osz == 32 and env.mode == 16:
+        elif osz == 32 and env.mode == 16:
             # add a 66 prefix outside inside 16b mode to create 32b osz
             fo.add_code_eol('emit(r,0x66)')
-        # FIXME exclude osz=32 if df64
-        
+        elif ii.default_64b and osz == 32: # never happens
+            continue
+
         rexw_forced = cond_emit_rexw(env,ii,fo,osz)
         if ii.partial_opcode:
             fo.add_code_eol('enc_srm_gpr{}(r,{})'.format(osz, var_reg0))
@@ -2053,7 +2081,9 @@ def create_legacy_gprv_immz(env,ii):
         if osz == 32 and env.mode == 16:
             # add a 66 prefix outside inside 16b mode to create 32b osz
             fo.add_code_eol('emit(r,0x66)')
-        # FIXME exclude osz=32 if df64
+        elif ii.default_64b and osz == 32: # never happens
+            continue
+
         
         rexw_forced = cond_emit_rexw(env,ii,fo,osz)
         if modrm_reg_first_operand(ii):
@@ -2107,10 +2137,11 @@ def create_legacy_orax_immz(env,ii):
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
             fo.add_code_eol('emit(r,0x66)')
-        if osz == 32 and env.mode == 16:
+        elif osz == 32 and env.mode == 16:
             # add a 66 prefix outside inside 16b mode to create 32b osz
             fo.add_code_eol('emit(r,0x66)')
-        # FIXME exclude osz=32 if df64
+        elif ii.default_64b and osz == 32: # never happens
+            continue
         rexw_forced = cond_emit_rexw(env,ii,fo,osz)
 
         emit_rex(env,fo,rexw_forced)
@@ -2151,10 +2182,12 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
         if osz == 16 and env.mode != 16:
             # add a 66 prefix outside of 16b mode, to create 16b osz
             fo.add_code_eol('emit(r,0x66)')
-        if osz == 32 and env.mode == 16:
+        elif osz == 32 and env.mode == 16:
             # add a 66 prefix outside inside 16b mode to create 32b osz
             fo.add_code_eol('emit(r,0x66)')
-        # FIXME exclude osz=32 if df64
+        elif ii.default_64b and osz == 32: # never happens
+            continue
+
         rexw_forced = cond_emit_rexw(env,ii,fo,osz)
 
         # WE know this is a SRM partial opcode instr
@@ -2517,7 +2550,7 @@ def create_legacy_far_xfer_nonmem(env,ii):  # WRK
     
 def create_legacy_far_xfer_mem(env,ii):
     '''call far and jmp far via memop. p has widths 4/6/6 bytes. p2 has 4/6/10 widths'''
-    # FIXME: functio naming conflict in 32vs64 modes. Could use osz instead of "mem#BYTES"
+    # FIXME: function naming conflict in 32vs64 modes. Could use osz instead of "mem#BYTES"
     p_widths = {16:4, 32:6, 64:6} 
     p2_widths = {16:4, 32:6, 64:10}
     op = first_opnd(ii)
@@ -2993,7 +3026,6 @@ def create_legacy_enter(env,ii):
     fo.add_arg(arg_imm16,'imm16')
     fo.add_arg(arg_imm8_2,'imm8')
     
-    #FIXME: EOSZes needed for ENTER?
     emit_required_legacy_prefixes(ii,fo)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
@@ -3164,13 +3196,13 @@ def create_legacy_movdir64_or_enqcmd(env,ii):
         # 64b mode, we need a 67 prefix.
         if env.mode == 64 and env.asz == 32:
             emit_67_prefix(fo)
-        # FIXME: These next two are wonky. In 32b mode, we usually,
-        # but not always have 32b addressing. It is perfectly legit to
-        # have 32b mode with 16b addressing in which case a 67 is not
-        # needed. Same (other way around) for 16b mode. So we really
-        # do not need the 67 prefix ever outside of 64b mode as users
-        # are expected to use the appropriate library for their
-        # addressing mode.
+            
+        # FIXME: REWORD COMMENT In 32b mode, we usually, but not always have
+        # 32b addressing.  It is perfectly legit to have 32b mode with
+        # 16b addressing in which case a 67 is not needed. Same (other
+        # way around) for 16b mode. So we really do not need the 67
+        # prefix ever outside of 64b mode as users are expected to use
+        # the appropriate library for their addressing mode.
         #
         #elif env.mode == 32 and env.asz == 16:
         #    emit_67_prefix(fo)
@@ -3210,13 +3242,12 @@ def create_legacy_umonitor(env,ii):
     # 64b mode, we need a 67 prefix.
     if env.mode == 64 and env.asz == 32:
         emit_67_prefix(fo)
-    # FIXME: These next two are wonky. In 32b mode, we usually,
-    # but not always have 32b addressing. It is perfectly legit to
-    # have 32b mode with 16b addressing in which case a 67 is not
-    # needed. Same (other way around) for 16b mode. So we really
-    # do not need the 67 prefix ever outside of 64b mode as users
-    # are expected to use the appropriate library for their
-    # addressing mode.
+    # FIXME: REWORD COMMENT In 32b mode, we usually, but not always
+    # have 32b addressing.  It is perfectly legit to have 32b mode
+    # with 16b addressing in which case a 67 is not needed. Same
+    # (other way around) for 16b mode. So we really do not need the 67
+    # prefix ever outside of 64b mode as users are expected to use the
+    # appropriate library for their addressing mode.
     #
     #elif env.mode == 32 and env.asz == 16:
     #    emit_67_prefix(fo)
@@ -3265,13 +3296,12 @@ def create_legacy_ArAX_implicit(env,ii):
     # 64b mode, we need a 67 prefix.
     if env.mode == 64 and env.asz == 32:
         emit_67_prefix(fo)
-    # FIXME: These next two are wonky. In 32b mode, we usually,
-    # but not always have 32b addressing. It is perfectly legit to
-    # have 32b mode with 16b addressing in which case a 67 is not
-    # needed. Same (other way around) for 16b mode. So we really
-    # do not need the 67 prefix ever outside of 64b mode as users
-    # are expected to use the appropriate library for their
-    # addressing mode.
+    # FIXME: REWORD COMMENT In 32b mode, we usually, but not always
+    # have 32b addressing.  It is perfectly legit to have 32b mode
+    # with 16b addressing in which case a 67 is not needed.  Same
+    # (other way around) for 16b mode. So we really do not need the 67
+    # prefix ever outside of 64b mode as users are expected to use the
+    # appropriate library for their addressing mode.
     #
     #elif env.mode == 32 and env.asz == 16:
     #    emit_67_prefix(fo)
@@ -4137,9 +4167,23 @@ def create_evex_regs_mem(env, ii):
         fo.add_arg(arg_request,'req')
 
         # ==== ARGS =====
+        def _add_mask_arg(ii,fo):
+            global arg_kmask, arg_zeroing
+            if ii.write_masking_notk0:
+                kreg_comment = 'kreg!0'
+            else:
+                kreg_comment = 'kreg'
+            fo.add_arg(arg_kmask,kreg_comment)
 
+            if ii.write_masking_merging_only == False:
+                fo.add_arg(arg_zeroing,'zeroing')
+                
+        gather_prefetch = is_gather_prefetch(ii)
         regn = 0
         for i,optype in enumerate(opnd_types_org):
+            if i == 0 and  masking and gather_prefetch:
+                _add_mask_arg(ii,fo)
+
             if optype in ['xmm','ymm','zmm','kreg','gpr32','gpr64']:
                 fo.add_arg(arg_regs[regn], opnd_types.pop(0))
                 regn += 1
@@ -4150,16 +4194,9 @@ def create_evex_regs_mem(env, ii):
                 fo.add_arg(arg_imm8,'int8')
             else:
                 die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
-            # add masking after 0th argument. # FIXME scatter prefetches?
-            if i == 0 and  masking:
-                if ii.write_masking_notk0:
-                    kreg_comment = 'kreg!0'
-                else:
-                    kreg_comment = 'kreg'
-                fo.add_arg(arg_kmask,kreg_comment)
-                    
-                if ii.write_masking_merging_only == False:
-                    fo.add_arg(arg_zeroing,'zeroing')
+            # add masking after 0th argument except for gather prefetch
+            if i == 0 and  masking and not gather_prefetch:
+                _add_mask_arg(ii,fo)
 
         # ===== ENCODING ======
 
@@ -4301,7 +4338,7 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
                 fo.add_arg(arg_imm8,'int8')
             else:
                 die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
-            # add masking after 0th argument. # FIXME scatter prefetches?
+            # add masking after 0th argument. 
             if i == 0 and  masking:
                 if ii.write_masking_notk0:
                     kreg_comment = 'kreg!0'
@@ -4439,9 +4476,20 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
 
         # ==== ARGS =====
 
+        def _add_mask_arg(ii,fo):
+            global arg_kmask, arg_zeroing
+            if ii.write_masking_notk0:
+                kreg_comment = 'kreg!0'
+            else:
+                kreg_comment = 'kreg'
+            fo.add_arg(arg_kmask,kreg_comment)
+
+            if ii.write_masking_merging_only == False:
+                fo.add_arg(arg_zeroing,'zeroing')
+
         regn = 0
         for i,optype in enumerate(opnd_types_org):
-            if optype in [ 'kreg', 'kreg!0' ]:
+            if optype in [ 'kreg' ]:
                 fo.add_arg(arg_kreg0, optype)
                 opnd_types.pop(0)
             elif optype in ['xmm','ymm','zmm']:
@@ -4454,16 +4502,10 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
                 fo.add_arg(arg_imm8,'int8')
             else:
                 die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
-            # add masking after 0th argument. # FIXME scatter prefetches?
-            if i == 0 and  masking:
-                if ii.write_masking_notk0:
-                    kreg_comment = 'kreg!0'
-                else:
-                    kreg_comment = 'kreg'
-                fo.add_arg(arg_kmask,kreg_comment)
-                    
-                if ii.write_masking_merging_only == False:
-                    fo.add_arg(arg_zeroing,'zeroing')
+                
+            # add masking after 0th argument
+            if i == 0 and masking:
+                _add_mask_arg(ii,fo)
 
         # ===== ENCODING ======
 
@@ -4562,7 +4604,7 @@ def _enc_evex(env,ii):
 
         
 def _enc_xop(env,ii):
-    pass # FIXME
+    pass # FIXME: could support XOP instr -- not planned as AMD deprecating them.
 
 def prep_instruction(ii):
     setattr(ii,'encoder_functions',[])
@@ -5048,7 +5090,7 @@ def work():
             
             
     gather_stats(xeddb.recs)
-    
+    dump_numbered_function_creators()
     dump_output_file_names( args.output_file_list,
                             output_file_emitters )
     return 0
