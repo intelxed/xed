@@ -26,7 +26,7 @@ END_LEGAL */
 #include "xed-reg-class.h"
 
 #include "xed-encoder.h" // a generated file of prototypes
-
+#include <string.h>  // memset
 //FIXME just need one proto from the above file: xed_bool_t
 //xed_encode_nonterminal_ISA_ENCODE(xed_encoder_request_t& xes);
 
@@ -234,10 +234,7 @@ xed_encoder_request__memop_compatible(const xed_encoder_request_t* p,
 
 static XED_INLINE void zero_inst_enc(xed_encoder_request_t* p)
 {
-    unsigned int i;
-    xed_uint32_t* xp = (xed_uint32_t*)p;
-    for(i=0;i<sizeof(xed_encoder_request_t)/4;i++)
-        xp[i]=0;
+    memset(p,0,sizeof(xed_encoder_request_t));
 }
 
 void xed_encoder_request_zero_set_mode(xed_encoder_request_t* p,
