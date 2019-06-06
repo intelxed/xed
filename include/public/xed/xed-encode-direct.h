@@ -24,6 +24,7 @@ END_LEGAL */
 #include "xed-types.h"
 #include "xed-error-enum.h"
 #include <stdarg.h>
+#include <string.h>
 
 /// This structure is filled in by the various XED ENC2 functions. It
 /// should not be directly manipulated by user code.
@@ -72,16 +73,13 @@ typedef struct {
 /// @ingroup ENC2
 typedef union {
     xed_enc2_req_payload_t s;
-    xed_uint32_t flat[(sizeof(xed_enc2_req_payload_t)+3)/sizeof(xed_uint32_t)];
 } xed_enc2_req_t;
 
 /// Zero out a #xed_enc2_req_t structure and set the output pointer.
 /// Required before calling and any ENC2 encoding function.
 /// @ingroup ENC2
 static XED_INLINE void xed_enc2_req_t_init(xed_enc2_req_t* r, xed_uint8_t* output_buffer) {
-    xed_uint32_t i;
-    for(i=0;i<sizeof(r->flat)/sizeof(xed_uint32_t);i++)
-        r->flat[i] = 0;
+    memset(r, 0, sizeof(xed_enc2_req_t));
     r->s.itext = output_buffer;
 }
 
