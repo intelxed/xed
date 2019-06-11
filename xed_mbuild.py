@@ -1273,6 +1273,8 @@ def _configure_libxed_extensions(env):
         env.add_define('XED_DECODER')
     if env['encoder']:
         env.add_define('XED_ENCODER')
+    if env['enc2']:
+        env.add_define('XED_ENC2_ENCODER')
 
     #insert default isa files at the front of the extension list
     newstuff = []
@@ -1692,7 +1694,10 @@ def build_libxed(env,work_queue):
         generated_library_sources = _remove_src(generated_library_sources,
                                                 'xed-iform-map-init.c')
     if env['encoder']:
-         for d in ['enc','enc2','enc2chk']:
+         for d in ['enc']:
+             nongen_lib_sources.extend(_get_src(env,d))
+    if env['enc2']:
+         for d in ['enc2','enc2chk']:
              nongen_lib_sources.extend(_get_src(env,d))
     if env['encoder'] and env['decoder']:
          nongen_lib_sources.extend(_get_src(env,'encdec'))
@@ -1758,8 +1763,6 @@ def build_libxedenc2(arg_env, work_queue, input_files, config):
     '''Create and run the builder that creates the xed enc2 encoder source
        files, header files and associated tests. Then compile the
        generated files.    '''
-    if not arg_env['encoder']:
-        return
 
     env = copy.deepcopy(arg_env)
 
