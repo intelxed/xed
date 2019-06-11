@@ -21,7 +21,6 @@ END_LEGAL */
 // This file contains the public interface to the encoder. 
 ////////////////////////////////////////////////////////////////////////////
 #include "xed-internal-header.h"
-#include "xed-encode-private.h"
 #include "xed-operand-accessors.h"
 #include "xed-reg-class.h"
 #include "xed-encode-direct.h"

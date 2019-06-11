@@ -96,7 +96,7 @@ def work():
         fatal("mbuild import failed")
     import xed_mbuild
     import xed_build_common
-    if 0:
+    if 1:
         retval = xed_mbuild.execute()
     else:
         try:
