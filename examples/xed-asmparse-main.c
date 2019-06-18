@@ -105,6 +105,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
     }
 
     p = s = (char*) malloc(len);
+    assert(p!=0);
     for(i=first_arg;i<argc;i++) {
         if (i>first_arg) // spaces between secondary args
            *p++ = ' ';
