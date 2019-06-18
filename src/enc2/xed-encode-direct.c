@@ -307,8 +307,8 @@ void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
    
     set_reg(r, offset & 7);
     set_rexr(r,offset >= 8);
-    //SIL,DIL,BPL,SPL need REX no matter what
-    if (dst >= XED_REG_SIL && dst <= XED_REG_SPL)
+    //SPL, BPL, SIL, DIL need REX no matter what
+    if (dst >= XED_REG_SPL && dst <= XED_REG_DIL)
         set_need_rex(r);
 }
     
@@ -322,8 +322,8 @@ void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
     set_mod(r, 3);
     set_rm(r, offset & 7);
     set_rexb(r, offset >= 8);
-    //SIL,DIL,BPL,SPL need REX no matter what
-    if (dst >= XED_REG_SIL && dst <= XED_REG_SPL)  
+    //SPL, BPL, SIL, DIL need REX no matter what
+    if (dst >= XED_REG_SPL && dst <= XED_REG_DIL)
         set_need_rex(r);
 }
 
@@ -396,8 +396,8 @@ void enc_srm_gpr8(xed_enc2_req_t* r,
     set_srm(r, offset & 7);
     set_rexb(r, offset >= 8);
     
-    //SIL,DIL,BPL,SPL need REX no matter what
-    if (dst >= XED_REG_SIL && dst <= XED_REG_SPL)
+    //SPL, BPL, SIL, DIL need REX no matter what
+    if (dst >= XED_REG_SPL && dst <= XED_REG_DIL)
         set_need_rex(r);
 }
 
