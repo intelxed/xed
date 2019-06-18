@@ -449,6 +449,7 @@ xed_map_region(const char* path,
     ilen = ftell(f);
     fprintf(stderr,"#Trying to read " XED_FMT_SIZET "\n", ilen);
     p = (xed_uint8_t*)malloc(ilen);
+    assert(p!=0);
     t=0;
     err = fseek(f,0, SEEK_SET);
     if (err != 0) {
@@ -1562,6 +1563,7 @@ char const* xedex_append_string(char const* p, // p is free()'d
     char const* t = 0; //temp ptr for copying
     size_t tl = (p?strlen(p):0) + strlen(x) + 1;
     m = n = (char*) malloc(tl);
+    assert(m!=0);
     if (p) {
         t = p;
         while(*t)
@@ -1579,7 +1581,9 @@ char const* xedex_append_string(char const* p, // p is free()'d
 
 ////
 static xed_str_list_t* alloc_str_node(void) {
-    return (xed_str_list_t*) malloc(sizeof(xed_str_list_t));
+    xed_str_list_t* p = (xed_str_list_t*)malloc(sizeof(xed_str_list_t));
+    assert(p!=0);
+    return p;
 }
 
 // MS does not have strsep()

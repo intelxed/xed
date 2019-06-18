@@ -16,7 +16,7 @@ Copyright (c) 2019 Intel Corporation
   
 END_LEGAL */
 
-
+#include <assert.h>
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 #include "xed-symbol-table.h"
@@ -46,6 +46,7 @@ xed_local_symbol_table_t* xst_make_local_map(xed_symbol_table_t* p,
 {
     xed_local_symbol_table_t* n =
         (xed_local_symbol_table_t*) malloc(sizeof(xed_local_symbol_table_t));
+    assert(n!=0);
     xed_local_symbol_table_init(n);
     avl_insert(&p->avl_lmap, section, n, 0);
     return n;
