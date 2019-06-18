@@ -764,19 +764,22 @@ def _implicit_reg_names(ii):
         extra_names = ''
     return extra_names
 
-def emit_vex_prefix(ii,fo,register_only=False):
+def emit_vex_prefix(env, ii, fo, register_only=False):
     if ii.map == 1 and ii.rexw_prefix != '1':
         # if any of x,b are set, need c4, else can use c5
         
         # performance: we know statically if something is register
         #        only.  In which case, we can avoid testing rexx.
-        if register_only:
-            fo.add_code('if  (get_rexb(r))')
+        if env.mode == 64:
+            if register_only:
+                fo.add_code('if  (get_rexb(r))')
+            else:
+                fo.add_code('if  (get_rexx(r) || get_rexb(r))')
+            fo.add_code_eol('    emit_vex_c4(r)')
+            fo.add_code('else')
+            fo.add_code_eol('    emit_vex_c5(r)')
         else:
-            fo.add_code('if  (get_rexx(r) || get_rexb(r))')
-        fo.add_code_eol('    emit_vex_c4(r)')
-        fo.add_code('else')
-        fo.add_code_eol('    emit_vex_c5(r)') 
+            fo.add_code_eol('emit_vex_c5(r)') 
     else:
         fo.add_code_eol('emit_vex_c4(r)')
     
@@ -3607,7 +3610,7 @@ def create_vex_simd_reg(env,ii):
     if var_se:
         fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(sz_se, var_se))
 
-    emit_vex_prefix(ii,fo,register_only=True)
+    emit_vex_prefix(env, ii,fo,register_only=True)
     emit_opcode(ii,fo)
     emit_modrm(fo)
     if ii.has_imm8:
@@ -3719,7 +3722,7 @@ def create_vex_regs_mem(env,ii):
             fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(sz_se, var_se))
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)
-        emit_vex_prefix(ii,fo,register_only=False)
+        emit_vex_prefix(env, ii,fo,register_only=False)
         finish_memop(env, ii, fo, dispsz, immw,  space='vex')
         if var_se:
             fo.add_code_eol('emit_se_imm8_reg(r)')
@@ -3785,7 +3788,7 @@ def create_vex_one_mask_reg_and_one_gpr(env,ii):
             
     # FIXME: if kreg in MODRM.RM, we know we don't need to check rex.b
     # before picking c4/c5. MINOR PERF OPTIMIZATION
-    emit_vex_prefix(ii,fo,register_only=True)
+    emit_vex_prefix(env, ii,fo,register_only=True)
     emit_opcode(ii,fo)
     emit_modrm(fo)
     add_enc_func(ii,fo)
@@ -3850,7 +3853,7 @@ def create_vex_all_mask_reg(env,ii):
     
     fo.add_code_eol('set_mod(r,3)')
 
-    emit_vex_prefix(ii,fo,register_only=True)
+    emit_vex_prefix(env, ii,fo,register_only=True)
     emit_opcode(ii,fo)
     emit_modrm(fo)
     if ii.has_imm8:
@@ -3886,7 +3889,7 @@ def create_vex_vzero(env,ii):
     if ii.rexw_prefix == '1': # could skip this because we know...
         fo.add_code_eol('set_rexw(r)')
     fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
-    emit_vex_prefix(ii,fo,register_only=True) # could force C5 since we know...
+    emit_vex_prefix(env, ii,fo,register_only=True) # could force C5 since we know...
     emit_opcode(ii,fo)  # no modrm on vzero* ... only exception in VEX space.
     add_enc_func(ii,fo)
 
