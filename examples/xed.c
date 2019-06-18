@@ -38,6 +38,7 @@ END_LEGAL */
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 int main(int argc, char** argv);
 static int intel_asm_emit = 0;
@@ -326,6 +327,7 @@ static char const* remove_spaces(char const*  s) { //frees original string
     }
     c++; // add the null
     p = (char*)malloc(c);
+    assert(p!=0);
     i=0;
     c=0;
     while(s[i]) {

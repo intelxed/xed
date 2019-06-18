@@ -120,6 +120,7 @@ static void delete_slist_t(slist_t* s) {
 
 static slist_t* get_slist_node() {
     slist_t* node = (slist_t*)malloc(sizeof(slist_t));
+    assert(node != 0);
     node->s = 0;
     node->next = 0;
     return node;
@@ -160,6 +161,7 @@ static void delete_opnd_list_t(opnd_list_t* s) {
 xed_enc_line_parsed_t* asp_get_xed_enc_node(void) {
     xed_enc_line_parsed_t*  v = (xed_enc_line_parsed_t*)
                                   malloc(sizeof(xed_enc_line_parsed_t));
+    assert(v != 0);
     memset(v, 0, sizeof(xed_enc_line_parsed_t));
     return v;
 }
@@ -178,6 +180,7 @@ void asp_delete_xed_enc_line_parsed_t(xed_enc_line_parsed_t* v) {
 
 static opnd_list_t* get_opnd_list_node() {
     opnd_list_t* p  = (opnd_list_t*)malloc(sizeof(opnd_list_t));
+    assert(p != 0);
     memset(p, 0, sizeof(opnd_list_t));
     p->type = OPND_INVALID;
     return p;

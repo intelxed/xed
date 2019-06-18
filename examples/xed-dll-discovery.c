@@ -38,6 +38,7 @@ END_LEGAL */
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 
 int main(int argc, char** argv);
 
@@ -95,6 +96,7 @@ void invert_map(void) {
     unsigned int i;
     
     xed2my_enum = malloc(sizeof(unsigned int)*n);
+    assert(xed2my_enum!=0);
     
     for(i=0;i<n;i++) {
         xed2my_enum[i] = 0; // invalid
