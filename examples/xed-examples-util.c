@@ -225,7 +225,7 @@ xed_int64_t xed_atoi_general(char* buf, int mul) {
     }
 
     b = xed_strtoll(buf,0);
-    if (p)
+    if (*p)
     {
         while(*p && (*p == '-' || *p == '+'))
         {
