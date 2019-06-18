@@ -249,7 +249,7 @@ void enc_vvvv_reg_gpr64(xed_enc2_req_t* r,
     set_vvvv(r, ~(offset & 15));
 }
 
-static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
+
 
 void enc_modrm_rm_x87(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
@@ -491,9 +491,14 @@ void xed_enc2_error(const char* fmt, ...) {
 ///////////////////////////////////
 
 
+
 static void scale_test_and_set(xed_enc2_req_t* r, xed_uint_t scale) {
-    xed_uint8_t e = scale_encode[scale];
-    if (scale > 8 || e > 8)
+    static const xed_uint_t scale_encode[9] = { 9,0,1,9, 2,9,9,9, 3};
+    xed_uint8_t e;
+    if (scale > 8)
+        xed_enc2_error( "bad scale value");
+    e = scale_encode[scale];
+    if (e > 8)
         xed_enc2_error( "bad scale value");
     set_sibscale(r, e);
 }
