@@ -807,6 +807,7 @@ main(int argc, char** argv)
     else if (decode_encode)
     {
 #if defined(XED_DECODER) && defined(XED_ENCODER)
+        assert(decode_text);
         obytes = disas_decode_encode(&decode_info,
                                      decode_text,
                                      &xedd,

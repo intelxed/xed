@@ -162,6 +162,7 @@ void print_flags(xed_decoded_inst_t* xedd) {
     unsigned int i, nflags;
     if (xed_decoded_inst_uses_rflags(xedd)) {
         const xed_simple_flag_t* rfi = xed_decoded_inst_get_rflags_info(xedd);
+        assert(rfi);
         printf("FLAGS:\n");
         if (xed_simple_flag_reads_flags(rfi)) {
             printf("   reads-rflags ");
