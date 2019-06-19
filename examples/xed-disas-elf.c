@@ -377,7 +377,7 @@ process_elf32(xed_disas_info_t* fi,
                 text = 1;
         }
 
-        if (text) {
+        if (text && name) {
             if (fi->xml_format == 0) {
                 printf("# SECTION " XED_FMT_D " ", i);
                 printf("%25s ", name);
@@ -467,7 +467,7 @@ process_elf64(xed_disas_info_t* fi,
                 text = 1;
         }
 
-        if (text) {
+        if (text && name) {
             if (fi->xml_format == 0) {
                 printf("# SECTION " XED_FMT_U " ", i);
                 printf("%25s ", name);
