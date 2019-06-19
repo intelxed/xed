@@ -733,7 +733,10 @@ main(int argc, char** argv)
     if (CLIENT_VERBOSE2)
         printf("Done initialing XED tables.\n");
 
-    decode_text = remove_spaces(decode_text);
+    if (decode_text) {
+        decode_text = remove_spaces(decode_text);
+        assert(decode_text);
+    }
     
 #if defined(XED_DECODER)
     xed_format_set_options(format_options);
@@ -814,6 +817,7 @@ main(int argc, char** argv)
     else if (encode)
     {
 #if defined(XED_ENCODER)
+        assert(encode_text != 0);
         obytes = disas_encode(&dstate,
                               encode_text,
                               operand,

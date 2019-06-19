@@ -413,7 +413,7 @@ parse_encode_request(ascii_encode_request_t areq)
             uvl = 2;
     }
 
-
+    assert(cfirst != 0);
     iclass =  str2xed_iclass_enum_t(cfirst);
     if (iclass == XED_ICLASS_INVALID) {
         fprintf(stderr,"[XED CLIENT ERROR] Bad instruction name: %s\n",
