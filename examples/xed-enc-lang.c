@@ -236,7 +236,7 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
         else if (i==2)
             addr_token = p->s;
     }
-        
+    assert(main_token != 0);
     if (strcmp(main_token,"AGEN")==0)
         self->agen=1;
     else if (strncmp(main_token,"MEM",3)==0) {
