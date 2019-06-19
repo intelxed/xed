@@ -376,9 +376,12 @@ parse_encode_request(ascii_encode_request_t areq)
 
     for ( ; p ; token_index++, p=p->next ) {
         slash_split(p->s, &cfirst, &csecond);
+        assert(cfirst);
         upcase(cfirst);
         if (CLIENT_VERBOSE3)
-            printf( "[%s][%s][%s]\n", p->s, cfirst, csecond);
+            printf( "[%s][%s][%s]\n", p->s,
+                    (cfirst?cfirst:"NULL"),
+                    (csecond?csecond:"NULL"));
 
         if (token_index == 0 && strcmp(cfirst,"REP")==0) {
             xed_encoder_request_set_rep(&req);
