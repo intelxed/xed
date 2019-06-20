@@ -509,6 +509,24 @@ static void set_vl(xed_reg_enum_t reg, xed_uint_t* vl)
 static void xed_encode_precondition_vl(xed_encoder_request_t* req)
 {
     xed_uint_t vl;
+    if (xed3_operand_get_vlx(req)) {
+        // Both vl and vlx are set by decoder, decoder outputs. And when
+        //     vlx is set it is set to vlx==(vl+1).
+        
+        // VLX is an encoder output, VL is an encoder input.
+        
+        // If VLX > 0, then we decoded something with a VLX setting but VL
+        // is not used as a vector length. It is just more opcode bits.
+        
+        // If VLX=0 and VL=0, then we might still have a user-set VL, but
+        //   we changed the xed grammar for things that do not use VL as a
+        //   real vector length to use VLX in their patterns.
+
+        // So if VLX=0 and VL=0, we can try to guess the VL value below.
+        
+        // Things that get copied for encode-to-decode, both vl and vlx will be set.
+        return;
+    }
     vl = xed3_operand_get_vl(req);
     // If user set nonzero value, respect it.  If user set vl=0, we cannot
     // tell so we try to override.  Note: It would be very wrong to

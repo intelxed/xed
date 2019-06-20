@@ -372,6 +372,11 @@ typedef union { // C5 payload 1
 
 static void evex_vex_opcode_scanner(xed_decoded_inst_t* d); //prototype
 
+static void set_vl(xed_decoded_inst_t* d, xed_uint_t vl) {
+    xed3_operand_set_vl(d, vl);
+    xed3_operand_set_vlx(d, vl+1);
+}
+
 static void vex_c4_scanner(xed_decoded_inst_t* d)
 {
     /* assumption: length < max_bytes  
@@ -427,7 +432,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       xed3_operand_set_vexdest3(d,   c4byte2.s.v3);
       xed3_operand_set_vexdest210(d, c4byte2.s.vvv210);
 
-      xed3_operand_set_vl(d,   c4byte2.s.l);
+      set_vl(d,   c4byte2.s.l);
 
       xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c4byte2.s.pp]);
 
@@ -514,7 +519,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
         xed3_operand_set_vexdest3(d,   c5byte1.s.v3);
         xed3_operand_set_vexdest210(d, c5byte1.s.vvv210);
 
-        xed3_operand_set_vl(d,   c5byte1.s.l);        
+        set_vl(d,   c5byte1.s.l);        
         xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c5byte1.s.pp]);
 
         /* MAP is a special case - although it is a derived operand in 
@@ -625,7 +630,7 @@ static void xop_scanner(xed_decoded_inst_t* d)
       xed3_operand_set_vexdest3(d, xop_byte2.s.v3);
       xed3_operand_set_vexdest210(d, xop_byte2.s.vvv210);
 
-      xed3_operand_set_vl(d, xop_byte2.s.l);
+      set_vl(d, xop_byte2.s.l);
       xed3_operand_set_vex_prefix(d, vex_prefix_recoding[xop_byte2.s.pp]);
       
       xed3_operand_set_vexvalid(d, 3);
@@ -1320,7 +1325,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 // during decode.
                 xed3_operand_set_llrc(d, evex3.s.llrc);
                 
-                xed3_operand_set_vl(d, evex3.s.llrc);
+                set_vl(d, evex3.s.llrc);
                 xed3_operand_set_bcrc(d, evex3.s.bcrc);
                 xed3_operand_set_vexdest4(d, ~evex3.s.vexdest4p&1);
                 if (!xed3_mode_64b(d) && evex3.s.vexdest4p==0)
@@ -1337,7 +1342,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 const xed_uint_t vl_512=2;
                 xed_knc_payload3_t evex3;
                 evex3.u32 = xed_decoded_inst_get_byte(d, length+3);
-                xed3_operand_set_vl(d, vl_512); //Indicates vector length 512b
+                set_vl(d, vl_512); //Indicates vector length 512b
 
                 xed3_operand_set_nr(d, evex3.s.nr);
                 xed3_operand_set_swiz(d, evex3.s.swiz);
