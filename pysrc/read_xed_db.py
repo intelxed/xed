@@ -222,6 +222,15 @@ class xed_reader_t(object):
                 return '256'
             elif 'VL=2' in pattern:
                 return '512'
+            # VLX is for things that use VL as an Encoder Output.
+            # VLX is offset by +1 from typical VL values.
+            elif 'VLX=1' in pattern:
+                return '128'
+            elif 'VLX=2' in pattern:
+                return '256'
+            elif 'VLX=3' in pattern:
+                return '512'
+            
             elif 'FIX_ROUND_LEN512' in pattern:
                 return '512'
             elif space == 'vex':
@@ -232,7 +241,7 @@ class xed_reader_t(object):
 
         for v in self.recs:
             if v.space in ['vex','evex']:
-                v.vl = _get_vl(v.iclass, v.space, v.pattern)
+                v.vl  = _get_vl(v.iclass, v.space, v.pattern)
             else:
                 v.vl = 'n/a'
                 
