@@ -2000,18 +2000,19 @@ def build_examples(env):
         env['example_exes'] = env_ex['example_exes']
 
 
-def copy_dynamic_libs_to_kit(env):
+def _copy_dynamic_libs_to_kit(env,xkit):
     """Copy *all* the dynamic libs that ldd finds to the extlib dir in the
-       kit"""
+       (wkit or ikit) kit"""
     import external_libs
 
     if not env.on_linux() and not env.on_freebsd() and not env.on_netbsd():
         return
     
-    ikit = env['ikit']
-    ikit.extlib = mbuild.join(ikit.kit,'extlib')
-    mbuild.cmkdir(ikit.extlib)
-    executables = mbuild.glob(ikit.bin,'*')
+    xkit.extlib = mbuild.join(xkit.kit,'extlib')
+    if os.path.exists(xkit.extlib):
+        mbuild.remove_tree(xkit.extlib)
+    mbuild.cmkdir(xkit.extlib)
+    executables = mbuild.glob(xkit.bin,'*')
 
     if 'extern_lib_dir' not in env:
         env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
@@ -2021,7 +2022,7 @@ def copy_dynamic_libs_to_kit(env):
 
     # run LDD to find the shared libs and do the copies
     okay = external_libs.copy_system_libraries(env,
-                                               ikit.extlib,
+                                               xkit.extlib,
                                                executables,
                                                extra_ld_library_paths)
     if not okay:
@@ -2031,7 +2032,7 @@ def copy_dynamic_libs_to_kit(env):
     if env['use_elf_dwarf_precompiled']:
         env2 = copy.deepcopy(env)
         xbc.cond_add_elf_dwarf(env2)
-        mbuild.copy_file(env2['libelf_license'], ikit.extlib)
+        mbuild.copy_file(env2['libelf_license'], xkit.extlib)
         
 
 def copy_ext_libs_to_kit(env,dest): # 2014-12-02: currently unused
@@ -2223,6 +2224,7 @@ def _prep_kit_dirs(env):
                         ('include_xed',mbuild.join('include','xed')),
                         ('mbuild', mbuild.join('mbuild','mbuild')),
                         pr('lib'),
+                        pr('extlib'),
                         pr('examples'),
                         pr('bin'),
                         pr('doc'),
@@ -2337,6 +2339,7 @@ def copy_working_kit_to_install_dir(env):
         if os.path.isdir(fn):
             return False
         return True
+
     
     if xbc.installing(env):
         ikit = env['ikit']
@@ -2359,9 +2362,7 @@ def copy_working_kit_to_install_dir(env):
                 _modify_search_path_mac(env, 
                                         mbuild.join( ikit.bin, 
                                                      os.path.basename(f)))
-        # for things in the bin, gather their dynamic libs 
-        copy_dynamic_libs_to_kit(env)
-
+        # we get the extlib files from the wkit
             
 def compress_kit(env):
     '''build a zip file'''
@@ -2746,6 +2747,7 @@ def work(env):
 
     build_examples(env) # in the working kit now
     _copy_examples_to_bin(env,env['wkit'])
+    _copy_dynamic_libs_to_kit(env,env['wkit'])
     _test_examples(env)
 
     copy_working_kit_to_install_dir(env)
