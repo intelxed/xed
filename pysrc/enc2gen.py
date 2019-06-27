@@ -4618,7 +4618,6 @@ def prep_instruction(ii):
     ii.write_masking_merging_only = False # if true, no zeroing allowed
     ii.rounding_form = False
     ii.sae_form = False
-    ii.broadcast_allowed = False
     
     if ii.space == 'evex':
         for op in ii.parsed_operands:
@@ -4637,11 +4636,6 @@ def prep_instruction(ii):
         if 'SAE()' in ii.pattern:
             ii.sae_form = True
 
-        for op in ii.parsed_operands:
-            if op_mem(op):
-                if 'BCRC=0' not in ii.pattern:
-                    ii.broadcast_allowed = True
-                break
 
 def xed_mode_removal(env,ii):
     if 'CLDEMOTE=0' in ii.pattern:
@@ -4722,6 +4716,7 @@ def create_enc_fn(env, ii):
         die("Unhandled encoding space: {}".format(ii.space))
         
 def spew(ii):
+    """Print information about the instruction. Purely decorative"""
     s = [ii.iclass.lower()]
     if ii.iform:
         s.append(ii.iform)
@@ -4747,6 +4742,10 @@ def spew(ii):
     s.append(ii.eosz)
 
     if ii.space == 'evex':
+        if ii.avx512_tuple:
+            s.append("TUP:{}-{}-{}-{}".format(ii.avx512_tuple,ii.element_size,ii.memop_width_code,ii.memop_width))
+        else:
+            s.append("no-tuple")
         if ii.write_masking:
             s.append('masking')
             if ii.write_masking_merging_only:

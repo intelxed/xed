@@ -84,7 +84,11 @@ def _op_imm8(op):
             return True
     return False
 
-
+def _get_mempop_width_code(v):
+    for op in v.parsed_operands:
+        if op.name == 'MEM0':
+            return op.oc2
+    die("Could not find evex memop for {}".format(v.iclass))
     
 class xed_reader_t(object):
     """This class is designed to be used on the partial build materials
@@ -100,7 +104,7 @@ class xed_reader_t(object):
                  cpuid_filename=''):
 
         self.xtypes = self._gen_xtypes(element_types_filename) 
-        self.widths_dict = self._gen_widths(widths_filename)
+        self.width_type_dict, self.width_info_dict = self._gen_widths(widths_filename)
         
         self.state_bits = self._parse_state_bits(state_bits_filename)
         
@@ -120,11 +124,13 @@ class xed_reader_t(object):
             self.cpuid_map = cpuid_rdr.read_file(cpuid_filename)
             self._add_cpuid()
         self._add_vl()
+        self._add_broadcasting()
+        self._evex_disp8_scaling()
 
     def _refine_widths_input(self,lines):
-       """Return  a list of width_info_t. Skip comments and blank lines"""
+       """Return  a dict of width_info_t. Skip comments and blank lines"""
        comment_pattern = re.compile(r'#.*$')
-       widths_list = []
+       width_info_dict = {}
        for line in lines:
           pline = comment_pattern.sub('',line).strip()
           if pline == '':
@@ -151,18 +157,18 @@ class xed_reader_t(object):
                 bit_widths.append(number_string)
              else:
                 bit_widths.append(str(int(val)*8))
-          widths_list.append(width_info_t(name, dtype, bit_widths))
-       return widths_list
+          width_info_dict[name] = width_info_t(name, dtype, bit_widths)
+       return width_info_dict
         
     def _gen_widths(self, fn):
         lines = open(fn,'r').readlines()
-        widths_list = self._refine_widths_input(lines)
+        width_info_dict = self._refine_widths_input(lines)
 
         # sets the default data type for each width
-        widths_dict = {}
-        for w in widths_list:
-            widths_dict[w.name] = w.dtype
-        return widths_dict
+        width_type_dict = {}
+        for w in width_info_dict.values():
+            width_type_dict[w.name] = w.dtype
+        return width_type_dict, width_info_dict
 
     def _gen_xtypes(self, fn):
         lines = open(fn,'r').readlines()
@@ -214,6 +220,44 @@ class xed_reader_t(object):
             if ky in self.cpuid_map:
                 v.cpuid = self.cpuid_map[ky]
                 
+    def _add_broadcasting(self):
+        broadcast_attr  = re.compile(r'BROADCAST_ENABLED')
+        for v in self.recs:
+            v.broadcast_allowed = False
+            if v.space == 'evex':
+                if broadcast_attr.search(v.attributes):
+                    v.broadcast_allowed = True
+
+
+    def _evex_disp8_scaling(self):
+        disp8_pattern  = re.compile(r'DISP8_(?P<tupletype>[A-Z0-9]+)')
+        esize_pattern  = re.compile(r'ESIZE_(?P<esize>[0-9]+)_BITS')
+        for v in self.recs:
+            v.avx512_tuple = None
+            v.element_size = None
+            if v.space == 'evex':
+                t = disp8_pattern.search(v.attributes)
+                if t:
+                    v.avx512_tuple = t.group('tupletype')
+                    e = esize_pattern.search(v.pattern)
+                    if e:
+                        v.element_size = e.group('esize')
+                    else:
+                        die("Need an element size")
+                    v.memop_width_code = _get_mempop_width_code(v)
+                    
+                    # if the oc2=vv), we get two widths depend on
+                    # broadcasting. Either the width is (a) vl(full),
+                    # vl/2(half), vl/4 (quarter) OR (b) the element
+                    # size for broadcasting.
+                    if v.memop_width_code == 'vv':
+                        divisor = { 'FULL':1, 'HALF':2,'QUARTER':4}
+                        # we might override this value if using broadcasting
+                        v.memop_width = int(v.vl) // divisor[v.avx512_tuple]
+                    else:
+                        wi = self.width_info_dict[v.memop_width_code]
+                        v.memop_width = int(wi.widths[0])
+    
     def _add_vl(self):
         def _get_vl(iclass,space,pattern):
             if 'VL=0' in pattern:
@@ -292,7 +336,7 @@ class xed_reader_t(object):
                 op =  opnds.parse_one_operand(op_str,
                                               'DEFAULT',
                                               self.xtypes,
-                                              self.widths_dict,
+                                              self.width_type_dict,
                                               skip_encoder_conditions=False)
                 v.parsed_operands.append(op)
                 #print "OPERAND: {}".format(op)
