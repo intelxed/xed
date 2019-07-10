@@ -256,15 +256,6 @@ void   xed_encoder_request_set_iclass( xed_encoder_request_t* p,
                                        xed_iclass_enum_t iclass) {
     xed3_operand_set_iclass(p,iclass);
 }
-void xed_encoder_request_set_repne(xed_encoder_request_t* p) {
-    xed3_operand_set_rep(p,2);
-}
-void xed_encoder_request_set_rep(xed_encoder_request_t* p) {
-    xed3_operand_set_rep(p,3);
-}
-void xed_encoder_request_clear_rep(xed_encoder_request_t* p) {
-    xed3_operand_set_rep(p,0);
-}
 
 
 void
