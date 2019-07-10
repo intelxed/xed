@@ -383,14 +383,6 @@ parse_encode_request(ascii_encode_request_t areq)
                     (cfirst?cfirst:"NULL"),
                     (csecond?csecond:"NULL"));
 
-        if (token_index == 0 && strcmp(cfirst,"REP")==0) {
-            xed_encoder_request_set_rep(&req);
-            continue;
-        }
-        else if (token_index == 0 && strcmp(cfirst,"REPNE")==0) {
-            xed_encoder_request_set_repne(&req);
-            continue;
-        }
         // consumed token, advance & exit
         p = p->next;
         break;

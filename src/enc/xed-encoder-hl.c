@@ -39,17 +39,6 @@ xed_bool_t xed_convert_to_encoder_request(xed_encoder_request_t* out,
     if (in->effective_address_width)
         xed_encoder_request_set_effective_address_size(out, in->effective_address_width);
 
-    if (in->prefixes.s.rep) 
-        xed_encoder_request_set_rep(out);
-    if (in->prefixes.s.repne) 
-        xed_encoder_request_set_repne(out);
-#if 0  // FIXME
-    if (in->prefixes.s.br_hint_taken) 
-        xed_encoder_request_set_hint_taken(out);
-    if (in->prefixes.s.br_hint_not_taken) 
-        xed_encoder_request_set_hint_not_taken(out);
-#endif
-
 
     for(; i< in->noperands ; i++ ) {
         xed_encoder_operand_t* op = in->operands + i;
