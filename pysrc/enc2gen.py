@@ -185,6 +185,8 @@ gprz_names = { 16:'gpr16', 32:'gpr32', 64:'gpr32'}
 
 vl2names = { '128':'xmm', '256':'ymm', '512':'zmm',
              'LIG':'xmm', 'LLIG':'xmm' }
+vl2func_names = { '128':'_128', '256':'_256', '512':'_512',
+                  'LIG':'', 'LLIG':'' }
 
 bits_to_widths = {8:'b', 16:'w', 32:'d', 64:'q' }
 
@@ -1566,6 +1568,8 @@ def get_opnd_types_short(ii):
     return types
 
 def make_opnd_signature(ii):
+    global vl2func_names
+    
     s = []
     for op in _gen_opnds(ii):
         if op_xmm(op):
@@ -1577,13 +1581,13 @@ def make_opnd_signature(ii):
         elif op_mask_reg(op):
             s.append('k')
         elif op_vgpr32(op):
-            s.append('r')
+            s.append('r32')
         elif op_vgpr64(op):
-            s.append('r') #FIXME something else
+            s.append('r64') #FIXME something else
         elif op_gpr32(op):
-            s.append('r')
+            s.append('r32')
         elif op_gpr64(op):
-            s.append('r') #FIXME something else
+            s.append('r64') #FIXME something else
         elif op_mem(op):
             s.append('m')
             # add the index reg width for sparse ops (scatter,gather)
@@ -1607,6 +1611,18 @@ def make_opnd_signature(ii):
             s.append('s')
         else:
             die("Unhandled operand {}".format(op))
+            
+    if ii.space in ['evex']:
+        if ii.rounding_form:
+            s.append( 'rc' )
+        elif ii.sae_form:
+            s.append( 'sae' )
+            
+    if ii.space in ['evex','vex']:
+        s.append(vl2func_names[ii.vl])
+        
+        
+        
     return "".join(s)
 
 def get_reg_type_fixed(op):
@@ -3539,7 +3555,7 @@ def create_vex_simd_reg(env,ii):
     """Handle 2/3/4 xymm or gprs regs and optional imm8.  This is coded to
        allow different type and size for each operand.  Different
        x/ymm show up on converts. Also handles 2-imm8 SSE4a instr.   """
-    global enc_fn_prefix, arg_request
+    global enc_fn_prefix, arg_request, vl2func_names
     global arg_reg0,  var_reg0
     global arg_reg1,  var_reg1
     global arg_reg2,  var_reg2
@@ -3550,6 +3566,7 @@ def create_vex_simd_reg(env,ii):
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opnd_sig)
+
 
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_simd_reg opnd_sig={} nopnds={}".format(opnd_sig,nopnds))
@@ -3653,10 +3670,10 @@ def create_vex_regs_mem(env,ii):
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
 
         fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                            ii.iclass.lower(),
-                                            opsig,
-                                            memaddrsig,
-                                            env.asz)
+                                         ii.iclass.lower(),
+                                         opsig,
+                                         memaddrsig,
+                                         env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_vex_regs_mem")
         fo.add_arg(arg_request,'req')
@@ -4008,10 +4025,6 @@ def create_evex_xyzmm_and_gpr(env,ii):
     mask_variant_name  = { False:'', True: '_msk' }
 
     opnd_sig = make_opnd_signature(ii)
-    if rounding:
-        opnd_sig += 'rc'
-    elif sae:
-        opnd_sig += 'sae'
         
     mask_versions = [False]
     if masking_allowed:
@@ -4065,10 +4078,10 @@ def create_evex_xyzmm_and_gpr(env,ii):
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
         if rounding:
-            fo.add_code_eol('set_evexb(r,1)')
+            fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
             fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
-        if sae:
-            fo.add_code_eol('set_evexb(r,1)')
+        elif sae:
+            fo.add_code_eol('set_evexb(r,1)', 'set sae')
             # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
             
         if masking:
@@ -4296,7 +4309,7 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
     global arg_kmask, var_kmask # write mask
     global arg_kreg0, var_kreg0 # normal operand
     global arg_zeroing, var_zeroing
-    global arg_imm8, var_imm8
+    global arg_imm8, var_imm8, arg_rcsae, var_rcsae
 
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
@@ -4348,9 +4361,10 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
                 else:
                     kreg_comment = 'kreg'
                 fo.add_arg(arg_kmask,kreg_comment)
-                    
                 if ii.write_masking_merging_only == False:
                     fo.add_arg(arg_zeroing,'zeroing')
+        if ii.rounding_form:
+            fo.add_arg(arg_rcsae,'rcsae')
 
         # ===== ENCODING ======
 
@@ -4364,6 +4378,13 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
             if not ii.write_masking_merging_only:
                 fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
             fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
+            
+        if ii.rounding_form:
+            fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
+            fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
+        elif ii.sae_form:
+            fo.add_code_eol('set_evexb(r,1)', 'set sae')
+            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
             
         # ENCODE REGISTERS
         vars = [var_reg0, var_reg1, var_reg2]
@@ -4435,7 +4456,7 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     global arg_kmask, var_kmask # write mask
     global arg_kreg0, var_kreg0 # normal operand
     global arg_zeroing, var_zeroing
-    global arg_imm8, var_imm8
+    global arg_imm8, var_imm8, arg_rcsae, var_rcsae
 
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
@@ -4509,7 +4530,10 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
             # add masking after 0th argument
             if i == 0 and masking:
                 _add_mask_arg(ii,fo)
-
+                
+        if ii.rounding_form:
+            fo.add_arg(arg_rcsae,'rcsae')
+                
         # ===== ENCODING ======
 
         set_vex_pp(ii,fo)
@@ -4524,6 +4548,13 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
             fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
         if broadcast == 'broadcast': # ZERO INIT OPTIMIZATION
             fo.add_code_eol('set_evexb(r,1)')
+            
+        if ii.rounding_form:
+            fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
+            fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
+        elif ii.sae_form:
+            fo.add_code_eol('set_evexb(r,1)', 'set sae')
+            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
             
         # ENCODE REGISTERS
         vars = [var_reg0, var_reg1, var_reg2]
@@ -4603,7 +4634,7 @@ def _enc_evex(env,ii):
     elif evex_mask_dest_reg_only(ii): 
         create_evex_evex_mask_dest_reg_only(env, ii)
     elif evex_mask_dest_mem(ii): 
-        create_evex_evex_mask_dest_mem(env, ii)
+        create_evex_evex_mask_dest_mem(env, ii) # FIXME: no longer used
 
         
 def _enc_xop(env,ii):
