@@ -14613,14 +14613,22 @@ EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES: 
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-0 pf-0 ]
 
-PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() EOSZ=2 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_EDX:r:SUPP REG3=XED_REG_ECX:w:SUPP
 
-PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() EOSZ=2  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() not64  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_EAX:r:SUPP REG3=XED_REG_EDX:r:SUPP REG4=XED_REG_ECX:w:SUPP
+
+# 64b eosz=2
+PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_EDX:r:SUPP REG3=XED_REG_ECX:w:SUPP
+
+PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() mode64 norexw_prefix  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_EAX:r:SUPP REG3=XED_REG_EDX:r:SUPP REG4=XED_REG_ECX:w:SUPP
 }
 {
-ICLASS    : PCMPESTRI
+ICLASS    : PCMPESTRI64
+DISASM    : pcmpestri
 CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE4
@@ -14628,11 +14636,11 @@ ISA_SET   : SSE42
 EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES: 
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-0 pf-0 ]
-
-PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() EOSZ=3 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+# EOSZ=3
+PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_RAX:r:SUPP REG2=XED_REG_RDX:r:SUPP REG3=XED_REG_RCX:w:SUPP
 
-PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() EOSZ=3 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN   : 0x0F 0x3A 0x61 osz_refining_prefix IMMUNE66() mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_RAX:r:SUPP REG3=XED_REG_RDX:r:SUPP REG4=XED_REG_RCX:w:SUPP
 }
 {
@@ -14645,14 +14653,22 @@ EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES: 
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-0 pf-0 ]
 
-PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() EOSZ=2 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_ECX:w:SUPP
 
-PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() EOSZ=2 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_ECX:w:SUPP
+
+
+PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_ECX:w:SUPP
+
+PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_ECX:w:SUPP
 }
 {
-ICLASS    : PCMPISTRI
+ICLASS    : PCMPISTRI64
+DISASM    : pcmpistri
 CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE4
@@ -14661,10 +14677,10 @@ EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES: 
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-0 pf-0 ]
 
-PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() EOSZ=3 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_RCX:w:SUPP
 
-PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() EOSZ=3 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN   : 0x0F 0x3A 0x63 osz_refining_prefix IMMUNE66() mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_RCX:w:SUPP
 }
 
@@ -14678,14 +14694,22 @@ EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES: 
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-0 pf-0 ]
 
-PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() EOSZ=2 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_EDX:r:SUPP REG3=XED_REG_XMM0:w:dq:SUPP
 
-PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() EOSZ=2 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_EAX:r:SUPP REG3=XED_REG_EDX:r:SUPP REG4=XED_REG_XMM0:w:dq:SUPP
+
+
+PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_EDX:r:SUPP REG3=XED_REG_XMM0:w:dq:SUPP
+
+PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_EAX:r:SUPP REG3=XED_REG_EDX:r:SUPP REG4=XED_REG_XMM0:w:dq:SUPP
 }
 {
-ICLASS    : PCMPESTRM
+ICLASS    : PCMPESTRM64
+DISASM    : pcmpestrm
 CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE4
@@ -14694,13 +14718,13 @@ EXCEPTIONS: SSE_TYPE_4
 ATTRIBUTES: 
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-0 pf-0 ]
 
-PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() EOSZ=3 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
+PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     MEM0:r:dq         IMM0:r:b REG1=XED_REG_RAX:r:SUPP REG2=XED_REG_RDX:r:SUPP REG3=XED_REG_XMM0:w:dq:SUPP
 
-PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() EOSZ=3 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
+PATTERN   : 0x0F 0x3A 0x60 osz_refining_prefix IMMUNE66() mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
 OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_RAX:r:SUPP REG3=XED_REG_RDX:r:SUPP REG4=XED_REG_XMM0:w:dq:SUPP
-
 }
+
 {
 ICLASS    : PCMPISTRM
 CPL       : 3
