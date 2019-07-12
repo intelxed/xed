@@ -8755,6 +8755,7 @@ ATTRIBUTES : RING0 NOTSX
 PATTERN   : 0x0F 0x06
 OPERANDS  :
 }
+
 {
 ICLASS    : SYSRET
 CPL       : 0
@@ -8763,12 +8764,24 @@ ATTRIBUTES: PROTECTED_MODE RING0 NOTSX
 EXTENSION : LONGMODE
 ISA_SET   : LONGMODE
 FLAGS     : MUST [ id-mod vip-mod vif-mod ac-mod rf-0 nt-mod iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
-PATTERN   : 0x0F 0x07 mode64 rexw_prefix 
-OPERANDS  : REG0=XED_REG_RIP:w:SUPP  REG1=XED_REG_RCX:r:SUPP  REG2=XED_REG_R11:r:SUPP 
+
 PATTERN   : 0x0F 0x07 mode64 norexw_prefix
 OPERANDS  : REG0=XED_REG_EIP:w:SUPP  REG1=XED_REG_ECX:r:SUPP 
 COMMENT   : 32B VERSION IS ONLY SUPPORTED ON AMD
 }
+{
+ICLASS    : SYSRET64
+DISASM    : sysret
+CPL       : 0
+CATEGORY  : SYSRET
+ATTRIBUTES: PROTECTED_MODE RING0 NOTSX
+EXTENSION : LONGMODE
+ISA_SET   : LONGMODE
+FLAGS     : MUST [ id-mod vip-mod vif-mod ac-mod rf-0 nt-mod iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
+PATTERN   : 0x0F 0x07 mode64 rexw_prefix 
+OPERANDS  : REG0=XED_REG_RIP:w:SUPP  REG1=XED_REG_RCX:r:SUPP  REG2=XED_REG_R11:r:SUPP 
+}
+
 {
 ICLASS    : MOVUPS
 CPL       : 3
