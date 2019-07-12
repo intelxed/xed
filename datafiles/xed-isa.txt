@@ -10140,9 +10140,11 @@ CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : SSE2
 ATTRIBUTES : IGNORES_OSFXSR NOTSX NONTEMPORAL
-PATTERN   : 0x0F 0xC3 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  EOSZ!=3 MODRM()
+PATTERN   : 0x0F 0xC3 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  not64 MODRM()
 OPERANDS  : MEM0:w:d REG0=GPR32_R():r
-PATTERN   : 0x0F 0xC3 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  EOSZ=3 MODRM()
+PATTERN   : 0x0F 0xC3 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  mode64 norexw_prefix MODRM()
+OPERANDS  : MEM0:w:d REG0=GPR32_R():r
+PATTERN   : 0x0F 0xC3 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  mode64 rexw_prefix MODRM()
 OPERANDS  : MEM0:w:q REG0=GPR64_R():r
 }
 {
