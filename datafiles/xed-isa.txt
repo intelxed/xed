@@ -8080,7 +8080,11 @@ CATEGORY  : RET
 EXTENSION : BASE
 ISA_SET   : I86
 FLAGS     : MUST [ id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
-PATTERN   : 0xCF EOSZ=1
+PATTERN   : 0xCF mode16 no66_prefix
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
+PATTERN   : 0xCF mode32 66_prefix
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
+PATTERN   : 0xCF mode64 norexw_prefix 66_prefix
 OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
 }
 {
@@ -8091,7 +8095,11 @@ CATEGORY  : RET
 EXTENSION : BASE
 ISA_SET   : I386
 FLAGS     : MUST [ id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
-PATTERN   : 0xCF EOSZ=2
+PATTERN   : 0xCF mode16 66_prefix
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
+PATTERN   : 0xCF mode32 no66_prefix
+OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
+PATTERN   : 0xCF mode64 norexw_prefix no66_prefix
 OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=rIP():w:SUPP
 }
 {
@@ -8101,7 +8109,7 @@ CPL       : 3
 CATEGORY  : RET
 EXTENSION : LONGMODE
 FLAGS     : MUST [ id-pop vip-pop vif-pop ac-pop vm-tst vm-pop rf-pop nt-tst nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
-PATTERN   : 0xCF EOSZ=3 mode64
+PATTERN   : 0xCF mode64 rexw_prefix
 # FIXME: This is only an approximate width for the stack pops
 OPERANDS  : REG0=XED_REG_STACKPOP:r:spw5:SUPP REG1=XED_REG_RIP:w:SUPP
 }
