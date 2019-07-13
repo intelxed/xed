@@ -89,6 +89,47 @@ def _get_mempop_width_code(v):
         if op.name == 'MEM0':
             return op.oc2
     die("Could not find evex memop for {}".format(v.iclass))
+
+def _set_eosz(v):
+    eosz = 'oszall'
+    if v.space == 'legacy':
+        if 'EOSZ=1' in v.pattern:
+            eosz = 'o16'
+        elif 'EOSZ=2' in v.pattern:
+            eosz = 'o32'
+        elif 'EOSZ=3' in v.pattern:
+            eosz =  'o64'
+        elif 'EOSZ!=1' in v.pattern:
+            eosz = 'osznot16'
+        elif 'EOSZ!=3' in v.pattern:
+            eosz = 'osznot64'
+            
+        if v.mode_restriction != 'unspecified':
+            
+            if v.mode_restriction == 0:  # 16b
+                if v.osz_required and 'IMMUNE66' not in v.pattern:
+                    eosz = 'o32'
+                else:
+                    eosz = 'o16'
+                    
+            elif v.mode_restriction == 1: # 32b
+                if v.osz_required and 'IMMUNE66' not in v.pattern:
+                    eosz = 'o16'
+                else:
+                    eosz = 'o32'
+                    
+            elif v.mode_restriction == 2: # 64b
+                if v.efault_64b:
+                    eosz = 'o64'
+                elif v.rexw_prefix == 1:
+                    eosz = 'o64'
+                elif v.osz_required and 'IMMUNE66' not in v.pattern:
+                    eosz = 'o16'
+                else:
+                    eosz = 'o32'
+        v.eosz = eosz
+
+    
     
 class xed_reader_t(object):
     """This class is designed to be used on the partial build materials
@@ -347,7 +388,8 @@ class xed_reader_t(object):
             if not hasattr(v,'real_opcode'):
                 v.real_opcode='Y'
 
-        
+
+                
     def _find_opcodes(self):
         '''augment the records with information found by parsing the pattern'''
 
@@ -509,25 +551,15 @@ class xed_reader_t(object):
             elif 'EASZ!=1' in v.pattern:
                 easz = 'asznot16'
             v.easz = easz
-    
-            eosz = 'oszall'
-            if v.space == 'legacy':
-                if 'EOSZ=1' in v.pattern:
-                    eosz = 'o16'
-                elif 'EOSZ=2' in v.pattern:
-                    eosz = 'o32'
-                elif 'EOSZ=3' in v.pattern:
-                    eosz =  'o64'
-                elif 'EOSZ!=1' in v.pattern:
-                    eosz = 'osznot16'
-                elif 'EOSZ!=3' in v.pattern:
-                    eosz = 'osznot64'
-            v.eosz = eosz
+
+
 
             v.default_64b = False
             if 'DF64()' in v.pattern or 'CR_WIDTH()' in v.pattern:
                 v.default_64b = True
-
+                
+            _set_eosz(v)
+            
             v.scalar = False
             if hasattr(v,'attributes'):
                 v.attributes = v.attributes.upper()
