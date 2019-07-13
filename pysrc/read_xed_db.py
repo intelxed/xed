@@ -119,15 +119,15 @@ def _set_eosz(v):
                     eosz = 'o32'
                     
             elif v.mode_restriction == 2: # 64b
-                if v.efault_64b:
+                if v.default_64b:
                     eosz = 'o64'
-                elif v.rexw_prefix == 1:
+                elif v.rexw_prefix == '1':
                     eosz = 'o64'
                 elif v.osz_required and 'IMMUNE66' not in v.pattern:
                     eosz = 'o16'
                 else:
                     eosz = 'o32'
-        v.eosz = eosz
+    v.eosz = eosz
 
     
     
