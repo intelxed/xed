@@ -1567,11 +1567,24 @@ def get_opnd_types_short(ii):
             die("Unhandled op type {}".format(op))
     return types
 
-def make_opnd_signature(ii):
+def make_opnd_signature(ii, using_width=None):
+    '''If using_width is present, it is used for GPRv and GPRy
+       operations to specify a width'''
     global vl2func_names
+
+    def _translate_width(w):
+        return str(widths_to_bits[w])
+        
     
     s = []
     for op in _gen_opnds(ii):
+        
+        # for the modrm-less MOV instr
+        if op.name.startswith('BASE'):
+            continue
+        if op.name.startswith('INDEX'):
+            continue
+
         if op_xmm(op):
             s.append('x')
         elif op_ymm(op):
@@ -1584,18 +1597,36 @@ def make_opnd_signature(ii):
             s.append('r32')
         elif op_vgpr64(op):
             s.append('r64') #FIXME something else
+        elif op_gpr8(op):
+            s.append('r8')
+        elif op_gpr16(op):
+            s.append('r16')
         elif op_gpr32(op):
             s.append('r32')
         elif op_gpr64(op):
             s.append('r64') #FIXME something else
+        elif op_gprv(op) or op_gprz(op) or op_gpry(op):
+            s.append('r' + _translate_width(using_width))
+        elif op_agen(op):
+            s.append('m') # somewhat of a misnomer
         elif op_mem(op):
-            s.append('m')
+            if op.oc2 == 'd':
+                s.append('m32')
+            elif op.oc2 == 'q':
+                s.append('m64')
+            else:
+                s.append('m')
+                
             # add the index reg width for sparse ops (scatter,gather)
             if ii.avx_vsib:
                 s.append(ii.avx_vsib[0])
             if ii.avx512_vsib:
                 s.append(ii.avx512_vsib[0])
         elif op_imm8(op):
+            s.append('i')
+        elif op_immz(op): #FIXME something else?
+            s.append('i')
+        elif op_immv(op): #FIXME something else?
             s.append('i')
         elif op_imm16(op):
             s.append('i') #FIXME something else?
@@ -1609,6 +1640,10 @@ def make_opnd_signature(ii):
             s.append('d')
         elif op_seg(op):
             s.append('s')
+        elif op_implicit_specific_reg(op):
+            s.append('r') # FIXME something else?
+        elif op.name == 'REG0' and op_luf(op,'OrAX'):
+            s.append('r') # FIXME something else?
         else:
             die("Unhandled operand {}".format(op))
             
@@ -2314,10 +2349,11 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     op = first_opnd(ii)
     width = op.oc2
     immw = 8 if ii.has_imm8 else 0
-    i = 0 if modrm_reg_first_operand(ii) else 1    # i determines argument order
-    opsig = 'rm' if i==0 else 'mr'
-    if ii.has_imm8:
-        opsig = opsig + 'i'
+    regpos = 0 if modrm_reg_first_operand(ii) else 1    # i determines argument order
+    #opsig = 'rm' if regpos==0 else 'mr'
+    #if ii.has_imm8:
+    #    opsig = opsig + 'i'
+    opsig = make_opnd_signature(ii)
         
     gpr32,gpr64,xmm,mmx = False,False,False,False
     for op in _gen_opnds(ii):
@@ -2350,7 +2386,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_xmm_reg_one_mem_fixed")
         fo.add_arg(arg_request,'req')
-        add_memop_args(env, ii, fo, use_index, dispsz, immw, reg=i)
+        add_memop_args(env, ii, fo, use_index, dispsz, immw, reg=regpos)
 
         rexw_forced = False
         if ii.eosz == 'o16' and env.mode in [32,64]:
@@ -2412,13 +2448,15 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         die("Bad search for width")
     
     widths = [width]
-    mem_reg_order = 'mr' if regn==1 else 'rm'
+    #mem_reg_order = 'mr' if regn==1 else 'rm'
+    opsig = make_opnd_signature(ii)
+
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                             ii.iclass.lower(),
-                                            mem_reg_order,
+                                            opsig, # mem_reg_order,
                                             width,
                                             memaddrsig,
                                             env.asz)
@@ -2460,9 +2498,9 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     if env.mode == 64:
         widths.append('q')
 
-    mem_reg_order,regn = ('mr',1)  if op.name == 'MEM0' else ('rm',0)
-    if ii.has_imm8 or ii.has_immz:
-        mem_reg_order += 'i'
+    #mem_reg_order,regn = ('mr',1)  if op.name == 'MEM0' else ('rm',0)
+    #if ii.has_imm8 or ii.has_immz:
+    #    mem_reg_order += 'i'
 
     gpry=False
     for op in _gen_opnds(ii):
@@ -2478,6 +2516,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
+        opsig = make_opnd_signature(ii, width)
         opnd_types_org = get_opnd_types(env,ii, osz_translate(width))        
         opnd_types  = copy.copy(opnd_types_org)
         if ii.has_immz:
@@ -2487,7 +2526,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         fname = "{}_{}{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                               ii.iclass.lower(),
                                               extra_names,
-                                              mem_reg_order,
+                                              opsig, # mem_reg_order,
                                               width,
                                               memaddrsig,
                                               env.asz)
@@ -2809,11 +2848,11 @@ def create_legacy_mov_without_modrm(env,ii):
     # the reg op is AL or OrAX, both sizeless
     if op_mem(opnds[0]):
         sz = opnds[0].oc2
-        mem_reg_order = 'mr'
+        #mem_reg_order = 'mr'
     else:
         sz = opnds[1].oc2
-        mem_reg_order = 'rm'
-
+        #mem_reg_order = 'rm'
+    opsig = make_opnd_signature(ii)
     # in XED, MEMDISPv is a misnomer - the displacement size is
     # modulated by the EASZ! 
     
@@ -2835,7 +2874,7 @@ def create_legacy_mov_without_modrm(env,ii):
         fname = "{}_{}{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                               ii.iclass.lower(),
                                               extra_names,
-                                              mem_reg_order,
+                                              opsig, # mem_reg_order,
                                               mem_ref_width,
                                               memaddrsig,
                                               env.asz)
