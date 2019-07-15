@@ -863,12 +863,12 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
     extra_names = _implicit_reg_names(ii)
 
     for osz in osz_values:
-        
+        opsig = make_opnd_signature(ii,osz)
         fname = "{}_{}{}_{}{}".format(enc_fn_prefix,
-                                        ii.iclass.lower(),
-                                        extra_names,
-                                        'r' + oc2,
-                                        '_o{}'.format(osz) if osz != 8 else '')
+                                      ii.iclass.lower(),
+                                      extra_names,
+                                      opsig, #'r' + oc2,
+                                      '_o{}'.format(osz) if osz != 8 else '')
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_scalable_gpr")
         fo.add_arg(arg_request,'req')
@@ -1298,12 +1298,11 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
     for op in _gen_opnds(ii):
         opnds.append(op)
         opsz_codes.append( get_gpr_opsz_code(opnds[0]))
-        
     for osz in osz_list:
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
-                                      ii.iclass.lower(),
-                                      "".join(opsz_codes),
-                                      osz)
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  opsig)   #  "".join(opsz_codes), osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_gpr_one_scalable_one_fixed")
         fo.add_arg(arg_request,'req')
@@ -1365,12 +1364,12 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
 
     extra_names = _implicit_reg_names(ii)
 
-    if len(osz_list) == 1:
-        opsig = 2*'r{}'.format(osz_list[0])
-    else:
-        opsig = 2*'rv'
-    if ii.has_immz or ii.has_imm8:
-        opsig += 'i'
+    #if len(osz_list) == 1:
+    #    opsig = 2*'r{}'.format(osz_list[0])
+    #else:
+    #    opsig = 2*'rv'
+    #if ii.has_immz or ii.has_imm8:
+    #    opsig += 'i'
     
     if modrm_reg_first_operand(ii):
         opnd_order = {0:'reg', 1:'rm'}
@@ -1387,6 +1386,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
     # REX.B bits don't matter.
     s = []
     fixed = {'reg':False, 'rm':False}
+    nop_opsig = None
     if ii.iclass == 'NOP' and ii.iform in [ 'NOP_MEMv_GPRv_0F1C',
                                             'NOP_GPRv_GPRv_0F1E' ]:
         if ii.reg_required != 'unspecified':
@@ -1397,15 +1397,21 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
             s.append('rm{}'.format(ii.rm_required))
             fixed['rm']=True
         if s:
-            opsig = "".join(s)
+            nop_opsig = "".join(s)
             
     
     for osz in gen_osz_list(env.mode,osz_list):
-        fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
+        if nop_opsig:
+            fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
+                                            ii.iclass.lower(),
+                                            extra_names,
+                                            nop_opsig,osz)
+        else:
+            opsig = make_opnd_signature(ii,osz)
+            fname = "{}_{}{}_{}".format(enc_fn_prefix,
                                         ii.iclass.lower(),
                                         extra_names,
-                                        opsig,
-                                        osz)
+                                        opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_two_scalable_regs")
         fo.add_arg(arg_request,'req')
@@ -1573,6 +1579,8 @@ def make_opnd_signature(ii, using_width=None):
     global vl2func_names
 
     def _translate_width(w):
+        if w in [8,16,32,64]:
+            return str(w)
         return str(widths_to_bits[w])
         
     
@@ -3120,13 +3128,13 @@ def create_legacy_crc32_mem(env,ii):
     osz_list = get_osz_list(env)
     dispsz_list = get_dispsz_list(env)
     opnd_types = get_opnd_types_short(ii)
-    opnd_sig = "".join(opnd_types)
     ispace = itertools.product(osz_list, get_index_vals(ii), dispsz_list)
     for osz, use_index, dispsz in ispace:
+        opsig = make_opnd_signature(ii,osz)
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = '{}_{}_{}_{}_o{}_a{}'.format(enc_fn_prefix,
                                              ii.iclass.lower(),
-                                             opnd_sig,
+                                             opsig,
                                              memaddrsig,
                                              osz,
                                              env.asz)
@@ -3178,10 +3186,10 @@ def create_legacy_crc32_reg(env,ii):
     global gprv_names, gpry_names, gprz_names
     osz_list = get_osz_list(env)
     opnd_types = get_opnd_types_short(ii)
-    opnd_sig = "".join(opnd_types)
     
     for osz in osz_list:
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), opnd_sig, osz)
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), opsig, osz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_crc32_reg")
         fo.add_arg(arg_request,'req')
