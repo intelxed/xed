@@ -37,7 +37,7 @@ static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffe
     index = XED_REG_R13;
     scale = 1;
     disp32 = 0x11223344;
-    xed_enc_lea_rm_q_bisd32_a64(r /*req*/,reg0 /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
+    xed_enc_lea_r64m_q_bisd32_a64(r /*req*/,reg0 /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
     return xed_enc2_encoded_length(r);
 }
 
@@ -55,7 +55,7 @@ xed_uint32_t test_0_xed_enc_vpblendvb_xxxx(xed_uint8_t* output_buffer)
     reg1 = XED_REG_XMM7;
     reg2 = XED_REG_XMM8;
     reg3 = XED_REG_XMM9;
-    xed_enc_vpblendvb_xxxx(r /*req*/,reg0 /*xmm*/,reg1 /*xmm*/,reg2 /*xmm*/,reg3 /*xmm*/);
+    xed_enc_vpblendvb_xxxx_128(r /*req*/,reg0 /*xmm*/,reg1 /*xmm*/,reg2 /*xmm*/,reg3 /*xmm*/);
     return xed_enc2_encoded_length(r);
 }
 

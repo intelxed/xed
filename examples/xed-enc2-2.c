@@ -36,7 +36,7 @@ static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffe
     index = XED_REG_R13;
     scale = 1;
     disp32 = 0x11223344;
-    xed_enc_lea_rm_q_bisd32_a64_chk(&request /*req*/,dest /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
+    xed_enc_lea_r64m_q_bisd32_a64_chk(&request /*req*/,dest /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
     return xed_enc2_encoded_length(&request);
 }
 
