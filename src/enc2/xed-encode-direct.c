@@ -303,7 +303,7 @@ void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
     xed_uint_t offset = dst-XED_REG_GPR8_FIRST;   
     if (dst >= XED_REG_AH && dst <= XED_REG_BH)
-        offset = dst-XED_REG_GPR8h_FIRST;  // AH,CH,DH,BH
+        offset = dst-XED_REG_GPR8h_FIRST+4;  // AH,CH,DH,BH
    
     set_reg(r, offset & 7);
     set_rexr(r,offset >= 8);
@@ -317,7 +317,7 @@ void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
     /* encode modrm.rm with a register */
     xed_uint_t offset = dst-XED_REG_GPR8_FIRST; 
     if (dst >= XED_REG_AH && dst <= XED_REG_BH)
-        offset = dst-XED_REG_GPR8h_FIRST;  // AH,CH,DH,BH
+        offset = dst-XED_REG_GPR8h_FIRST+4;  // AH,CH,DH,BH
 
     set_mod(r, 3);
     set_rm(r, offset & 7);
@@ -391,7 +391,7 @@ void enc_srm_gpr8(xed_enc2_req_t* r,
                    xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR8_FIRST;
     if (dst >= XED_REG_AH && dst <= XED_REG_BH)
-        offset = dst-XED_REG_GPR8h_FIRST;  // AH,CH,DH,BH
+        offset = dst-XED_REG_GPR8h_FIRST+4;  // AH,CH,DH,BH
 
     set_srm(r, offset & 7);
     set_rexb(r, offset >= 8);
