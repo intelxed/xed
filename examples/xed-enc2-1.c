@@ -21,6 +21,17 @@ END_LEGAL */
 #include <stdio.h>
 #include <stdlib.h>
 
+static xed_uint32_t test_add_lock_byte(xed_uint8_t* output_buffer)
+{
+    xed_reg_enum_t reg0;
+    xed_reg_enum_t base;
+    xed_enc2_req_t request;
+    xed_enc2_req_t_init(&request, output_buffer);
+    reg0 = XED_REG_AH;
+    base = XED_REG_RBX;
+    xed_enc_add_lock_mr8_b_b_a64(&request,base,reg0);
+    return xed_enc2_encoded_length(&request);
+}
 static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffer)
 {
     xed_enc2_req_t* r;
@@ -130,6 +141,17 @@ int main(int argc, char** argv) {
     
     // encode an VPBLENDVB instruction with 4 xmm regs
     enclen = test_0_xed_enc_vpblendvb_xxxx(output_buffer);
+    printf("Encoded: ");
+    dump(output_buffer, enclen);
+    printf("\n");
+#if defined(DECO)
+    r = decode(output_buffer, enclen);
+    retval += r;
+    printf("decode returned %d\n",r);
+#endif
+
+    
+    enclen = test_add_lock_byte(output_buffer);
     printf("Encoded: ");
     dump(output_buffer, enclen);
     printf("\n");
