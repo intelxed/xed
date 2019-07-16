@@ -207,6 +207,7 @@ arg_dispv_meta = { 8:'int8', 16:'int16', 32:'int32', 64:'int64' }
 
 widths_to_bits = {'b':8, 'w':16, 'd':32, 'q':64 }
 widths_to_bits_y = {'w':32, 'd':32, 'q':64 }
+widths_to_bits_z = {'w':16, 'd':32, 'q':32 }
 
 # if I cut the number of displacements by removing 0, I would have to
 # add some sort of gizmo to omit the displacent if the value of the
@@ -864,11 +865,11 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
 
     for osz in osz_values:
         opsig = make_opnd_signature(ii,osz)
-        fname = "{}_{}{}_{}{}".format(enc_fn_prefix,
-                                      ii.iclass.lower(),
-                                      extra_names,
-                                      opsig, #'r' + oc2,
-                                      '_o{}'.format(osz) if osz != 8 else '')
+        fname = "{}_{}{}_{}".format(enc_fn_prefix,
+                                    ii.iclass.lower(),
+                                    extra_names,
+                                    opsig)
+
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_scalable_gpr")
         fo.add_arg(arg_request,'req')
@@ -949,7 +950,8 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
     global enc_fn_prefix, arg_request
 
     for osz in osz_values:
-        fname = "{}_m{}_{}_o{}".format(enc_fn_prefix, env.mode, ii.iclass.lower(), osz)
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_m{}_{}_{}".format(enc_fn_prefix, env.mode, ii.iclass.lower(), opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_imm_scalable")
         fo.add_arg(arg_request,'req')
@@ -973,7 +975,8 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
 
 def create_legacy_one_gpr_fixed(env,ii,width_bits):
     global enc_fn_prefix, arg_request, gprv_names
-    fname = "{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), width_bits)
+    opsig = make_opnd_signature(ii,width_bits)
+    fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(), opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_gpr_fixed")
     fo.add_arg(arg_request,'req')
@@ -1576,12 +1579,26 @@ def get_opnd_types_short(ii):
 def make_opnd_signature(ii, using_width=None):
     '''If using_width is present, it is used for GPRv and GPRy
        operations to specify a width'''
-    global vl2func_names
+    global vl2func_names, widths_to_bits, widths_to_bits_y, widths_to_bits_z
 
     def _translate_width(w):
         if w in [8,16,32,64]:
             return str(w)
         return str(widths_to_bits[w])
+    
+    def _translate_width_y(w):
+        if w in [32,64]:
+            return str(w)
+        elif w == 16:
+            return '32'
+        return str(widths_to_bits_y[w])
+    
+    def _translate_width_z(w):
+        if w in [16,32]:
+            return str(w)
+        elif w == 64:
+            return '32'
+        return str(widths_to_bits_z[w])
         
     
     s = []
@@ -1613,15 +1630,29 @@ def make_opnd_signature(ii, using_width=None):
             s.append('r32')
         elif op_gpr64(op):
             s.append('r64') #FIXME something else
-        elif op_gprv(op) or op_gprz(op) or op_gpry(op):
+        elif op_gprv(op):
             s.append('r' + _translate_width(using_width))
+        elif op_gprz(op):
+            s.append('r' + _translate_width_z(using_width))
+        elif op_gpry(op):
+            s.append('r' + _translate_width_y(using_width))
         elif op_agen(op):
             s.append('m') # somewhat of a misnomer
         elif op_mem(op):
-            if op.oc2 == 'd':
+            if op.oc2 == 'b':
+                s.append('m8')
+            elif op.oc2 == 'w':
+                s.append('m16')
+            elif op.oc2 == 'd':
                 s.append('m32')
             elif op.oc2 == 'q':
                 s.append('m64')
+            elif op.oc2 == 'v' and using_width:
+                s.append('m' + _translate_width(using_width))
+            elif op.oc2 == 'y' and using_width:
+                s.append('m' + _translate_width_y(using_width))
+            elif op.oc2 == 'z' and using_width:
+                s.append('m' + _translate_width_z(using_width))
             else:
                 s.append('m')
                 
@@ -1631,17 +1662,23 @@ def make_opnd_signature(ii, using_width=None):
             if ii.avx512_vsib:
                 s.append(ii.avx512_vsib[0])
         elif op_imm8(op):
-            s.append('i')
-        elif op_immz(op): #FIXME something else?
-            s.append('i')
-        elif op_immv(op): #FIXME something else?
-            s.append('i')
+            s.append('i8')
+        elif op_immz(op):
+            if using_width:
+                s.append('i' + _translate_width_z(using_width))
+            else:
+                s.append('i')
+        elif op_immv(op):
+            if using_width:
+                s.append('i' + _translate_width(using_width))
+            else:
+                s.append('i')
         elif op_imm16(op):
-            s.append('i') #FIXME something else?
+            s.append('i16')
         elif op_imm8_2(op):
             s.append('i') #FIXME something else?
         elif op_mmx(op):
-            s.append('n') #FIXME something else
+            s.append('n') #FIXME something else?
         elif op_cr(op):
             s.append('c')
         elif op_dr(op):
@@ -1650,7 +1687,7 @@ def make_opnd_signature(ii, using_width=None):
             s.append('s')
         elif op_implicit_specific_reg(op):
             s.append('r') # FIXME something else?
-        elif op.name == 'REG0' and op_luf(op,'OrAX'):
+        elif op.name in ['REG0','REG1'] and op_luf(op,'OrAX'):
             s.append('r') # FIXME something else?
         else:
             die("Unhandled operand {}".format(op))
@@ -2078,10 +2115,11 @@ def create_legacy_gpr_imm8(env,ii,width_list):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0, arg_imm8,  var_imm8, gprv_names
     
     for osz in gen_osz_list(env.mode,width_list):
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}_{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
-                                      'ri',
-                                      osz)
+                                      opsig)
+
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_gpr_imm8")
         fo.add_arg(arg_request,'req')
@@ -2127,10 +2165,10 @@ def create_legacy_gprv_immz(env,ii):
     width_list = get_osz_list(env)
 
     for osz in width_list:
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}_{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
-                                      'ri',
-                                      osz)
+                                      opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_gprv_immz")
         fo.add_arg(arg_request,'req')
@@ -2180,11 +2218,12 @@ def create_legacy_orax_immz(env,ii):
 
     
     for osz in width_list:
-        fname = "{}_{}{}_{}_o{}".format(enc_fn_prefix,
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}{}_{}".format(enc_fn_prefix,
                                         ii.iclass.lower(),
                                         rax_names[osz],
-                                        'ri',
-                                        osz)
+                                        opsig)
+
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_orax_immz")
@@ -2228,11 +2267,12 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False):
             extra_names = rax_names[osz]
         else:
             extra_names = ''
-        fname = "{}_{}{}_{}o{}".format(enc_fn_prefix,
-                                       ii.iclass.lower(),
-                                       extra_names,
-                                       'ri_' if imm else '',
-                                       osz)
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}{}_{}".format(enc_fn_prefix,
+                                    ii.iclass.lower(),
+                                    extra_names,
+                                    opsig)
+
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_gprv_immv")
@@ -2920,10 +2960,10 @@ def create_legacy_gprv_seg(env,ii,op_info):
     reg1 = 'seg'
     osz_list = get_osz_list(env)
     for osz in osz_list:
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix,
-                                      ii.iclass.lower(),
-                                      'rs',
-                                      osz)
+        opsig = make_opnd_signature(ii,osz)
+        fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment('created by create_legacy_gprv_seg')
         fo.add_arg(arg_request,'req')
@@ -3122,21 +3162,51 @@ def get_opnds(ii):
         opnds.append(op)
     return opnds
 
+def compute_widths_crc32(env,ii): 
+    '''return a dict by osz of {op1-width,op2-width}. Also for LSL '''
+    opnd_types = get_opnd_types_short(ii)
+    if env.mode == 16:
+        if opnd_types == ['y','v']:
+            return { 16:{32,16}, 32:{32,32} }
+        elif opnd_types == ['y','b']:
+            return { 16:{32,8} }
+        elif opnd_types == ['v','z']:
+            return { 16:{16,16}, 32:{32,32} }
+    elif env.mode == 32:
+        if opnd_types == ['y','v']:
+            return { 16: {32,16}, 32:{32,32} }
+        elif opnd_types == ['y','b']:
+            return { 32:{32,8} }
+        elif opnd_types == ['v','z']:
+            return { 16:{16,16}, 32:{32,32} }
+    elif env.mode == 64:
+        if opnd_types == ['y','v']:
+            return { 16: {32,16}, 32:{32,32}, 64:{64,64} }
+        elif opnd_types == ['y','b']:
+            return { 32:{32,8}, 64:{64,8} }
+        elif opnd_types == ['v','z']:
+            return { 16:{16,16}, 32:{32,32}, 64:{64,32} }
+    die("not reached")
+        
+    
+
 def create_legacy_crc32_mem(env,ii):
-    '''GPRy + MEMv or MEMb'''
+    '''GPRy+MEMv or GPRy+MEMb'''
     global gpry_names, arg_request, enc_fn_prefix
-    osz_list = get_osz_list(env)
+    config =  compute_widths_crc32(env,ii)
+    osz_list = list(config.keys())
     dispsz_list = get_dispsz_list(env)
     opnd_types = get_opnd_types_short(ii)
+
     ispace = itertools.product(osz_list, get_index_vals(ii), dispsz_list)
     for osz, use_index, dispsz in ispace:
+        #op_widths = config[osz]
         opsig = make_opnd_signature(ii,osz)
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = '{}_{}_{}_{}_o{}_a{}'.format(enc_fn_prefix,
+        fname = '{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
                                              ii.iclass.lower(),
                                              opsig,
                                              memaddrsig,
-                                             osz,
                                              env.asz)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_crc32_mem")
@@ -3184,12 +3254,13 @@ def emit_legacy_osz(env,ii,fo,osz):
 def create_legacy_crc32_reg(env,ii):
     '''CRC32-reg (GPRy-GPR{v,b}) and LSL (GPRv+GPRz)'''
     global gprv_names, gpry_names, gprz_names
-    osz_list = get_osz_list(env)
+    config =  compute_widths_crc32(env,ii)
+    osz_list = list(config.keys())
     opnd_types = get_opnd_types_short(ii)
     
     for osz in osz_list:
         opsig = make_opnd_signature(ii,osz)
-        fname = "{}_{}_{}_o{}".format(enc_fn_prefix, ii.iclass.lower(), opsig, osz)
+        fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(), opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_crc32_reg")
         fo.add_arg(arg_request,'req')
