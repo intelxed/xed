@@ -1623,7 +1623,7 @@ def make_opnd_signature(ii, using_width=None):
             nm = get_implicit_operand_name(op)
             if nm in ['OrAX'] and using_width:
                 s.append( _translate_rax_name(using_width) )
-            if nm in ['OeAX'] and using_width:
+            elif nm in ['OeAX'] and using_width:
                 s.append( _translate_eax_name(using_width) )
             else:
                 s.append(nm)
@@ -2244,16 +2244,11 @@ def create_legacy_orax_immz(env,ii):
 
     width_list = get_osz_list(env)
 
-    rax_names = { 16: '_ax', 32:'_eax', 64:'_rax' }
-
-    
     for osz in width_list:
         opsig = make_opnd_signature(ii,osz)
-        fname = "{}_{}{}_{}".format(enc_fn_prefix,
-                                        ii.iclass.lower(),
-                                        rax_names[osz],
-                                        opsig)
-
+        fname = "{}_{}_{}".format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  opsig)
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_orax_immz")
@@ -2290,7 +2285,7 @@ def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False): # FIXME: imp
     global arg_imm32, var_imm32
     global arg_imm64, var_imm64
     width_list = get_osz_list(env)
-    rax_names = { 16: '_ax', 32:'_eax', 64:'_rax' }
+
     
     for osz in width_list:
         opsig = make_opnd_signature(ii,osz)
