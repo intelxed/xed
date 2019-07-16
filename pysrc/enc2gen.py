@@ -2448,7 +2448,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
         fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
                                             ii.iclass.lower(),
                                             opsig,
-                                            width,
+                                            width, # FIXME:osz, funky
                                             memaddrsig,
                                             env.asz)
 
@@ -2585,12 +2585,11 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
             immw = 16 if width == 16 else 32
             
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                            ii.iclass.lower(),
-                                            opsig,
-                                            width, # FIXME:osz
-                                            memaddrsig,
-                                            env.asz)
+        fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                         ii.iclass.lower(),
+                                         opsig,
+                                         memaddrsig,
+                                         env.asz)
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
@@ -2769,7 +2768,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             fname = '{}_{}_{}{}_{}_a{}'.format(enc_fn_prefix,
                                                ii.iclass.lower(),
                                                opsig,
-                                               fwidth,  # FIXME:osz
+                                               fwidth,  # FIXME:osz, funky
                                                memaddrsig,
                                                env.asz)
             fo = make_function_object(env,ii,fname)
