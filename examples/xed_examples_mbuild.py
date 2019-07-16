@@ -386,7 +386,8 @@ def build_examples(env, work_queue):
     small_examples = ['xed-size.c']
     if env['enc2']:
         enc2_examples += [ 'xed-enc2-1.c',
-                           'xed-enc2-2.c' ]
+                           'xed-enc2-2.c',
+                           'xed-enc2-3.c' ]
     if env['encoder']:
        small_examples += ['xed-ex5-enc.c']
        other_c_examples += ['xed-ex3.c']
