@@ -753,7 +753,6 @@ def _gather_implicit_regs(ii):
                     reg_name = re.sub('XED_REG_','',op.bits).lower()
                     names.append(reg_name)
                 elif op.lookupfn_name:
-                    #ntluf = re.sub(r'_.*','',op.lookupfn_name)
                     ntluf = op.lookupfn_name
                     names.append(ntluf)
                 
@@ -2740,9 +2739,7 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         widths = [op.oc2]
 
     immz_dict = { 'w': 16, 'd': 32, 'q': 32 }
-    nwidths = len(widths)
     for width in widths:
-
         immw = 0
         if imm == '8':
             immw = 8
@@ -2750,21 +2747,20 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             immw = immz_dict[width]
             
         extra_names = _implicit_reg_names(ii)
-        #fwidth = "{}_".format(width) if (nwidths>1 or width in ['b','w','d','q']) else ''
-        fwidth = "{}_".format(width)
+        fwidth = "_{}".format(width) if width not in ['b','w','d','q'] else ''
         
         ispace = itertools.product(get_index_vals(ii), dispsz_list)
         for use_index, dispsz in ispace:
             memaddrsig = get_memsig(env.asz, use_index, dispsz)
-            
-            fname = '{}_{}{}_{}_{}{}_a{}'.format(enc_fn_prefix,
-                                                  ii.iclass.lower(),
-                                                  extra_names,
-                                                  'memi{}'.format(immw) if imm else 'mem',
-                                                  fwidth,
-                                                  memaddrsig,
-                                                  env.asz)
-
+            opsig = make_opnd_signature(ii,width)
+            fname = '{}_{}{}_{}{}_{}_a{}'.format(enc_fn_prefix,
+                                                 ii.iclass.lower(),
+                                                 extra_names,
+                                                 opsig,
+                                                 fwidth,
+                                                 memaddrsig,
+                                                 env.asz)
+            print("CMN: {}".format(fname))
             fo = make_function_object(env,ii,fname)
             fo.add_comment('created by create_legacy_one_mem_common')
             fo.add_arg(arg_request,'req')
