@@ -29,7 +29,7 @@ static xed_uint32_t test_add_lock_byte(xed_uint8_t* output_buffer)
     xed_enc2_req_t_init(&request, output_buffer);
     reg0 = XED_REG_AH;
     base = XED_REG_RBX;
-    xed_enc_add_lock_m8_r8_b_b_a64(&request,base,reg0);
+    xed_enc_add_lock_m8_r8_b_a64(&request,base,reg0);
     return xed_enc2_encoded_length(&request);
 }
 static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffer)
@@ -48,7 +48,7 @@ static xed_uint32_t test_0_xed_enc_lea_rm_q_bisd32_a64(xed_uint8_t* output_buffe
     index = XED_REG_R13;
     scale = 1;
     disp32 = 0x11223344;
-    xed_enc_lea_r64_m_q_bisd32_a64(r /*req*/,reg0 /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
+    xed_enc_lea_r64_m_bisd32_a64(r /*req*/,reg0 /*gpr64*/,base /*gpr64*/,index /*gpr64*/,scale /*scale*/,disp32 /*int32*/);
     return xed_enc2_encoded_length(r);
 }
 
