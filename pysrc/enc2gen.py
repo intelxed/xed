@@ -867,8 +867,11 @@ def make_function_object(env, ii, fname, return_value='void'):
 
 def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0, gprv_names
-    
+            
     for osz in osz_values:
+        if env.mode != 64 and osz == 64:
+            continue
+        
         opsig = make_opnd_signature(ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
