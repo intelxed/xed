@@ -1724,9 +1724,10 @@ def make_opnd_signature(ii, using_width=None):
             s.append( 'sae' )
             
     if ii.space in ['evex','vex']:
-        vl =  vl2func_names[ii.vl]
-        if vl:
-            s.append(vl)
+        if 'KMASK' not in ii.attributes:
+            vl =  vl2func_names[ii.vl]
+            if vl:
+                s.append(vl)
     return "_".join(s)
 
 def get_reg_type_fixed(op):
@@ -3869,7 +3870,7 @@ def create_vex_one_mask_reg_and_one_gpr(env,ii):
                               ii.iclass.lower(),
                               opsig)
     fo = make_function_object(env,ii,fname)
-    fo.add_comment("created by create_vex_all_mask_reg")
+    fo.add_comment("created by create_vex_one_mask_reg_and_one_gpr")
     fo.add_arg(arg_request,'req')
     
     for i,op in enumerate(opnd_types):
@@ -3935,9 +3936,9 @@ def create_vex_all_mask_reg(env,ii):
     fo.add_comment("created by create_vex_all_mask_reg")
     fo.add_arg(arg_request,'req')
     fo.add_arg(arg_kreg0,'kreg')
-    if 2*'k' in opsig:
+    if 'k_k' in opsig:
         fo.add_arg(arg_kreg1,'kreg')
-    if 3*'k' in opsig:
+    if 'k_k_k' in opsig:
         fo.add_arg(arg_kreg2,'kreg')
     if ii.has_imm8:
         add_arg_immv(fo,8)
