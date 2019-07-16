@@ -1669,6 +1669,8 @@ def make_opnd_signature(ii, using_width=None):
                 s.append('m32')
             elif op.oc2 == 'q':
                 s.append('m64')
+            #elif op.oc2 == 'dq': don't really want to start decorating the wider memops
+            #    s.append('m128')
             elif op.oc2 == 'v' and using_width:
                 s.append('m' + _translate_width(using_width))
             elif op.oc2 == 'y' and using_width:
@@ -2515,18 +2517,16 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         die("Bad search for width")
     
     widths = [width]
-    #mem_reg_order = 'mr' if regn==1 else 'rm'
     opsig = make_opnd_signature(ii)
 
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                            ii.iclass.lower(),
-                                            opsig, # mem_reg_order,
-                                            width,
-                                            memaddrsig,
-                                            env.asz)
+        fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
+                                         ii.iclass.lower(),
+                                         opsig,
+                                         memaddrsig,
+                                         env.asz)
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_fixed")
