@@ -1,0 +1,14 @@
+#!/bin/csh -f
+foreach i (*.py)
+ echo $i
+ pylint -d trailing-newlines,unused-wildcard-import,bad-indentation,too-many-lines,bad-whitespace,trailing-whitespace,invalid-name,bad-continuation,missing-docstring,too-many-branches,too-many-locals,too-few-public-methods  $i >! $i.pylint
+end
+
+echo ""
+echo ""
+echo ""
+wc -l *pylint | sort -n
+echo ""
+echo ""
+echo ""
+cat *pylint | grep -E '^[A-Z]:' | sed 's/.*(/(/' | sus
