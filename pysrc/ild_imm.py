@@ -16,10 +16,8 @@
 #  
 #END_LEGAL
 
-import re
 import ild_nt
 import mbuild
-import genutil
 import ildutil
 import codegen
 import ild_eosz
@@ -177,7 +175,7 @@ def _is_imm_conflict(info_list, imm_dict):
     for info in info_list[1:]:
         l2_fn_cur = get_l2_fn_from_info(info, imm_dict)
         
-        if (l2_fn_first != l2_fn_cur):
+        if l2_fn_first != l2_fn_cur:
             #there are const l3 functions that return only one value:
             #SIMM8 UIMM8 etc. If they return same value, they should not
             #conflict

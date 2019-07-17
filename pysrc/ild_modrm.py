@@ -18,7 +18,6 @@
 
 import ild_info
 import ild_codegen
-import genutil
 import ildutil
 
 _modrm_nt = 'MODRM()'

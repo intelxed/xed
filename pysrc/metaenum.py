@@ -21,7 +21,8 @@
 #END_LEGAL
 
 # subprocess requires python 2.4 (replaces all os.popen() ) or later
-import os, sys, re, types
+import sys
+import re
 import enumer
 
 ###################################################################################

@@ -18,9 +18,6 @@
 #  
 #END_LEGAL
 
-import sys
-import os
-
 import tup2int
 import xedhash
 #paper of Fredman Komlos and Szemeredi (1984) :

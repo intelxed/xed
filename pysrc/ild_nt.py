@@ -19,7 +19,6 @@
 import genutil
 import ildutil
 import codegen
-import copy
 import re
 import opnds
 
@@ -522,7 +521,7 @@ def _generate_lookup_function_indices(ii,state_space,argnames):
    #of course there are other ways to solve this problem, but this seems to be
    #the easiest.
    for bt_token in list(argnames.keys()):
-       if not (bt_token  in indices):
+       if bt_token not in indices:
            indices[bt_token] = list(argnames[bt_token].keys())
 
 

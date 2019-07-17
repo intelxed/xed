@@ -20,12 +20,6 @@
 #  
 #END_LEGAL
 
-# subprocess requires python 2.4 (replaces all os.popen() )
-import os
-import sys
-import re
-import types
-
 import codegen
 import enumer
 import genutil

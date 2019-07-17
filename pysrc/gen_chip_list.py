@@ -18,12 +18,8 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
 import sys
-import argparse
-import re
 import collections
-
 import read_xed_db
 import gen_setup
 import chipmodel
@@ -83,10 +79,10 @@ def work(args):  # main function
             c = 'mmx'
         classes[i]=c
 
-    all = []
+    chip_icount_histo_tup = []
     for c in chips:
         r = check(c, xeddb, chip_db, classes)
-        all.append(r)
+        chip_icount_histo_tup.append(r)
 
     groups = [ 'general', 'mmx', 'sse', 'avx', 'avx512' ]
 
@@ -95,7 +91,7 @@ def work(args):  # main function
             print("GPR SCALAR", inst.iclass)
 
     tlist = []
-    for s in all:
+    for s in chip_icount_histo_tup:
         t = []
         (chip, icount, histo) = s
         t.append("{0:20s} {1:4d}".format(chip,icount))

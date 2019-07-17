@@ -17,13 +17,13 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-class hnode_t:
+class hnode_t(object):
     def __init__(self, lst=None, id=None):
         self.lst = lst
         self.token = id
     
 
-class hash_compare_t:
+class hash_compare_t(object):
     def __init__(self):
         self.bins = {} # indexed by hash values
         self.token = 1

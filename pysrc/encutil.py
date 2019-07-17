@@ -18,10 +18,10 @@
 
 import ildutil
 
-"""
-dictionary of string to string.
-used to provided a layer of abstraction
-"""
+
+# dictionary of string to string.
+# used to provided a layer of abstraction
+
 enc_strings = {'key_str':'key', 
                 'hidx_str':'hidx', 
                 'key_type':'xed_uint64_t', 

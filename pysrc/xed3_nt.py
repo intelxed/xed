@@ -16,13 +16,11 @@
 #  
 #END_LEGAL
 
-import genutil
 import ildutil
 import ild_nt
 import ild_cdict
 import mbuild
 import codegen
-import ild_phash
 import os
 import ild_codegen
 import operand_storage

@@ -16,10 +16,7 @@
 #  
 #END_LEGAL
 
-
-import ild_info
 import ild_storage
-
 
 def gen_ild_info():
     # FIXME: can use this to define length properties for illegal opcodes

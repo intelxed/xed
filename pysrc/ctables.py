@@ -18,9 +18,7 @@
 #END_LEGAL
 from __future__ import print_function
 import re
-import types
 import sys
-import os
 import genutil
 import codegen
 import enum_txt_writer
@@ -195,7 +193,6 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
    return srcs
 
 if __name__ == '__main__':
-   import sys
    lines = open(sys.argv[1],'r').readlines()
    srcs = work(lines,xeddir='.',gendir='obj')
    print("WROTE: ", "\n\t".join(srcs))

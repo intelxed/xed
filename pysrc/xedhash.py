@@ -28,7 +28,7 @@ class hash_fun_interface_t(object):
     def apply(self, x):
         self._raise_error()
     def emit_cexpr(self, key_str):
-        self.raise_error()
+        self._raise_error()
     def __str__(self):
         self._raise_error()
     def kind(self):

@@ -21,12 +21,7 @@
 # for each instruction, dump all the fields provided by the reader.
 
 from __future__ import print_function
-import os
 import sys
-import argparse
-import re
-import collections
-
 import read_xed_db
 import gen_setup
 

@@ -17,13 +17,11 @@
 #END_LEGAL
 
 import ild_nt
-import genutil
 import ildutil
 import codegen
 import mbuild
 import ild_info
 import operand_storage
-import os
 
 _arg_const_suffix = 'CONST'
 

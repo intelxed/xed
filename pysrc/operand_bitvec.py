@@ -22,8 +22,7 @@
 Build a bit vector based on the operand names
 """
 ################################################################################
-import os, sys, types, re
-import codegen, genutil
+import genutil
 
 def build_operand_bitvector(operand_names):
     """Build a bit vector in C of the operand names. Return the lines

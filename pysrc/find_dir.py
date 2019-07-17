@@ -23,14 +23,14 @@ import os
 import sys
 
 def find_dir(d):
-    dir = os.getcwd()
+    directory = os.getcwd()
     last = ''
-    while dir != last:
-        target_dir = os.path.join(dir,d)
-        if os.path.exists(target_dir):
-            return target_dir
-        last = dir
-        (dir,tail) = os.path.split(dir)
+    while directory != last:
+        target_directory = os.path.join(directory,d)
+        if os.path.exists(target_directory):
+            return target_directory
+        last = directory
+        directory = os.path.split(directory)[0]
     return None
 
 mbuild_path = find_dir('mbuild')

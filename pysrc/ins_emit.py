@@ -16,7 +16,6 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import sys
 import os
 import codegen
 import encutil
@@ -232,7 +231,7 @@ class ins_group_t(object):
         return table
 
 
-class instruction_codegen_t():
+class instruction_codegen_t(object):
     def __init__(self,iform_list,iarray,logs_dir, amd_enabled=True):
         self.amd_enabled = amd_enabled
         self.iform_list = iform_list
