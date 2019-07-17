@@ -18,23 +18,18 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
 import sys
-import argparse
-import re
-import collections
-
 import read_xed_db
 import gen_setup
 import chipmodel
 
 
 def check(chip, xeddb, chipdb):
-    all = []
+    all_inst = []
     for inst in xeddb.recs:
         if inst.isa_set in chipdb[chip]:
-            all.append(inst)
-    return all
+            all_inst.append(inst)
+    return all_inst
 
 
 def chip_list(chip, xeddb, chip_db):

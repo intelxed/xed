@@ -17,9 +17,7 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
 import sys
-import re
 import optparse
 import collections
 

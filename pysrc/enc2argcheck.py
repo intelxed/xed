@@ -18,13 +18,6 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
-import sys
-import collections
-
-import find_dir # finds mbuild and adds it to sys.path
-import mbuild
-
 import codegen
 from enc2common import *
 

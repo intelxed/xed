@@ -18,9 +18,8 @@
 #  
 #END_LEGAL
 
-import re,sys,os,types
+import re
 from verbosity import *
-import genutil
 import enum_txt_writer
 import codegen
 

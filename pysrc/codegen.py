@@ -23,20 +23,18 @@
 import sys
 import os
 import re
-import types
 import glob
 
 from genutil import *
 def find_dir(d):
-    dir = os.getcwd()
+    directory = os.getcwd()
     last = ''
-    while dir != last:
-        target_dir = os.path.join(dir,d)
-        #print "Trying %s" % (target_dir)
-        if os.path.exists(target_dir):
-            return target_dir
-        last = dir
-        (dir,tail) = os.path.split(dir)
+    while directory != last:
+        target_directory = os.path.join(directory,d)
+        if os.path.exists(target_directory):
+            return target_directory
+        last = directory
+        directory = os.path.split(directory)[0]
     return None
 sys.path.append(find_dir('mbuild'))
 try:
@@ -268,9 +266,7 @@ class xed_file_emitter_t(file_emitter_t):
          self.misc_headers_emit()
          self.namespace_start()
 
-#inline_string = "inline"
 inline_sring = "XED_INLINE"
-
 
 class function_object_t(object):
    inline_string = "XED_INLINE"
@@ -430,10 +426,10 @@ def emit_function_list(func_list,
                        gendir,
                        hgendir,
                        namespace=None,
-                       other_headers=[],
+                       other_headers=None,
                        max_lines_per_file=3000,
                        is_private_header=True,
-                       extra_public_headers=[]):
+                       extra_public_headers=None): # list
    """Emit a list of functions to a numbered sequence of
    files. Breaking them up when the files get too big.
 
@@ -454,7 +450,7 @@ def emit_function_list(func_list,
     @type max_lines_per_file: int
     @param max_lines_per_file: Approximate limit for file size, in lines. 
    """
-   file_number = 0;
+   file_number = 0
    fe = None
    
    fn_header = "{}.h".format(fn_prefix)
@@ -483,8 +479,9 @@ def emit_function_list(func_list,
          fn = "%s-%d.c" % (fn_prefix, file_number)
          fe = xed_file_emitter_t(xeddir,gendir, fn, shell_file=False, namespace=namespace)
          fe.add_header(companion_header)
-         for header in other_headers:
-            fe.add_header(header)
+         if other_headers:
+            for header in other_headers:
+               fe.add_header(header)
          fe.start()
          fe_list.append(fe)
          file_number += 1
@@ -592,7 +589,7 @@ class class_generator_t(object):
    def add_get_ref_fn(self,var,pvar,type):
       'A get-accessor function for class variable pvar, returns a reference'
       fname = 'get_' + var
-      fo = function_object_t(fname, inline_string + ' ' + type)
+      fo = function_object_t(fname, class_generator_t.inline_string + ' ' + type)
       fo.set_ref_return()
       fo.add_code_eol( 'return %s' %( pvar ))
       return fo
@@ -600,7 +597,7 @@ class class_generator_t(object):
    def add_get_fn(self,var,pvar,type):
       'A get-accessor function for class variable pvar'
       fname = 'get_' + var
-      fo = function_object_t(fname, inline_string + ' ' + type)
+      fo = function_object_t(fname, class_generator_t.inline_string + ' ' + type)
       fo.set_const_member()
       fo.add_code_eol( 'return %s' % ( pvar ))
       return fo
@@ -608,7 +605,7 @@ class class_generator_t(object):
    def add_set_fn(self, var,pvar,type):
       'A set-accessor function for class variable pvar'
       fname = 'set_' + var
-      fo = function_object_t(fname, inline_string + ' void')
+      fo = function_object_t(fname, class_generator_t.inline_string + ' void')
       fo.add_arg(type + ' arg_' + var)
       fo.add_code_eol( '%s=arg_%s' % (pvar,var))
       return fo
@@ -616,7 +613,7 @@ class class_generator_t(object):
    def add_get_array_fn(self,var,pvar,type):
       'A get-accessor function for class variable pvar'
       fname = 'get_' + var
-      fo = function_object_t(fname, inline_string + ' ' + type)
+      fo = function_object_t(fname, class_generator_t.inline_string + ' ' + type)
       fo.add_arg("unsigned int idx") #FIXME: parameterize unsigned int
       fo.set_const_member()
       # FIXME: add bound checking for array index
@@ -626,7 +623,7 @@ class class_generator_t(object):
    def add_set_array_fn(self, var,pvar,type):
       'A set-accessor function for class variable pvar'
       fname = 'set_' + var
-      fo = function_object_t(fname, inline_string +' void')
+      fo = function_object_t(fname, class_generator_t.inline_string +' void')
       fo.add_arg("unsigned int idx") #FIXME: parameterize unsigned int
       fo.add_arg(type + ' arg_' + var)
       # FIXME add bounds checking for array index
@@ -719,9 +716,6 @@ class c_class_generator_t(object):
    type_ending_pattern = re.compile(r'_t$')
    def remove_suffix(self,x):
       return c_class_generator_t.type_ending_pattern.sub('',x)
-
-   inline_string = "XED_INLINE"
-   inline_pattern = re.compile(inline_string)
 
    def __init__(self,name, class_or_union='struct', var_prefix = "_"):
       self.name = name

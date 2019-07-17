@@ -124,8 +124,6 @@ def vinputs():
     return 'inputs' in _verbosity_options
 def vread():
     return 'read' in _verbosity_options
-def vcapture():
-    return 'capture' in _verbosity_options
 def vrule():
     return 'rule' in _verbosity_options
 def vaction():

@@ -18,7 +18,6 @@
 #  
 #END_LEGAL
 
-import os
 import sys
 import re
 import collections
@@ -719,7 +718,7 @@ class xed_reader_t(object):
                 continue
 
             if patterns.delete_iclass_pattern.search(line):
-                m = pattersn.delete_iclass_full_pattern.search(line)
+                m = patterns.delete_iclass_full_pattern.search(line)
                 iclass = m.group('iclass')
                 self.deleted_instructions[iclass] = True
                 continue

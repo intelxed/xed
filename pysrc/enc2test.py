@@ -18,23 +18,9 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
 import sys
-import copy
-import types
-import glob
-import re
-import argparse
-import itertools
 import collections
-
-import find_dir # finds mbuild and adds it to sys.path
-import mbuild
-
-import genutil
 import codegen
-import read_xed_db
-import gen_setup
 from enc2common import *
 
 def _make_test_function_object(env, enc_fn):

@@ -21,17 +21,15 @@ from __future__ import print_function
 import os
 import sys
 import copy
-import types
-import glob
 import re
 import argparse
 import itertools
 import collections
+import traceback
 
 import find_dir # finds mbuild and adds it to sys.path
 import mbuild
 
-import genutil
 import codegen
 import read_xed_db
 import gen_setup
@@ -40,7 +38,7 @@ import enc2argcheck
 
 from enc2common import *
 
-import traceback
+
 def get_fname(depth=1): # default is current caller
     #return sys._getframe(depth).f_code.co_name
     return traceback.extract_stack(None, depth+1)[0][2]
@@ -2277,7 +2275,7 @@ def create_legacy_orax_immz(env,ii):
         add_enc_func(ii,fo)
 
 
-def create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=False): # FIXME: implicit_orax no longer used
+def create_legacy_gprv_immv(env,ii,imm=False):
     """Handles GPRv_SB-IMMv partial reg opcodes and GPRv_SB+OrAX implicit"""
     global enc_fn_prefix, arg_request, gprv_names
     global arg_reg0,  var_reg0
@@ -2659,7 +2657,7 @@ def create_legacy_far_xfer_nonmem(env,ii):  # WRK
             fo.add_code_eol('emit(r,0x66)')
         emit_required_legacy_prefixes(ii,fo)
         emit_opcode(ii,fo)
-        emit_immz(fo,osz);
+        emit_immz(fo,osz)
         fo.add_code_eol('emit_i16(r,{})'.format(var_imm16_2))
         add_enc_func(ii,fo)
 
@@ -3523,7 +3521,7 @@ def _enc_legacy(env,ii):
     elif gprv_immv(ii):
         create_legacy_gprv_immv(env,ii,imm=True)
     elif gprv_implicit_orax(ii):
-        create_legacy_gprv_immv(env,ii,imm=False, implicit_orax=True)
+        create_legacy_gprv_immv(env,ii,imm=False)
     elif orax_immz(ii):
         create_legacy_orax_immz(env,ii)
         
@@ -4994,7 +4992,7 @@ def emit_encode_functions(args,
                           fn_list_attr='encoder_functions',
                           config_prefix='',
                           srcdir='src',
-                          extra_headers=[]):
+                          extra_headers=None):
     msge("Writing encoder '{}' functions to .c and .h files".format(function_type_name))
     # group the instructions by encoding space to allow for
     # better link-time garbage collection.

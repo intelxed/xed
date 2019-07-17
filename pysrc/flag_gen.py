@@ -22,16 +22,15 @@
 # simple flags table. 2007-05-02
 from __future__ import print_function
 import re
-import os
 import sys
 from genutil import *
 
 def _convert_to_list_of_string(x):
     return [ str(a) for a in x]
 def _curly_list(x):
-    return ('{' + ','.join(x) + '},')
+    return '{' + ','.join(x) + '},'
 def _curly_string(x):
-    return ('{' + x +  '}')
+    return '{' + x +  '}'
 
 class flag_set_t(object):
     field_pairs = [('cf',1), ('must_be_1',1),
@@ -98,8 +97,7 @@ class flag_action_t(object):
    def __str__(self):
       if self.flag == None:
          return 'nothing'
-      else:
-         return "%s-%s" % (self.flag , self.action)
+      return "%s-%s" % (self.flag , self.action)
    def is_nothing(self):
       if self.flag == None:
          return True

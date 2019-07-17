@@ -118,9 +118,8 @@ def  parse_lines(input_file_name, lines): # returns a dictionary
     chips = []
     for line in lines:
         if line.find(':') == -1:
-            _die("reading file %s. " + 
-                 "Missing colon in line: %s" % 
-                 (input_file_name, line))
+            _die("reading file {}: missing colon in line: {}".format(
+                 input_file_name, line))
         try:
             (chip, extensions) = line.split(':')
         except:

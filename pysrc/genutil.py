@@ -22,7 +22,7 @@ import sys
 import os
 import math
 import traceback
-import types
+#import types
 import copy
 import re
 import stat
@@ -87,15 +87,15 @@ def warn(m):
 
 
 def check_python_version(argmaj, argmin):
-    tuple = sys.version_info
-    major = tuple[0]
-    minor = tuple[1]
+    tup = sys.version_info
+    major = tup[0]
+    minor = tup[1]
     if ( (major > argmaj ) or 
          (major == argmaj and minor >= argmin) ):
         return 
     die('Need Python version %d.%d or later.' % (argmaj, argmin))
     
-def make_readable_by_all_writeable_by_owner(fn):
+def make_readable_by_all_writeable_by_owner(fn, errorname=''):
     try:
         rwx = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
         os.chmod(fn, rwx)
@@ -116,7 +116,7 @@ def base_open_file(fn, rw, errorname=''):
     except IOError:
         die('Could not open: ' + errorname + ' file: [' + fn  + ']' )
     if open_for_writing(rw):
-      make_readable_by_all_writeable_by_owner(fn)
+      make_readable_by_all_writeable_by_owner(fn,errorname)
     return fp
 
 def resource_usage():
@@ -159,9 +159,9 @@ def print_resource_usage(i=''):
     
 
 
-def flatten_sub(all,cur_list,rest):
+def flatten_sub(retlist,cur_list,rest):
     if len(rest)==0:
-        all.append(cur_list)
+        retlist.append(cur_list)
         return
         
     r0 = rest[0]
@@ -169,10 +169,10 @@ def flatten_sub(all,cur_list,rest):
         for v in r0:
             tlist = copy.copy(cur_list)
             tlist.append(v)
-            flatten_sub(all,tlist,rest[1:])
+            flatten_sub(retlist,tlist,rest[1:])
     else:
         cur_list.append(r0)
-        flatten_sub(all,cur_list,rest[1:])
+        flatten_sub(retlist,cur_list,rest[1:])
     
 
 def flatten(list_with_sublists):
@@ -183,9 +183,9 @@ def flatten(list_with_sublists):
     return retval
 
 
-def flatten_dict_sub(all,cur_dict,main_dict_with_lists,rest_keys):
+def flatten_dict_sub(retlist,cur_dict,main_dict_with_lists,rest_keys):
     if len(rest_keys)==0:
-        all.append(cur_dict)
+        retlist.append(cur_dict)
         return
 
     # pick off the first key and see what it gives us from the dict
@@ -196,10 +196,10 @@ def flatten_dict_sub(all,cur_dict,main_dict_with_lists,rest_keys):
             tdict = copy.copy(cur_dict)
             # change the list-valued entry to a scalar-valued entry
             tdict[r0]=v 
-            flatten_dict_sub(all,tdict,main_dict_with_lists,rest_keys[1:])
+            flatten_dict_sub(retlist,tdict,main_dict_with_lists,rest_keys[1:])
     else:
         cur_dict[r0] = rhs
-        flatten_dict_sub(all,cur_dict,main_dict_with_lists,rest_keys[1:])
+        flatten_dict_sub(retlist,cur_dict,main_dict_with_lists,rest_keys[1:])
     
 
 def flatten_dict(dict_with_lists):
@@ -457,5 +457,5 @@ def is_stringish(x):
 def make_list_of_str(lst):
    return [ str(x) for x in lst]
 def open_readlines(fn):
-   return open(f,'r').readlines()
+   return open(fn,'r').readlines()
            

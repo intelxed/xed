@@ -37,21 +37,19 @@
 import re
 import sys
 import os
-import types
 import optparse
 import stat
 import copy
 
 def find_dir(d):
-    dir = os.getcwd()
+    directory = os.getcwd()
     last = ''
-    while dir != last:
-        target_dir = os.path.join(dir,d)
-        #msg("Trying %s" % (target_dir))
-        if os.path.exists(target_dir):
-            return target_dir
-        last = dir
-        (dir,tail) = os.path.split(dir)
+    while directory != last:
+        target_directory = os.path.join(directory,d)
+        if os.path.exists(target_directory):
+            return target_directory
+        last = directory
+        directory = os.path.split(directory)[0]
     return None
 
 mbuild_install_path = os.path.join(os.path.dirname(sys.argv[0]), 
@@ -75,15 +73,13 @@ sys.path=  [xed2_src_path]  + sys.path
 sys.path=  [ os.path.join(xed2_src_path,'pysrc') ]  + sys.path
 
 try:
-    import codegen
     from codegen import *
     from genutil import *
     from scatter import *
     from verbosity import *
-    import  slash_expand
+    import slash_expand
     import operand_storage
     import nt_func_gen
-    import func_gen
 
 except:
    sys.stderr.write("\nERROR(read-encfile.py): Could not find " + 
@@ -109,10 +105,6 @@ output_file_emitters = []
 def _vmsgb(s,b=''):
     if vencode():
         mbuild.msgb(s,b)
-
-def no_underscores(s):
-    v = s.replace('_','') # remove underscores
-    return v
 
 def make_writable(fn):
     """Make the file or directory readable/writable/executable by me"""
@@ -160,8 +152,8 @@ class blot_t(object):
                 die("bit length problem in %s --- %s" % (str(self), binary))
             if self.field_name:
                 return "%s[0b%s]" % (self.field_name,binary)
-            else:
-                return "0b%s" % binary
+            return "0b%s" % binary
+        
         elif self.type == 'letters':
             return "%s[%s]" % (self.field_name,self.letters)
         elif self.type == 'od':
@@ -792,7 +784,7 @@ class rule_t(object):
             if a.is_field_binding():
                 # for repeating prefixes, we have the NO_RETURN field.
                 if a.field_name == 'NO_RETURN': # FIXME: check value ==1?
-                    return True;
+                    return True
         return False
 
     def has_otherwise_rule(self):
@@ -1305,19 +1297,6 @@ class nonterminal_t(object):
             s.extend(["\t" , str(r) , "\n"])
         return ''.join(s)
     
-    def add_simple_rule(self, cond, action):
-        """
-        @type cond: string
-        @param cond: condition        
-        @type action: string
-        @param action: simple action 
-        """
-        conditions = conditions_t()
-        conditions.and_cond(cond)
-        actions = [ action ]
-        r = rule_t(conditions, actions)
-        self.rules.append(r)
-
     def multiple_otherwise_rules(self):
         c = 0
         for r in self.rules:
@@ -1996,7 +1975,7 @@ class encoder_configuration_t(object):
                     o = self.make_bits_and_letters( bits, field_name) 
                     decode_patterns.extend(o)
                 else:
-                    genutil.die("Unrecognaized pattern '%s' for %s" % bits, s)
+                    genutil.die("Unrecognaized pattern '{}' for {}".format( bits, s))
                 field_bindings.append(  opcap.group('name','bits') )
                 break
             if hex_pattern.match(s):
@@ -2577,9 +2556,6 @@ class encoder_configuration_t(object):
         i=0
         group_fos = []
         for group in self.ins_groups.get_groups():
-            if vencfunc():
-                msgb("=== ENCODING FUNCTION %d for %s niforms=%d ==="  % 
-                     ( i, iclass, len(iforms_list)))
             #generate the function object for the group bind function    
             fo = self.make_isa_encode_group(i,group)
             group_fos.append(fo)
