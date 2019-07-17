@@ -839,14 +839,26 @@ def dump_numbered_function_creators():
         print("NUMBERED FN CREATORS: {:5d} {:30s}".format(val,k))
         
 numbered_functions = 0
-def make_function_object(env, ii, fname, return_value='void'):
+def make_function_object(env, ii, fname, return_value='void', asz=None):
+    '''Create function object. Augment function name for conventions '''
     global numbered_functions
     global numbered_function_creators
     
     if 'AMDONLY' in ii.attributes:
         fname += '_amd'
+        
     if ii.space == 'evex':
         fname += '_e'
+
+    # Distinguish the 16/32b mode register-only functions to avoid
+    # name collisions.  The stuff references memory has an
+    # "_a"+env.asz suffix. The non-memory stuff can still have name
+    # collisions. To avoid those collisions, I append _md16 or _md32
+    # to the function names.
+    if asz:
+        fname += '_a{}'.format(asz)
+    elif env.mode in [16,32]:
+        fname += '_md{}'.format(env.mode)
         
     if fname in env.function_names:
         numbered_functions += 1
@@ -1474,10 +1486,10 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
 
 def create_legacy_two_gpr8_regs(env, ii):
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
-    
+    opsig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
-                              'r8r8')
+                              opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_two_gpr8_regs")
             
@@ -1578,10 +1590,10 @@ def get_opnd_types_short(ii):
     return types
 
 def make_opnd_signature(ii, using_width=None):
-    '''If using_width is present, it is used for GPRv and GPRy
-       operations to specify a width'''
+    '''This is the heart of the naming conventions for the encode
+       functions. If using_width is present, it is used for GPRv and
+       GPRy operations to specify a width.    '''
     global vl2func_names, widths_to_bits, widths_to_bits_y, widths_to_bits_z
-
 
     def _translate_rax_name(w):
         rax_names = { 16: 'ax', 32:'eax', 64:'rax' }
@@ -1702,6 +1714,8 @@ def make_opnd_signature(ii, using_width=None):
             s.append('i16')
         elif op_imm8_2(op):
             s.append('i') #FIXME something else?
+        elif op_x87(op):
+            s.append('x87')
         elif op_mmx(op):
             s.append('n') #FIXME something else?
         elif op_cr(op):
@@ -1910,11 +1924,10 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
     global arg_reg0, var_reg0
     global arg_imm8, var_imm8
 
-    category = 'mmxi'
-    
+    opsig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
-                                  category)
+                                  opsig) 
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_mmx_reg_imm8")
         
@@ -1949,11 +1962,10 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     global arg_reg0, var_reg0
     global arg_imm8, var_imm8
 
-    category = 'xii' if ii.has_imm8_2 else 'xi'
-    
+    opsig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
-                                  ii.iclass.lower(),
-                                  category)
+                              ii.iclass.lower(),
+                              opsig) 
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_xmm_reg_imm8")
         
@@ -1986,9 +1998,10 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     
 def create_legacy_two_x87_reg(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
-    fname = "{}_{}_{}_st0".format(enc_fn_prefix,
-                                  ii.iclass.lower(),
-                                  'x87')
+    opsig = make_opnd_signature(ii)
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                              ii.iclass.lower(),
+                              opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_two_x87_reg")    
     fo.add_arg(arg_request,'req')
@@ -2007,9 +2020,10 @@ def create_legacy_two_x87_reg(env,ii):
     
 def create_legacy_one_x87_reg(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
+    opsig = make_opnd_signature(ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
-                                  ii.iclass.lower(),
-                                  'x87')
+                              ii.iclass.lower(),
+                              opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_x87_reg")    
     fo.add_arg(arg_request,'req')
@@ -2441,14 +2455,13 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                            ii.iclass.lower(),
-                                            opsig,
-                                            width, # FIXME:osz, funky
-                                            memaddrsig,
-                                            env.asz)
+        fname = "{}_{}_{}_{}_{}".format(enc_fn_prefix,
+                                        ii.iclass.lower(),
+                                        opsig,
+                                        width, # FIXME:osz, funky
+                                        memaddrsig)
 
-        fo = make_function_object(env,ii,fname)
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_legacy_one_xmm_reg_one_mem_fixed")
         fo.add_arg(arg_request,'req')
         add_memop_args(env, ii, fo, use_index, dispsz, immw, reg=regpos)
@@ -2518,13 +2531,12 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                         ii.iclass.lower(),
-                                         opsig,
-                                         memaddrsig,
-                                         env.asz)
+        fname = "{}_{}_{}_{}".format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     opsig,
+                                     memaddrsig)
 
-        fo = make_function_object(env,ii,fname)
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_fixed")
         fo.add_arg(arg_request,'req')
         add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=regn)
@@ -2581,13 +2593,12 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
             immw = 16 if width == 16 else 32
             
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                         ii.iclass.lower(),
-                                         opsig,
-                                         memaddrsig,
-                                         env.asz)
+        fname = "{}_{}_{}_{}".format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     opsig,
+                                     memaddrsig)
 
-        fo = make_function_object(env,ii,fname)
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_legacy_one_gpr_reg_one_mem_scalable")
         fo.add_arg(arg_request,'req')
 
@@ -2640,12 +2651,11 @@ def create_legacy_far_xfer_nonmem(env,ii):  # WRK
     global var_immz_dct, argv_immz_dct,arg_immz_meta, var_imm16_2, arg_imm16_2
 
     for osz in [16,32]:
-        fname = '{}_{}_o{}_a{}'.format(enc_fn_prefix,
-                                       ii.iclass.lower(),
-                                       osz,
-                                       env.asz)
+        fname = '{}_{}_o{}'.format(enc_fn_prefix,
+                                   ii.iclass.lower(),
+                                   osz) 
 
-        fo = make_function_object(env,ii,fname)
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment('created by create_legacy_far_xfer_nonmem')
         fo.add_arg(arg_request,'req')
         fo.add_arg(arg_immz_dct[osz],arg_immz_meta[osz])
@@ -2664,7 +2674,6 @@ def create_legacy_far_xfer_nonmem(env,ii):  # WRK
     
 def create_legacy_far_xfer_mem(env,ii):
     '''call far and jmp far via memop. p has widths 4/6/6 bytes. p2 has 4/6/10 widths'''
-    # FIXME: function naming conflict in 32vs64 modes. Could use osz instead of "mem#BYTES"
     p_widths = {16:4, 32:6, 64:6} 
     p2_widths = {16:4, 32:6, 64:10}
     op = first_opnd(ii)
@@ -2681,14 +2690,12 @@ def create_legacy_far_xfer_mem(env,ii):
     for osz, use_index, dispsz in ispace:
         membytes = widths[osz]
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = '{}_{}_{}{}_{}_a{}'.format(enc_fn_prefix,
-                                           ii.iclass.lower(),
-                                           'mem',
-                                           membytes,
-                                           memaddrsig,
-                                           env.asz)
+        fname = '{}_{}_mem{}_{}'.format(enc_fn_prefix,
+                                        ii.iclass.lower(),
+                                        membytes,
+                                        memaddrsig)
 
-        fo = make_function_object(env,ii,fname)
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment('created by create_legacy_far_xfer_mem')
         fo.add_arg(arg_request,'req')
         add_memop_args(env, ii, fo, use_index, dispsz)
@@ -2761,13 +2768,13 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         for use_index, dispsz in ispace:
             memaddrsig = get_memsig(env.asz, use_index, dispsz)
             opsig = make_opnd_signature(ii,width)
-            fname = '{}_{}_{}{}_{}_a{}'.format(enc_fn_prefix,
-                                               ii.iclass.lower(),
-                                               opsig,
-                                               fwidth,  # FIXME:osz, funky
-                                               memaddrsig,
-                                               env.asz)
-            fo = make_function_object(env,ii,fname)
+            fname = '{}_{}_{}{}_{}'.format(enc_fn_prefix,
+                                           ii.iclass.lower(),
+                                           opsig,
+                                           fwidth,  # FIXME:osz, funky
+                                           memaddrsig)
+                                  
+            fo = make_function_object(env,ii,fname, asz=env.asz)
             fo.add_comment('created by create_legacy_one_mem_common')
             fo.add_arg(arg_request,'req')
             add_memop_args(env, ii, fo, use_index, dispsz, immw, osz=osz_translate(width))
@@ -2909,12 +2916,12 @@ def create_legacy_mov_without_modrm(env,ii):
     
     for osz in osz_list:
         opsig = make_opnd_signature(ii,osz)        
-        fname = "{}_{}_{}_d{}_a{}".format(enc_fn_prefix,
-                                          ii.iclass.lower(),
-                                          opsig, 
-                                          env.asz, # redundant with asz
-                                          env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = "{}_{}_{}_d{}".format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      opsig, 
+                                      env.asz) # FIXME redundant with asz
+
+        fo = make_function_object(env,ii,fname,asz=env.asz)
         fo.add_comment("created by create_legacy_mov_without_modrm")
         fo.add_arg(arg_request,'req')
         add_arg_disp(fo,disp_width)
@@ -2990,12 +2997,12 @@ def create_legacy_mem_seg(env,ii,op_info):
     ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = '{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
-                                         ii.iclass.lower(),
-                                         opnd_sig,
-                                         memaddrsig,
-                                         env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = '{}_{}_{}_{}'.format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     opnd_sig,
+                                     memaddrsig)
+
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment('created by create_legacy_mem_seg')
         fo.add_arg(arg_request,'req')
         for opi in op_info:
@@ -3191,12 +3198,12 @@ def create_legacy_crc32_mem(env,ii):
         #op_widths = config[osz]
         opsig = make_opnd_signature(ii,osz)
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = '{}_{}_{}_{}_a{}'.format(enc_fn_prefix,
-                                             ii.iclass.lower(),
-                                             opsig,
-                                             memaddrsig,
-                                             env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = '{}_{}_{}_{}'.format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     opsig,
+                                     memaddrsig)
+                                     
+        fo = make_function_object(env,ii,fname,asz=env.asz)
         fo.add_comment("created by create_legacy_crc32_mem")
         fo.add_arg(arg_request,'req')
         op = first_opnd(ii)
@@ -3304,11 +3311,11 @@ def create_legacy_movdir64_or_enqcmd(env,ii):
     ispace = itertools.product( get_index_vals(ii), get_dispsz_list(env))
     for use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = '{}_{}_{}_a{}'.format(enc_fn_prefix,
-                                      ii.iclass.lower(),
-                                      memaddrsig,
-                                      env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = '{}_{}_{}'.format(enc_fn_prefix,
+                                  ii.iclass.lower(),
+                                  memaddrsig)
+
+        fo = make_function_object(env,ii,fname,asz=env.asz)
         fo.add_comment("created by create_legacy_movdir64")
         fo.add_arg(arg_request,'req')
         
@@ -3353,10 +3360,10 @@ def is_umonitor(ii):
 def create_legacy_umonitor(env,ii):
     '''ASZ-based GPR_B.'''
     global arg_request, enc_fn_prefix, gprv_names
-    fname = '{}_{}_a{}'.format(enc_fn_prefix,
-                               ii.iclass.lower(),
-                               env.asz)
-    fo = make_function_object(env,ii,fname)
+    fname = '{}_{}'.format(enc_fn_prefix,
+                           ii.iclass.lower())
+
+    fo = make_function_object(env,ii,fname,asz=env.asz)
     fo.add_comment("created by create_legacy_umonitor")
     fo.add_arg(arg_request,'req')
     reg = gpry_names[env.asz]  # abuse the gprv names
@@ -3409,10 +3416,10 @@ def is_ArAX_implicit(ii): # allows one implicit fixed reg
 
 def create_legacy_ArAX_implicit(env,ii):
     global arg_request, enc_fn_prefix
-    fname = '{}_{}_a{}'.format(enc_fn_prefix,
-                               ii.iclass.lower(),
-                               env.asz)
-    fo = make_function_object(env,ii,fname)
+    fname = '{}_{}'.format(enc_fn_prefix,
+                           ii.iclass.lower())
+
+    fo = make_function_object(env,ii,fname, asz=env.asz)
     fo.add_comment("created by create_legacy_ArAX_implicit")
     fo.add_arg(arg_request,'req')
 
@@ -3775,12 +3782,12 @@ def create_vex_regs_mem(env,ii):
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
 
-        fname = "{}_{}_{}_{}_a{}".format(enc_fn_prefix,
-                                         ii.iclass.lower(),
-                                         opsig,
-                                         memaddrsig,
-                                         env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = "{}_{}_{}_{}".format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     opsig,
+                                     memaddrsig)
+
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_vex_regs_mem")
         fo.add_arg(arg_request,'req')
         opnd_types = copy.copy(opnd_types_org)
@@ -4277,14 +4284,13 @@ def create_evex_regs_mem(env, ii):
     for broadcast, use_index, dispsz, masking in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         opnd_types = copy.copy(opnd_types_org)
-        fname = "{}_{}_{}{}_{}{}_a{}".format(enc_fn_prefix,
-                                             ii.iclass.lower(),
-                                             opnd_sig,
-                                             mask_variant_name[masking],
-                                             memaddrsig,
-                                             bcast_variant_name[broadcast],
-                                             env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = "{}_{}_{}{}_{}{}".format(enc_fn_prefix,
+                                         ii.iclass.lower(),
+                                         opnd_sig,
+                                         mask_variant_name[masking],
+                                         memaddrsig,
+                                         bcast_variant_name[broadcast])
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_evex_regs_mem")
         fo.add_arg(arg_request,'req')
 
@@ -4435,12 +4441,12 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
 
     for masking in mask_versions:
         opnd_types = copy.copy(opnd_types_org)
-        fname = "{}_{}_{}{}_a{}".format(enc_fn_prefix,
-                                        ii.iclass.lower(),
-                                        opnd_sig,
-                                        mask_variant_name[masking],
-                                        env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = "{}_{}_{}{}".format(enc_fn_prefix,
+                                    ii.iclass.lower(),
+                                    opnd_sig,
+                                    mask_variant_name[masking])
+
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_evex_evex_mask_dest_reg_only")
         fo.add_arg(arg_request,'req')
 
@@ -4593,14 +4599,13 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     for broadcast, use_index, dispsz, masking in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         opnd_types = copy.copy(opnd_types_org)
-        fname = "{}_{}_{}{}_{}{}_a{}".format(enc_fn_prefix,
-                                             ii.iclass.lower(),
-                                             opnd_sig,
-                                             mask_variant_name[masking],
-                                             memaddrsig,
-                                             bcast_variant_name[broadcast],
-                                             env.asz)
-        fo = make_function_object(env,ii,fname)
+        fname = "{}_{}_{}{}_{}{}".format(enc_fn_prefix,
+                                         ii.iclass.lower(),
+                                         opnd_sig,
+                                         mask_variant_name[masking],
+                                         memaddrsig,
+                                         bcast_variant_name[broadcast])
+        fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment("created by create_evex_evex_mask_dest_mem")
         fo.add_arg(arg_request,'req')
 
