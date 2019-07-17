@@ -17,3 +17,4 @@ kits/*
 logs/*
 .developer
 *.diff
+*.pylint
