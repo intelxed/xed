@@ -1315,7 +1315,7 @@ class instruction_info_t(partitionable_info_t):
                   # extra pattern.
                   if len(self.extra_operands) == 0:
                      die("Need to have a PATTERN line before the " + 
-                         "OPERANDS line for " + ii.iclass)
+                         "OPERANDS line for " + self.iclass)
                   self.extra_operands[-1] = rest.split()
                else:
                   self.operands_input = rest.split()
@@ -1342,7 +1342,7 @@ class instruction_info_t(partitionable_info_t):
                if filling_extra:
                   if len(self.extra_iforms_input) == 0:
                      die("Need to have a PATTERN line before " +
-                         "the IFORM line for " + ii.iclass)
+                         "the IFORM line for " + self.iclass)
                   self.extra_iforms_input[-1] = rest
                else:
                   self.iform_input = rest
