@@ -1310,7 +1310,7 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
     opsz_codes =[]
     for op in _gen_opnds(ii):
         opnds.append(op)
-        opsz_codes.append( get_gpr_opsz_code(opnds[0]))
+        opsz_codes.append( get_gpr_opsz_code(op) )
     for osz in osz_list:
         opsig = make_opnd_signature(ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
@@ -1340,13 +1340,13 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
         if opsz_codes[0] in ['rv','ry']:
             op0_bits = osz
         else:
-            op0_bits = opsz_to_bits(opsz_codes[0])
+            op0_bits = opsz_to_bits[opsz_codes[0]]
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f1,osz,var_reg0))
             
         if opsz_codes[1] in ['rv','ry']:
             op1_bits = osz
         else:
-            op1_bits = opsz_to_bits(opsz_codes[1])
+            op1_bits = opsz_to_bits[opsz_codes[1]]
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f2,op1_bits,var_reg1))
             
         emit_rex(env,fo,rexw_forced)
