@@ -167,6 +167,9 @@ class xed_reader_t(object):
         self._add_broadcasting()
         self._evex_disp8_scaling()
 
+    def get_width_info_dict(self):
+        return self.width_info_dict
+        
     def _refine_widths_input(self,lines):
        """Return  a dict of width_info_t. Skip comments and blank lines"""
        comment_pattern = re.compile(r'#.*$')
@@ -177,6 +180,7 @@ class xed_reader_t(object):
              continue
           wrds = pline.split()
           ntokens = len(wrds)
+          # dtype is the assumed datatype for that width code
           if ntokens == 3:
              (name, dtype,  all_width) = wrds
              width8 =  all_width
