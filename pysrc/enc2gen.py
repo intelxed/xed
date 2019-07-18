@@ -1717,15 +1717,16 @@ def make_opnd_signature(ii, using_width=None):
         elif op_x87(op):
             s.append('x87')
         elif op_mmx(op):
-            s.append('n') #FIXME something else?
+            s.append('mm') # FIXME: or "mmx"? "mm" is shorter.
         elif op_cr(op):
-            s.append('c')
+            s.append('cr')
         elif op_dr(op):
-            s.append('d')
+            s.append('dr')
         elif op_seg(op):
-            s.append('s')
+            s.append('seg')
         elif op_implicit_specific_reg(op):
             s.append('r') # FIXME something else?
+            die("SHOULD NOT REACH HERE")
         elif op.name in ['REG0','REG1'] and op_luf(op,'OrAX'):
             if using_width:
                 s.append( _translate_rax_name(using_width) )
