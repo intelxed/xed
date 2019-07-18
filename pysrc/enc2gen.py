@@ -875,6 +875,174 @@ def make_function_object(env, ii, fname, return_value='void', asz=None):
         fo.add_comment(ii.iform)
     return fo
 
+
+def make_opnd_signature(env, ii, using_width=None):
+    '''This is the heart of the naming conventions for the encode
+       functions. If using_width is present, it is used for GPRv and
+       GPRy operations to specify a width.    '''
+    global vl2func_names, widths_to_bits, widths_to_bits_y, widths_to_bits_z
+
+    def _translate_rax_name(w):
+        rax_names = { 16: 'ax', 32:'eax', 64:'rax' }
+        osz = _translate_width_int(w)
+        return rax_names[osz]
+    def _translate_eax_name(w):
+        eax_names = { 16: 'ax', 32:'eax', 64:'eax' }
+        osz = _translate_width_int(w)
+        return eax_names[osz]
+
+    def _translate_width_int(w):
+        if w in [8,16,32,64]:
+            return w
+        return widths_to_bits[w]
+    
+    def _translate_width(w):
+        return str(_translate_width_int(w))
+    
+    def _translate_width_y(w):
+        if w in [32,64]:
+            return str(w)
+        elif w == 16:
+            return '32'
+        return str(widths_to_bits_y[w])
+    
+    def _translate_width_z(w):
+        if w in [16,32]:
+            return str(w)
+        elif w == 64:
+            return '32'
+        return str(widths_to_bits_z[w])
+
+    def _convert_to_osz(w):
+        if w in [16,32,64]:
+            return w
+        elif w in widths_to_bits:
+            return widths_to_bits[w]
+        else:
+            die("Cannot convert {}".format(w) )
+    
+    s = []
+    for op in _gen_opnds(ii):
+        if op_implicit(op):
+            nm = get_implicit_operand_name(op)
+            if nm in ['OrAX'] and using_width:
+                s.append( _translate_rax_name(using_width) )
+            elif nm in ['OeAX'] and using_width:
+                s.append( _translate_eax_name(using_width) )
+            else:
+                s.append(nm)
+            continue
+        
+        # for the modrm-less MOV instr
+        if op.name.startswith('BASE'):
+            continue
+        if op.name.startswith('INDEX'):
+            continue
+
+        if op_xmm(op):
+            s.append('x')
+        elif op_ymm(op):
+            s.append('y')
+        elif op_zmm(op):
+            s.append('z')
+        elif op_mask_reg(op):
+            s.append('k')
+        elif op_vgpr32(op):
+            s.append('r32')
+        elif op_vgpr64(op):
+            s.append('r64') #FIXME something else
+        elif op_gpr8(op):
+            s.append('r8')
+        elif op_gpr16(op):
+            s.append('r16')
+        elif op_gpr32(op):
+            s.append('r32')
+        elif op_gpr64(op):
+            s.append('r64') #FIXME something else
+        elif op_gprv(op):
+            s.append('r' + _translate_width(using_width))
+        elif op_gprz(op):
+            s.append('r' + _translate_width_z(using_width))
+        elif op_gpry(op):
+            s.append('r' + _translate_width_y(using_width))
+        elif op_agen(op):
+            s.append('m') # somewhat of a misnomer
+        elif op_mem(op):
+            if op.oc2 == 'b':
+                s.append('m8')
+            elif op.oc2 == 'w':
+                s.append('m16')
+            elif op.oc2 == 'd':
+                s.append('m32')
+            elif op.oc2 == 'q':
+                s.append('m64')
+            #elif op.oc2 == 'dq': don't really want to start decorating the wider memops
+            #    s.append('m128')
+            elif op.oc2 == 'v' and using_width:
+                s.append('m' + _translate_width(using_width))
+            elif op.oc2 == 'y' and using_width:
+                s.append('m' + _translate_width_y(using_width))
+            elif op.oc2 == 'z' and using_width:
+                s.append('m' + _translate_width_z(using_width))
+            else:
+                osz  = _convert_to_osz(using_width) if using_width else 0
+                bits = env.mem_bits(op.oc2, osz)
+                s.append('m{}'.format(bits))
+                
+            # add the index reg width for sparse ops (scatter,gather)
+            if ii.avx_vsib:
+                s.append(ii.avx_vsib[0])
+            if ii.avx512_vsib:
+                s.append(ii.avx512_vsib[0])
+        elif op_imm8(op):
+            s.append('i8')
+        elif op_immz(op):
+            if using_width:
+                s.append('i' + _translate_width_z(using_width))
+            else:
+                s.append('i')
+        elif op_immv(op):
+            if using_width:
+                s.append('i' + _translate_width(using_width))
+            else:
+                s.append('i')
+        elif op_imm16(op):
+            s.append('i16')
+        elif op_imm8_2(op):
+            s.append('i') #FIXME something else?
+        elif op_x87(op):
+            s.append('sti') # FIXME: or 'x87'?
+        elif op_mmx(op):
+            s.append('mm') # FIXME: or "mmx"? "mm" is shorter.
+        elif op_cr(op):
+            s.append('cr')
+        elif op_dr(op):
+            s.append('dr')
+        elif op_seg(op):
+            s.append('seg')
+        elif op.name in ['REG0','REG1'] and op_luf(op,'OrAX'):
+            if using_width:
+                s.append( _translate_rax_name(using_width) )
+            else:
+                s.append('r') # FIXME something else?
+        else:
+            die("Unhandled operand {}".format(op))
+            
+    if ii.space in ['evex']:
+        if ii.rounding_form:
+            s.append( 'rc' )
+        elif ii.sae_form:
+            s.append( 'sae' )
+            
+    if ii.space in ['evex','vex']:
+        if 'KMASK' not in ii.attributes:
+            vl =  vl2func_names[ii.vl]
+            if vl:
+                s.append(vl)
+    return "_".join(s)
+
+
+
 def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):  
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0, gprv_names
             
@@ -882,7 +1050,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
         if env.mode != 64 and osz == 64:
             continue
         
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
                                     opsig)
@@ -967,7 +1135,7 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
     global enc_fn_prefix, arg_request
 
     for osz in osz_values:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_m{}_{}_{}".format(enc_fn_prefix, env.mode, ii.iclass.lower(), opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_imm_scalable")
@@ -992,7 +1160,7 @@ def create_legacy_one_imm_scalable(env,ii, osz_values):
 
 def create_legacy_one_gpr_fixed(env,ii,width_bits):
     global enc_fn_prefix, arg_request, gprv_names
-    opsig = make_opnd_signature(ii,width_bits)
+    opsig = make_opnd_signature(env,ii,width_bits)
     fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(), opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_legacy_one_gpr_fixed")
@@ -1107,7 +1275,7 @@ def create_legacy_one_imm_fixed(env,ii):
 def create_legacy_one_implicit_reg(env,ii,imm8=False):
     global enc_fn_prefix, arg_request, arg_imm8, var_imm8
 
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opsig)
@@ -1174,7 +1342,7 @@ def create_legacy_zero_operands_scalable(env,ii):
         osz_list = [16,32]
         
     for osz in osz_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         if opsig:
             opsig += '_'
         fname = "{}_{}_{}o{}".format(enc_fn_prefix,
@@ -1212,7 +1380,7 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
         create_legacy_zero_operands_scalable(env,ii)
         return
                 
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     if opsig:
         opsig = '_'  + opsig
 
@@ -1322,7 +1490,7 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
         opnds.append(op)
         opsz_codes.append( get_gpr_opsz_code(op) )
     for osz in osz_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   opsig)   #  "".join(opsz_codes), osz)
@@ -1423,7 +1591,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
                                             extra_names,
                                             nop_opsig,osz)
         else:
-            opsig = make_opnd_signature(ii,osz)
+            opsig = make_opnd_signature(env,ii,osz)
             fname = "{}_{}_{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       opsig)
@@ -1486,7 +1654,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
 
 def create_legacy_two_gpr8_regs(env, ii):
     global enc_fn_prefix, arg_request, arg_reg0, arg_reg1
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opsig)
@@ -1572,8 +1740,6 @@ def emit_rex(env, fo, rexw_forced):
             fo.add_code_eol('emit_rex_if_needed(r)')
 
 
-# FIXME: the following four functions have a ton of overlap and should be
-# folded together somehow
 def get_opnd_types_short(ii):
     types= []
     for op in _gen_opnds(ii):
@@ -1589,164 +1755,6 @@ def get_opnd_types_short(ii):
             die("Unhandled op type {}".format(op))
     return types
 
-def make_opnd_signature(ii, using_width=None):
-    '''This is the heart of the naming conventions for the encode
-       functions. If using_width is present, it is used for GPRv and
-       GPRy operations to specify a width.    '''
-    global vl2func_names, widths_to_bits, widths_to_bits_y, widths_to_bits_z
-
-    def _translate_rax_name(w):
-        rax_names = { 16: 'ax', 32:'eax', 64:'rax' }
-        osz = _translate_width_int(w)
-        return rax_names[osz]
-    def _translate_eax_name(w):
-        eax_names = { 16: 'ax', 32:'eax', 64:'eax' }
-        osz = _translate_width_int(w)
-        return eax_names[osz]
-
-    def _translate_width_int(w):
-        if w in [8,16,32,64]:
-            return w
-        return widths_to_bits[w]
-    
-    def _translate_width(w):
-        return str(_translate_width_int(w))
-    
-    def _translate_width_y(w):
-        if w in [32,64]:
-            return str(w)
-        elif w == 16:
-            return '32'
-        return str(widths_to_bits_y[w])
-    
-    def _translate_width_z(w):
-        if w in [16,32]:
-            return str(w)
-        elif w == 64:
-            return '32'
-        return str(widths_to_bits_z[w])
-        
-    
-    s = []
-    for op in _gen_opnds(ii):
-        if op_implicit(op):
-            nm = get_implicit_operand_name(op)
-            if nm in ['OrAX'] and using_width:
-                s.append( _translate_rax_name(using_width) )
-            elif nm in ['OeAX'] and using_width:
-                s.append( _translate_eax_name(using_width) )
-            else:
-                s.append(nm)
-            continue
-        
-        # for the modrm-less MOV instr
-        if op.name.startswith('BASE'):
-            continue
-        if op.name.startswith('INDEX'):
-            continue
-
-        if op_xmm(op):
-            s.append('x')
-        elif op_ymm(op):
-            s.append('y')
-        elif op_zmm(op):
-            s.append('z')
-        elif op_mask_reg(op):
-            s.append('k')
-        elif op_vgpr32(op):
-            s.append('r32')
-        elif op_vgpr64(op):
-            s.append('r64') #FIXME something else
-        elif op_gpr8(op):
-            s.append('r8')
-        elif op_gpr16(op):
-            s.append('r16')
-        elif op_gpr32(op):
-            s.append('r32')
-        elif op_gpr64(op):
-            s.append('r64') #FIXME something else
-        elif op_gprv(op):
-            s.append('r' + _translate_width(using_width))
-        elif op_gprz(op):
-            s.append('r' + _translate_width_z(using_width))
-        elif op_gpry(op):
-            s.append('r' + _translate_width_y(using_width))
-        elif op_agen(op):
-            s.append('m') # somewhat of a misnomer
-        elif op_mem(op):
-            if op.oc2 == 'b':
-                s.append('m8')
-            elif op.oc2 == 'w':
-                s.append('m16')
-            elif op.oc2 == 'd':
-                s.append('m32')
-            elif op.oc2 == 'q':
-                s.append('m64')
-            #elif op.oc2 == 'dq': don't really want to start decorating the wider memops
-            #    s.append('m128')
-            elif op.oc2 == 'v' and using_width:
-                s.append('m' + _translate_width(using_width))
-            elif op.oc2 == 'y' and using_width:
-                s.append('m' + _translate_width_y(using_width))
-            elif op.oc2 == 'z' and using_width:
-                s.append('m' + _translate_width_z(using_width))
-            else:
-                s.append('m')
-                
-            # add the index reg width for sparse ops (scatter,gather)
-            if ii.avx_vsib:
-                s.append(ii.avx_vsib[0])
-            if ii.avx512_vsib:
-                s.append(ii.avx512_vsib[0])
-        elif op_imm8(op):
-            s.append('i8')
-        elif op_immz(op):
-            if using_width:
-                s.append('i' + _translate_width_z(using_width))
-            else:
-                s.append('i')
-        elif op_immv(op):
-            if using_width:
-                s.append('i' + _translate_width(using_width))
-            else:
-                s.append('i')
-        elif op_imm16(op):
-            s.append('i16')
-        elif op_imm8_2(op):
-            s.append('i') #FIXME something else?
-        elif op_x87(op):
-            s.append('x87')
-        elif op_mmx(op):
-            s.append('mm') # FIXME: or "mmx"? "mm" is shorter.
-        elif op_cr(op):
-            s.append('cr')
-        elif op_dr(op):
-            s.append('dr')
-        elif op_seg(op):
-            s.append('seg')
-        elif op_implicit_specific_reg(op):
-            s.append('r') # FIXME something else?
-            die("SHOULD NOT REACH HERE")
-        elif op.name in ['REG0','REG1'] and op_luf(op,'OrAX'):
-            if using_width:
-                s.append( _translate_rax_name(using_width) )
-            else:
-                s.append('r') # FIXME something else?
-        else:
-            die("Unhandled operand {}".format(op))
-            
-    if ii.space in ['evex']:
-        if ii.rounding_form:
-            s.append( 'rc' )
-        elif ii.sae_form:
-            s.append( 'sae' )
-            
-    if ii.space in ['evex','vex']:
-        if 'KMASK' not in ii.attributes:
-            vl =  vl2func_names[ii.vl]
-            if vl:
-                s.append(vl)
-    return "_".join(s)
 
 def get_reg_type_fixed(op):
     '''return a type suitable for use in an enc_modrm function'''
@@ -1883,7 +1891,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
     global arg_reg0, var_reg0
     global arg_reg1, var_reg1
 
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
 
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
@@ -1925,7 +1933,7 @@ def create_legacy_one_mmx_reg_imm8(env,ii):
     global arg_reg0, var_reg0
     global arg_imm8, var_imm8
 
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   opsig) 
@@ -1963,7 +1971,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     global arg_reg0, var_reg0
     global arg_imm8, var_imm8
 
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opsig) 
@@ -1999,7 +2007,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
     
 def create_legacy_two_x87_reg(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opsig)
@@ -2021,7 +2029,7 @@ def create_legacy_two_x87_reg(env,ii):
     
 def create_legacy_one_x87_reg(env,ii):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opsig)
@@ -2158,7 +2166,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
     global enc_fn_prefix, arg_request, arg_reg0, var_reg0, arg_imm8,  var_imm8, gprv_names
     
     for osz in gen_osz_list(env.mode,width_list):
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       opsig)
@@ -2208,7 +2216,7 @@ def create_legacy_gprv_immz(env,ii):
     width_list = get_osz_list(env)
 
     for osz in width_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       opsig)
@@ -2258,7 +2266,7 @@ def create_legacy_orax_immz(env,ii):
     width_list = get_osz_list(env)
 
     for osz in width_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   opsig)
@@ -2301,7 +2309,7 @@ def create_legacy_gprv_immv(env,ii,imm=False):
 
     
     for osz in width_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
                                     opsig)
@@ -2433,7 +2441,7 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     #opsig = 'rm' if regpos==0 else 'mr'
     #if ii.has_imm8:
     #    opsig = opsig + 'i'
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
         
     gpr32,gpr64,xmm,mmx = False,False,False,False
     for op in _gen_opnds(ii):
@@ -2456,10 +2464,10 @@ def create_legacy_one_xmm_reg_one_mem_fixed(env,ii):
     ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = "{}_{}_{}_{}_{}".format(enc_fn_prefix,
+        fname = "{}_{}_{}_{}".format(enc_fn_prefix,
                                         ii.iclass.lower(),
                                         opsig,
-                                        width, # FIXME:osz, funky
+                                        #width, # FIXME:osz, funky
                                         memaddrsig)
 
         fo = make_function_object(env,ii,fname, asz=env.asz)
@@ -2527,7 +2535,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
         die("Bad search for width")
     
     widths = [width]
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
 
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
@@ -2587,7 +2595,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     
     ispace = itertools.product(widths, get_index_vals(ii), dispsz_list)
     for width, use_index, dispsz in ispace:
-        opsig = make_opnd_signature(ii, width)
+        opsig = make_opnd_signature(env,ii, width)
         opnd_types_org = get_opnd_types(env,ii, osz_translate(width))        
         opnd_types  = copy.copy(opnd_types_org)
         if ii.has_immz:
@@ -2691,10 +2699,10 @@ def create_legacy_far_xfer_mem(env,ii):
     for osz, use_index, dispsz in ispace:
         membytes = widths[osz]
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
-        fname = '{}_{}_mem{}_{}'.format(enc_fn_prefix,
-                                        ii.iclass.lower(),
-                                        membytes,
-                                        memaddrsig)
+        fname = '{}_{}_m{}_{}'.format(enc_fn_prefix,
+                                      ii.iclass.lower(),
+                                      membytes*8,
+                                      memaddrsig)
 
         fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment('created by create_legacy_far_xfer_mem')
@@ -2728,11 +2736,11 @@ def create_legacy_far_xfer_mem(env,ii):
 
         
 def osz_translate(width):
-    if width == 'w':
+    if width in  ['w',16]:
         return 16
-    elif width == 'd':
+    elif width in ['d',32]:
         return 32
-    elif width == 'q':
+    elif width in ['q', 64]:
         return 64
     return 0
         
@@ -2743,19 +2751,19 @@ def create_legacy_one_mem_common(env,ii,imm=0):
     
     op = first_opnd(ii)
     if op.oc2 == 'v':
-        widths = ['w','d']
+        widths = [16,32]
         if env.mode == 64:
-            widths.append('q')
+            widths.append(64)
     elif op.oc2 == 'y':
-        widths = ['d']
+        widths = [32]
         if env.mode == 64:
-            widths.append('q')
+            widths.append(64)
     elif op.oc2 == 's':
-        widths = ['w','d']
+        widths = [16,32]
     else:
-        widths = [op.oc2]
+        widths = ['nominal'] # just something to get the loop going
 
-    immz_dict = { 'w': 16, 'd': 32, 'q': 32 }
+    immz_dict = { 16:16, 32:32, 64:32 }
     for width in widths:
         immw = 0
         if imm == '8':
@@ -2763,17 +2771,21 @@ def create_legacy_one_mem_common(env,ii,imm=0):
         elif imm == 'z':
             immw = immz_dict[width]
             
-        fwidth = "_{}".format(width) if width not in ['b','w','d','q'] else ''
+        #fwidth = "_{}".format(width) if width not in ['b','w','d','q'] else ''
         
         ispace = itertools.product(get_index_vals(ii), dispsz_list)
         for use_index, dispsz in ispace:
             memaddrsig = get_memsig(env.asz, use_index, dispsz)
-            opsig = make_opnd_signature(ii,width)
-            fname = '{}_{}_{}{}_{}'.format(enc_fn_prefix,
-                                           ii.iclass.lower(),
-                                           opsig,
-                                           fwidth,  # FIXME:osz, funky
-                                           memaddrsig)
+            
+            if width != 'nominal':
+                opsig = make_opnd_signature(env, ii, width)
+            else:
+                opsig = make_opnd_signature(env, ii)
+                
+            fname = '{}_{}_{}_{}'.format(enc_fn_prefix,
+                                         ii.iclass.lower(),
+                                         opsig,
+                                         memaddrsig)
                                   
             fo = make_function_object(env,ii,fname, asz=env.asz)
             fo.add_comment('created by create_legacy_one_mem_common')
@@ -2783,11 +2795,11 @@ def create_legacy_one_mem_common(env,ii,imm=0):
             rexw_forced = False
 
             if op.oc2 in [ 'y','v', 's']:                  # handle scalable ops
-                if width == 'w' and env.mode != 16:
+                if width == 16 and env.mode != 16:
                     fo.add_code_eol('emit(r,0x66)')
-                elif width == 'd' and  env.mode == 16:
+                elif width == 32 and  env.mode == 16:
                     fo.add_code_eol('emit(r,0x66)')
-                elif width == 'q' and  ii.default_64b == False:
+                elif width == 64 and ii.default_64b == False:
                     rexw_forced = True
                     fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
             else:  # fixed width ops
@@ -2916,7 +2928,7 @@ def create_legacy_mov_without_modrm(env,ii):
     disp_width = env.asz
     
     for osz in osz_list:
-        opsig = make_opnd_signature(ii,osz)        
+        opsig = make_opnd_signature(env,ii,osz)        
         fname = "{}_{}_{}_d{}".format(enc_fn_prefix,
                                       ii.iclass.lower(),
                                       opsig, 
@@ -2956,7 +2968,7 @@ def create_legacy_gprv_seg(env,ii,op_info):
     reg1 = 'seg'
     osz_list = get_osz_list(env)
     for osz in osz_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                   ii.iclass.lower(),
                                   opsig)
@@ -2994,7 +3006,7 @@ def create_legacy_mem_seg(env,ii,op_info):
     global arg_reg_type
     dispsz_list = get_dispsz_list(env)
 
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
     ispace = itertools.product(get_index_vals(ii), dispsz_list)
     for use_index, dispsz  in ispace:
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
@@ -3091,7 +3103,7 @@ def create_mov_cr_dr(env,ii):
         elif op_dr(op):
             op_info.append('dr')
             
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(),opsig)
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_mov_cr_dr")
@@ -3197,7 +3209,7 @@ def create_legacy_crc32_mem(env,ii):
     ispace = itertools.product(osz_list, get_index_vals(ii), dispsz_list)
     for osz, use_index, dispsz in ispace:
         #op_widths = config[osz]
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = '{}_{}_{}_{}'.format(enc_fn_prefix,
                                      ii.iclass.lower(),
@@ -3255,7 +3267,7 @@ def create_legacy_crc32_reg(env,ii):
     opnd_types = get_opnd_types_short(ii)
     
     for osz in osz_list:
-        opsig = make_opnd_signature(ii,osz)
+        opsig = make_opnd_signature(env,ii,osz)
         fname = "{}_{}_{}".format(enc_fn_prefix, ii.iclass.lower(), opsig)
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_crc32_reg")
@@ -3676,7 +3688,7 @@ def create_vex_simd_reg(env,ii):
     global arg_reg3,  var_reg3
 
     nopnds = count_operands(ii) # not imm8
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opnd_sig)
@@ -3769,7 +3781,7 @@ def create_vex_regs_mem(env,ii):
     nopnds = count_operands(ii) # skips imm8
     op = first_opnd(ii)
     width = op.oc2
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     vlname = 'ymm' if ii.vl == '256' else 'xmm'
     immw=0
     if ii.has_imm8:
@@ -3864,7 +3876,7 @@ def create_vex_one_mask_reg_and_one_gpr(env,ii):
     # FIXME: REFACTOR NOTE: could combine with create_vex_all_mask_reg
     #  if we handle 3 reg args and optional imm8.
     global arg_reg0, arg_reg1, var_reg0, var_reg1
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     opnd_types = get_opnd_types(env,ii)
     arg_regs = [ arg_reg0, arg_reg1 ]
     var_regs = [ var_reg0, var_reg1 ]
@@ -3931,7 +3943,7 @@ def create_vex_all_mask_reg(env,ii):
     global arg_kreg1, var_kreg1
     global arg_kreg2, var_kreg2
 
-    opsig = make_opnd_signature(ii)
+    opsig = make_opnd_signature(env,ii)
     fname = "{}_{}_{}".format(enc_fn_prefix,
                               ii.iclass.lower(),
                               opsig)
@@ -4138,7 +4150,7 @@ def create_evex_xyzmm_and_gpr(env,ii):
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
 
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
         
     mask_versions = [False]
     if masking_allowed:
@@ -4261,7 +4273,7 @@ def create_evex_regs_mem(env, ii):
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
     
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
     mask_versions = [False]
     if ii.write_masking_notk0:
         mask_versions = [True]
@@ -4427,7 +4439,7 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
 
     mask_versions = [False]
     if ii.write_masking_notk0:
@@ -4574,7 +4586,7 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    opnd_sig = make_opnd_signature(ii)
+    opnd_sig = make_opnd_signature(env,ii)
 
     mask_versions = [False]
     if ii.write_masking_notk0:
@@ -4969,18 +4981,30 @@ def gather_stats(db):
 
 # object used for the env we pass to the generator
 class enc_env_t(object):
-    def __init__(self, mode, asz, test_checked_interface=False):
+    def __init__(self, mode, asz, width_info_dict, test_checked_interface=False):
         self.mode = mode
         self.asz = asz
         self.function_names = {}
         self.test_checked_interface = test_checked_interface
         self.tests_per_form = 1
+        # dictionary by oc2 of the various memop bit widths. 
+        self.width_info_dict = width_info_dict  
     def __str__(self):
         s = []
         s.append("mode {}".format(self.mode))
         s.append("asz {}".format(self.asz))
         return ", ".join(s)
     
+    def mem_bits(self, width_name, osz=0):
+        osz_to_index = { 16:0, 32:1, 64:2 }
+        wi = self.width_info_dict[width_name]
+        if osz:
+            indx = osz_to_index[osz]
+        else:
+            indx = 0
+        return wi.widths[indx]
+
+
 
 def dump_output_file_names(fn, fe_list):
     ofn = os.path.join(fn)
@@ -5089,6 +5113,8 @@ def work():
                                      args.element_types_filename,
                                      args.cpuid_filename)
 
+    width_info_dict = xeddb.get_width_info_dict()
+    
     # all modes and address sizes, filtered appropriately later
     if args.all:
         args.modes = [16,32,64]
@@ -5131,7 +5157,7 @@ def work():
     #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:
         for asz in prune_asz_list_for_mode(mode,args.asz_list):
-            env = enc_env_t(mode, asz)
+            env = enc_env_t(mode, asz, width_info_dict)
             enc2test.set_test_gen_counters(env)
             env.tests_per_form = 1
             env.test_checked_interface = args.chk
