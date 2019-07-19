@@ -40,11 +40,18 @@ class inst_t(object):
 
 
 class width_info_t(object):
-   def __init__(self, name, dtype, widths):
-      """ a name and a list of widths, 8, 16,32, and 64b"""
-      self.name = name.upper()
-      self.dtype = dtype
-      self.widths = widths
+    def __init__(self, name, dtype, widths):
+        """ a name and a dict of widths indexed by osz 8, 16,32, and 64b"""
+        self.name = name.upper()
+        self.dtype = dtype
+        self.widths = widths  # dict indexed by 8,16,32,64
+    def __str__(self):
+        s = []
+        s.append("name {}".format(self.name))
+        s.append("datatype: {}".format(self.dtype))
+        s.append("widths: {}".format(",".join(self.widths.values())))
+        return " ".join(s)
+    
 
 completely_numeric = re.compile(r'^[0-9]+$') # only numbers
 
@@ -194,13 +201,13 @@ class xed_reader_t(object):
              die("Bad number of tokens on line: " + line)
 
           # convert from bytes to bits, unless in explicit bits form "b'[0-9]+"
-          bit_widths = []
-          for val in [width8, width16, width32, width64]:
+          bit_widths = {}
+          for osz,val in zip([8,16,32,64], [width8, width16, width32, width64]):
              number_string = _is_bits(val)
              if number_string:
-                bit_widths.append(number_string)
+                bit_widths[osz] = number_string
              else:
-                bit_widths.append(str(int(val)*8))
+                bit_widths[osz] = str(int(val)*8)
           width_info_dict[name] = width_info_t(name, dtype, bit_widths)
        return width_info_dict
         
@@ -300,7 +307,8 @@ class xed_reader_t(object):
                         v.memop_width = int(v.vl) // divisor[v.avx512_tuple]
                     else:
                         wi = self.width_info_dict[v.memop_width_code]
-                        v.memop_width = int(wi.widths[0])
+                        # we can use any width for these since they are not OSZ scalable.
+                        v.memop_width = int(wi.widths[32])
     
     def _add_vl(self):
         def _get_vl(iclass,space,pattern):

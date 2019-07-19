@@ -876,7 +876,7 @@ def make_function_object(env, ii, fname, return_value='void', asz=None):
     return fo
 
 
-def make_opnd_signature(env, ii, using_width=None):
+def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
     '''This is the heart of the naming conventions for the encode
        functions. If using_width is present, it is used for GPRv and
        GPRy operations to specify a width.    '''
@@ -985,8 +985,19 @@ def make_opnd_signature(env, ii, using_width=None):
             elif op.oc2 == 'z' and using_width:
                 s.append('m' + _translate_width_z(using_width))
             else:
-                osz  = _convert_to_osz(using_width) if using_width else 0
-                bits = env.mem_bits(op.oc2, osz)
+                osz = _convert_to_osz(using_width) if using_width else 0
+                if op.oc2 == 'vv':
+                    # read_xed_db figures out the memop width for
+                    # no-broadcast and broadcasting cases for EVEX
+                    # memops. 
+                    if broadcasting:
+                        bits = ii.element_size
+                    else:
+                        bits = ii.memop_width 
+                else:
+                    bits = env.mem_bits(op.oc2, osz)
+                    if bits == '0':
+                        die("OC2FAIL: {}: oc2 {} osz {} -> {}".format(ii.iclass, op.oc2, osz, bits))
                 s.append('m{}'.format(bits))
                 
             # add the index reg width for sparse ops (scatter,gather)
@@ -4273,7 +4284,7 @@ def create_evex_regs_mem(env, ii):
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
     
-    opnd_sig = make_opnd_signature(env,ii)
+
     mask_versions = [False]
     if ii.write_masking_notk0:
         mask_versions = [True]
@@ -4295,6 +4306,8 @@ def create_evex_regs_mem(env, ii):
     # flatten a 4-deep nested loop using itertools.product()
     ispace = itertools.product(bcast_vals, get_index_vals(ii), dispsz_list, mask_versions)
     for broadcast, use_index, dispsz, masking in ispace:
+        broadcast_bool = True if broadcast == 'broadcast' else False
+        opnd_sig = make_opnd_signature(env,ii, broadcasting=broadcast_bool)
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         opnd_types = copy.copy(opnd_types_org)
         fname = "{}_{}_{}{}_{}{}".format(enc_fn_prefix,
@@ -4586,7 +4599,7 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     imm8 = True if ii.has_imm8 else False
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    opnd_sig = make_opnd_signature(env,ii)
+
 
     mask_versions = [False]
     if ii.write_masking_notk0:
@@ -4610,6 +4623,8 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
     # flatten a 4-deep nested loop using itertools.product()
     ispace = itertools.product(bcast_vals, get_index_vals(ii), dispsz_list, mask_versions)
     for broadcast, use_index, dispsz, masking in ispace:
+        broadcast_bool = True if broadcast == 'broadcast' else False
+        opnd_sig = make_opnd_signature(env,ii,broadcasting=broadcast_bool)
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         opnd_types = copy.copy(opnd_types_org)
         fname = "{}_{}_{}{}_{}{}".format(enc_fn_prefix,
@@ -4996,12 +5011,8 @@ class enc_env_t(object):
         return ", ".join(s)
     
     def mem_bits(self, width_name, osz=0):
-        osz_to_index = { 16:0, 32:1, 64:2 }
         wi = self.width_info_dict[width_name]
-        if osz:
-            indx = osz_to_index[osz]
-        else:
-            indx = 0
+        indx = osz if osz else 32
         return wi.widths[indx]
 
 
@@ -5114,6 +5125,8 @@ def work():
                                      args.cpuid_filename)
 
     width_info_dict = xeddb.get_width_info_dict()
+    for k in width_info_dict.keys():
+        print("{} -> {}".format(k,width_info_dict[k]))
     
     # all modes and address sizes, filtered appropriately later
     if args.all:
