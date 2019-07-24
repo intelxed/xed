@@ -292,7 +292,7 @@ class xed_reader_t(object):
                     v.avx512_tuple = t.group('tupletype')
                     e = esize_pattern.search(v.pattern)
                     if e:
-                        v.element_size = e.group('esize')
+                        v.element_size = int(e.group('esize'))
                     else:
                         die("Need an element size")
                     v.memop_width_code = _get_mempop_width_code(v)
