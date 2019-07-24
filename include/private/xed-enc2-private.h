@@ -713,4 +713,11 @@ xed_uint8_t emit_partial_opcode_and_rmreg_gpr64(xed_enc2_req_t* r,
                                                 xed_uint8_t opcode,
                                                 xed_reg_enum_t rmreg);
 
+xed_int32_t xed_chose_evex_scaled_disp(xed_enc2_req_t* r,
+                                       xed_int32_t requested_displacement,
+                                       xed_uint32_t reference_width_bytes);
+
+xed_int32_t xed_chose_evex_scaled_disp16(xed_enc2_req_t* r,
+                                         xed_int32_t requested_displacement,
+                                         xed_uint32_t reference_width_bytes);
 #endif

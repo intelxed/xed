@@ -33,6 +33,8 @@ END_LEGAL */
 # pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 
+
+
 /// evex register for evex-VSIB
 void enc_evex_vindex_xmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
@@ -1377,3 +1379,32 @@ void xed_emit_seg_prefix(xed_enc2_req_t* r,
     }
 }
 
+xed_int32_t xed_chose_evex_scaled_disp(xed_enc2_req_t* r,
+                                       xed_int32_t requested_displacement,
+                                       xed_uint32_t reference_width_bytes)
+{
+    xed_int32_t scaled_displacement = requested_displacement / reference_width_bytes;
+    if (scaled_displacement >= -128 && scaled_displacement <= 127) {
+        set_mod(r,1);
+        set_has_disp8(r);
+        return scaled_displacement;
+    }
+    set_mod(r,2);
+    set_has_disp32(r);
+    return requested_displacement;
+}
+
+xed_int32_t xed_chose_evex_scaled_disp16(xed_enc2_req_t* r,
+                                         xed_int32_t requested_displacement,
+                                         xed_uint32_t reference_width_bytes)
+{
+    xed_int32_t scaled_displacement = requested_displacement / reference_width_bytes;
+    if (scaled_displacement >= -128 && scaled_displacement <= 127) {
+        set_mod(r,1);
+        set_has_disp8(r);
+        return scaled_displacement;
+    }
+    set_mod(r,2);
+    set_has_disp16(r);
+    return requested_displacement;
+}

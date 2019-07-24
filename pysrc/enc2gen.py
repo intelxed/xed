@@ -2883,18 +2883,30 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
     else:
         fo.add_code('if (get_has_sib(r))')
         fo.add_code_eol('    emit_sib(r)')
-
-    if dispsz == 8:
-        fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
-    elif dispsz == 16:
-        fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
-    elif dispsz == 32:
-        fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
-    elif dispsz == 0:
-        # if form has no displacment, then we sometimes have to
-        # add a zero displacement to create an allowed modrm/sib
-        # encoding.
-        emit_synthetic_disp(fo)
+        
+    if space == 'evex':
+        if dispsz == 0:
+            # if form has no displacment, then we sometimes have to
+            # add a zero displacement to create an allowed modrm/sib
+            # encoding.
+            emit_synthetic_disp(fo)
+        elif dispsz == 8:
+            fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
+        else:
+            emit_evex_disp(env,fo)
+        
+    else:
+        if dispsz == 8:
+            fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
+        elif dispsz == 16:
+            fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
+        elif dispsz == 32:
+            fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
+        elif dispsz == 0 and env.asz != 16:
+            # if form has no displacment, then we sometimes have to
+            # add a zero displacement to create an allowed modrm/sib
+            # encoding.
+            emit_synthetic_disp(fo)
     if immw:
         emit_immv(fo,immw)
         
@@ -2910,6 +2922,37 @@ def emit_synthetic_disp(fo):
     fo.add_code_eol('   emit_i8(r,0)')
     fo.add_code('else if (get_has_disp32(r))')
     fo.add_code_eol('   emit_i32(r,0)')
+
+
+
+    
+def add_evex_displacement_var(fo):
+    fo.add_code_eol('xed_int32_t use_displacement')
+    
+def chose_evex_scaled_disp(fo, ii, dispsz, broadcasting=False): # WIP
+    if broadcasting:
+        memop_width_bytes = ii.element_size // 8
+    else:
+        memop_width_bytes = ii.memop_width // 8
+
+    disp_fix = '16' if dispsz == 16 else ''
+    
+    fo.add_code_eol('use_displacement = xed_chose_evex_scaled_disp{}(r, disp{}, {})'.format(
+        disp_fix,
+        dispsz,
+        memop_width_bytes))
+    
+def emit_evex_disp(env,fo):
+    fo.add_code('if (get_has_disp8(r))')
+    fo.add_code_eol('   emit_i8(r,use_displacement)')
+    if env.asz == 16:
+        fo.add_code('else if (get_has_disp16(r))')
+        fo.add_code_eol('   emit_i16(r,use_displacement)')
+    else:
+        fo.add_code('else if (get_has_disp32(r))')
+        fo.add_code_eol('   emit_i32(r,use_displacement)')
+    
+    
 
 def mov_without_modrm(ii):
     if ii.iclass == 'MOV' and not ii.has_modrm:
@@ -4353,6 +4396,8 @@ def create_evex_regs_mem(env, ii):
                 _add_mask_arg(ii,fo)
 
         # ===== ENCODING ======
+        if dispsz in [16,32]: # the largest displacements 16 for 16b addressing, 32 for 32/64b addressing
+            add_evex_displacement_var(fo)
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -4402,7 +4447,11 @@ def create_evex_regs_mem(env, ii):
             
         mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
-            fo.add_code_eol('set_mod(r,{})'.format(mod))
+            if mod == 2:
+                broadcasting = True if broadcast == 'broadcast' else False
+                chose_evex_scaled_disp(fo, ii, dispsz, broadcasting)
+            else:
+                fo.add_code_eol('set_mod(r,{})'.format(mod))
         
         encode_mem_operand(env, ii, fo, use_index, dispsz)  
         immw=8 if imm8 else 0
@@ -4672,6 +4721,8 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
             fo.add_arg(arg_rcsae,'rcsae')
                 
         # ===== ENCODING ======
+        if dispsz in [16,32]: # the largest displacements 16 for 16b addressing, 32 for 32/64b addressing
+            add_evex_displacement_var(fo)
 
         set_vex_pp(ii,fo)
         fo.add_code_eol('set_map(r,{})'.format(ii.map))
@@ -4749,7 +4800,11 @@ def create_evex_evex_mask_dest_mem(env, ii): # allows optional imm8
         
         mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
-            fo.add_code_eol('set_mod(r,{})'.format(mod))
+            if mod == 2:
+                broadcasting = True if broadcast == 'broadcast' else False
+                chose_evex_scaled_disp(fo, ii, dispsz, broadcasting)
+            else:
+                fo.add_code_eol('set_mod(r,{})'.format(mod))
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)  
         immw=8 if imm8 else 0
