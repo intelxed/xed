@@ -25,6 +25,7 @@ END_LEGAL */
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "xed-histogram.h"
 
 typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
@@ -147,7 +148,7 @@ int test_all(test_func_t* base, const char** str_table, const xed_iclass_enum_t*
 
 
 int main(int argc, char** argv) {
-    int i=0, m=0, test_id=0, errors=0;
+    int i=0, m=0, test_id=0, errors=0,specific_tests=0, enable_histogram=0;
 #if defined(XED_ENC2_CONFIG_M64_A64)
     test_func_t* base = test_functions_m64_a64;
     const char** str_table = test_functions_m64_a64_str;
@@ -182,26 +183,38 @@ int main(int argc, char** argv) {
     m = i;
     printf("Total tests %d\n",m);
     for(i=1;i<argc;i++) {
-        test_id = (int)strtol(argv[i], (char **)NULL, 10);
-        if (test_id >=  m) {
-            printf("Test ID too large (range: 0...%d)\n",m-1);
-            return 1;
+        if (strcmp(argv[i],"--histo")==0) {
+            enable_histogram = 1;
         }
-        
-        char const* fn_name = str_table[test_id];
-        xed_iclass_enum_t ref_iclass = iclass_table[test_id];
-        if (execute_test(test_id, base, fn_name, ref_iclass)) {
-            printf("test id %d failed\n", test_id);
-            errors++;
+        else if ( strcmp(argv[i],"-h")==0 ||
+                  strcmp(argv[i],"--help")==0 )  {
+            fprintf(stderr,"%s [-h|--help] [--histo] [test_id ...]\n", argv[0]);
+            exit(0);
         }
         else {
-            printf("test id %d success\n", test_id);
+            specific_tests = 1;
+            test_id = (int)strtol(argv[i], (char **)NULL, 10);
+            if (test_id >=  m) {
+                printf("Test ID too large (range: 0...%d)\n",m-1);
+                return 1;
+            }
+        
+            char const* fn_name = str_table[test_id];
+            xed_iclass_enum_t ref_iclass = iclass_table[test_id];
+            if (execute_test(test_id, base, fn_name, ref_iclass)) {
+                printf("test id %d failed\n", test_id);
+                errors++;
+            }
+            else {
+                printf("test id %d success\n", test_id);
+            }
         }
     }
-    if (argc==1) {
+    if (specific_tests==0) {
         printf("Testing all...\n");
         errors = test_all(base, str_table, iclass_table);
     }
-    xed_histogram_dump(&histo, 1);
+    if (enable_histogram)
+        xed_histogram_dump(&histo, 1);
     return errors>0;
 }
