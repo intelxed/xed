@@ -4580,8 +4580,6 @@ def create_evex_evex_mask_dest_reg_only(env, ii): # allows optional imm8
         fo.add_code_eol('emit_evex(r)')
         emit_opcode(ii,fo)
         emit_modrm(fo)
-        #emit_sib(fo)              # FIXME: 2019-07-24 THIS APPEARS EXTRANEOUS, REG ONLY
-        #emit_synthetic_disp(fo)   # FIXME: 2019-07-24 THIS APPEARS EXTRANEOUS, REG ONLY
         cond_emit_imm8(ii,fo)
         add_enc_func(ii,fo)
 
