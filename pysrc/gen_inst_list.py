@@ -41,6 +41,59 @@ def check(chip, xeddb, chipdb):
                 all_inst.append(inst)
     return (all_inst, undoc)
 
+def prefixes_summary(v):
+    s = []
+    if v.f2_required:
+        s.append('f2')
+    if v.f3_required:
+        s.append('f3')
+    if v.osz_required:
+        s.append('66')
+    if v.no_prefixes_allowed:
+        s.append('NP')
+    if len(s) == 0:
+        s.append('*')
+    return ",".join(s)
+
+def wbit_summary(v):
+    if v.rexw_prefix == 'unspecified':
+        return '*'
+    return v.rexw_prefix
+def mode_summary(v):
+    if v.mode_restriction == 'unspecified':
+        return '*'
+    if v.mode_restriction == 0:
+        return '16b'
+    if v.mode_restriction == 1:
+        return '32b'
+    if v.mode_restriction == 2:
+        return '64b'
+    return  v.mode_restriction
+def print_header():
+    print("iclass, operands, public/undoc, isa_set, vl, space, prefix, " +
+          "map, opcode, modrm.mod, modrm.reg, modrm.rm, wbit, mode")
+def print_rec(v,extra='N/A'):
+    s = " ".join(['{}, {}, {}, {}, {}, {}, {}, {}, {}, ',
+                  '{}, ',
+                  '{}, ',
+                  '{}, ',
+                  '{}, ',
+                  '{}'])
+    print(s.format(v.iclass,
+                   "-".join(v.explicit_operands),
+                   extra,
+                   v.isa_set,
+                   v.vl if v.space in ['vex','evex'] else 'N/A',
+                   v.space,
+                   prefixes_summary(v),
+                   v.map,
+                   v.opcode,
+                   '*' if v.mod_required == 'unspecified' else v.mod_required,
+                   '*' if v.reg_required == 'unspecified' else v.reg_required,
+                   '*' if v.rm_required == 'unspecified' else v.rm_required,
+                   wbit_summary(v),
+                   mode_summary(v)))
+
 
 
 def work(args):  # main function
@@ -79,10 +132,13 @@ def work(args):  # main function
             print("{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip))
         
     else:
-        for i in ilist:
-            print(i)
-        for i in ulist:
-            print(i, "UNDOC")
+        insts.sort(key=lambda x:(x.space,x.iclass,x.isa_set,x.vl))
+        undoc.sort(key=lambda x:(x.space,x.iclass,x.isa_set,x.vl))
+        print_header()
+        for i in insts:
+            print_rec(i,'PUBLIC')
+        for i in undoc:
+            print_rec(i, "UNDOC")
     return 0
 
 
