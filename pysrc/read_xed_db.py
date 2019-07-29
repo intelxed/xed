@@ -135,7 +135,10 @@ def _set_eosz(v):
                     eosz = 'o32'
     v.eosz = eosz
 
-    
+def is_positive_integer(s):
+    if re.match(r'^[0-9]+$',s):
+        return True
+    return False
     
 class xed_reader_t(object):
     """This class is designed to be used on the partial build materials
@@ -233,7 +236,6 @@ class xed_reader_t(object):
         # just the explicit ones
         expl_operand_list = []
 
-
         for opnd in v.operand_list:
             stg = None
             vis = None
@@ -253,7 +255,10 @@ class xed_reader_t(object):
                     if i>0 and  p in ['IMPL', 'SUPP',  'EXPL', 'ECOND']:
                         vis = p
             if opname and vis not in ['IMPL', 'SUPP', 'ECOND']:
-                expl_operand_list.append(re.sub(r'[()]*','',opname))
+                if not is_positive_integer(opname):
+                    s = re.sub(r'[()]*','',opname)
+                    s = re.sub(r'_[RBN].*','',s)
+                    expl_operand_list.append(s)
         return expl_operand_list
                         
     
