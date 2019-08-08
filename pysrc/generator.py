@@ -1043,7 +1043,7 @@ class partitionable_info_t(object):
    def __str__(self):
       return self.dump_str()
    
-   def dump_str(self, pad=''):
+   def dump_str(self, pad='',brief=None):
       return self.input_str 
 
    def dump_structured(self,pad=''):
