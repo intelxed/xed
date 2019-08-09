@@ -27,7 +27,7 @@ def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
     sys.exit(1)
 def msgb(b,s=''):
-    sys.stdout.write("[{0}] {1}\n".format(b,s))
+    sys.stderr.write("[{0}] {1}\n".format(b,s))
 
 
 def check(chip, xeddb, chipdb):
@@ -70,10 +70,10 @@ def mode_summary(v):
         return '64b'
     return  v.mode_restriction
 def print_header():
-    print("iclass, operands, public/undoc, isa_set, vl, space, prefix, " +
+    print("iclass, explicit-operands, implicit-operands, memop, public/undoc, isa_set, vl, space, prefix, " +
           "map, opcode, modrm.mod, modrm.reg, modrm.rm, wbit, mode")
 def print_rec(v,extra='N/A'):
-    s = " ".join(['{}, {}, {}, {}, {}, {}, {}, {}, {}, ',
+    s = " ".join(['{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ',
                   '{}, ',
                   '{}, ',
                   '{}, ',
@@ -81,6 +81,8 @@ def print_rec(v,extra='N/A'):
                   '{}'])
     print(s.format(v.iclass,
                    "-".join(v.explicit_operands),
+                   "-".join(v.implicit_operands),
+                   v.memop_rw,
                    extra,
                    v.isa_set,
                    v.vl if v.space in ['vex','evex'] else 'N/A',
@@ -136,7 +138,10 @@ def work(args):  # main function
         undoc.sort(key=lambda x:(x.space,x.iclass,x.isa_set,x.vl))
         print_header()
         for i in insts:
-            print_rec(i,'PUBLIC')
+            public = 'PUBLIC'
+            if hasattr(i,'real_opcode') and i.real_opcode == 'N':
+                public = 'PRIVATE'
+            print_rec(i, public)
         for i in undoc:
             print_rec(i, "UNDOC")
     return 0
@@ -145,7 +150,8 @@ def work(args):  # main function
 def setup():
     parser = gen_setup.create('Generate instruction counts per chip')
     
-    parser.add_argument('--chip', 
+    parser.add_argument('--chip',
+                        default='FUTURE',
                         help='Chip name')
     parser.add_argument('--otherchip',
                         help='Other chip name, for computing differences')
