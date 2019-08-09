@@ -214,6 +214,12 @@ static void xed_assemble(const xed_state_t* dstate,
     fclose(f);
 }
 #endif
+
+static void emit_version() {
+    printf("%s\n", xed_get_copyright());
+    printf("XED version: [%s]\n\n", xed_get_version());
+}
+
 static void usage(char* prog) {
     unsigned int i;
     static const char* usage_msg[] = {
@@ -301,16 +307,18 @@ static void usage(char* prog) {
       "",
       "\t-sp           (Search path for windows symbols)",
 #endif
+      "\t-version      (The version message)",
+      "\t-help         (This help message)",
       " ",
       0
     };      
 
-    printf("%s\n", xed_get_copyright());
-    printf("XED version: [%s]\n\n", xed_get_version());
+    emit_version();
     printf("Usage: %s [options]\n", prog);
     for(i=0; usage_msg[i]  ; i++)
         printf("%s\n", usage_msg[i]);
 }
+
  
 
 static char const* remove_spaces(char const*  s) { //frees original string
@@ -698,6 +706,10 @@ main(int argc, char** argv)
 #endif
         else if (strcmp(argv[i],"-emit") ==0) {
             intel_asm_emit = 1;
+        }
+        else if (strcmp(argv[i],"-version") == 0 ) {
+            emit_version();
+            exit(0);
         }
         else   {
             usage(argv[0]);
