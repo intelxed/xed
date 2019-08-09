@@ -24,7 +24,7 @@
 @mainpage X86 Encoder Decoder User Guide
 by Mark Charney
 
-2019-05-24
+2019-08-09
 
 @section INTRO Introduction
 
@@ -664,10 +664,6 @@ Copyright (c) 2002-2016 Intel Corporation. All Rights Reserved.
     that is where most of the information about the operands,
     resources etc. are stored.
 
-    To add a REP or REPNE prefix to a an encoder request, set it in
-    the encoder request directly by calling
-    #xed_encoder_request_set_rep() or
-    #xed_encoder_request_set_repne().
 
     To get nondefault width operands, during encoding, you have to
     call #xed_encoder_request_set_effective_operand_width() .
