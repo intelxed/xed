@@ -32,7 +32,7 @@ def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
     sys.exit(1)
 def msgb(b,s=''):
-    sys.stdout.write("[{0}] {1}\n".format(b,s))
+    sys.stderr.write("[{0}] {1}\n".format(b,s))
 
 class inst_t(object):
     def __init__(self):
@@ -164,8 +164,10 @@ class xed_reader_t(object):
         self.recs = self._process_lines(instructions_filename)
         self._find_opcodes()
         self._fix_real_opcode()
-        self._generate_explicit_operands()
+
         self._parse_operands()
+        self._generate_operands()
+        self._generate_memop_rw_field()
         self._summarize_operands()
         self._summarize_vsib()
         
@@ -229,44 +231,79 @@ class xed_reader_t(object):
         xtypes_dict = opnd_types.read_operand_types(lines)
         return set(xtypes_dict.keys())
             
+    def _compute_memop_rw(self,v):
+        read=False
+        write=False
         
-    def _compute_explicit_operands(self,v):
-        # all operands
-        v.operand_list = v.operands.split()
-        # just the explicit ones
-        expl_operand_list = []
+        for opnd in v.parsed_operands:
+            if opnd.name.startswith('MEM'):
+                if 'r' in opnd.rw:
+                    read = True
+                if 'w' in opnd.rw:
+                    write = True
+            elif opnd.bits:
+                if 'STACKPUSH' in opnd.bits:  # mem write
+                    write = True
+                if 'STACKPOP' in opnd.bits:   # mem read
+                    read = True
+                    
+        if read and write:
+            return 'mem-rw'
+        elif write:
+            return 'mem-w'
+        elif read:
+            return 'mem-r'
+        return 'none'
+            
 
-        for opnd in v.operand_list:
-            stg = None
-            vis = None
-            opname = None
-            if re.search(r'^[^:]*=',opnd):
-                pieces = opnd.split(':')
-                for i,p in enumerate(pieces):
-                    if i == 0:
-                        if '=' in p:
-                            stg,opname = p.split('=')
-                    elif p in ['IMPL', 'SUPP',  'EXPL', 'ECOND']:
-                        vis = p
-            elif opnd.startswith('IMM0') or opnd.startswith('MEM0') or opnd.startswith('IMM1'):
-                pieces = opnd.split(':')
-                opname = pieces[0]
-                for i,p in enumerate(pieces):
-                    if i>0 and  p in ['IMPL', 'SUPP',  'EXPL', 'ECOND']:
-                        vis = p
-            if opname and vis not in ['IMPL', 'SUPP', 'ECOND']:
-                if not is_positive_integer(opname):
-                    s = re.sub(r'[()]*','',opname)
-                    s = re.sub(r'_[RBN].*','',s)
+    def _compute_operands(self,v):
+        expl_operand_list = []
+        impl_operand_list = []
+        for op in v.parsed_operands:
+            s = None
+            if op.name in ['MEM0','MEM1']:
+                s = 'MEM'
+            elif op.name in ['IMM0','IMM1']:
+                s = 'IMM'
+            elif op.type == 'nt_lookup_fn':
+                s = op.lookupfn_name
+                s = re.sub(r'[()]*','',s)
+                s = re.sub(r'_[RBN].*','',s)
+                s = re.sub(r'FINAL_.*','',s)
+            elif op.type == 'reg':
+                s = op.bits
+                s = re.sub(r'XED_REG_','',s)
+            elif op.type == 'imm_const':
+                if op.name in ['BCAST','SCALE']:
+                    continue
+                s = op.name
+            else:
+                msgb("UNHANDLED","{}".format(op))
+                
+            if s:
+                if op.visibility in ['IMPLICIT','SUPPRESSED']:
+                    impl_operand_list.append(s)
+                if op.visibility in ['EXPLICIT', 'DEFAULT']:
                     expl_operand_list.append(s)
-        return expl_operand_list
-                        
+
+        return expl_operand_list, impl_operand_list
+        
+
     
-    def _generate_explicit_operands(self):
+    def _generate_operands(self):
         for v in self.recs:
             if not hasattr(v,'iform'):
                 v.iform=''
-            v.explicit_operands = self._compute_explicit_operands(v)
+            v.explicit_operands, v.implicit_operands = self._compute_operands(v)
+            
+            if not v.explicit_operands:
+                v.explicit_operands = ['none']
+            if not v.implicit_operands:
+                v.implicit_operands = ['none']
+                
+    def _generate_memop_rw_field(self):
+        for v in self.recs:
+            v.memop_rw = self._compute_memop_rw(v) 
             
     def _add_cpuid(self):
         '''set v.cpuid with list of cpuid bits for this instr'''
@@ -387,6 +424,7 @@ class xed_reader_t(object):
     def _parse_operands(self):
         '''set v.parsed_operands with list of operand_info_t objects (see opnds.py).'''
         for v in self.recs:
+            v.operand_list = v.operands.split()
             v.parsed_operands = []
             for op_str in v.operand_list:
                 #op is an operand_info_t  object
@@ -396,8 +434,6 @@ class xed_reader_t(object):
                                               self.width_type_dict,
                                               skip_encoder_conditions=False)
                 v.parsed_operands.append(op)
-                #print "OPERAND: {}".format(op)
-
             
     def _fix_real_opcode(self):
         for v in self.recs:
