@@ -6341,8 +6341,9 @@ ICLASS    : MOVSXD
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : LONGMODE
+COMMENT   : Chips between Prescott and before Sandybridge always read 32b. Oct 2017 (rev64) SDM documents modern behavior.
 PATTERN   : 0x63 MOD[0b11] MOD=3 REG[rrr] RM[nnn] mode64
-OPERANDS  : REG0=GPRv_R():w REG1=GPR32_B():r
+OPERANDS  : REG0=GPRv_R():w REG1=GPRz_B():r
 }
 {
 ICLASS    : PUSH
