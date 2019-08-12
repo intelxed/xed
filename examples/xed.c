@@ -215,7 +215,7 @@ static void xed_assemble(const xed_state_t* dstate,
 }
 #endif
 
-static void emit_version() {
+static void emit_version(void) {
     printf("%s\n", xed_get_copyright());
     printf("XED version: [%s]\n\n", xed_get_version());
 }
