@@ -1256,6 +1256,8 @@ class instruction_info_t(partitionable_info_t):
             (token, rest ) = line.split(':',1)
             token = token.strip()
             rest = rest.strip()
+            if rest.startswith(':'):
+                die("Double colon error {}".format(line))
 
             # Certain tokens can be duplicated. We allow for triples
             # of (pattern,operands,iform). The iform is optional.  If

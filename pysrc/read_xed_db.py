@@ -803,6 +803,8 @@ class xed_reader_t(object):
                 key, value  = line.split(":",1)
                 key = key.strip()
                 value = value.strip()
+                if value.startswith(':'):
+                    die("Double colon error {}".format(line))
                 if key == 'IFORM':
                     # fill in missing iforms with empty strings
                     x = len(d['PATTERN']) - 1

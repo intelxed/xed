@@ -4237,7 +4237,7 @@ OPERANDS  : REG0=XMM_R():r:dq     REG1=XMM_B():r:dq IMM0:r:b REG2=XED_REG_ECX:w:
 }
 {
 ICLASS    : VPCMPISTRI64
-DISASM:   : vpcmpistri
+DISASM    : vpcmpistri
 EXCEPTIONS: avx-type-4
 CPL       : 3
 CATEGORY  : STTNI
