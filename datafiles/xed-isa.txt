@@ -8391,7 +8391,7 @@ ISA_SET   : I86
 FLAGS     : MUST [ cf-tst ]
 PATTERN   : 0xD6 not64
 OPERANDS  : REG0=XED_REG_AL:w:SUPP
-COMMENT   : UNDOC - "The Undocumented PC", 2nd ed 1997, says it is present on all Intel CPUs of that time.
+COMMENT   : was undocumented, but added to SDM v3 under "undefined opcodes" in 2017
 }
 {
 ICLASS    : XLAT
@@ -8619,7 +8619,6 @@ EXTENSION : BASE
 ISA_SET   : I86
 PATTERN   : 0xF1
 OPERANDS  : REG0=rIP():w:SUPP
-COMMENT   : UNDOC by Intel, but in AMD's opcode map
 }
 {
 ICLASS    : HLT
