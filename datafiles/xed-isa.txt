@@ -11037,7 +11037,8 @@ CPL       : 3
 CATEGORY  : CONVERT
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_5
-ATTRIBUTES :  MXCSR
+COMMENT   : ignores MXCSR. 32b int fits in f64
+
 PATTERN   : 0x0F 0xE6 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
 OPERANDS  : REG0=XMM_R():w:pd:f64 MEM0:r:q:i32
 PATTERN   : 0x0F 0xE6 f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
