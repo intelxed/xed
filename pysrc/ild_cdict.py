@@ -553,7 +553,7 @@ class constraint_dict_t(object):
          
          #dict mapping tuples to rules. 
          #tuples are the constraint values (without the constraint names).
-         self.tuple2rule = {}
+         self.tuple2rule = {}  # ild.pattern_t
          if self.state_space:
              self.tuple2rule = self._initialize_tuple2rule(self.cnames, {})
 
@@ -698,16 +698,33 @@ class constraint_dict_t(object):
             rows.append('HUGE!')
         elif size >= 50:
             rows.append('BIG!')
-        legend = " ".join(self.cnames)
-        legend += ' \t-> VALUE'
+        legend = "{} -> VALUE".format(" ".join(self.cnames))
         rows.append(legend)
         if len(self.tuple2rule) == 0:
             rows.append("_ \t-> %s" % self.rule)
-        for key in sorted(self.tuple2rule.keys()):
-            val = self.tuple2rule[key]
-            rows.append("%s \t-> %s" % (key, str(val)))
-        return "\n".join(rows)
 
+        # print all the decision values first with iclass, if any
+        for key in sorted(self.tuple2rule.keys()):
+            val = self.tuple2rule[key] # ild.pattern_t
+            s = []
+            for cname, tval in zip(self.cnames,key):
+                s.append("{}:{}".format(cname,tval))
+            iclass = 'n/a'
+            if hasattr(val,'iclass'):
+                iclass = val.iclass
+            rows.append("{} -> {}".format(", ".join(s), iclass))
+            
+        rows.append("\n\n")
+        
+        # now print them again with their detailed information
+        for key in sorted(self.tuple2rule.keys()):
+            val = self.tuple2rule[key]  # ild.pattern_t
+            s = []
+            for cname, tval in zip(self.cnames,key):
+                s.append("{}:{}".format(cname,tval))
+            rows.append("{} \t-> {}".format(", ".join(s), str(val)))
+        return "\n".join(rows)
+    
 
 
 def get_constraints_lu_table(ptrns_by_map_opcode, is_amd, state_space,
