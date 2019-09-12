@@ -190,7 +190,7 @@ def work(agi, united_lookup, eosz_nts, ild_gendir, debug):
         if not array:
             return None
         nt_arrays.append(array)
-    ild_nt.dump_lu_arrays(agi, nt_arrays, 'ild_oesz_debug.txt',
+    ild_nt.dump_lu_arrays(agi, nt_arrays, 'ild_eosz_debug.txt',
                           'ild_eosz_debug_header.txt')
     
     #get all sequences of NTs that set EOSZ 
