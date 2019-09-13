@@ -374,7 +374,6 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d); //prototype
 
 static void set_vl(xed_decoded_inst_t* d, xed_uint_t vl) {
     xed3_operand_set_vl(d, vl);
-    xed3_operand_set_vlx(d, vl+1);
 }
 
 static void vex_c4_scanner(xed_decoded_inst_t* d)
