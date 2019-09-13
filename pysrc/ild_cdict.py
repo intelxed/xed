@@ -104,15 +104,16 @@ def _set_space_from_operands(agi, operands, state_space):
                 state_space[op.name][op_val] = True
 
 def get_all_constraints_state_space(agi):
-    """
-    Returns a 2D dictionary state_space:
+    """Returns a 2D dictionary state_space.
+
     state_space[OPNAME][OPVAL] == True if there is an operand with
     name OPNAME and value OPVAL.
-    In other words dictionary contains all legal values for
-    operands in grammar.
+
+    The dictionary contains all legal values for operands in grammar.
+
     Only operands that appear as operand deciders, prebindings, or
-    instruction operands are added to the returned dictionary.
-    """
+    instruction operands are added to the returned dictionary.    """
+    
     state_space = collections.defaultdict(dict)
     for g in agi.generator_list:
         for ii in g.parser_output.instructions:
