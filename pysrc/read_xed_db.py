@@ -323,7 +323,7 @@ class xed_reader_t(object):
 
 
     def _evex_disp8_scaling(self):
-        disp8_pattern  = re.compile(r'DISP8_(?P<tupletype>[A-Z0-9]+)')
+        disp8_pattern  = re.compile(r'DISP8_(?P<tupletype>[A-Z0-9_]+)')
         esize_pattern  = re.compile(r'ESIZE_(?P<esize>[0-9]+)_BITS')
         for v in self.recs:
             v.avx512_tuple = None
@@ -332,25 +332,26 @@ class xed_reader_t(object):
                 t = disp8_pattern.search(v.attributes)
                 if t:
                     v.avx512_tuple = t.group('tupletype')
-                    e = esize_pattern.search(v.pattern)
-                    if e:
-                        v.element_size = int(e.group('esize'))
-                    else:
-                        die("Need an element size")
-                    v.memop_width_code = _get_mempop_width_code(v)
-                    
-                    # if the oc2=vv), we get two widths depend on
-                    # broadcasting. Either the width is (a) vl(full),
-                    # vl/2(half), vl/4 (quarter) OR (b) the element
-                    # size for broadcasting.
-                    if v.memop_width_code == 'vv':
-                        divisor = { 'FULL':1, 'HALF':2,'QUARTER':4}
-                        # we might override this value if using broadcasting
-                        v.memop_width = int(v.vl) // divisor[v.avx512_tuple]
-                    else:
-                        wi = self.width_info_dict[v.memop_width_code]
-                        # we can use any width for these since they are not OSZ scalable.
-                        v.memop_width = int(wi.widths[32])
+                    if v.avx512_tuple != 'NO_SCALE':
+                        e = esize_pattern.search(v.pattern)
+                        if e:
+                            v.element_size = int(e.group('esize'))
+                        else:
+                            die("Need an element size")
+                        v.memop_width_code = _get_mempop_width_code(v)
+
+                        # if the oc2=vv), we get two widths depend on
+                        # broadcasting. Either the width is (a) vl(full),
+                        # vl/2(half), vl/4 (quarter) OR (b) the element
+                        # size for broadcasting.
+                        if v.memop_width_code == 'vv':
+                            divisor = { 'FULL':1, 'HALF':2,'QUARTER':4}
+                            # we might override this value if using broadcasting
+                            v.memop_width = int(v.vl) // divisor[v.avx512_tuple]
+                        else:
+                            wi = self.width_info_dict[v.memop_width_code]
+                            # we can use any width for these since they are not OSZ scalable.
+                            v.memop_width = int(wi.widths[32])
     
     def _add_vl(self):
         def _get_vl(iclass,space,pattern):
