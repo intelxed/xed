@@ -21,6 +21,7 @@
 import argparse
 import os
 import sys
+import read_xed_db
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
@@ -54,6 +55,15 @@ def make_paths(args):
     args.widths_filename        = _check_jn(args.prefix, 'all-widths.txt')
     args.element_types_filename = _check_jn(args.prefix, 'all-element-types.txt')
 
+def read_db(args):
+    xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
+                                     args.instructions_filename,
+                                     args.widths_filename,
+                                     args.element_types_filename,
+                                     args.cpuid_filename)
+    return xeddb
+
+    
 def parse(parser):
 
     args = parser.parse_args()
