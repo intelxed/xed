@@ -2005,7 +2005,23 @@ class encoder_configuration_t(object):
             die("Could not process decode pattern %s" % s)
         
         return (decode_patterns, field_bindings)
+
+    def force_vl_encoder_output(self, iclass, operand_str, pattern_str):
+        """Return true if we should treat VL as an encoder_output (EO)"""
+        if 'VEXVALID=1' in pattern_str or 'VEXVALID=2' in pattern_str:
+            if 'XMM' in operand_str or 'YMM' in operand_str or 'ZMM' in operand_str:
+                return False
+            if ':vv' in operand_str:
+                return False
+            # FIXME: remove VLX when we remove it
+            if 'VL=' in pattern_str or 'VLX=' in pattern_str:
+                #print("SETTING FORCE_VL_ENCODER_OUTPUT FOR {}".format(iclass))
+                #print("\t PATTERN:  {}".format(pattern_str))
+                #print("\t OPERANDS: {}".format(operand_str))
+                return True
+        return False
             
+        
     def parse_one_decode_rule(self, iclass, operand_str, pattern_str):
         """Read the decoder rule from the main ISA file and package it
         up for encoding. Flipping things around as necessary.
@@ -2053,12 +2069,19 @@ class encoder_configuration_t(object):
             p_short = rhs_pattern.sub('', p)  # grab the lhs
 
             # special cases
-            if (p_short in storage_fields and 
-                     storage_fields[p_short].encoder_input):
-                if voperand():
-                    msgb("MODAL PATTERN", p_short)
-                modal_patterns.append(p)
-                continue
+
+            # VL is generally an encoder input, except in some cases
+            # (VZERO*, BMI, KMASKS, etc.)
+            do_encoder_input_check = True
+            if p_short in ['VL','VLX'] and self.force_vl_encoder_output(iclass, operand_str, pattern_str):
+                do_encoder_input_check = False
+                
+            if do_encoder_input_check:
+                if p_short in storage_fields and storage_fields[p_short].encoder_input:
+                    if voperand():
+                        msgb("MODAL PATTERN", p_short)
+                    modal_patterns.append(p)
+                    continue
 
             if p_short in storage_fields and p == 'BCRC=1':
                 # FIXME: 2016-01-28: MJC: HACK TO ENCODE ROUNDC/SAE CONSTRAINTS
