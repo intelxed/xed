@@ -2013,8 +2013,7 @@ class encoder_configuration_t(object):
                 return False
             if ':vv' in operand_str:
                 return False
-            # FIXME: remove VLX when we remove it
-            if 'VL=' in pattern_str or 'VLX=' in pattern_str:
+            if 'VL=' in pattern_str:
                 #print("SETTING FORCE_VL_ENCODER_OUTPUT FOR {}".format(iclass))
                 #print("\t PATTERN:  {}".format(pattern_str))
                 #print("\t OPERANDS: {}".format(operand_str))
@@ -2073,7 +2072,7 @@ class encoder_configuration_t(object):
             # VL is generally an encoder input, except in some cases
             # (VZERO*, BMI, KMASKS, etc.)
             do_encoder_input_check = True
-            if p_short in ['VL','VLX'] and self.force_vl_encoder_output(iclass, operand_str, pattern_str):
+            if p_short in ['VL'] and self.force_vl_encoder_output(iclass, operand_str, pattern_str):
                 do_encoder_input_check = False
                 
             if do_encoder_input_check:
