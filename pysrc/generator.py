@@ -1754,7 +1754,8 @@ def read_structured_input(agi, options, parser, lines, state_dict):
             # multiple complete records, one per
             # pattern/set-of-operands.
             flat_ii_recs = expand_hierarchical_records(ii)
-            
+
+            # finalize initialization of instruction records
             for flat_ii in flat_ii_recs:
                flat_ii.refine_parsed_line(agi,state_dict)
                flat_ii.add_fixed_base_attribute()
