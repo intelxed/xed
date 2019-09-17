@@ -263,7 +263,7 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
     if (!skip(astr[0]))
         self->base = astr[0];
 
-    if (n_addr_tokens > 2)
+    if (n_addr_tokens >= 2)
         if (!skip(astr[1]))
             self->indx = astr[1];
 
