@@ -6333,15 +6333,17 @@ ICLASS    : MOVSXD
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : LONGMODE
+COMMENT   : Prescott reads 32b for the 16b version. My testing indicates Merom, Nehalem and later reference 16b \
+            for the 16b version. I did not find an accessible Penryn. Oct 2017 (rev64) SDM documents modern behavior. \
+            2019 AMD docs say "mem32" and I am told AMD does reference 32b always.
 PATTERN   : 0x63 MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64 MODRM()
-OPERANDS  : REG0=GPRv_R():w MEM0:r:d
+OPERANDS  : REG0=GPRv_R():w MEM0:r:z
 }
 {
 ICLASS    : MOVSXD
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : LONGMODE
-COMMENT   : Chips between Prescott and before Sandybridge always read 32b. Oct 2017 (rev64) SDM documents modern behavior.
 PATTERN   : 0x63 MOD[0b11] MOD=3 REG[rrr] RM[nnn] mode64
 OPERANDS  : REG0=GPRv_R():w REG1=GPRz_B():r
 }
