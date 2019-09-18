@@ -65,7 +65,7 @@ def _set_state_space_from_ii(agi, ii, state_space):
     for (name, binding) in list(ii.prebindings.items()):
 
         bitnum = len(binding.bit_info_list)
-        #dirty hack: we don't want big prebidnings to explode
+        #dirty hack: we don't want big prebindings to explode
         #our dictionaries
         #FIXME: this assumes that all constraints used for
         #pattern dispatching (all constraints explicitly mentioned
@@ -241,7 +241,6 @@ _rm_token_4 = 'RM4'
 def _is_binary_RM_4(cnames, ptrn_list):
     # ptrn_list is a list of ild.pattern_t.  Returns True if all
     # patterns have just RM=4 as a constraint.
-
     if _rm_token not in cnames:
         return False
     for ptrn in ptrn_list:
@@ -257,31 +256,24 @@ def _is_binary_RM_4(cnames, ptrn_list):
                 return False
         else: # some pattern does not have and RM constraint
             return False
-        
     # all have one constraint of RM=4.                
     return True
 
 def _replace_RM_with_RM4(cnames, ptrn_list):
+    # When we call this we know that all the patterns in the pattern
+    # list have RM=4 either from (a) RM[0b100] or (b) RM=4
+    # constraints.  The RM[0b100] is captured in prebindings (and the
+    # constraints, which is how we got here) and 3 raw 1, 0, 0 bits
+    # are present in the pattern.  This function does remove the RM
+    # from the cnames, but it doesn't really do anything to the
+    # ipattern.  So there is no need to search ipattern again
+    
     # ptrn_list is a list of ild.pattern_t
-    #
-    # This looks for RM=4 in the pattern. It will not find "RM[0b100]"
-    # so the patterns should NOT use that for specifying RM=4
-    # requirements.  
-    #
-    # FIXME:2016-01-29: MJC I have a concern that other instructions
-    # with RM[...] constraints might be being mishandled. Need to test.
     cnames.remove(_rm_token)
     cnames.add(_rm_token_4)
     for ptrn in ptrn_list:
-        found = False
-        for bt in ptrn.ii.ipattern.bits:
-            if bt.token == _rm_token:
-                if bt.test == 'eq':
-                    found = True
-                    ptrn.constraints[_rm_token_4] = {1:True}
-                    break
-        if not found:
-            ptrn.constraints[_rm_token_4] = {0:True, 1:True}
+        #print("B-ICLASS: {}".format(ptrn.ii.iclass))
+        ptrn.constraints[_rm_token_4] = {1:True}
 
 _mask_token = 'MASK'
 _mask_token_n0 = 'MASK_NOT0'
