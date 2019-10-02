@@ -3156,15 +3156,6 @@ def write_instruction_data(odir,idata_dict):
 def attr_dict_keyfn(a):
     return a[0]
 
-def attr_dict_cmp(a,b): # FIXME:2017-06-10:PY3 port, now unused
-    av = a[0]
-    bv = b[0]
-    if av == bv:
-        return 0
-    if av > bv:
-        return 1
-    return -1
-
 def write_attributes_table(agi, odir): 
    fn = 'xed-attributes-init.c' 
    if vattr():
@@ -3280,47 +3271,11 @@ def key_invalid_first(x):
         return ' ' 
     return x
 
-def cmp_invalid(t1,t2): # FIXME:2017-06-10:PY3 port, no longer used
-   """Special sort-comparison function that makes sure the INVALID
-   entry is first"""
-   if t1 == t2:
-      return 0
-   if t1 == 'INVALID':
-      return -1
-   if t2 == 'INVALID':
-      return 1
-   if t1 > t2:
-      return 1
-   return -1
-
 
 def key_invalid_tuple_element_0(x):
     return key_invalid_first(x[0])
 def key_tuple_element_1(x):
     return x[1]
-
-def cmp_invalid_vtuple(vt1,vt2):  #FIXME:2017-06-10:PY3 port. No longer used
-   """Special sort-comparison function that makes sure the INVALID
-   entry is first"""
-   t1 =  vt1[0]
-   t2 =  vt2[0]
-   if t1 == t2:
-      v1 = vt1[1]
-      v2 = vt2[1]
-      if v1 == v2:
-         return 0
-      elif v1 > v2:
-         return 1
-      return -1
-  
-   if t1 == 'INVALID':
-      return -1
-   if t2 == 'INVALID':
-      return 1
-   if t1 > t2:
-      return 1
-   return -1
-
 
 class rep_obj_t(object):
     def __init__(self, iclass, indx, repkind):
@@ -3331,7 +3286,6 @@ class rep_obj_t(object):
         self.no_rep_indx = None
 
         
-
 def repmap_emit_code(agi, plist, kind, hash_fn):
     """Emit table that implements the required mapping of iclasses. plist
     is an array of (key,value) pairs. kind is one of repe, repne, rep

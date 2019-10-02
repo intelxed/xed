@@ -1252,15 +1252,6 @@ def key_rule_tuple(x):
     (a1,a2) = x
     return a1
 
-def rule_tuple_sort(a,b): # FIXME:2017-06-10:PY3 port, no longer used
-    (a1,a2) = a
-    (b1,b2) = b
-    if a1 > b1:
-        return 1
-    elif a1 < b1:
-        return -1
-    return 0
-
 class nonterminal_t(object):
     def __init__(self, name, rettype=None):
         """

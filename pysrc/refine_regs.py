@@ -154,13 +154,6 @@ def refine_regs_input(lines):
 def _key_reg_ordinal(x):
     return x.ordinal
 
-def _reg_cmp(a,b):  # FIXME:2017-06-10: PY3 port, no longer used
-    if a.ordinal < b.ordinal:
-        return -1
-    elif a.ordinal > b.ordinal:
-        return  1
-    return 0
-
 def rearrange_regs(regs_list):
     """Return a list of enumer.enumer_values_t objects to be passed to
        enum_txt_writer"""

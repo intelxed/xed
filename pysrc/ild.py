@@ -183,8 +183,6 @@ def work(agi):
     is_3dnow = _is_amd3dnow(agi)
 
     debug.write("state_space:\n %s" % agi.common.state_space)
-    #return
-
     debug.write("DUMP STORAGE %s\n" % agi.common.options.gen_ild_storage)
 
     # Collect up interesting NT names.
