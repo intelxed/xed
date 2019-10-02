@@ -25,7 +25,8 @@ ild_maps = ['0x0', '0x0F', '0x0F38', '0x0F3A',
 #it's important that maps are correctly ordered
 ild_maps_with_amd = ild_maps + ['0x0F0F','XMAP8','XMAP9','XMAPA']
 
-#maps to dump in C header files.
+#maps to dump in C header files. These are the irregular maps that
+#require complex handling.
 ild_dump_maps = ['0x0', '0x0F']
 
 def get_maps(is_with_amd):
