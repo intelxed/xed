@@ -17,6 +17,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+
+# This is the "fast" encoder generator known as "enc2".
+
 from __future__ import print_function
 import os
 import sys
