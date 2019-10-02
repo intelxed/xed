@@ -238,7 +238,7 @@ def work(agi):
 
     #generate a list of pattern_t objects that describes the ISA.
     #This is the main data structure for XED3
-    ild_patterns = get_patterns(agi, is_3dnow, eosz_nts, easz_nts, imm_nts,
+    ild_patterns = get_patterns(agi, eosz_nts, easz_nts, imm_nts,
                                 disp_nts, brdisp_nts, all_state_space)
 
     if ild_patterns:
@@ -339,7 +339,7 @@ def dump_header_with_header(agi, fname, header_dict):
     h_file.start()
     h_file.close()
 
-def get_patterns(agi, is_3dnow, eosz_nts, easz_nts,
+def get_patterns(agi, eosz_nts, easz_nts,
                  imm_nts, disp_nts, brdisp_nts, all_state_space):
     """
     This function generates the pattern_t objects that have all the necessary
@@ -350,7 +350,7 @@ def get_patterns(agi, is_3dnow, eosz_nts, easz_nts,
         ii = g.parser_output.instructions[0]
         if genutil.field_check(ii,'iclass'):
             for ii in g.parser_output.instructions:
-                ptrn = pattern_t(ii, is_3dnow, eosz_nts,
+                ptrn = pattern_t(ii, eosz_nts,
                                  easz_nts, imm_nts, disp_nts, brdisp_nts,
                                  ildutil.mode_space, all_state_space)
                 patterns.append(ptrn)
@@ -471,7 +471,7 @@ class pattern_t(object):
     phys_map_dir = {}
     first = True
 
-    def __init__(self, ii, is_3dnow, eosz_nts,
+    def __init__(self, ii, eosz_nts,
                  easz_nts, imm_nts, disp_nts, brdisp_nts, mode_space,
                  state_space):
 
@@ -479,17 +479,12 @@ class pattern_t(object):
         # init of class attributes?
         if pattern_t.first:
             pattern_t.first = False
-            self._setup_phys_map(is_3dnow)
+            self._setup_phys_map()
 
         self.ptrn = ii.ipattern_input
         self.ptrn_wrds = self.ptrn.split()
         self.iclass = ii.iclass
         self.legal = True
-
-        #amd 3dnow instructions have nasty 0f 0f ... opcode pattern
-        #in which second 0f is not an opcode! This should be treated
-        #in a special way
-        self.amd3dnow_build = is_3dnow  #this one is NOT used DELETE IT ???
 
         self.category = ii.category
         #FIXME: remove all members of ii stored directly as members
@@ -700,7 +695,7 @@ class pattern_t(object):
                             "from tokens %s" %( tokens))
         return hex(opcode)
 
-    def _setup_phys_map(self,include_amd):
+    def _setup_phys_map(self):
         phys_map_list = [
             ('0x0F 0x38','0x0F38'),
             ('0x0F 0x3A','0x0F3A'),
@@ -711,8 +706,8 @@ class pattern_t(object):
             ('MAP5','MAP5'),
             ('MAP6','MAP6') ]
             
-        # The AMD map must be  before the naked 0x0F map
-        if include_amd:
+        # The AMD map must be before the naked 0x0F map
+        if 1: # it does not hurt to always include these.
             phys_map_list.append(('0x0F 0x0F','0x0F0F'))
             phys_map_list.append(('XMAP8','XMAP8'))
             phys_map_list.append(('XMAP9','XMAP9'))
