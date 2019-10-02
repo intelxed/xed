@@ -92,26 +92,6 @@ def key_operand_name(a):
 def key_bitwidth(a):
     return a.bitwidth
 
-def cmp_operands_name(a,b): # FIXME:2017-06-10:PY3 port, no longer used
-    if a.name > b.name:
-        return 1
-    if a.name < b.name:
-        return -1
-    return 0
-
-def cmp_operands(a,b): # FIXME:2017-06-10:PY3 port, no longer used
-    ''' comparing the operands on based on their bit width
-        larger width first.
-        if width are the same compare the names, lower name first '''   
-    
-    w1 = a.bitwidth
-    w2 = b.bitwidth
-    if w1 > w2:
-        return -1 
-    if w1 < w2:
-        return 1
-    return cmp_operands_name(a,b)
-
 def sort_cmp_operands(a):
     b = sorted(a, key=key_operand_name)
     c = sorted(b, key=key_bitwidth)

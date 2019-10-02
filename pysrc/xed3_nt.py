@@ -41,58 +41,6 @@ def _vlog(f,s):
     if verbosity.vcapture():
         f.write(s)
 
-#FIXME: this is not used currently, but it would be nice
-#to have a special error enum with more specific error reasons
-#instead of just XED_ERROR_GENERAL_ERROR
-#for example for each NT we can create a separate error value
-def _nt_2_xed3_err_enum(nt_name):
-    return 'XED3_ERROR_%s' % nt_name.upper()
-
-#This is not used currently.
-#I was going to use it for decoding the operands: for each
-#operand enum value call the corresponding NT function,
-#but it turned out to be better to generate chain capture functions 
-#for each operands combination
-def dump_nt_enum_2_capture_fptr(agi, fname):
-    """Dump mapping nt_enum -> nt_capture_fptr
-    """
-    xeddir = os.path.abspath(agi.common.options.xeddir)
-    gendir = mbuild.join(agi.common.options.gendir,'include-private')
-    
-    h_file = codegen.xed_file_emitter_t(xeddir,gendir,
-                                fname, shell_file=False, 
-                                is_private=True)
-    h_file.add_header('xed-lookup-functions.h')
-    h_file.add_header(_xed3_nt_capture_header)
-    h_file.start()
-    lu_name = 'xed3_nt_2_capture'
-    
-    xed3_capture_f_t = 'xed3_capture_function_t'
-    
-    fptr_typedef = 'typedef void(*%s)(%s*);' % (xed3_capture_f_t,
-                                                ildutil.xed3_decoded_inst_t)
-    
-    fptr_typedef = 'typedef void(*%s)(xed_decoded_inst_t*);' % xed3_capture_f_t
-    
-    h_file.add_code(fptr_typedef)
-    
-    h_file.add_code(('static %s ' % xed3_capture_f_t) +\
-                  '%s[XED_NONTERMINAL_LAST] = {' % lu_name)
-    nonterminals = list(agi.nonterminal_dict.keys())
-    
-    invalid_line = '/*XED_NONTERMINAL_INVALID*/ (%s)0,' % xed3_capture_f_t
-    h_file.add_code(invalid_line)
-    for nt_name in list(agi.xed3_nt_enum_val_map.values()):
-        enum_val = 'XED_NONTERMINAL_%s' % nt_name.upper()
-        if _skip_nt(nt_name):
-            fn = '0'
-        else:
-            fn = get_xed3_nt_capture_fn(nt_name)
-        h_file.add_code('/*%s*/ (%s)%s,'% (enum_val, xed3_capture_f_t, fn))
-    h_file.add_code('};')
-    h_file.close()
-
-
 def get_ii_constraints(ii, state_space, constraints):
     """
     sets constraints[xed_operand_name][xed_operand_val] = True
@@ -155,14 +103,6 @@ def _gen_cdict(agi, nt_name, all_state_space):
                                             cnames)
     return united_dict
 
-
-def get_xed3_member_name(xed2_opname):
-    """
-    This is not used currently.
-    When we have a struct for operands instead of _operands array
-    this can be used to get struct member name from operand
-    """
-    return xed2_opname.lower()
 
 _xed3_capture_fn_pfx = 'xed3_capture'
 
@@ -349,7 +289,6 @@ def _add_switchcase_lines(fo,
     else:
         #FIXME: temporary using general error, later
         #define more specific error enum
-        #errval = _nt_2_xed3_err_enum(nt_name)
         errval = 'XED_ERROR_GENERAL_ERROR'
         _add_op_assign_stmt(fo, _xed3_err_op, errval, 
                             inst, indent=1)
@@ -380,31 +319,6 @@ def gen_capture_fo(agi, nt_name, all_ops_widths):
         _add_nt_rhs_assignments(fo, nt_name, gi, rule)
     return fo
     
-#FIXME: not used currently.
-#Will be nice to use it and have different types for different members,
-#especially for registers. 9debugging and overall tidy code)
-def _gen_xed3_op_struct(agi, hfn):
-    """
-    Dump xed3_oprands_struct_t definition
-    """
-    xeddir = os.path.abspath(agi.common.options.xeddir)
-    gendir = mbuild.join(agi.common.options.gendir)
-    
-    h_file = codegen.xed_file_emitter_t(xeddir,gendir,
-                                hfn, shell_file=False, 
-                                is_private=False)
-    h_file.add_header('xed-operand-storage.h')
-    h_file.start()
-    
-    
-    typedef_s = 'typedef struct xed3_operands_struct_s {' 
-    h_file.add_code(typedef_s)
-    
-    for op_name in agi.xed3_operand_names:
-        h_file.add_code('%s %s;'% (_xed_op_type, op_name.lower()))
-    h_file.add_code('} %s;' %_xed3_opstruct_type)
-    h_file.close()
-
 def _get_op_nt_names_from_ii(ii):
     nt_names = []
     for op in ii.operands:
