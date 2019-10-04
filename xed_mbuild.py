@@ -102,7 +102,8 @@ class generator_inputs_t(object):
                        'conversion-table',
                        'ild-scanners',
                        'ild-getters',
-                       'cpuid'
+                       'cpuid',
+                       'map-descriptions'
                        ]
         self.files = {} # lists of input files per field type
         self.priority = {} # field type -> int
@@ -224,6 +225,8 @@ class generator_inputs_t(object):
                  aq(self.file_name['ild-scanners']))
         s.append('--cpuid ' +
                  aq(self.file_name['cpuid']))
+        s.append('--map-descriptions ' +
+                 aq(self.file_name['map-descriptions']))
         if len(self.files['ild-getters']) > 0:
             s.append('--ild-getters ' +
                      aq(self.file_name['ild-getters']))

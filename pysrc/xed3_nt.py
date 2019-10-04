@@ -503,9 +503,9 @@ def _dump_op_capture_chain_fo_lu(agi, patterns):
                                               ildutil.xed3_decoded_inst_t)
     
     h_file.add_code(fptr_typedef)
-    
-    h_file.add_code(('static %s ' % xed3_op_chain_f_t) +\
-                  '%s[%s] = {' % (lu_name, lu_size))
+    h_file.add_code('static {} {}[{}] = {{'.format(xed3_op_chain_f_t,
+                                                   lu_name,
+                                                   lu_size))
     
     empty_line = '/*NO PATTERN*/ (%s)0,' % xed3_op_chain_f_t
 
@@ -573,8 +573,9 @@ def _dump_capture_chain_fo_lu(agi, patterns):
     
     h_file.add_code(fptr_typedef)
     
-    h_file.add_code(('static %s ' % xed3_chain_f_t) +\
-                  '%s[%s] = {' % (lu_name, lu_size))
+    h_file.add_code('static {} {}[{}] = {{'.format(xed3_chain_f_t,
+                                                   lu_name,
+                                                   lu_size))
     
     empty_line = '/*NO PATTERN*/ (%s)0,' % xed3_chain_f_t
 

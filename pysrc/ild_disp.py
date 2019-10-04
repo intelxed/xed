@@ -29,7 +29,7 @@ import mbuild
 
 _disp_token = 'DISP_WIDTH'
 _brdisp_token = 'BRDISP_WIDTH'
-_disp_tokens = [_brdisp_token, _disp_token]
+# _disp_tokens = [_brdisp_token, _disp_token] FIXME 2019-10-03  NOT USED
 
 _ild_t_disp_member = 'disp_width'
 
@@ -108,12 +108,12 @@ def get_brdisp_binding_nts(agi):
     return ild_nt.get_setting_nts(agi, _brdisp_token)
 
 
-def get_target_opnames():
-    """
-    @return opnames: names of the DISP operand - [DISP_WIDTH, BRDISP_WIDTH]
-    @type opnames: [string]
-    """
-    return _disp_tokens
+## def get_target_opnames():  # FIXME 2019-10-03 NOT USED
+##     """
+##     @return opnames: names of the DISP operand - [DISP_WIDTH, BRDISP_WIDTH]
+##     @type opnames: [string]
+##     """
+##     return _disp_tokens
 
 def get_l2_fn_from_info(info, disp_dict):
     """

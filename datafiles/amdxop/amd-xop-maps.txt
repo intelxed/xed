@@ -16,16 +16,7 @@
 #  
 #END_LEGAL
 
-state:xop-state-bits.txt
-
-
-dec-patterns:amd-xop-dec.txt
-dec-instructions:amd-xop-isa.txt
-enc-instructions:amd-xop-isa.txt
-dec-instructions:amd-fma4-isa.txt
-enc-instructions:amd-fma4-isa.txt
-dec-instructions:amd-vpermil2-isa.txt
-enc-instructions:amd-vpermil2-isa.txt
-enc-patterns:amd-xop-enc.txt
-cpuid : cpuid.xed.txt
-map-descriptions: amd-xop-maps.txt
+#  name     space   esc  mapopc mapno modrm imm8 imm32
+amd-xop8     xop     N/A  N/A    8     yes   yes  no
+amd-xop9     xop     N/A  N/A    9     yes   no   no
+amd-xopA     xop     N/A  N/A    0xA   yes   no   yes

@@ -102,6 +102,7 @@ from verbosity import *
 import opnds
 import opnd_types
 import cpuid_rdr
+import map_info_rdr
 
 send_stdout_message_to_file = False
 if send_stdout_message_to_file:
@@ -119,7 +120,6 @@ import ctables
 import ild
 import refine_regs
 import classifier
-#import encgen
 
 #####################################################################
 ## OPTIONS
@@ -261,6 +261,11 @@ def setup_arg_parser():
                           dest='cpuid_input_fn', 
                           default='',
                           help='isa-set to cpuid map input file')
+    arg_parser.add_option('--map-descriptions',
+                          action='store', 
+                          dest='map_descriptions_input_fn', 
+                          default='',
+                          help='map descriptions input file')
     arg_parser.add_option('--gen-ild-storage',
                           action='store_true', 
                           dest='gen_ild_storage', 
@@ -350,7 +355,7 @@ reg_operand_name_pattern = re.compile("^REG(?P<regno>[0-9]+)$")
 ############################################################################
 
 def comment(s):
-   return '/* ' + s + ' */'
+   return '/* {} */'.format(s)
 
 def all_the_same(lst):
    "return True if all the elements of the list are the same"
@@ -4990,15 +4995,6 @@ class generator_info_t(generator_common_t):
             if ii.iclass not in self.iclasses:
                self.iclasses[ii.iclass] = True
 
-def cmp_tuple_first(a,b):
-   (a1,a2)=a
-   (b1,b2)=b
-   if a1==b1:
-      return 0
-   if a1>b1:
-      return 1
-   return -1
-
 
 # $$ all_generator_info_t
 class all_generator_info_t(object):
@@ -5015,6 +5011,11 @@ class all_generator_info_t(object):
 
       self.src_files=[]
       self.hdr_files=[]
+
+      # list of map_info_rdr.map_info_t describing valid maps for this
+      # build.
+      self.map_info = None 
+
 
       # enum lists
       self.operand_types = {} # typename -> True
@@ -5120,8 +5121,8 @@ class all_generator_info_t(object):
                                           start=False)
       self.data_table_file.add_header('xed-inst-defs.h')
       self.data_table_file.start()
-      s = 'XED_DLL_EXPORT const xed_operand_t ' + \
-          'xed_operand[XED_MAX_OPERAND_TABLE_NODES] = {\n'
+      s = ('XED_DLL_EXPORT const xed_operand_t ' + 
+          'xed_operand[XED_MAX_OPERAND_TABLE_NODES] = {\n')
       self.data_table_file.write(s)
 
    def close_operand_data_file(self):
@@ -5137,8 +5138,8 @@ class all_generator_info_t(object):
                          start=False)
       self.operand_sequence_file.add_header('xed-inst-defs.h')
       self.operand_sequence_file.start()
-      s = 'XED_DLL_EXPORT const xed_uint16_t ' + \
-          'xed_operand_sequences[XED_MAX_OPERAND_SEQUENCES] = {\n'
+      s = ('XED_DLL_EXPORT const xed_uint16_t ' + 
+          'xed_operand_sequences[XED_MAX_OPERAND_SEQUENCES] = {\n')
       self.operand_sequence_file.write(s)
 
    def close_operand_sequence_file(self):
@@ -6347,7 +6348,8 @@ def main():
 
    if not os.path.exists(agi.common.options.gendir):
       die("Need a subdirectory called " + agi.common.options.gendir)
-   
+
+   agi.map_info = map_info_rdr.read_file(options.map_descriptions_input_fn)
    gen_operand_storage_fields(options,agi)
    
    gen_regs(options,agi)

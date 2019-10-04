@@ -149,8 +149,10 @@ xed_encoder_get_nominal_opcode(const xed_encoder_request_t* p){
     const xed_encoder_iform_t* enc_iform =  xed_encoder_get_encoder_iform(p);
     return enc_iform->_nom_opcode;
 }
+
 static XED_INLINE xed_uint8_t
 xed_encoder_get_map(const xed_encoder_request_t* p){
+    //FIXME:2019-10-03 Misnamed. really legacy map. Used for emitting legacy escape/map
     const xed_encoder_iform_t* enc_iform =  xed_encoder_get_encoder_iform(p);
     return enc_iform->_legacy_map;
 }
