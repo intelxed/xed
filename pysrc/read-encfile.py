@@ -930,7 +930,7 @@ class rule_t(object):
         has_otherwise_rule = self.has_otherwise_rule()
         
         #complicated_nt are nonterminals that can not be auto generated using 
-        #hash function and look uptables due to their complexity
+        #hash function and lookup tables due to their complexity
         #so we generete them in the old if statement structure 
         complicated_nt = nt_func_gen.get_complicated_nt()        
         
@@ -1078,8 +1078,9 @@ class iform_t(object):
         self.enc_actions = enc_actions  # [ blot_t ]
         self.modal_patterns = modal_patterns # [ string ]
 
-        #the emit phase action pattern
-        self.emit_actions = None
+        # the emit phase action pattern is a comma separated string of
+        # strings describing emit activity, created by ins_emit.py.
+        self.emit_actions = None 
         
         #the FB actions pattern
         self.fb_ptrn = None
@@ -2495,14 +2496,14 @@ class encoder_configuration_t(object):
                     cond1 = "xed_encode_order_limit[%d]==xes->_n_operand_order"
                     cond1 = cond1 % (iform.operand_order)
                 if nopnd == None:
-                    cond2 = "memcmp(xed_encode_order[%d], "+\
-                            "xes->_operand_order, "+\
-                            "sizeof(%s)*xed_encode_order_limit[%d])==0"
+                    cond2 = ("memcmp(xed_encode_order[%d], " +
+                            "xes->_operand_order, " +
+                            "sizeof(%s)*xed_encode_order_limit[%d])==0")
                     cond2 = cond2 % (iform.operand_order, memcmp_type, 
                                      iform.operand_order)
                 else:
-                    cond2 = "memcmp(xed_encode_order[%d], "+\
-                            "xes->_operand_order, sizeof(%s)*%d)==0"
+                    cond2 = ("memcmp(xed_encode_order[%d], " +
+                            "xes->_operand_order, sizeof(%s)*%d)==0")
                     cond2 = cond2 % (iform.operand_order, memcmp_type, nopnd)
 
                 fo.add_code("if (%s && %s) {" % (cond1, cond2))
@@ -3011,8 +3012,8 @@ class encoder_configuration_t(object):
         fe.add_header('xed-ild.h')
         fe.start()
         
-        ptrn = "/*(%4d)%20s*/  {%4d, %4d, %4s," +\
-                " XED_STATIC_CAST(xed_uint8_t,%15s), %4d}"
+        ptrn = ("/*(%4d)%20s*/  {%4d, %4d, %4s," +
+                " XED_STATIC_CAST(xed_uint8_t,%15s), %4d}")
         iform_definitions = []
         for iform in self.all_iforms:#iforms:
             iform_init = ptrn % (iform.rule.iform_id,

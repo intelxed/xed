@@ -44,6 +44,7 @@ void xed_encoder_request_emit_legacy_map(xed_encoder_request_t* q)
 
     switch(map) {
     case XED_ILD_MAP0:
+      // FIXME: this case is also used to avoid emitting anything for VEX/EVEX/XOP maps
       return;
       
     case XED_ILD_MAP1:

@@ -50,7 +50,7 @@ def build_operand_bitvector(operand_names):
     return (lines, dct, nelem)
 
 def build_init(operand_names, dct, nelem):
-    """Given a list of operand names and a dictory build by
+    """Given a list of operand names and a dictionary built by
     build_operand_bitvector, return an data initialization string"""
     values = [0] * nelem
     for o in operand_names:

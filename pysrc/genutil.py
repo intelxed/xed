@@ -287,6 +287,11 @@ def make_binary(bits):
     bits = re.sub('_','',bits)
     return bits
 
+def is_hex(s):
+    if make_numeric_hex_pattern.match(s):
+        return True
+    return False
+
 def numeric(s):
     if make_numeric_decimal_pattern.match(s):
         return True

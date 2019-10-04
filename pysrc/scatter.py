@@ -43,7 +43,7 @@ def scatter_generate_chunks(length, trimmed_bits, fields, code, verbose=False):
     @param verbose: verbosity
 
     @rtype: string
-    @return: None if cannot map using this functoin, or a string if we can map it
+    @return: None if cannot map using this function, or a string if we can map it
     """
     runs = genutil.find_runs(list(trimmed_bits))
     s = []

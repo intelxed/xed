@@ -357,7 +357,11 @@ def get_patterns(agi, eosz_nts, easz_nts,
                     patterns.extend(expanded_ptrns)
     return patterns
 
-
+# FIXME: 2019-10-03 can remove the "uniting" functionality as we do
+# not use the "from_storage" aspect. We still need the stuff stored by
+# map/opcode though. The "from_storage" thing does not work for
+# undefined maps for example. It only workes for undefined instr in
+# exising maps.
 def _get_united_lookup(ptrn_list,is_3dnow):
     """
     Combine storage obtained from grammar and from ILD storage
