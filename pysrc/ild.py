@@ -23,7 +23,6 @@ import ildutil
 import mbuild
 import ild_info
 import ild_storage
-import ild_storage_data
 import ild_eosz
 import ild_easz
 import ild_imm
@@ -53,8 +52,6 @@ debugdir = '.'
 
 #the debug file
 debug = None
-
-storage_fn = 'ild_storage_data.py'
 
 #FIXME: can we get it from generator.py?
 _xed_3dnow_category = '3DNOW'
@@ -183,7 +180,6 @@ def work(agi):
     is_3dnow = _is_amd3dnow(agi)
 
     debug.write("state_space:\n %s" % agi.common.state_space)
-    debug.write("DUMP STORAGE %s\n" % agi.common.options.gen_ild_storage)
 
     # Collect up interesting NT names.
     # We are going to use them when we generate pattern_t objects
@@ -240,22 +236,16 @@ def work(agi):
                                 disp_nts, brdisp_nts, all_state_space)
 
     if ild_patterns:
-        if agi.common.options.gen_ild_storage:
-            #dump the ild_storage_data.py file
-            emit_gen_info_lookup(agi, ild_patterns, is_3dnow, debug)
-            reload(ild_storage_data)
 
         #get ild_storage_t object - the main data structure for ILD
         #essentially a 2D dictionary:
-        #united_lookup[map][opcode] == [ ild_info_t ]
-        #the ild_info_t objects are obtained both from grammar and
-        #ild_storage_data.py file, so that if ild_info_t objects are
-        #defined in ild_storage_data.py file, ILD will have information
-        #about illegal map-opcodes too.
-        united_lookup = _get_united_lookup(ild_patterns,is_3dnow)
+        #ild_tbl[map][opcode] == [ ild_info_t ]
+        #the ild_info_t objects are obtained the grammar
+
+        ild_tbl = _convert_to_ild_storage(ild_patterns, is_3dnow)
 
         #generate modrm lookup tables
-        ild_modrm.work(agi, united_lookup, debug)
+        ild_modrm.work(agi, ild_tbl, debug)
 
         #dump_patterns is for debugging
         if verbosity.vild():
@@ -263,10 +253,10 @@ def work(agi):
                           mbuild.join(ild_gendir, 'all_patterns.txt'))
 
 
-        eosz_dict = ild_eosz.work(agi, united_lookup,
+        eosz_dict = ild_eosz.work(agi, ild_tbl,
                     eosz_nts, ild_gendir, debug)
 
-        easz_dict = ild_easz.work(agi, united_lookup,
+        easz_dict = ild_easz.work(agi, ild_tbl,
                     easz_nts, ild_gendir, debug)
 
         #dump operand accessor functions
@@ -274,9 +264,9 @@ def work(agi):
         
 
         if eosz_dict and easz_dict:
-            ild_imm.work(agi, united_lookup, imm_nts, ild_gendir,
+            ild_imm.work(agi, ild_tbl, imm_nts, ild_gendir,
                          eosz_dict, debug)
-            ild_disp.work(agi, united_lookup, disp_nts, brdisp_nts,
+            ild_disp.work(agi, ild_tbl, disp_nts, brdisp_nts,
                           ild_gendir, eosz_dict, easz_dict, debug)
 
 
@@ -357,38 +347,17 @@ def get_patterns(agi, eosz_nts, easz_nts,
                     patterns.extend(expanded_ptrns)
     return patterns
 
-# FIXME: 2019-10-03 can remove the "uniting" functionality as we do
-# not use the "from_storage" aspect. We still need the stuff stored by
-# map/opcode though. The "from_storage" thing does not work for
-# undefined maps for example. It only workes for undefined instr in
-# exising maps.
-def _get_united_lookup(ptrn_list,is_3dnow):
-    """
-    Combine storage obtained from grammar and from ILD storage
-    @return: ild_info.storage_t object
-    """
-    #build an ild_info_storage_t object from grammar
-    from_grammar = get_info_storage(ptrn_list, 0, is_3dnow)
-
-    #get an ild_info_storage_t object from ild python-based storage
-    from_storage = ild_storage_data.gen_ild_info()
-
-    #FIXME: should we make is_amd=(is_3dnow or from_storage.is_3dnow)?
-    united_lookup = ild_storage.ild_storage_t(is_amd=is_3dnow)
-
-    #unite the lookups, conflicts will be resolved by priority
-    for insn_map in ild_info.get_maps(is_3dnow):
-        for op in range(0, 256):
-            ulist = (from_grammar.get_info_list(insn_map, hex(op)) +
-                     from_storage.get_info_list(insn_map, hex(op)))
-            united_lookup.set_info_list(insn_map, hex(op), ulist)
-    return united_lookup
+def _convert_to_ild_storage(ptrn_list,is_3dnow):
+    """ Store ILD objects by map/opcode
+    @return: ild_info.storage_t object"""
+    
+    #convert ptrns to ild_info_t and put in a dict of lists indexed by map/opcode
+    return get_info_storage(ptrn_list, 0, is_3dnow)
 
 
 def get_info_storage(ptrn_list, priority, is_3dnow):
-    """
-    convert list of pattern_t objects to ild_storage_t object
-    """
+    """convert list of pattern_t objects to ild_storage_t object"""
+    
     storage = ild_storage.ild_storage_t(is_amd=is_3dnow)
 
     for p in ptrn_list:
@@ -398,37 +367,6 @@ def get_info_storage(ptrn_list, priority, is_3dnow):
     return storage
 
 
-def emit_gen_info_lookup(agi, ptrn_list, is_3dnow, debug):
-    debug.write("DUMPING ILD STORAGE\n")
-    f = codegen.xed_file_emitter_t(agi.common.options.xeddir,
-                                   agi.common.options.xeddir,
-                                   storage_fn,
-                                   shell_file=True)
-
-    storage = get_info_storage(ptrn_list, ild_info.storage_priority, is_3dnow)
-    #list_name = "info_lookup['%s']['%s']"
-    list_name = 'info_list'
-    indent = ' ' * 4
-    f.start()
-    f.add_code("import ild_info")
-    f.add_code("import ild_storage\n\n\n")
-
-    f.add_code("#GENERATED FILE - DO NOT EDIT\n\n\n")
-    f.write("def gen_ild_info():\n")
-    f.write(indent + "storage = ild_storage.ild_storage_t(is_amd=%s)\n" %
-               is_3dnow)
-
-    for insn_map in ild_info.get_dump_maps():
-        for op in range(0, 256):
-            for info in storage.get_info_list(insn_map, hex(op)):
-                f.write("%s#MAP:%s OPCODE:%s\n" %
-                   (indent, info.insn_map, info.opcode))
-                f.write("%sinfo_list = storage.get_info_list('%s','%s')\n" %
-                           (indent, insn_map, hex(op)))
-                emit_add_info_call(info, list_name,
-                                   f, indent)
-    f.write(indent + "return storage\n")
-    f.close()
 
 def emit_add_info_call(info, list_name, f, indent=''):
     s = []

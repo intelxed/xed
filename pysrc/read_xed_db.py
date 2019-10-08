@@ -27,6 +27,7 @@ import genutil
 import opnd_types
 import opnds
 import cpuid_rdr
+import map_info_rdr
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
@@ -151,13 +152,17 @@ class xed_reader_t(object):
                  instructions_filename,
                  widths_filename,
                  element_types_filename,
-                 cpuid_filename=''):
+                 cpuid_filename='',
+                 map_descriptions_filename=''):
 
         self.xtypes = self._gen_xtypes(element_types_filename) 
         self.width_type_dict, self.width_info_dict = self._gen_widths(widths_filename)
         
         self.state_bits = self._parse_state_bits(state_bits_filename)
         
+        self.map_info = []
+        if map_descriptions_filename:
+            self.map_info = map_info_rdr.read_file(map_descriptions_filename)
         
         self.deleted_unames = {}
         self.deleted_instructions = {}
@@ -175,6 +180,8 @@ class xed_reader_t(object):
         if cpuid_filename:
             self.cpuid_map = cpuid_rdr.read_file(cpuid_filename)
             self._add_cpuid()
+            
+            
         self._add_vl()
         self._add_broadcasting()
         self._evex_disp8_scaling()
@@ -442,6 +449,27 @@ class xed_reader_t(object):
                 v.real_opcode='Y'
 
 
+    def _find_legacy_map_opcode(self, pattern):
+        """return (map, opcode:str). map is either an integer or the string AMD for 3dNow"""
+        opcode, mapno = pattern[0], 0 # assume legacy map 0 behavior
+        # records are ordered so that shortest legacy map is last
+        # otherwise this won't work.
+        for mi in self.map_info:
+            if mi.is_legacy():
+                if pattern[0] == mi.legacy_escape:
+                    if mi.legacy_opcode == 'N/A':
+                        mapno = int(mi.map_id)
+                        opcode = pattern[mi.opcpos]
+                        break
+                    elif mi.legacy_opcode == pattern[1]:
+                        if mi.map_id == 'AMD':
+                            mapno = mi.map_id
+                        else:
+                            mapno = int(mi.map_id)
+                        opcode = pattern[mi.opcpos] 
+                        break
+        
+        return mapno,opcode
                 
     def _find_opcodes(self):
         '''augment the records with information found by parsing the pattern'''
@@ -475,17 +503,7 @@ class xed_reader_t(object):
             p0 = pattern[0]
             v.map = 0
             v.space = 'legacy'
-            if p0 in  ['0x0F']:
-                if pattern[1] == '0x38':
-                    v.map = 2
-                    opcode = pattern[2]
-                elif pattern[1] == '0x3A':
-                    v.map = 3
-                    opcode = pattern[2]
-                else:
-                    v.map = 1
-                    opcode = pattern[1]
-            elif p0 == 'VEXVALID=1':
+            if p0 == 'VEXVALID=1':
                 v.space = 'vex'
                 opcode = pattern[1]
             elif p0 == 'VEXVALID=2':
@@ -497,8 +515,8 @@ class xed_reader_t(object):
             elif p0 == 'VEXVALID=3':
                 v.space = 'xop'
                 opcode = pattern[1]
-            else:
-                opcode = p0
+            else: # legacy maps and AMD 3dNow (if enabled)
+                v.map, opcode = self._find_legacy_map_opcode(pattern)
             v.opcode = opcode
             v.partial_opcode = False
 

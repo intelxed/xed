@@ -16,7 +16,7 @@
 #  
 #END_LEGAL
 
-#  name     space   esc  mapopc mapno modrm imm8 imm32
-amd-xop8     xop     N/A  N/A    8     yes   yes  no
-amd-xop9     xop     N/A  N/A    9     yes   no   no
-amd-xopA     xop     N/A  N/A    0xA   yes   no   yes
+#  name     space   esc  mapopc mapno modrm imm8 imm32 opcpos
+amd-xop8     xop     N/A  N/A    8     yes   yes  no   1
+amd-xop9     xop     N/A  N/A    9     yes   no   no   1
+amd-xopA     xop     N/A  N/A    0xA   yes   no   yes  1

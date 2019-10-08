@@ -259,7 +259,7 @@ def round_up_power_of_two(x):
 
 
 
-make_numeric_decimal_pattern = re.compile(r'^[0-9]+$')
+make_numeric_decimal_pattern = re.compile(r'^[-]?[0-9]+$')
 make_numeric_hex_pattern = re.compile(r'^0[xX][0-9A-Fa-f]+$')
 make_numeric_binary_pattern = re.compile(r'^0b[01_]+$') 
 

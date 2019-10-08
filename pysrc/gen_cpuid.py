@@ -33,12 +33,7 @@ def msgb(b,s=''):
 def work(args):  # main function
     msgb("READING XED DB")
 
-
-    xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
-                                     args.instructions_filename,
-                                     args.widths_filename,
-                                     args.element_types_filename,
-                                     args.cpuid_filename)
+    xeddb = gen_setup.read_db(args)
 
     xeddb.recs.sort(key=lambda x:x.iclass)
     for r in xeddb.recs:
