@@ -49,10 +49,7 @@ def work(args):  # main function
     msgb("READING XED DB")
     (chips, chip_db) = chipmodel.read_database(args.chip_filename)
 
-    xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
-                                     args.instructions_filename,
-                                     args.widths_filename,
-                                     args.element_types_filename)
+    xeddb = gen_setup.read_db(args)
 
     isasets = set()
     for r in xeddb.recs:

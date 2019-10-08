@@ -16,5 +16,5 @@
 #  
 #END_LEGAL
 
-#  name     space   esc  mapopc mapno modrm imm8 imm32
-amd-3dnow    legacy  0x0F 0x0F   N/A   yes   yes  no
+#  name     space   esc  mapopc mapno modrm imm8 imm32 opcpos
+amd-3dnow    legacy  0x0F 0x0F   AMD   yes   yes  no   -1

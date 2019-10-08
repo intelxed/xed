@@ -266,11 +266,6 @@ def setup_arg_parser():
                           dest='map_descriptions_input_fn', 
                           default='',
                           help='map descriptions input file')
-    arg_parser.add_option('--gen-ild-storage',
-                          action='store_true', 
-                          dest='gen_ild_storage', 
-                          default=False,
-                          help='Dump the ILD storage file.')
     arg_parser.add_option("--compress-operands", 
                           action="store_true",
                           dest="compress_operands",
@@ -1242,7 +1237,7 @@ class instruction_info_t(partitionable_info_t):
       structured_input_dict = dict(zip(list(structured_input_tags.keys()),
                                        len(structured_input_tags)*[False]))
       found_operands = False
-      filling_extra = False
+      filling_extra = False # when there is more than one pattern/operand/iform per {...} definition
       while 1:
          line = read_str_simple(lines)
          if debug:

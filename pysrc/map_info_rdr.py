@@ -18,6 +18,7 @@
 #  
 #END_LEGAL
 
+import sys
 import re
 import genutil
 
@@ -32,11 +33,39 @@ class map_info_t(object):
         self.space = None  # legacy, vex, evex, xop
         self.legacy_escape = None # N/A or 0f
         self.legacy_opcode = None # N/A or 38, 3a
-        self.map_id = None  # 1,2,3,... 8,9,0xA
+        self.map_id = None  # N/A or 0,1,2,3,... 8,9,0xA
         # "var" means variable, requires a table generated based on defined instructions
         self.modrm = None  # var,yes,no, has modrm
         self.imm8 = None   # var,yes,no, has imm8
         self.imm32 = None  # var,yes,no, has imm32
+        self.opcpos = None  # 0,1,2, ... -1 (last) opcode position in pattern
+        self.priority = 10
+        
+    def is_legacy(self):
+        return self.space == 'legacy'
+    def is_vex(self):
+        return self.space == 'vex'
+    def is_evex(self):
+        return self.space == 'evex'
+    def is_xop(self):
+        return self.space == 'xop'
+
+
+    def map_short_name(self):
+        if self.map_name  == 'amd-3dnow':
+            return 'AMD'
+        h = hex(self.map_id)[-1]
+        return str(h)
+    def ild_enum(self):
+        s = self.map_short_name()
+        if self.space == 'XOP':
+            s = '_XOP{}'.format(s)
+        return 'XED_ILD_MAP{}'.format(s)
+
+    def get_legacy_escapes(self):
+        if self.legacy_opcode == 'N/A':
+            return (self.legacy_escape, None)
+        return (self.legacy_escape, self.legacy_opcode)
         
     def has_variable_modrm(self):
         return self.modrm == 'var'
@@ -63,12 +92,14 @@ class map_info_t(object):
         s.append("modrm: {}".format(self.modrm))
         s.append("imm8: {}".format(self.imm8))
         s.append("imm32: {}".format(self.imm32))
+        s.append("opcpos: {}".format(self.opcpos))
+        s.append("priority: {}".format(self.priority))
         return " ".join(s)
 
 
 def _parse_map_line(s):
     t = s.strip().split()
-    if len(t) != 8:
+    if len(t) != 9:
         _die("Bad map description line: [{}]".format(s))
     mi = map_info_t()
     mi.map_name = t[0]
@@ -79,6 +110,7 @@ def _parse_map_line(s):
     mi.modrm = t[5]
     mi.imm8 = t[6]
     mi.imm32 = t[7]
+    mi.opcpos = t[8]
 
     if mi.space not in ['legacy','vex','evex', 'xop']:
         _die("Bad map description encoding space [{}]".format(s))
@@ -92,7 +124,7 @@ def _parse_map_line(s):
         elif mi.legacy_opcode != 'N/A':
             _die("Bad map description legacy opcode [{}]".format(s))
             
-        if mi.map_id != 'N/A':
+        if mi.map_id == 'N/A':
             _die("Bad map description map-id [{}]".format(s))
     else:
         if mi.legacy_escape != 'N/A':
@@ -110,9 +142,18 @@ def _parse_map_line(s):
         _die("Bad map description imm8 specifier [{}]".format(s))
     if mi.imm32 not in ['var','yes','no']:
         _die("Bad map description imm32 specifier [{}]".format(s))
+    if genutil.numeric(mi.opcpos):
+        mi.opcpos = genutil.make_numeric(mi.opcpos)
+    else:
+        _die("Bad map description opcode position specifier [{}]".format(s))
+
+    # we want legacy maps 2,3 and AMD 3dNow to occur before the map 0
+    # and map 1 0x0f in any scans. Longest matching pattern first...
+    if mi.space == 'legacy':
+        if mi.legacy_opcode != 'N/A':
+            mi.priority = 9
     return mi
-
-
+    
 def read_file(fn):
     lines = open(fn,'r').readlines()
     lines = map(genutil.no_comments, lines)
@@ -120,7 +161,12 @@ def read_file(fn):
     maps = [] # list of map_info_t
     for line in lines:
         maps.append( _parse_map_line(line) )
-    maps.sort(key=lambda x: (x.space,x.map_name))
+    maps.sort(key=lambda x: x.priority)
     for m in maps:
         _msgb("MAPINFO",m)
     return maps
+
+if __name__ == "__main__":
+    read_file(sys.argv[1])
+    sys.exit(0)
+
