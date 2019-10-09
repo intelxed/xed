@@ -313,8 +313,6 @@ def run_decode_generator(gc, env):
     gen_extra_args = "--gendir %s --xeddir %s %s %s" % (build_dir,
                                                         xedsrc, debug,
                                                         other_args)
-    if env['gen_ild_storage']:
-        gen_extra_args += ' --gen-ild-storage'
     
     if env['compress_operands']:
         gen_extra_args += " --compress-operands" 
@@ -590,7 +588,6 @@ def mkenv():
                                  pedantic=True,
                                  clr=False,
                                  use_werror=True,
-                                 gen_ild_storage=False,
                                  show_dag=False,
                                  ext=[],
                                  extf=[],
@@ -722,10 +719,6 @@ def xed_args(env):
                           action="store_false",
                           dest="use_werror",
                           help="Disable use of -Werror on GNU compiles")
-    env.parser.add_option("--gen-ild-storage", 
-                          action="store_true",
-                          dest="gen_ild_storage",
-                          help="Dump ILD storage data file.")
     env.parser.add_option("--show-dag",
                           action="store_true",
                           dest="show_dag",
