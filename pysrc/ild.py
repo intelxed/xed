@@ -343,7 +343,7 @@ def get_patterns(agi, eosz_nts, easz_nts,
                                  ildutil.mode_space, all_state_space)
                 patterns.append(ptrn)
                 if ptrn.incomplete_opcode:
-                    expanded_ptrns = ptrn.expand_opcode()
+                    expanded_ptrns = ptrn.expand_partial_opcode()
                     patterns.extend(expanded_ptrns)
     return patterns
 
@@ -600,13 +600,13 @@ class pattern_t(object):
     #if opcode is incomplete, than we have 0's in all the missing bits and
     #need to create copies of the pattern_t that have all other possible
     #variations of the opcode. For example PUSH instruction has opcode 0x50
-    #and in expand_opcode method we will create a list of pattern_t objects
+    #and in expand_partial_opcode method we will create a list of pattern_t objects
     #that have opcodes 0x51-0x57
     #We don't need to create the 0x50 variant, because it already exists
     #(it is the current self)
     #That way we will cover all the legal opcodes for the given incomplete
     #opcode.
-    def expand_opcode(self):
+    def expand_partial_opcode(self):
         expanded = []
         if self.incomplete_opcode:
             if 'RM[rrr]' in self.ptrn or 'REG[rrr]' in self.ptrn:
