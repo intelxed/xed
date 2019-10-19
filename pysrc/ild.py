@@ -15,9 +15,12 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-import sys
 import re
 import copy
+import os
+import collections
+import shutil
+
 import genutil
 import ildutil
 import mbuild
@@ -29,9 +32,6 @@ import ild_imm
 import ild_disp
 import ild_modrm
 import codegen
-import os
-import collections
-import shutil
 import ild_codegen
 import ild_cdict
 import xed3_nt
@@ -39,11 +39,11 @@ import actions
 import verbosity
 
 
-op_bin_pattern = re.compile(r'[_10]{2,}$')
-op_hex_pattern = re.compile(r'[0-9a-f]{2}$', flags=re.IGNORECASE)
+op_bin_pattern      = re.compile(r'[_10]{2,}$')
+op_hex_pattern      = re.compile(r'[0-9a-f]{2}$', flags=re.IGNORECASE)
 reg_binding_pattern = re.compile(r'REG[\[](?P<bits>0b[01_]+)]')
-mod_eq_pattern = re.compile(r'MOD=(?P<bits>[0123]{1})')
-mod_neq_pattern = re.compile(r'MOD(!=|=!)(?P<bits>[0123]{1})')
+mod_eq_pattern      = re.compile(r'MOD=(?P<bits>[0123]{1})')
+mod_neq_pattern     = re.compile(r'MOD(!=|=!)(?P<bits>[0123]{1})')
 
 
 #debugdir is updated in init_debug
@@ -161,16 +161,18 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
 
         vv_lu[str(vv)] = (ph_lu,lu_fo_list)
     _msg("all cnames: %s" % all_cnames)
+
+    
     #dump the (a) hash functions and (b) lookup tables for obtaining
-    #these hash functions (at decode time)
+    #these hash functions (at decode time). ** Static decode **
     ild_codegen.dump_vv_map_lookup(agi,
                                    vv_lu,
                                    is_3dnow,
                                    list(op_lu_map.values()),
                                    h_fn='xed3-phash.h')
     
-    #xed3_nt.work generates all the functions and lookup tables for
-    #dynamic decoding
+    #xed3_nt.work(...) generates all the functions and lookup tables for
+    # ** Dynamic decode **
     xed3_nt.work(agi, all_state_space, all_ops_widths, ild_patterns)
 
 #Main entry point of the module
@@ -252,36 +254,23 @@ def work(agi):
             dump_patterns(ild_patterns,
                           mbuild.join(ild_gendir, 'all_patterns.txt'))
 
-
-        eosz_dict = ild_eosz.work(agi, ild_tbl,
-                    eosz_nts, ild_gendir, debug)
-
-        easz_dict = ild_easz.work(agi, ild_tbl,
-                    easz_nts, ild_gendir, debug)
+        eosz_dict = ild_eosz.work(agi, ild_tbl, eosz_nts, ild_gendir, debug)
+        easz_dict = ild_easz.work(agi, ild_tbl, easz_nts, ild_gendir, debug)
 
         #dump operand accessor functions
         agi.operand_storage.dump_operand_accessors(agi)
         
-
         if eosz_dict and easz_dict:
             ild_imm.work(agi, ild_tbl, imm_nts, ild_gendir,
                          eosz_dict, debug)
-            ild_disp.work(agi, ild_tbl, disp_nts, brdisp_nts,
-                          ild_gendir, eosz_dict, easz_dict, debug)
+            ild_disp.work(agi, ild_tbl, disp_nts, brdisp_nts, ild_gendir,
+                          eosz_dict, easz_dict, debug)
 
-
-        #dump scanners headers - they might be different for different
-        #models.
-        scanners_dict =  agi.common.ild_scanners_dict
-        dump_header_with_header(agi, 'xed-ild-scanners.h', scanners_dict)
-
-        getters_dict =  agi.common.ild_getters_dict
-        dump_header_with_header(agi, 'xed-ild-getters.h', getters_dict)
-        
+        # now handle the actual instructions
         gen_xed3(agi, ild_info, is_3dnow, ild_patterns, 
                  all_state_space, ild_gendir, all_ops_widths)
 
-def dump_header_with_header(agi, fname, header_dict):
+def dump_header_with_header(agi, fname, header_dict):  # FIXME: 2019-10-18 no longer used
     """ emit the header fname.
         add the header in header_dict with the maximal id.
         
@@ -290,7 +279,7 @@ def dump_header_with_header(agi, fname, header_dict):
         different build configuration use different header files.
         e.g. when building without AVX512 we are using the basic getters.
              when building with AVX512 the header that is used comes 
-             form avx512 layer.
+             from avx512 layer.
              
              FIXME: when all avx512 will move into the base layer 
                     we can removed this 
@@ -591,11 +580,10 @@ class pattern_t(object):
 
     def err(self, msg):
         self.legal = False
-        sys.stderr.write("ILD_PARSER PATTERN ERROR: %s\n\nPattern:\n%s\n" %
-                         (msg, self))
-        mbuild.msgb("ILD_PARSER ERROR", msg)
-        mbuild.msgb("ILD_PARSER", "ABORTED ILD generation")
-        #sys.exit(1)
+        genutil.warn("ILD_PARSER PATTERN ERROR: {}\n\nPattern:\n{}\n".format(msg, self))
+        genutil.msgb("ILD_PARSER ERROR", msg)
+        genutil.msgb("ILD_PARSER", "ABORTED ILD generation")
+        #genutil.die('dying...')
 
     #if opcode is incomplete, than we have 0's in all the missing bits and
     #need to create copies of the pattern_t that have all other possible
@@ -637,6 +625,8 @@ class pattern_t(object):
 
     def _setup_phys_map(self):
         phys_map_list = [
+            # the right-most element of each tuple is a map name from ild_maps.py
+            # (search string, map name)
             ('0x0F 0x38','0x0F38'),
             ('0x0F 0x3A','0x0F3A'),
             ('V0F38','0x0F38'),

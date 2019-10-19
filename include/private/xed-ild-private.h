@@ -46,9 +46,9 @@ typedef struct {xed_uint32_t key; xed3_find_func_t l2_func;} lu2_entry_t;
 
 typedef enum {
     XED_ILD_MAP0,
-    XED_ILD_MAP1, /* 0F */
-    XED_ILD_MAP2, /* 0F38 */
-    XED_ILD_MAP3, /* 0F3A */
+    XED_ILD_MAP1, /* 0F (all encoding spaces) */
+    XED_ILD_MAP2, /* 0F38 (all encoding spaces) */
+    XED_ILD_MAP3, /* 0F3A (all encoding spaces) */
     XED_ILD_MAP4,  /* required placeholders */
     XED_ILD_MAP5,
     XED_ILD_MAP6,

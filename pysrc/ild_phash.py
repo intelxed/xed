@@ -16,9 +16,10 @@
 #  
 #END_LEGAL
 import math
+import collections
+
 import genutil
 import ildutil
-import collections
 import codegen
 import hashmul
 import hashfks

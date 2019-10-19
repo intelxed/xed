@@ -22,36 +22,35 @@
 import genutil
 
 # ild and  operand_storage
-xed_strings = {'key_str':'key', 
-               'hidx_str':'hidx', 
-               'key_type':'xed_uint64_t', 
-               'hidx_type':'xed_uint64_t',
-               'op_accessor':'xed3_operand',
-               'table_name':'lu_table',
-               'lu_entry':'lu_entry_t',
-               'luf_name':'xed_find_func_t',
-               'operand_type':'xed_operand_values_t',
-               'return_type':'xed_uint32_t'}
+xed_strings = {'key_str'      : 'key', 
+               'hidx_str'     : 'hidx', 
+               'key_type'     : 'xed_uint64_t', 
+               'hidx_type'    : 'xed_uint64_t',
+               'op_accessor'  : 'xed3_operand',
+               'table_name'   : 'lu_table',
+               'lu_entry'     : 'lu_entry_t',
+               'luf_name'     : 'xed_find_func_t',
+               'operand_type' : 'xed_operand_values_t',
+               'return_type'  : 'xed_uint32_t'}
 # ild
-ild_c_type = 'xed_decoded_inst_t*'
-ild_c_op_type = 'xed_bits_t'
+ild_c_type          = 'xed_decoded_inst_t*'
+ild_c_op_type       = 'xed_bits_t'
 
 # ild and xed3_nt
-ild_header = 'xed-ild.h'
+ild_header          = 'xed-ild.h'
 # ild
-ild_private_header = 'xed-ild-private.h'
+ild_private_header  = 'xed-ild-private.h'
 
 #ild
-l1_ptr_typename = 'xed_ild_l1_func_t'
-ild_getter_typename = 'xed_ild_getter_func_t'
+l1_ptr_typename     = 'xed_ild_l1_func_t'
 
 # xed3_nt
 xed3_decoded_inst_t = 'xed_decoded_inst_t'
-xed3_operand_t = 'xed_operand_values_t'
+xed3_operand_t      = 'xed_operand_values_t'
 
 # ild
 #FIXME: get mod_space from generator
-mode_space = [0,1,2]
+mode_space          = [0,1,2]
 
 def ild_err(msg):
     genutil.die("ILD_PARSER ERROR: %s\n" % (msg))

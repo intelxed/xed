@@ -15,12 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+import math
+import copy
+import collections
+
 import genutil
 import ildutil
 import ild_info
-import collections
 import opnds
-import math
 import ild_phash
 import ild_codegen
 import ild_eosz
@@ -28,7 +30,6 @@ import ild_easz
 import ild_nt
 import actions_codegen
 import actions
-import copy
 import verbosity
 import tup2int
 import operand_storage

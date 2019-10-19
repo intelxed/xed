@@ -17,6 +17,7 @@
 #END_LEGAL
 
 import re
+
 import ild_nt
 import mbuild
 import ild_codegen
@@ -25,13 +26,13 @@ import genutil
 import ildutil
 import ild_info
 
-_easz_token = 'EASZ'
+_easz_token           = 'EASZ'
 _easz_binding_pattern = re.compile(r'EASZ=(?P<rhs>[0-9]+)')
 
 #FIXME: we can get default NT by looking at the spine
-_easz_default_nt = 'ASZ_NONTERM'
+_easz_default_nt      = 'ASZ_NONTERM'
 
-_easz_lookup_def_str = 'XED_ILD_EASZ_LOOKUP'
+_easz_lookup_def_str  = 'XED_ILD_EASZ_LOOKUP'
 
 _easz_defines = {
                  'XED_ILD_EASZ_0' : 0,
@@ -50,7 +51,6 @@ _easz_header_fn = 'xed-ild-easz.h'
 
 def get_getter_fn(ptrn_list):
     if len(ptrn_list) == 0:
-        #l1_fn = '(%s)0' % (ildutil.ild_getter_typename)
         genutil.die("P2341: SHOULD NOT REACH HERE")
     first = ptrn_list[0]
     for cur in ptrn_list[1:]:

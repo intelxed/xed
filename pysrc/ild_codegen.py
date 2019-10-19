@@ -25,11 +25,11 @@ import operand_storage
 
 _arg_const_suffix = 'CONST'
 
-_dec_strings = {'obj_str':'d',
-                'obj_type':'xed_decoded_inst_t',
-                'obj_const': 'const ',
-                'lu_namespace':'dec',
-                'static':True
+_dec_strings = {'obj_str'      : 'd',
+                'obj_type'     : 'xed_decoded_inst_t',
+                'obj_const'    : 'const ',
+                'lu_namespace' : 'dec',
+                'static'       : True
                }
 _dec_strings.update(ildutil.xed_strings)
 
@@ -251,10 +251,11 @@ def dump_vv_map_lookup(agi,
                        is_3dnow,
                        op_lu_list,
                        h_fn='xed3-phash.h'):
+    """generate static decoder"""
+    
     phash_headers = ['xed-ild-eosz-getters.h',
                      'xed-ild-easz-getters.h',
                      'xed-internal-header.h',
-                     'xed-ild-getters.h',
                      'xed-ild-private.h']
     maplu_headers = []
     all_zero_by_map = {}
@@ -313,7 +314,11 @@ def dump_vv_map_lookup(agi,
                         emit_headers=False)
 
 
-    # write xed3-phash.h (top most thing)    
+    # write xed3-phash.h (top most thing).
+    #
+    # xed3-pash.h contains a table indexed by encoding-space &
+    # decoding-map mapping to functions handling decoding that part of
+    # the space.
     h_file = agi.open_file(mbuild.join('include-private',h_fn),
                                   start=False)
     for header in maplu_headers:

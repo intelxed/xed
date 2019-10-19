@@ -20,6 +20,8 @@
 
 import sys
 import re
+import shlex
+
 import genutil
 
 def _die(s):
@@ -40,6 +42,10 @@ class map_info_t(object):
         self.imm32 = None  # var,yes,no, has imm32
         self.opcpos = None  # 0,1,2, ... -1 (last) opcode position in pattern
         self.priority = 10
+        # search_pattern is the string that we use to identify this
+        # map in the XED decode patterns. The pattern may have spaces
+        # in it. (and motivates using shlex to parse the input lines)
+        self.search_pattern = None
         
     def is_legacy(self):
         return self.space == 'legacy'
@@ -94,12 +100,15 @@ class map_info_t(object):
         s.append("imm32: {}".format(self.imm32))
         s.append("opcpos: {}".format(self.opcpos))
         s.append("priority: {}".format(self.priority))
+        s.append("search_pattern: {}".format(self.search_pattern))        
         return " ".join(s)
 
 
 def _parse_map_line(s):
-    t = s.strip().split()
-    if len(t) != 9:
+    # shlex allows for quoted substrings containing spaces as
+    # individual args.
+    t = shlex.split(s.strip())
+    if len(t) != 10:
         _die("Bad map description line: [{}]".format(s))
     mi = map_info_t()
     mi.map_name = t[0]
@@ -111,6 +120,7 @@ def _parse_map_line(s):
     mi.imm8 = t[6]
     mi.imm32 = t[7]
     mi.opcpos = t[8]
+    mi.search_pattern = t[9]
 
     if mi.space not in ['legacy','vex','evex', 'xop']:
         _die("Bad map description encoding space [{}]".format(s))
@@ -147,11 +157,8 @@ def _parse_map_line(s):
     else:
         _die("Bad map description opcode position specifier [{}]".format(s))
 
-    # we want legacy maps 2,3 and AMD 3dNow to occur before the map 0
-    # and map 1 0x0f in any scans. Longest matching pattern first...
-    if mi.space == 'legacy':
-        if mi.legacy_opcode != 'N/A':
-            mi.priority = 9
+    # we want the longer patterns first when we sort the map_info_t.
+    mi.priority = 100-len(mi.search_pattern)
     return mi
     
 def read_file(fn):

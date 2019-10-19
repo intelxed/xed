@@ -17,6 +17,7 @@
 #END_LEGAL
 
 import collections
+
 import ild_nt
 import ildutil
 import codegen
@@ -27,30 +28,27 @@ import ild_codegen
 import operand_storage
 import mbuild
 
-_disp_token = 'DISP_WIDTH'
-_brdisp_token = 'BRDISP_WIDTH'
-# _disp_tokens = [_brdisp_token, _disp_token] FIXME 2019-10-03  NOT USED
+_disp_token        = 'DISP_WIDTH'
+_brdisp_token      = 'BRDISP_WIDTH'
 
 _ild_t_disp_member = 'disp_width'
 
+_l3_header_fn      = 'xed-ild-disp-l3.h'
+_l3_c_fn           = 'xed-ild-disp-l3.c'
 
+_l2_header_fn      = 'xed-ild-disp-l2.h'
+_l1_header_fn      = 'xed-ild-disp-l1.h'
+_l2_c_fn           = 'xed-ild-disp-l2.c'
 
-_l3_header_fn = 'xed-ild-disp-l3.h'
-_l3_c_fn = 'xed-ild-disp-l3.c'
+_const_suffix      = 'CONST'
 
-_l2_header_fn = 'xed-ild-disp-l2.h'
-_l1_header_fn = 'xed-ild-disp-l1.h'
-_l2_c_fn = 'xed-ild-disp-l2.c'
+_empty_fn          = 'xed_lookup_function_EMPTY_DISP_CONST_l2'
 
-_const_suffix = 'CONST'
-
-_empty_fn = 'xed_lookup_function_EMPTY_DISP_CONST_l2'
-
-_l1_header_fn = 'xed-ild-disp-l1.h'
+_l1_header_fn      = 'xed-ild-disp-l1.h'
 
 _disp_lu_header_fn = 'xed-ild-disp-bytes.h'
 
-_l1_ptr_typename = 'disp_bytes_l1_func_t'
+_l1_ptr_typename   = 'disp_bytes_l1_func_t'
 
 
 
@@ -108,12 +106,6 @@ def get_brdisp_binding_nts(agi):
     return ild_nt.get_setting_nts(agi, _brdisp_token)
 
 
-## def get_target_opnames():  # FIXME 2019-10-03 NOT USED
-##     """
-##     @return opnames: names of the DISP operand - [DISP_WIDTH, BRDISP_WIDTH]
-##     @type opnames: [string]
-##     """
-##     return _disp_tokens
 
 def get_l2_fn_from_info(info, disp_dict):
     """

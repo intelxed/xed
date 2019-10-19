@@ -100,8 +100,6 @@ class generator_inputs_t(object):
                        'element-type-base',
                        'chip-models',
                        'conversion-table',
-                       'ild-scanners',
-                       'ild-getters',
                        'cpuid',
                        'map-descriptions'
                        ]
@@ -221,15 +219,10 @@ class generator_inputs_t(object):
                  aq(self.file_name['element-type-base']))
         s.append('--input-pointer-names ' +
                  aq(self.file_name['pointer-names']))
-        s.append('--ild-scanners ' +
-                 aq(self.file_name['ild-scanners']))
         s.append('--cpuid ' +
                  aq(self.file_name['cpuid']))
         s.append('--map-descriptions ' +
                  aq(self.file_name['map-descriptions']))
-        if len(self.files['ild-getters']) > 0:
-            s.append('--ild-getters ' +
-                     aq(self.file_name['ild-getters']))
         if extra_args:
             s.append(extra_args)
         return ' '.join(s)

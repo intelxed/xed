@@ -246,16 +246,6 @@ def setup_arg_parser():
                           dest='add_suffix_to_imm', 
                           default=True,
                           help='Omit width suffixes from iforms')
-    arg_parser.add_option('--ild-scanners',
-                          action='store', 
-                          dest='ild_scanners_input_fn', 
-                          default='',
-                          help='ILD scanners input file')
-    arg_parser.add_option('--ild-getters',
-                          action='store', 
-                          dest='ild_getters_input_fn', 
-                          default='',
-                          help='ILD getters input file')
     arg_parser.add_option('--cpuid',
                           action='store', 
                           dest='cpuid_input_fn', 
@@ -587,7 +577,7 @@ def pad_pattern(pattern):
       pattern +=  '-' * rem
    return pattern
 
-def read_dict_spec(fn):
+def read_dict_spec(fn): # FIXME: 2019-10-18: no longer used
     """Read a file with expected format of a form
     {KEY VALUE\n}, return a dict of dict[KEY] == VALUE """
     res_dict = {}
@@ -604,13 +594,7 @@ def read_dict_spec(fn):
         res_dict[key] = int(value)
     return res_dict
 
-def read_ild_scanners_def(ild_scanners_fn):
-    scanners_dict = read_dict_spec(ild_scanners_fn)
-    return scanners_dict
 
-def read_ild_getters_def(ild_getters_fn):
-    getters_dict = read_dict_spec(ild_getters_fn)
-    return getters_dict
 
 def read_state_spec(fn):
    "Return dictionary  of state bits"
@@ -5796,19 +5780,6 @@ def gen_cpuid_map(agi):
 ################################################
 
 def gen_ild(agi):
-    #do the ild things
-    if agi.common.options.ild_scanners_input_fn != '':
-        agi.common.ild_scanners_dict = \
-            read_ild_scanners_def(agi.common.options.ild_scanners_input_fn)
-    else:
-        die("Could not find scanners file in options")
-    #getters are optional 
-    if agi.common.options.ild_getters_input_fn != '':
-        agi.common.ild_getters_dict = \
-            read_ild_getters_def(agi.common.options.ild_getters_input_fn)
-    else:
-        agi.common.ild_getters_dict = None
-    
     ild.work(agi)
 
 
