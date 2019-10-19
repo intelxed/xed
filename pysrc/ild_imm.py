@@ -25,26 +25,25 @@ import ild_info
 import ild_codegen
 import operand_storage
 
-_imm_token = 'IMM_WIDTH'
-_ild_t_imm_member = 'imm_width'
+_imm_token         = 'IMM_WIDTH'
+_ild_t_imm_member  = 'imm_width'
 
-_uimm1_nt = 'UIMM8_1'
+_uimm1_nt          = 'UIMM8_1'
 
+_l3_header_fn      = 'xed-ild-imm-l3.h'
+_l3_c_fn           = 'xed-ild-imm-l3.c'
 
-_l3_header_fn = 'xed-ild-imm-l3.h'
-_l3_c_fn = 'xed-ild-imm-l3.c'
-
-_l2_header_fn = 'xed-ild-imm-l2.h'
-_l1_header_fn = 'xed-ild-imm-l1.h'
-_l2_c_fn = 'xed-ild-imm-l2.c'
+_l2_header_fn      = 'xed-ild-imm-l2.h'
+_l1_header_fn      = 'xed-ild-imm-l1.h'
+_l2_c_fn           = 'xed-ild-imm-l2.c'
 
 _eosz_const_suffix = 'CONST'
 
-_imm0_fn = 'xed_lookup_function_0_IMM_WIDTH_CONST_l2'
+_imm0_fn           = 'xed_lookup_function_0_IMM_WIDTH_CONST_l2'
 
-_l1_header_fn = 'xed-ild-imm-l1.h'
+_l1_header_fn      = 'xed-ild-imm-l1.h'
 
-_imm_lu_header_fn = 'xed-ild-imm-bytes.h'
+_imm_lu_header_fn  = 'xed-ild-imm-bytes.h'
 
 
 

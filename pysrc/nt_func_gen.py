@@ -17,27 +17,26 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+import os
+import copy
 
 import refine_regs
 import genutil
-import os
-import copy
 import constraint_vec_gen
 import func_gen
 import actions
-
 
 _xed_reg_invalid = 'XED_REG_INVALID'
 # those operand are very wide but the real values they may have are few
 # specifying here the valid values for the operands and the number bits
 # needed to represent each one  
-_valid_width = {'BRDISP_WIDTH':[8, 16, 32],
-                'DISP_WIDTH':[0, 8, 16, 32, 64],
-                'IMM_WIDTH':[8, 16, 32, 64],
+_valid_width = {'BRDISP_WIDTH' :[8, 16, 32],
+                'DISP_WIDTH'   :[0, 8, 16, 32, 64],
+                'IMM_WIDTH'    :[8, 16, 32, 64],
                 }
-_width_bits = {'BRDISP_WIDTH':6,
-                'DISP_WIDTH':7,
-                'IMM_WIDTH':7,
+_width_bits = {'BRDISP_WIDTH' :6,
+                'DISP_WIDTH'  :7,
+                'IMM_WIDTH'   :7,
                }
 
 _vexpfx_vals = [0xc4, 0xc5, 0x62]

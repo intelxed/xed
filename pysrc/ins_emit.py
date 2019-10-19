@@ -18,6 +18,7 @@
 from __future__ import print_function
 import os
 import collections
+
 import codegen
 import encutil
 import genutil
@@ -27,7 +28,7 @@ import verbosity
 max_in_byte = 256 #max unsigned int per byte
 emit_function_prefix = 'xed_encode_instruction_emit_pattern'
 bind_function_prefix = 'xed_encode_instruction_fb_pattern'
-get_field_value = 'xed_encoder_get_start_field_value'
+get_field_value      = 'xed_encoder_get_start_field_value'
 
 def key_field_binding_lower(x):
     return x.field_name.lower()

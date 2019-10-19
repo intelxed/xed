@@ -20,6 +20,7 @@
 from __future__ import print_function
 import sys
 import math
+
 import xedhash
 
 class hashmul_t(xedhash.hash_fun_interface_t):

@@ -15,27 +15,25 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+import os
 
 import ildutil
 import ild_nt
 import ild_cdict
 import mbuild
 import codegen
-import os
 import ild_codegen
 import operand_storage
 import verbosity
 import tup2int
 
-_xed3_ops_type = 'xed3_operands_struct_t*'
-_xed3_ops_header = 'xed3-operands-struct.h'
-_key_ctype = 'xed_uint32_t'
-_xed3_err_op = 'error'
-_xed3_gen_error = 'XED_ERROR_GENERAL_ERROR'
+_key_ctype         = 'xed_uint32_t'
+_xed3_err_op       = 'error'
+_xed3_gen_error    = 'XED_ERROR_GENERAL_ERROR'
 _xed_reg_error_val = 'XED_ERROR_BAD_REGISTER'
-_xed_no_err_val = 'XED_ERROR_NONE'
-_xed_op_type = 'xed_operand_values_t'
-_xed3_opstruct_type = 'xed3_operands_struct_t'
+_xed_no_err_val    = 'XED_ERROR_NONE'
+_xed_op_type       = 'xed_operand_values_t'
+
 
 def _vlog(f,s):
     if verbosity.vcapture():
@@ -106,13 +104,13 @@ def _gen_cdict(agi, nt_name, all_state_space):
 
 _xed3_capture_fn_pfx = 'xed3_capture'
 
-def get_xed3_nt_capture_fn(nt_name):
+def _get_xed3_nt_capture_fn(nt_name):
     """
     Return a xed3 capture function name for a given NT name.
     """
     return '%s_nt_%s' % (_xed3_capture_fn_pfx, nt_name)
 
-def get_xed3_capture_chain_fn(nt_names, is_ntluf=False):
+def _get_xed3_capture_chain_fn(nt_names, is_ntluf=False):
     """
     Return a xed3 chain capture function name from a given list of
     NT names.
@@ -171,7 +169,7 @@ def _is_error_rule(rule):
     return False
 
 def _add_capture_nt_call(fo, nt_name, inst='d', indent=0):
-    capture_fn = get_xed3_nt_capture_fn(nt_name)
+    capture_fn = _get_xed3_nt_capture_fn(nt_name)
     indent = '    ' * indent
     fo.add_code_eol('%s%s(%s)' % (indent, capture_fn, inst))
 
@@ -296,13 +294,13 @@ def _add_switchcase_lines(fo,
     fo.add_code('}')
     
 
-def gen_capture_fo(agi, nt_name, all_ops_widths):
+def _gen_capture_fo(agi, nt_name, all_ops_widths):
     """
     Generate xed3 capturing function for a given NT name.
     """
     gi = agi.generator_dict[nt_name]
     cdict = gi.xed3_cdict
-    fname = get_xed3_nt_capture_fn(nt_name)
+    fname = _get_xed3_nt_capture_fn(nt_name)
     inst = 'd'
     keystr = 'key'
     fo = fo = codegen.function_object_t(fname,
@@ -357,7 +355,7 @@ def _gen_ntluf_capture_chain_fo(nt_names, ii):
     is that this function creates chain capturing functions for
     operand decoding - assigns the REG[0,1] operands, etc.
     """
-    fname = get_xed3_capture_chain_fn(nt_names, is_ntluf=True)
+    fname = _get_xed3_capture_chain_fn(nt_names, is_ntluf=True)
     inst = 'd'
     fo = fo = codegen.function_object_t(fname,
                                        return_type=_xed3_chain_return_t, 
@@ -368,7 +366,7 @@ def _gen_ntluf_capture_chain_fo(nt_names, ii):
     for op in ii.operands:
         if op.type == 'nt_lookup_fn':
             nt_name = op.lookupfn_name
-            capture_fn = get_xed3_nt_capture_fn(nt_name)
+            capture_fn = _get_xed3_nt_capture_fn(nt_name)
             capture_stmt = '%s(%s)' % (capture_fn, inst)
             fo.add_code_eol(capture_stmt)
             #if we have NTLUF functions, we need to assign OUTREG
@@ -401,7 +399,7 @@ def _gen_capture_chain_fo(nt_names, fname=None):
     capture for a given pattern with NTs (nt_names) in it.
     """
     if not fname:
-        fname = get_xed3_capture_chain_fn(nt_names)
+        fname = _get_xed3_capture_chain_fn(nt_names)
     inst = 'd'
     fo = fo = codegen.function_object_t(fname,
                                        return_type=_xed3_chain_return_t, 
@@ -410,7 +408,7 @@ def _gen_capture_chain_fo(nt_names, fname=None):
     fo.add_arg(ildutil.xed3_decoded_inst_t + '* %s' % inst)
     
     for name in nt_names:
-        capture_fn = get_xed3_nt_capture_fn(name)
+        capture_fn = _get_xed3_nt_capture_fn(name)
         capture_stmt = '%s(%s)' % (capture_fn, inst)
         fo.add_code_eol(capture_stmt)
         #now check if we have errors in current NT
@@ -470,7 +468,7 @@ def _dump_op_capture_chain_fo_lu(agi, patterns):
             #if no NTs we use empty capturing function
             fn = nop_fo.function_name
         else:
-            fn = get_xed3_capture_chain_fn(nt_names, is_ntluf=True)
+            fn = _get_xed3_capture_chain_fn(nt_names, is_ntluf=True)
         if fn not in fn_2_fo:
             fo = _gen_ntluf_capture_chain_fo(nt_names, ii)
             fn_2_fo[fn] = fo
@@ -539,7 +537,7 @@ def _dump_capture_chain_fo_lu(agi, patterns):
             #if no NTs we use empty capturing function
             fn = nop_fo.function_name
         else:
-            fn = get_xed3_capture_chain_fn(nt_names)
+            fn = _get_xed3_capture_chain_fn(nt_names)
         if fn not in fn_2_fo:
             fo = _gen_capture_chain_fo(nt_names)
             fn_2_fo[fn] = fo
@@ -672,7 +670,7 @@ def work(agi, all_state_space, all_ops_widths, patterns):
         gi = agi.generator_dict[nt_name]
         gi.xed3_cdict = nt_cdict #just for transporting
         #create a function_object_t for the NT
-        fo = gen_capture_fo(agi, nt_name, all_ops_widths)
+        fo = _gen_capture_fo(agi, nt_name, all_ops_widths)
         gi.xed3_capture_fo = fo
         capture_fn_list.append(fo)
         _vlog(log_f,fo.emit())

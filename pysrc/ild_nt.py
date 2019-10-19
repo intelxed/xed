@@ -15,11 +15,11 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+import re
 
 import genutil
 import ildutil
 import codegen
-import re
 import opnds
 
 

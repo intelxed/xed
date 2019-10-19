@@ -16,14 +16,12 @@
 #  
 #END_LEGAL
 import collections
+
 import ild_info
-import sys
+import genutil
 
 def _die(s):
-    sys.stderr.write('ERROR: ')
-    sys.stderr.write(s)
-    sys.stderr.write('\n')
-    sys.exit(1)
+    genutil.die(s)
 
 class ild_storage_t(object):
     """Storage for table indexed by map and opcode. Storing lists of

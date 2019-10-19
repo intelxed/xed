@@ -17,6 +17,7 @@
 #END_LEGAL
 
 import re
+
 import ild_nt
 import mbuild
 import ild_info
@@ -25,18 +26,12 @@ import ildutil
 import operand_storage
 import ild_codegen
 
-
-_eosz_token = 'EOSZ'
+_eosz_token           = 'EOSZ'
 _eosz_binding_pattern = re.compile(r'EOSZ=(?P<rhs>[0-9]+)')
-
 #FIXME: we can get default NT by looking at the spine
-_eosz_default_nt = 'OSZ_NONTERM'
-
-
-
-_eosz_c_fn = 'xed-ild-eosz.c'
-_eosz_header_fn = 'xed-ild-eosz.h'
-
+_eosz_default_nt      = 'OSZ_NONTERM'
+_eosz_c_fn            = 'xed-ild-eosz.c'
+_eosz_header_fn       = 'xed-ild-eosz.h'
 
 harcoded_res_functions = {}
 
@@ -77,7 +72,6 @@ def _resolve_conflicts(agi, info_list, nt_dict):  # NOT USED
 #FIXME: use info_list instead?
 def get_getter_fn(ptrn_list):
     if len(ptrn_list) == 0:
-        #l1_fn = '(%s)0' % (ildutil.ild_getter_typename)
         genutil.die("P2342: SHOULD NOT REACH HERE")
 
     first = ptrn_list[0]
