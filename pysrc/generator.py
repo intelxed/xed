@@ -1455,7 +1455,7 @@ def look_for_scalable_nt(agi, nt_name):
             return True
          elif b.is_nonterminal():
             r_nt_name = b.nonterminal_name()
-            if look_for_scalable_nt(agi, r_nt_name):
+            if look_for_scalable_nt(agi, r_nt_name):  # RECUR
                return True
    return False
 
@@ -1688,18 +1688,23 @@ def read_input(agi, lines):
    msge("Nonterminal name " + parser.nonterminal_name)
    lines.pop(0)
 
-   # The {...} defined patterns must have the substring "INSTRUCTIONS" in them
+   # The {...} defined "instruction" patterns must have the substring
+   # "INSTRUCTIONS" in their name.
+   
    if instructions_pattern.search(parser.nonterminal_name):
-      nlines = read_structured_input(agi,
-                                     agi.common.options,
-                                     parser,
-                                     lines,
-                                     agi.common.state_bits)
-      return nlines
-   return read_flat_input(agi, 
-                          agi.common.options,parser,
-                          lines,
-                          agi.common.state_bits)
+       nlines = read_structured_input(agi,
+                                      agi.common.options,
+                                      parser,
+                                      lines,
+                                      agi.common.state_bits)
+   else:
+       nlines = read_flat_input(agi, 
+                                agi.common.options,
+                                parser,
+                                lines,
+                                agi.common.state_bits)
+   return nlines
+   
 
 def read_structured_input(agi, options, parser, lines, state_dict):
    msge("read_structured_input")
@@ -1809,7 +1814,7 @@ class parser_t(object):
 
          
 
-def read_flat_input(agi, options, parser,lines,state_dict):
+def read_flat_input(agi, options, parser, lines,state_dict):
    """These are the simple format records, one per line. Used for
    non-instruction things to make partitionable objects"""
    msge("read_flat_input " + str(global_inum))
@@ -5779,10 +5784,6 @@ def gen_cpuid_map(agi):
     
 ################################################
 
-def gen_ild(agi):
-    ild.work(agi)
-
-
 def emit_regs_enum(options, regs_list):
     
    #FIXME: sort the register names by their type. Collect all the
@@ -6335,7 +6336,8 @@ def main():
    
    # emit functions to identify AVX and AVX512 instruction groups
    classifier.work(agi) 
-   gen_ild(agi)
+   ild.work(agi)
+
    gen_cpuid_map(agi)
    agi.close_output_files()
    agi.dump_generated_files()

@@ -17,6 +17,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+
+# encoder generator support
+
 import os
 import copy
 

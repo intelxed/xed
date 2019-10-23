@@ -162,7 +162,7 @@ xed_decode_with_features(xed_decoded_inst_t* xedd,
     if (xed3_operand_get_error(xedd)) 
         return xed3_operand_get_error(xedd);
 
-    /* part1 is all the Nts that come before the INSTRUCTIONS NT (OSZ, ASZ
+    /* part1 is the NTs that come before the INSTRUCTIONS NT (OSZ, ASZ
      * nonterminals)*/
     xed3_dynamic_decode_part1(xedd);
     if (xed3_operand_get_error(xedd)) 

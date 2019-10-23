@@ -323,6 +323,7 @@ def get_patterns(agi, eosz_nts, easz_nts,
     information for the ILD. Returns these objects as a list.
     """
     patterns = []
+    pattern_t.map_info = agi.map_info
     for g in agi.generator_list:
         ii = g.parser_output.instructions[0]
         if genutil.field_check(ii,'iclass'):
@@ -398,6 +399,7 @@ class pattern_t(object):
     # from a list.
     phys_map_keys = []
     phys_map_dir = {}
+    map_info = None
     first = True
 
     def __init__(self, ii, eosz_nts,
@@ -456,8 +458,10 @@ class pattern_t(object):
         #FIXME: not finished yet
         self.constraints = collections.defaultdict(dict)
 
-
+        mi,insn_map2,opcode2 = self.get_map_opcode_wip()
         insn_map,opcode = self.get_map_opcode()
+        #genutil.msgb("OMC", "{} / {} vs {} / {}".format(insn_map, opcode, insn_map2, opcode2))
+        
         self.insn_map = insn_map
         self.opcode = opcode
 
@@ -553,6 +557,7 @@ class pattern_t(object):
         self.mode = ildutil.mode_space
 
     def parse_opcode(self, op_str):
+        # has side effects of settting self.missing_bits and self.incomplete
         val = None
         if genutil.numeric(op_str):
             val = genutil.make_numeric(op_str)
@@ -655,6 +660,21 @@ class pattern_t(object):
             pattern_t.phys_map_keys.append(a)
             pattern_t.phys_map_dir[a] = b
 
+    def get_map_opcode_wip(self):
+        for mi in pattern_t.map_info:
+            # if no search pattern we are on the last record  for map 0
+            if mi.search_pattern == '' or self.ptrn.find(mi.search_pattern) != -1:
+                insn_map = mi.map_name # different than the stuff we use now.
+                try:
+                    opcode = self.ptrn.split()[mi.opcpos]
+                except:
+                    genutil.die("Did not find any pos {} in [{}] for {}".format(mi.opcpos,self.ptrn.split(),mi))
+                parsed_opcode = self.parse_opcode(opcode)
+                if parsed_opcode==None:  # 0x00 is also a value so we must explicitly test vs None, and not use "not parsed_opcode"
+                    genutil.die("Did failed to convert opcode {} from {} for map {}".format(opcode, self.ptrn, mi))
+                return mi, insn_map, hex(parsed_opcode)
+        genutil.die("Did not find map / opcode for {}".format(self.ptrn))
+                
     def get_map_opcode(self):
         insn_map = '0x0'
         s = self.ptrn
