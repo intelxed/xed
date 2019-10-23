@@ -31,7 +31,8 @@ class actions_codegen_t(object):
         ''' params: tuple2rule: is a mapping from tuple to a rule
                     default_actions is a list action when we do not hit 
                         a valid hash entry
-                    strings_dict a is mapping of string to string'''
+                    strings_dict a is mapping of (generic) strings 
+                        to specific string (type refinement, etc) for codegen'''
         self.all_fbs = None
         self.common_fbs = None
         self.max_nt_number = 0

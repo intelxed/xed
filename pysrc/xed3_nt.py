@@ -15,6 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+
+# FIXME: 2019-10-21 rename this file to something like "gen_dyn_dec.py"
+
+# dynamic decode for:
+#   (a) part 1 (for OSZ/ASZ NTs),
+#   (b) part 2 (for NTs within in instr patterns), and
+#   (c) operands (mostly register NTLUFs).
+
 import os
 
 import ildutil
@@ -303,10 +311,10 @@ def _gen_capture_fo(agi, nt_name, all_ops_widths):
     fname = _get_xed3_nt_capture_fn(nt_name)
     inst = 'd'
     keystr = 'key'
-    fo = fo = codegen.function_object_t(fname,
-                                       return_type='void', 
-                                       static=True, 
-                                       inline=True)
+    fo = codegen.function_object_t(fname,
+                                   return_type='void', 
+                                   static=True, 
+                                   inline=True)
     fo.add_arg(ildutil.xed3_decoded_inst_t + '* %s' % inst)
     if len(cdict.cnames) > 0:
         _add_cgen_key_lines(fo, nt_name, gi, all_ops_widths, keystr, inst)
@@ -357,10 +365,10 @@ def _gen_ntluf_capture_chain_fo(nt_names, ii):
     """
     fname = _get_xed3_capture_chain_fn(nt_names, is_ntluf=True)
     inst = 'd'
-    fo = fo = codegen.function_object_t(fname,
-                                       return_type=_xed3_chain_return_t, 
-                                       static=True, 
-                                       inline=True)
+    fo = codegen.function_object_t(fname,
+                                   return_type=_xed3_chain_return_t, 
+                                   static=True, 
+                                   inline=True)
     fo.add_arg(ildutil.xed3_decoded_inst_t + '* %s' % inst)
     
     for op in ii.operands:
@@ -401,10 +409,10 @@ def _gen_capture_chain_fo(nt_names, fname=None):
     if not fname:
         fname = _get_xed3_capture_chain_fn(nt_names)
     inst = 'd'
-    fo = fo = codegen.function_object_t(fname,
-                                       return_type=_xed3_chain_return_t, 
-                                       static=True, 
-                                       inline=True)
+    fo = codegen.function_object_t(fname,
+                                   return_type=_xed3_chain_return_t, 
+                                   static=True, 
+                                   inline=True)
     fo.add_arg(ildutil.xed3_decoded_inst_t + '* %s' % inst)
     
     for name in nt_names:
@@ -421,14 +429,14 @@ def _gen_capture_chain_fo(nt_names, fname=None):
     fo.add_code_eol('return %s' % _xed_no_err_val)
     return fo
 
-_xed3_chain_header = 'xed3-chain-capture.h'
-_xed3_op_chain_header = 'xed3-op-chain-capture.h'
-_xed3_chain_lu_header = 'xed3-chain-capture-lu.h'
-_xed3_op_chain_lu_header = 'xed3-op-chain-capture-lu.h'
-_xed3_nt_capture_header = 'xed3-nt-capture.h'
-_xed3_capture_lu_header = 'xed3-nt-capture-lu.h'
-_xed3_empty_capture_func = 'xed3_capture_nt_nop'
-_xed3_chain_return_t = 'xed_error_enum_t'
+_xed3_chain_header         = 'xed3-chain-capture.h'
+_xed3_op_chain_header      = 'xed3-op-chain-capture.h'
+_xed3_chain_lu_header      = 'xed3-chain-capture-lu.h'
+_xed3_op_chain_lu_header   = 'xed3-op-chain-capture-lu.h'
+_xed3_nt_capture_header    = 'xed3-nt-capture.h'
+_xed3_capture_lu_header    = 'xed3-nt-capture-lu.h'
+_xed3_empty_capture_func   = 'xed3_capture_nt_nop'
+_xed3_chain_return_t       = 'xed_error_enum_t'
 _xed3_dynamic_part1_header = 'xed3-dynamic-part1-capture.h'
     
 
@@ -442,10 +450,10 @@ def _gen_empty_capture_fo(is_ntluf=False):
         fname = '%s_ntluf' % _xed3_empty_capture_func
     else:
         fname = _xed3_empty_capture_func
-    fo = fo = codegen.function_object_t(fname,
-                                       return_type=_xed3_chain_return_t, 
-                                       static=True, 
-                                       inline=True)
+    fo = codegen.function_object_t(fname,
+                                   return_type=_xed3_chain_return_t, 
+                                   static=True, 
+                                   inline=True)
     fo.add_arg(ildutil.xed3_decoded_inst_t + '* %s' % inst)
     fo.add_code_eol('(void)%s' % inst)
     fo.add_code_eol('return %s' % _xed_no_err_val)
@@ -614,8 +622,8 @@ def _skip_nt(nt_name):
     function for a given NT name.
     """
     return (nt_name in _nts_to_skip or
-        'INSTRUCTIONS' in nt_name or
-        'SPLITTER' in nt_name)
+            'INSTRUCTIONS' in nt_name or
+            'SPLITTER' in nt_name)
 
 def _gen_dynamic_part1_fo(agi):
     """
@@ -629,10 +637,12 @@ def _gen_dynamic_part1_fo(agi):
         ildutil.ild_err("Failed to gen dynamic part1 function!\n" +
                         "Unexpected number of rules in %s NT: %s" % 
                         (_spine_nt_name, len(gi.parser_output.instructions)))
+    # This ISA spine has one rule so we work on that one.
     rule = gi.parser_output.instructions[0]
     nt_names = _get_nt_names_from_ii(rule)
     
-    #filter NTs that we want to skip
+    #filter NTs that we want to skip, leaving typially the OSZ_NONTERM
+    #and the ASZ_NONTERM.
     nt_names = list(filter(lambda x: not _skip_nt(x), nt_names))
     fo = _gen_capture_chain_fo(nt_names, fname=_dynamic_part1_fn)
     return fo

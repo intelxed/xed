@@ -544,6 +544,8 @@ class constraint_dict_t(object):
          
          #dict of all operands -> bit width.
          self.op_widths = {}
+
+         self.action_codegen = None
          
          #dict mapping tuples to rules. 
          #tuples are the constraint values (without the constraint names).
@@ -668,8 +670,8 @@ class constraint_dict_t(object):
         
         ptrn_list = list(self.tuple2rule.values())
         if cname in list(_token_2_module.keys()):
-            nt_module = _token_2_module[cname]
-            getter_fn = nt_module.get_getter_fn(ptrn_list)
+            nt_module = _token_2_module[cname] # name of python module!
+            getter_fn = nt_module.get_getter_fn(ptrn_list) # indirect module refs!
             if not getter_fn: # -> error
                     msg = 'Failed to resolve %s getter fn for '
                     msg += 'MAP:%s OPCODE:%s'
