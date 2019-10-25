@@ -34,7 +34,7 @@ import ild_modrm
 import codegen
 import ild_codegen
 import ild_cdict
-import xed3_nt
+import dec_dyn
 import actions
 import verbosity
 
@@ -171,9 +171,9 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
                                    list(op_lu_map.values()),
                                    h_fn='xed3-phash.h')
     
-    #xed3_nt.work(...) generates all the functions and lookup tables for
+    #dec_dyn.work(...) generates all the functions and lookup tables for
     # ** Dynamic decode **
-    xed3_nt.work(agi, all_state_space, all_ops_widths, ild_patterns)
+    dec_dyn.work(agi, all_state_space, all_ops_widths, ild_patterns)
 
 #Main entry point of the module
 def work(agi):
@@ -522,7 +522,7 @@ class pattern_t(object):
         #set as legal.. check such things here?
 
         #set constraints that come from operands deciders
-        xed3_nt.get_ii_constraints(ii, state_space, self.constraints)
+        dec_dyn.get_ii_constraints(ii, state_space, self.constraints)
         #print "CONSTRAINTS: {}".format(self.constraints)
 
         #special care for VEXVALID - it makes it easy to dispatch vex

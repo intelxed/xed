@@ -16,8 +16,6 @@
 #  
 #END_LEGAL
 
-# FIXME: 2019-10-21 rename this file to something like "gen_dyn_dec.py"
-
 # dynamic decode for:
 #   (a) part 1 (for OSZ/ASZ NTs),
 #   (b) part 2 (for NTs within in instr patterns), and
