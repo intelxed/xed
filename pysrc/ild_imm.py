@@ -212,11 +212,13 @@ _resolution_functions = [
 #these are for second immediate guys.
 #It also happens that AMD second immediate guys define uneasy conflicts
 #so we are killing two birds with one stone 
-harcoded_res_functions = {
-                     #(map, opcode)    L1_function_name 
-                    ('0x0F', '0x78') : 'xed_ild_hasimm_map0x0F_op0x78_l1',
-                    ('0x0', '0xc8') : 'xed_ild_hasimm_map0x0_op0xc8_l1'
-                         }
+_hardcoded_res_functions_imm = {
+    #(map, opcode)          :  L1_function_name 
+    #('0x0F', '0x78')       : 'xed_ild_hasimm_map0x0F_op0x78_l1',
+    #('0x0', '0xc8')        : 'xed_ild_hasimm_map0x0_op0xc8_l1'
+    ('legacy_map1', '0x78') : 'xed_ild_hasimm_map0x0F_op0x78_l1',
+    ('legacy_map0', '0xc8') : 'xed_ild_hasimm_map0x0_op0xc8_l1'
+}
 
 def _resolve_conflicts(agi, info_list, imm_dict):
     """Try to resolve conflicts by applying the conflict resolution
@@ -257,13 +259,13 @@ def gen_l1_functions_and_lookup(agi, united_lookup, imm_dict):
     """
     l1_resolution_fos = []
     l1_lookup = {}
-    for insn_map in ild_info.get_dump_maps():
+    for insn_map in ild_info.get_dump_maps_imm(agi):
         l1_lookup[insn_map] = {}
         for opcode in range(0, 256):
             #look in the hard-coded resolution functions
             #they are manually written for the two-immediates instructions
-            if (insn_map, hex(opcode)) in harcoded_res_functions:
-                l1_fn = harcoded_res_functions[(insn_map, hex(opcode))]
+            if (insn_map, hex(opcode)) in _hardcoded_res_functions_imm:
+                l1_fn = _hardcoded_res_functions_imm[(insn_map, hex(opcode))]
                 l1_lookup[insn_map][hex(opcode)] = l1_fn
                 continue
             info_list = united_lookup.get_info_list(insn_map, hex(opcode))

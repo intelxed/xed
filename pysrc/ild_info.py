@@ -26,26 +26,45 @@
     
 #maps without AMD
 #it's important that maps are correctly ordered
-ild_maps = ['0x0', '0x0F', '0x0F38', '0x0F3A', 
+_ild_maps = ['0x0', '0x0F', '0x0F38', '0x0F3A', 
             'MAP4', 'MAP5', 'MAP6']
 
 #0F0F is for AMD's 3dnow 0F0F instructions
 #it's important that maps are correctly ordered
-ild_maps_with_amd = ild_maps + ['0x0F0F','XMAP8','XMAP9','XMAPA']
+_ild_maps_with_amd =_ild_maps + ['0x0F0F','XMAP8','XMAP9','XMAPA']
 
 #maps to dump in C header files. These are the irregular maps that
 #require complex handling.
-ild_dump_maps = ['0x0', '0x0F']
+_ild_dump_maps = ['0x0', '0x0F']
+
+def get_maps_wip(agi):
+    map_names = [ mi.map_name for mi in agi.map_info ]
+    return map_names
 
 def get_maps(is_with_amd):
     if is_with_amd:
-        return ild_maps_with_amd
-    return ild_maps
+        return _ild_maps_with_amd
+    return _ild_maps
 
+
+def get_dump_maps_modrm(agi):
+    maps = []
+    for mi in agi.map_info:
+        if mi.has_variable_modrm():
+            maps.append(mi.map_name)
+    return maps
+
+def get_dump_maps_imm(agi):
+    maps = []
+    for mi in agi.map_info:
+        if mi.has_variable_imm8() or mi.has_variable_imm32():
+            maps.append(mi.map_name)
+    return maps
+        
 #return maps that should be dumped in C header files.
 #Now it seems that only 0 and 0F maps should be dumped.
 def get_dump_maps():
-    return ild_dump_maps
+    return _ild_dump_maps
 
 
 #10 is enough i think

@@ -178,7 +178,7 @@ def _resolve_conflicts(agi, info_list, disp_dict):
             return fo
     return None
 
-harcoded_res_functions = {}
+_hardcoded_res_functions_disp = {}
 
 def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
     """Compute L1(conflict resolution) functions list and disp_bytes lookup 
@@ -207,12 +207,12 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
     l1_bucket_dict = collections.defaultdict(list)
     
     
-    for insn_map in ild_info.get_maps(united_lookup.is_amd):
+    for insn_map in ild_info.get_maps_wip(agi):
         l1_lookup[insn_map] = {}
         for opcode in range(0, 256):
             #look in the hardcoded resolution functions
-            if (insn_map, hex(opcode)) in harcoded_res_functions:
-                l1_fn = harcoded_res_functions[(insn_map, hex(opcode))]
+            if (insn_map, hex(opcode)) in _hardcoded_res_functions_disp:
+                l1_fn = _hardcoded_res_functions_disp[(insn_map, hex(opcode))]
                 l1_lookup[insn_map][hex(opcode)] = l1_fn
                 continue
             info_list = united_lookup.get_info_list(insn_map, hex(opcode))

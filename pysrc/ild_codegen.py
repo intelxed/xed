@@ -248,7 +248,6 @@ def _test_map_all_zero(vv,phash_map_lu):
 
 def dump_vv_map_lookup(agi,
                        vv_lu,
-                       is_3dnow,
                        op_lu_list,
                        h_fn='xed3-phash.h'):
     """generate static decoder"""
@@ -325,7 +324,7 @@ def dump_vv_map_lookup(agi,
         h_file.add_header(header)
     h_file.start()
 
-    maps = ild_info.get_maps(is_3dnow)
+    maps = ild_info.get_maps_wip(agi)
 
     vv_num = [ int(x) for x in list(vv_lu.keys())]
     vv_index = max(vv_num) + 1

@@ -58,22 +58,6 @@ _xed_3dnow_category = '3DNOW'
 
 _mode_token = 'MODE'
 
-
-
-#checks if we have 3dnow instructions
-#some of these instructions have 0f 0f ... opcode pattern
-#hence we need to discard second 0f and not treat it as opcode
-#this is a special case, there is no way to treat it in a general way
-#hence we need to check for it
-def _is_amd3dnow(agi):
-    for g in agi.generator_list:
-        ii = g.parser_output.instructions[0]
-        if genutil.field_check(ii,'iclass'):
-            for ii in g.parser_output.instructions:
-                if ii.category == _xed_3dnow_category:
-                    return True
-    return False
-
 #just to know how many there are and how hard it is
 #42 nested NTs..
 #mostly modrm-related
@@ -105,11 +89,11 @@ def init_debug(agi):
     debugdir = agi.common.options.gendir
     debug = open(mbuild.join(debugdir, 'ild_debug.txt'), 'w')
 
-def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
+def gen_xed3(agi, ild_info, ild_patterns,
              all_state_space, ild_gendir, all_ops_widths):
     all_cnames = set()
     ptrn_dict = {}  # map,opcode -> pattern
-    maps = ild_info.get_maps(is_3dnow)
+    maps = ild_info.get_maps_wip(agi)
     for insn_map in maps:
             ptrn_dict[insn_map] = collections.defaultdict(list)
     for ptrn in ild_patterns:
@@ -126,8 +110,8 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
         #into corresponding map-opcode
         #cnames is a set of all constraint names from the patterns
         #in the given vv space
-        cdict,cnames = ild_cdict.get_constraints_lu_table(ptrn_dict,
-                                                          is_3dnow,
+        cdict,cnames = ild_cdict.get_constraints_lu_table(agi,
+                                                          ptrn_dict,
                                                           all_state_space,
                                                           vv,
                                                           all_ops_widths)
@@ -150,7 +134,6 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
         (ph_lu, lu_fo_list, operands_lu_list) = ild_cdict.gen_ph_fos(
             agi, 
             cdict,
-            is_3dnow,
             constraints_log_file,
             ptrn_dict, 
             vv)
@@ -167,7 +150,6 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
     #these hash functions (at decode time). ** Static decode **
     ild_codegen.dump_vv_map_lookup(agi,
                                    vv_lu,
-                                   is_3dnow,
                                    list(op_lu_map.values()),
                                    h_fn='xed3-phash.h')
     
@@ -179,7 +161,6 @@ def gen_xed3(agi, ild_info, is_3dnow, ild_patterns,
 def work(agi):
     ild_gendir = agi.common.options.gendir
     init_debug(agi)
-    is_3dnow = _is_amd3dnow(agi)
 
     debug.write("state_space:\n %s" % agi.common.state_space)
 
@@ -243,8 +224,8 @@ def work(agi):
         #essentially a 2D dictionary:
         #ild_tbl[map][opcode] == [ ild_info_t ]
         #the ild_info_t objects are obtained the grammar
-
-        ild_tbl = _convert_to_ild_storage(ild_patterns, is_3dnow)
+        priority = 0
+        ild_tbl = _get_info_storage(agi, ild_patterns, priority)
 
         #generate modrm lookup tables
         ild_modrm.work(agi, ild_tbl, debug)
@@ -267,7 +248,7 @@ def work(agi):
                           eosz_dict, easz_dict, debug)
 
         # now handle the actual instructions
-        gen_xed3(agi, ild_info, is_3dnow, ild_patterns, 
+        gen_xed3(agi, ild_info, ild_patterns, 
                  all_state_space, ild_gendir, all_ops_widths)
 
 def dump_header_with_header(agi, fname, header_dict):  # FIXME: 2019-10-18 no longer used
@@ -337,18 +318,13 @@ def get_patterns(agi, eosz_nts, easz_nts,
                     patterns.extend(expanded_ptrns)
     return patterns
 
-def _convert_to_ild_storage(ptrn_list,is_3dnow):
-    """ Store ILD objects by map/opcode
-    @return: ild_info.storage_t object"""
-    
-    #convert ptrns to ild_info_t and put in a dict of lists indexed by map/opcode
-    return get_info_storage(ptrn_list, 0, is_3dnow)
 
+def _get_info_storage(agi, ptrn_list, priority):
+    """convert list of pattern_t objects to ild_storage_t object, store by
+       map/opcode"""
 
-def get_info_storage(ptrn_list, priority, is_3dnow):
-    """convert list of pattern_t objects to ild_storage_t object"""
-    
-    storage = ild_storage.ild_storage_t(is_amd=is_3dnow)
+    lookup = ild_storage.get_lookup(agi)
+    storage = ild_storage.ild_storage_t(lookup)
 
     for p in ptrn_list:
         info = ild_info.ptrn_to_info(p, priority)
@@ -460,9 +436,14 @@ class pattern_t(object):
 
         mi,insn_map2,opcode2 = self.get_map_opcode_wip()
         insn_map,opcode = self.get_map_opcode()
-        #genutil.msgb("OMC", "{} / {} vs {} / {}".format(insn_map, opcode, insn_map2, opcode2))
-        
-        self.insn_map = insn_map
+
+        if opcode != opcode2:
+            genutil.die("Mismatch old vs new opcode {} vs {}".format(
+                opcode, opcode2))
+            
+        self.map_info = mi
+        self.insn_map = insn_map2
+        self.insn_map_old = insn_map
         self.opcode = opcode
 
         self.has_modrm = ild_modrm.get_hasmodrm(self.ptrn)
@@ -490,7 +471,7 @@ class pattern_t(object):
         #self.set_hasimm()
         #self.set_pfx_table()
 
-        #FIXME: for anaisys only
+        #FIXME: for analysis only
         if self.is_3dnow():
             if not self.has_modrm:
                 _msg('3DNOW with no MODRM: %s\n' % self)
@@ -659,7 +640,6 @@ class pattern_t(object):
         for a,b in phys_map_list:
             pattern_t.phys_map_keys.append(a)
             pattern_t.phys_map_dir[a] = b
-
     def get_map_opcode_wip(self):
         for mi in pattern_t.map_info:
             # if no search pattern we are on the last record  for map 0
