@@ -58,7 +58,7 @@ class map_info_t(object):
 
 
     def map_short_name(self):
-        if self.map_name  == 'amd-3dnow':
+        if self.map_name  == 'amd_3dnow':
             return 'AMD'
         h = hex(self.map_id)[-1]
         return str(h)
@@ -111,7 +111,10 @@ def _parse_map_line(s):
     if len(t) != 10:
         _die("Bad map description line: [{}]".format(s))
     mi = map_info_t()
-    mi.map_name = t[0]
+    
+    # this gets used in function names so must only be legal characters
+    mi.map_name = re.sub('-', '_', t[0])
+    
     mi.space = t[1]
     mi.legacy_escape = t[2]
     mi.legacy_opcode = t[3]

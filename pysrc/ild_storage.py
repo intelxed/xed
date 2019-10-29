@@ -23,18 +23,20 @@ import genutil
 def _die(s):
     genutil.die(s)
 
+def get_lookup(agi):
+    map_names = ild_info.get_maps_wip(agi)
+    lookup = {}    
+    for insn_map in map_names:
+        lookup[insn_map] = collections.defaultdict(list)
+    return lookup
+    
+    
 class ild_storage_t(object):
     """Storage for table indexed by map and opcode. Storing lists of
       ild_info_t objects."""
 
-    def __init__(self, is_amd=True, info_lookup=None):
-        self.is_amd = is_amd
-        if info_lookup == None:
-            self.lookup = {}
-            for insn_map in ild_info.get_maps(is_amd):
-                self.lookup[insn_map] = collections.defaultdict(list)
-        else:
-            self.lookup = info_lookup
+    def __init__(self, lookup):
+        self.lookup = lookup
     
     #returns by reference
     def get_info_list(self, insn_map, opcode):

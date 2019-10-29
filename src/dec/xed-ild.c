@@ -908,8 +908,8 @@ static void sib_scanner(xed_decoded_inst_t* d)
   Maybe in one of the following commits it will be moved to auto generated
   code.*/
 const xed_ild_l1_func_t* disp_bits_2d[XED_ILD_MAP2] = {
-    disp_width_map_0x0,
-    disp_width_map_0x0F
+    disp_width_map_legacy_map0,
+    disp_width_map_legacy_map1
 };
 
 static void disp_scanner(xed_decoded_inst_t* d)
@@ -993,8 +993,8 @@ static void disp_scanner(xed_decoded_inst_t* d)
   Maybe in one of the following commits it will be moved to auto generated
   code.*/
 const xed_uint8_t* has_modrm_2d[XED_ILD_MAP2] = {
-    has_modrm_map_0x0,
-    has_modrm_map_0x0F
+    has_modrm_map_legacy_map0,
+    has_modrm_map_legacy_map1
 };
 
 static void set_has_modrm(xed_decoded_inst_t* d) {
@@ -1020,8 +1020,8 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
   Maybe in one of the following commits it will be moved to auto generated
   code.*/
 const xed_ild_l1_func_t* imm_bits_2d[XED_ILD_MAP2] = {
-    imm_width_map_0x0,
-    imm_width_map_0x0F
+    imm_width_map_legacy_map0,
+    imm_width_map_legacy_map1
 };
 
 static void set_imm_bytes(xed_decoded_inst_t* d) {

@@ -33,7 +33,6 @@ _eosz_default_nt      = 'OSZ_NONTERM'
 _eosz_c_fn            = 'xed-ild-eosz.c'
 _eosz_header_fn       = 'xed-ild-eosz.h'
 
-harcoded_res_functions = {}
 
 #FIXME: I hope there are no conflicts on EOSZ in map,opcodes which
 #patterns have EOSZ as an operand decider.

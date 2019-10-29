@@ -723,8 +723,11 @@ class constraint_dict_t(object):
     
 
 
-def get_constraints_lu_table(ptrns_by_map_opcode, is_amd, state_space,
-                              vexvalid, all_ops_widths):
+def get_constraints_lu_table(agi,
+                             ptrns_by_map_opcode,
+                             state_space,
+                             vexvalid,
+                             all_ops_widths):
     """
     returns a tuple (cdict_by_map_opcode,cnames)
     cnames is a set of all constraint names used in patterns.
@@ -734,7 +737,7 @@ def get_constraints_lu_table(ptrns_by_map_opcode, is_amd, state_space,
     bin. These cdict objects can later be used for generating hash functions
     from constraint values to patterns (inums).
     """
-    maps = ild_info.get_maps(is_amd)
+    maps = ild_info.get_maps_wip(agi)
     cdict_by_map_opcode = collections.defaultdict(dict)
     cnames = set()
     for insn_map in maps:
@@ -748,8 +751,11 @@ def get_constraints_lu_table(ptrns_by_map_opcode, is_amd, state_space,
                 cnames = cnames.union(set(cdict.cnames))
     return cdict_by_map_opcode,cnames
 
-def gen_ph_fos(agi, cdict_by_map_opcode, is_amd, log_fn,
-               ptrn_dict, vv):
+def gen_ph_fos(agi,
+               cdict_by_map_opcode,
+               log_fn,
+               ptrn_dict,
+               vv):
     """
     Returns a tuple (phash_lu_table, phash_fo_list, op_lu_list)
     * phash_lu_table:  is a traditional 2D dict by map, opcode to a
@@ -761,7 +767,7 @@ def gen_ph_fos(agi, cdict_by_map_opcode, is_amd, log_fn,
 
     Also writes log file for debugging.
     """
-    maps = ild_info.get_maps(is_amd)
+    maps = ild_info.get_maps_wip(agi)
     log_f = open(log_fn, 'w')
     cnames = set() # only for logging
     stats = {
