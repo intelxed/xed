@@ -41,6 +41,22 @@ def get_maps_wip(agi):
     map_names = [ mi.map_name for mi in agi.map_info ]
     return map_names
 
+def get_maps_max_id(agi):
+    return  max([mi.map_id for mi in agi.map_info])
+
+def vexvalid_to_encoding_space(vv):
+    d = { 0:'legacy',
+          1:'vex',
+          2:'evex',
+          3:'xop',
+          4:'knc' }
+    return d[vv]
+    
+def get_maps_for_space(agi,vv):
+    encspace = vexvalid_to_encoding_space(vv)
+    maps = [ mi for mi in agi.map_info if mi.space == encspace ]
+    return maps
+
 def get_maps(is_with_amd):
     if is_with_amd:
         return _ild_maps_with_amd
