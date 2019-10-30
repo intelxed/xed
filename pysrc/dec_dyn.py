@@ -20,8 +20,8 @@
 #   (a) part 1 (for OSZ/ASZ NTs),
 #   (b) part 2 (for NTs within in instr patterns), and
 #   (c) operands (mostly register NTLUFs).
-
 import os
+import collections
 
 import ildutil
 import ild_nt
@@ -40,27 +40,27 @@ _xed_reg_error_val = 'XED_ERROR_BAD_REGISTER'
 _xed_no_err_val    = 'XED_ERROR_NONE'
 _xed_op_type       = 'xed_operand_values_t'
 
-
 def _vlog(f,s):
     if verbosity.vcapture():
         f.write(s)
 
-def get_ii_constraints(ii, state_space, constraints):
-    """
-    sets constraints[xed_operand_name][xed_operand_val] = True
+def get_ii_constraints(ii, state_space):
+    """returns constraints[xed_operand_name][xed_operand_val] = True
     
-    xed_operand_name and xed_operand_val correspond to operands
-    encountered in ii (both operand deciders and constant prebindings)
-    """
+    where xed_operand_name and xed_operand_val correspond to operands
+    encountered in ii (both operand deciders and constant prebindings)"""
+    
+    constraints = collections.defaultdict(dict)
     #set constraints that come from operands deciders
     ild_nt.add_op_deciders(ii.ipattern, state_space, constraints)
     #set constraints that come from prebindings
     for name,binding in list(ii.prebindings.items()):
         if binding.is_constant():
-            if name not in constraints:
-                constraints[name] = {}
+            #if name not in constraints:
+            #    constraints[name] = {}
             val = int(binding.get_value(), 2)
-            constraints[name][val] = True    
+            constraints[name][val] = True
+    return constraints
 
 def _get_all_cnames(gi):
     """
@@ -88,8 +88,7 @@ def _gen_cdict(agi, nt_name, all_state_space):
     cdict_list = []
      
     for rule in gi.parser_output.instructions:
-        rule.xed3_constraints = {}
-        get_ii_constraints(rule, state_space, rule.xed3_constraints)
+        rule.xed3_constraints = get_ii_constraints(rule, state_space)
     
     cnames = _get_all_cnames(gi)
         
