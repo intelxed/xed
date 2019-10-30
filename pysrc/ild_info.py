@@ -24,18 +24,6 @@
 ##  in order as we all as an indicator for which maps are irregular.
 
     
-#maps without AMD
-#it's important that maps are correctly ordered
-_ild_maps = ['0x0', '0x0F', '0x0F38', '0x0F3A', 
-            'MAP4', 'MAP5', 'MAP6']
-
-#0F0F is for AMD's 3dnow 0F0F instructions
-#it's important that maps are correctly ordered
-_ild_maps_with_amd =_ild_maps + ['0x0F0F','XMAP8','XMAP9','XMAPA']
-
-#maps to dump in C header files. These are the irregular maps that
-#require complex handling.
-_ild_dump_maps = ['0x0', '0x0F']
 
 def get_maps_wip(agi):
     map_names = [ mi.map_name for mi in agi.map_info ]
@@ -44,23 +32,21 @@ def get_maps_wip(agi):
 def get_maps_max_id(agi):
     return  max([mi.map_id for mi in agi.map_info])
 
+_vexvalid_to_encoding_space_dict = { # FIXME: should come from map_info_t
+    0:'legacy',
+    1:'vex',
+    2:'evex',
+    3:'xop',
+    4:'knc'
+}
 def vexvalid_to_encoding_space(vv):
-    d = { 0:'legacy',
-          1:'vex',
-          2:'evex',
-          3:'xop',
-          4:'knc' }
-    return d[vv]
-    
+    return _vexvalid_to_encoding_space_dict[vv]
+
+
 def get_maps_for_space(agi,vv):
     encspace = vexvalid_to_encoding_space(vv)
     maps = [ mi for mi in agi.map_info if mi.space == encspace ]
     return maps
-
-def get_maps(is_with_amd):
-    if is_with_amd:
-        return _ild_maps_with_amd
-    return _ild_maps
 
 
 def get_dump_maps_modrm(agi):
@@ -77,11 +63,6 @@ def get_dump_maps_imm(agi):
             maps.append(mi.map_name)
     return maps
         
-#return maps that should be dumped in C header files.
-#Now it seems that only 0 and 0F maps should be dumped.
-def get_dump_maps():
-    return _ild_dump_maps
-
 
 #10 is enough i think
 storage_priority = 10

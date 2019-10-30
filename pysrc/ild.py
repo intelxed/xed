@@ -95,7 +95,7 @@ def gen_xed3(agi, ild_info, ild_patterns,
     ptrn_dict = {}  # map,opcode -> pattern
     maps = ild_info.get_maps_wip(agi)
     for insn_map in maps:
-            ptrn_dict[insn_map] = collections.defaultdict(list)
+        ptrn_dict[insn_map] = collections.defaultdict(list)
     for ptrn in ild_patterns:
         ptrn_dict[ptrn.insn_map][ptrn.opcode].append(ptrn)
     #FIXME:bad name
@@ -145,7 +145,6 @@ def gen_xed3(agi, ild_info, ild_patterns,
         vv_lu[str(vv)] = (ph_lu,lu_fo_list)
     _msg("all cnames: %s" % all_cnames)
 
-    
     #dump the (a) hash functions and (b) lookup tables for obtaining
     #these hash functions (at decode time). ** Static decode **
     ild_codegen.gen_static_decode(agi,
@@ -333,27 +332,6 @@ def _get_info_storage(agi, ptrn_list, priority):
     return storage
 
 
-
-def emit_add_info_call(info, list_name, f, indent=''):
-    s = []
-    tab = ' ' * 4
-    s.append(indent + "%s.append(ild_info.ild_info_t(\n%sinsn_map='%s'" %
-             (list_name,(indent+tab),info.insn_map))
-    s.append("opcode='%s'" % info.opcode)
-    s.append("incomplete_opcode=%s" % info.incomplete_opcode)
-    s.append("missing_bits=%s" % info.missing_bits)
-    s.append("has_modrm='%s'" % info.has_modrm)
-    s.append("imm_nt_seq=%s" % info.imm_nt_seq)
-    s.append("disp_nt_seq=%s" % info.disp_nt_seq)
-    s.append("eosz_nt_seq=%s" % info.eosz_nt_seq)
-    s.append("easz_nt_seq=%s" % info.easz_nt_seq)
-    s.append("ext_opcode=%s" % info.ext_opcode)
-    s.append("mode=%s" % info.mode)
-    s.append("priority=%s" % ild_info.storage_priority)
-    f.write((",\n%s" % (indent + tab)).join(s) + "))\n\n")
-
-
-
 #this is for debugging mostly. Also a good source of info on instruction set.
 def dump_patterns(patterns, fname):
     f = open(fname, 'w')
@@ -370,23 +348,11 @@ def dump_patterns(patterns, fname):
 #Maybe pattern_t should inherit from instruction_info_t
 #Let it inherit from object for now.
 class pattern_t(object):
-
-    # keys will be in a special order which is why we build it
-    # from a list.
-    phys_map_keys = []
-    phys_map_dir = {}
     map_info = None
-    first = True
 
     def __init__(self, ii, eosz_nts,
                  easz_nts, imm_nts, disp_nts, brdisp_nts, mode_space,
                  state_space):
-
-        # FIXME 2012-06-19 MJC: is there a better way to do complex
-        # init of class attributes?
-        if pattern_t.first:
-            pattern_t.first = False
-            self._setup_phys_map()
 
         self.ptrn = ii.ipattern_input
         self.ptrn_wrds = self.ptrn.split()
@@ -431,26 +397,23 @@ class pattern_t(object):
         self.easz_nt_seq = None
 
         #operand deciders of the pattern
-        #FIXME: not finished yet
-        self.constraints = collections.defaultdict(dict)
+        self.constraints = None
 
-        mi,insn_map2,opcode2 = self.get_map_opcode_wip()
-        insn_map,opcode = self.get_map_opcode()
+        self._set_constraints(ii, state_space)
+        self.vv = None
+        self._set_vexvalid()
+        self.encspace = None
+        self._set_encoding_space()
 
-        if opcode != opcode2:
-            genutil.die("Mismatch old vs new opcode {} vs {}".format(
-                opcode, opcode2))
-            
+        mi,insn_map,opcode = self._get_map_opcode()
         self.map_info = mi
-        self.insn_map = insn_map2
-        self.insn_map_old = insn_map
+        self.insn_map = insn_map
         self.opcode = opcode
 
         self.has_modrm = ild_modrm.get_hasmodrm(self.ptrn)
         self.set_ext_opcode()
 
         self.set_mode(ii, mode_space)
-
 
         self.eosz_nt_seq = ild_eosz.get_eosz_nt_seq(self.ptrn_wrds,
                                                          eosz_nts)
@@ -462,14 +425,8 @@ class pattern_t(object):
 
         self.disp_nt_seq = ild_disp.get_disp_nt_seq(self.ptrn_wrds,
                                                     disp_nts.union(brdisp_nts))
-
-        self.set_constraints(ii, state_space)
+        
         self.actions = [actions.gen_return_action(ii.inum)]
-
-        #Not implementing this yet.
-        #Will implement after code review for has_modrm
-        #self.set_hasimm()
-        #self.set_pfx_table()
 
         #FIXME: for analysis only
         if self.is_3dnow():
@@ -496,14 +453,14 @@ class pattern_t(object):
                self.ext_opcode = genutil.make_numeric(bits)
                return
 
-    def set_constraints(self, ii, state_space):
+    def _set_constraints(self, ii, state_space):
         #FIXME: this assumes, that there are no contradictions
         #between constraints on the same operand.
         #If there are, e.g. MOD=3 ... MOD=1, both values will be
         #set as legal.. check such things here?
 
         #set constraints that come from operands deciders
-        dec_dyn.get_ii_constraints(ii, state_space, self.constraints)
+        self.constraints = dec_dyn.get_ii_constraints(ii, state_space)
         #print "CONSTRAINTS: {}".format(self.constraints)
 
         #special care for VEXVALID - it makes it easy to dispatch vex
@@ -520,11 +477,23 @@ class pattern_t(object):
                 self.special_constraints[od] = self.constraints[od]
                 del self.constraints[od]
 
-
+    def _set_vexvalid(self):
+        lst = list(self.special_constraints['VEXVALID'].keys())
+        if len(lst) != 1:
+            genutil.die("Not one value for VEXVALID in {}: {}".format(self.iclass, self.ptrn))
+        self.vv = int(lst[0])
+    def _set_encoding_space(self):
+        vv = self.get_vexvalid()
+        self.encspace = ild_info.vexvalid_to_encoding_space(vv)
+        
+    def get_vexvalid(self):
+        return self.vv
+    def get_encoding_space(self):
+        return self.encspace
+    
     def set_mode(self, ii, mode_space):
         for bit_info in ii.ipattern.bits:
             if bit_info.token == _mode_token:
-                #self.refining = [111555]
                 if bit_info.test == 'eq':
                     self.mode = [bit_info.requirement]
                 else:
@@ -608,67 +577,30 @@ class pattern_t(object):
             ildutil.ild_err("Failed to parse op_str with " +
                             "from tokens %s" %( tokens))
         return hex(opcode)
-
-    def _setup_phys_map(self):
-        phys_map_list = [
-            # the right-most element of each tuple is a map name from ild_maps.py
-            # (search string, map name)
-            ('0x0F 0x38','0x0F38'),
-            ('0x0F 0x3A','0x0F3A'),
-            ('V0F38','0x0F38'),
-            ('V0F3A','0x0F3A'),
-            # V0F must be after the V0F38 & V0F3A
-            ('V0F','0x0F'), 
-            ('MAP5','MAP5'),
-            ('MAP6','MAP6') ]
             
-        # The AMD map must be before the naked 0x0F map
-        if 1: # it does not hurt to always include these.
-            phys_map_list.append(('0x0F 0x0F','0x0F0F'))
-            phys_map_list.append(('XMAP8','XMAP8'))
-            phys_map_list.append(('XMAP9','XMAP9'))
-            phys_map_list.append(('XMAPA','XMAPA'))
-
-        # and finally Map 1 ...
-        phys_map_list.append(('0x0F','0x0F'))
-
-        # keys will be in a special order which is why we build it
-        # from a list.
-        pattern_t.phys_map_keys = []
-        pattern_t.phys_map_dir = {}
-
-        for a,b in phys_map_list:
-            pattern_t.phys_map_keys.append(a)
-            pattern_t.phys_map_dir[a] = b
-    def get_map_opcode_wip(self):
+    def _get_map_opcode(self):
+        encspace = self.get_encoding_space()
         for mi in pattern_t.map_info:
-            # if no search pattern we are on the last record  for map 0
-            if mi.search_pattern == '' or self.ptrn.find(mi.search_pattern) != -1:
-                insn_map = mi.map_name # different than the stuff we use now.
-                try:
-                    opcode = self.ptrn.split()[mi.opcpos]
-                except:
-                    genutil.die("Did not find any pos {} in [{}] for {}".format(mi.opcpos,self.ptrn.split(),mi))
-                parsed_opcode = self.parse_opcode(opcode)
-                if parsed_opcode==None:  # 0x00 is also a value so we must explicitly test vs None, and not use "not parsed_opcode"
-                    genutil.die("Did failed to convert opcode {} from {} for map {}".format(opcode, self.ptrn, mi))
-                return mi, insn_map, hex(parsed_opcode)
+            if mi.space == encspace:
+                # if no search pattern we are on the last record  for map 0
+                if mi.search_pattern == '' or self.ptrn.find(mi.search_pattern) != -1:
+                    insn_map = mi.map_name # different than the stuff we use now.
+                    try:
+                        opcode = self.ptrn.split()[mi.opcpos]
+                    except:
+                        genutil.die("Did not find any pos {} in [{}] for {}".format(mi.opcpos,
+                                                                                    self.ptrn.split(),
+                                                                                    mi))
+                    parsed_opcode = self.parse_opcode(opcode)
+                    # 0x00 is also a value so we must explicitly test vs
+                    # None, and not use "not parsed_opcode"
+                    if parsed_opcode==None:  
+                        genutil.die("Did failed to convert opcode {} from {} for map {}".format(opcode,
+                                                                                                self.ptrn,
+                                                                                                mi))
+                    return mi, insn_map, hex(parsed_opcode)
         genutil.die("Did not find map / opcode for {}".format(self.ptrn))
                 
-    def get_map_opcode(self):
-        insn_map = '0x0'
-        s = self.ptrn
-        for mpat in  pattern_t.phys_map_keys:
-            if s.find(mpat) != -1:
-                insn_map = pattern_t.phys_map_dir[mpat]
-                # remove the first matching map-like thing
-                s = re.sub(mpat,'',s, count=1)
-                break
-
-        tokens = s.split()
-        opcode = self.get_opcode(tokens)
-        return insn_map, opcode
-
     def has_emit_action(self):
         ''' This function is needed in order to match the interface of rule_t
             it has no real meaning for the docoder '''

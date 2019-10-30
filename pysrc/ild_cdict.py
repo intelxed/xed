@@ -757,8 +757,8 @@ def gen_ph_fos(agi,
                ptrn_dict,
                vv):
     """
-    Returns a tuple (phash_lu_table, phash_fo_list, op_lu_list)
-    * phash_lu_table:  is a traditional 2D dict by map, opcode to a
+    Returns a tuple (phash_lu, phash_fo_list, op_lu_list)
+    * phash_lu:  is a traditional 2D dict by (map, opcode) to a
       hash function name.
     * phash_fo_list: is a list of all phash function objects created
       (we might have fos that are not in lookup table - when we have
@@ -785,7 +785,7 @@ def gen_ph_fos(agi,
     op_lu_map = {} # fn name -> fn obj
     phash_lu = {}  # map, opcode -> fn name
     for insn_map in maps:
-        phash_lu [insn_map] = {}
+        phash_lu[insn_map] = {}
         for opcode in range(0, 256):
             opcode = hex(opcode)
             cdict = cdict_by_map_opcode[insn_map][opcode]
@@ -793,8 +793,8 @@ def gen_ph_fos(agi,
                 stats['0. #map-opcodes'] += 1
                 stats['1. #entries'] += len(cdict.tuple2rule)
                 cnames = cnames.union(set(cdict.cnames))
-                _log(log_f,'MAP:%s OPCODE:%s:\n%s\n' % (insn_map, opcode,
-                                                        cdict))
+                _log(log_f,'XYZ VV: {} MAP:{} OPCODE:{}:\n{}\n'.format(
+                    vv, insn_map, opcode, cdict))
 
                 phash = ild_phash.gen_hash(cdict)
                 if phash:
@@ -829,5 +829,5 @@ def gen_ph_fos(agi,
     for key in sorted(stats.keys()):
         _log(log_f,"%s %s\n" % (key,stats[key]))
     log_f.close()
-    return phash_lu,lu_fo_list,list(op_lu_map.values())
+    return phash_lu, lu_fo_list, list(op_lu_map.values())
 

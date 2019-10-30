@@ -49,7 +49,7 @@ xed3_decoded_inst_t = 'xed_decoded_inst_t'
 xed3_operand_t      = 'xed_operand_values_t'
 
 # ild
-#FIXME: get mod_space from generator
+#FIXME: get mode_space from generator
 mode_space          = [0,1,2]
 
 def ild_err(msg):
