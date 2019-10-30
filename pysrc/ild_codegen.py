@@ -328,27 +328,38 @@ def gen_static_decode(agi,
 
     vv_num = [ int(x) for x in list(vv_lu.keys())]
     vv_index = max(vv_num) + 1
-    map_num = len(maps)
+    max_maps = ild_info.get_maps_max_id(agi)+1
     arr_name = 'xed3_phash_lu'
-    elem_type = 'xed3_find_func_t*'
-    h_file.add_code('#define XED_PHASH_MAP_LIMIT {}'.format(map_num))
-    h_file.add_code('const {} {}[{}][XED_PHASH_MAP_LIMIT] = {{'.format(
-        elem_type, arr_name, vv_index))
-    #vv is not sequential it may have holes
-    for vv in range(vv_index):
-        map_lus = []
-        #it's important that maps are correctly ordered
-        for imap in maps: # FIXME:2019-10-29 this needs to change for new map_info_t stuff
-            if vv in vv_num:
-                if all_zero_by_map[str(vv)][imap]:
-                    arr_name = '0'
+    h_file.add_code('#define XED_PHASH_MAP_LIMIT {}'.format(max_maps))
+    h_file.add_code('const xed3_find_func_t* {}[{}][XED_PHASH_MAP_LIMIT] = {{'.format(
+         arr_name, vv_index))
+
+    for vv in range(0,vv_index):
+        maps = ild_info.get_maps_for_space(agi,vv)
+        dmap = {mi.map_id:mi for mi in maps} # dict indexed by map_id
+
+        init_vals = ['0'] * max_maps 
+        for imap in range(0,max_maps):
+            if imap in dmap:
+                init_vals[imap] = _get_map_lu_name( 'xed3_phash_vv{}'.format(vv),
+                                                    dmap[imap].map_name )
+        h_file.add_code('{{ {} }},'.format(', '.join(init_vals)))
+        
+        if 0:
+            map_lus = []
+            #it's important that maps are correctly ordered
+
+            for imap in maps: # FIXME:2019-10-29 this needs to change for new map_info_t stuff
+                if vv in vv_num:
+                    if all_zero_by_map[str(vv)][imap]:
+                        arr_name = '0'
+                    else:
+                        arr_name = _get_map_lu_name('xed3_phash_vv%d' % vv, imap)
                 else:
-                    arr_name = _get_map_lu_name('xed3_phash_vv%d' % vv, imap)
-            else:
-                arr_name = '0'
-            map_lus.append(arr_name)
-        vv_arr_name = '{' + ', '.join(map_lus) + '},'
-        h_file.add_code(vv_arr_name)
+                    arr_name = '0'
+                map_lus.append(arr_name)
+            vv_arr_name = '{' + ', '.join(map_lus) + '},'
+            h_file.add_code(vv_arr_name)
     h_file.add_code('};')
     h_file.close()
 

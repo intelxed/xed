@@ -21,6 +21,7 @@
 import sys
 import re
 import shlex
+import collections
 
 import genutil
 
@@ -124,7 +125,8 @@ def _parse_map_line(s):
     mi.imm32 = t[7]
     mi.opcpos = t[8]
     mi.search_pattern = t[9]
-
+    mi.map_id_fixup=False
+    
     if mi.space not in ['legacy','vex','evex', 'xop']:
         _die("Bad map description encoding space [{}]".format(s))
     if mi.space == 'legacy':
@@ -136,9 +138,14 @@ def _parse_map_line(s):
             pass
         elif mi.legacy_opcode != 'N/A':
             _die("Bad map description legacy opcode [{}]".format(s))
-            
+
         if mi.map_id == 'N/A':
             _die("Bad map description map-id [{}]".format(s))
+        elif genutil.numeric(mi.map_id):
+            mi.map_id = genutil.make_numeric(mi.map_id)
+        else:
+            mi.map_id_fixup=True
+
     else:
         if mi.legacy_escape != 'N/A':
             _die("Bad map description legacy escape [{}]".format(s))
@@ -163,7 +170,22 @@ def _parse_map_line(s):
     # we want the longer patterns first when we sort the map_info_t.
     mi.priority = 100-len(mi.search_pattern)
     return mi
-    
+
+def fix_nonnumeric_maps(maps):
+    d = collections.defaultdict(list)
+    for mi in maps:
+        if not mi.map_id_fixup:
+            d[mi.space].append(mi.map_id)
+    mx = {} # max per key
+    for k in d.keys():
+        mx[k] = max(d[k])
+    for mi in maps:
+        if mi.map_id_fixup:
+            maxval = mx[mi.space] + 1
+            mi.map_id = maxval
+            mx[mi.space] = maxval
+            mi.map_id_fixup = False
+            
 def read_file(fn):
     lines = open(fn,'r').readlines()
     lines = map(genutil.no_comments, lines)
@@ -171,6 +193,7 @@ def read_file(fn):
     maps = [] # list of map_info_t
     for line in lines:
         maps.append( _parse_map_line(line) )
+    fix_nonnumeric_maps(maps)
     maps.sort(key=lambda x: x.priority)
     for m in maps:
         _msgb("MAPINFO",m)
