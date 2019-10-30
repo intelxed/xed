@@ -138,7 +138,7 @@ def gen_xed3(agi, ild_info, ild_patterns,
             ptrn_dict, 
             vv)
         #hold only one instance of each function
-        for op in operands_lu_list :
+        for op in operands_lu_list:
             if op.function_name not in op_lu_map:
                 op_lu_map[op.function_name] = op
 
@@ -148,10 +148,10 @@ def gen_xed3(agi, ild_info, ild_patterns,
     
     #dump the (a) hash functions and (b) lookup tables for obtaining
     #these hash functions (at decode time). ** Static decode **
-    ild_codegen.dump_vv_map_lookup(agi,
-                                   vv_lu,
-                                   list(op_lu_map.values()),
-                                   h_fn='xed3-phash.h')
+    ild_codegen.gen_static_decode(agi,
+                                  vv_lu,
+                                  list(op_lu_map.values()),
+                                  h_fn='xed3-phash.h')
     
     #dec_dyn.work(...) generates all the functions and lookup tables for
     # ** Dynamic decode **

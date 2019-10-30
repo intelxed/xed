@@ -246,10 +246,10 @@ def _test_map_all_zero(vv,phash_map_lu):
             all_zero_map[xmap]=False
     return all_zero_map
 
-def dump_vv_map_lookup(agi,
-                       vv_lu,
-                       op_lu_list,
-                       h_fn='xed3-phash.h'):
+def gen_static_decode(agi,
+                      vv_lu,
+                      op_lu_list,
+                      h_fn='xed3-phash.h'):
     """generate static decoder"""
     
     phash_headers = ['xed-ild-eosz-getters.h',
@@ -338,7 +338,7 @@ def dump_vv_map_lookup(agi,
     for vv in range(vv_index):
         map_lus = []
         #it's important that maps are correctly ordered
-        for imap in maps:
+        for imap in maps: # FIXME:2019-10-29 this needs to change for new map_info_t stuff
             if vv in vv_num:
                 if all_zero_by_map[str(vv)][imap]:
                     arr_name = '0'
