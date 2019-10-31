@@ -396,8 +396,8 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
     @param state_space: all legal values for xed operands:
                         state_space['REXW'][1] = True,
                         state_space['REXW'][0]=True
-    @param vexvalid: VEXVALID value we want to filter by. vevxavlid==0
-                    will include only patterns with vexvalid==0 constraint
+    @param vexvalid: VEXVALID value we want to filter by. vevxavlid=='0'
+                    will include only patterns with vexvalid=='0' constraint
                     value.
     @param all_ops_widths: dict of operands to their bit widths. 
 
@@ -411,10 +411,16 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
     global mod3_repl, vd7_repl, rm4_repl, masknot0_repl, mask0_repl
     cnames = []
 
+    # FIXME: 2019-10-30: patterns now know their vexvalid value and
+    # encspace, and the maps are split by encspace as well, so we can
+    # avoid the following filtering by vexvalid.
+    
     #filter by encoding space (vexvalid)
     ptrns = []
+    ivv = int(vexvalid)
     for ptrn in ptrn_list:
-        if vexvalid in list(ptrn.special_constraints['VEXVALID'].keys()):
+        #FIXME: 2019-10-30: if vexvalid in list(ptrn.special_constraints['VEXVALID'].keys()):
+        if ivv == ptrn.vv:
             ptrns.append(ptrn)
 
     if len(ptrns) == 0:
@@ -571,7 +577,7 @@ class constraint_dict_t(object):
         
         res = constraint_dict_t(cnames=cnstr_names)
         for cdict in dict_list:
-            for key in list(cdict.tuple2rule.keys()):
+            for key in cdict.tuple2rule.keys():
                 if key in res.tuple2rule:  # keys are tuples of constraint values
                     msg = []
                     msg.append("key: %s" % (key,))
@@ -612,7 +618,7 @@ class constraint_dict_t(object):
             return self._initialize_tuple2rule(cnames[1:], tuple2rule)
 
         new_tuple2rule = {}
-        for key_tuple in list(tuple2rule.keys()):
+        for key_tuple in tuple2rule.keys():
             for val in vals:
                 new_key = key_tuple + (val,)
                 new_tuple2rule[new_key] = self.rule
@@ -786,6 +792,7 @@ def gen_ph_fos(agi,
     phash_lu = {}  # map, opcode -> fn name
     for insn_map in maps:
         phash_lu[insn_map] = {}
+        zeros = 0
         for opcode in range(0, 256):
             opcode = hex(opcode)
             cdict = cdict_by_map_opcode[insn_map][opcode]
@@ -825,6 +832,10 @@ def gen_ph_fos(agi,
                     ildutil.ild_err(msg % (insn_map, opcode))
             else:
                 phash_lu[insn_map][opcode] = '(xed3_find_func_t)0'
+                zeros = zeros + 1
+        if zeros == 256: # all zero... shortcut to avoid scanning maps for "all-zeros"
+            _log(log_f, "ZEROING phash_lu for map {} vv {}\n".format(insn_map, vv))
+            phash_lu[insn_map] = None
     _log(log_f,"cnames: %s\n" %cnames)
     for key in sorted(stats.keys()):
         _log(log_f,"%s %s\n" % (key,stats[key]))

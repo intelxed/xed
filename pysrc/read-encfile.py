@@ -2339,7 +2339,7 @@ class encoder_configuration_t(object):
                 _vmsgb("DELETING IFORMS", "%s %d -> %d" % (ic,x1,x2))
             self.iarray[ic]=l
     
-        for k in list(self.deleted_instructions.keys()):
+        for k in self.deleted_instructions.keys():
             if k in self.iarray:
                 _vmsgb("DELETING", k)
                 del self.iarray[k] 
@@ -2770,7 +2770,7 @@ class encoder_configuration_t(object):
             encoder_inputs_by_iclass[iclass] = encoder_field_inputs
             encoder_nts_by_iclass[iclass] = encoder_nts
 
-        for iclass in list(encoder_inputs_by_iclass.keys()):
+        for iclass in encoder_inputs_by_iclass.keys():
             fld_set = encoder_inputs_by_iclass[iclass]
             nt_set  = encoder_nts_by_iclass[iclass]
             if vinputs():

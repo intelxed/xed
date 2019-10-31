@@ -521,10 +521,9 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
         set_vl(d,   c5byte1.s.l);        
         xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c5byte1.s.pp]);
 
-        /* MAP is a special case - although it is a derived operand in 
-        * newvex_prexix(), we need to set it here, because we use map 
-        * later in ILD - for modrm, imm and disp 
-        */
+        /* MAP is a special case - although it is a derived operand in
+        * (FIXME: fn name?) newvex_prefix(), we need to set it here,
+        * because we use map later in ILD - for modrm, imm and disp */
         xed3_operand_set_map(d, XED_ILD_MAP1);
 
         // this is a success indicator for downstreaam decoding
@@ -1103,7 +1102,6 @@ static void opcode_scanner(xed_decoded_inst_t* d)
     xed3_operand_set_pos_nominal_opcode(d, length);
     
     /* 0x0F opcodes MAPS 1,2,3 */
-    //FIXME: finish here 
     if (length < xed3_operand_get_max_bytes(d)) {
         xed_uint8_t m = xed_decoded_inst_get_byte(d, length);
         if (m == 0x38) {

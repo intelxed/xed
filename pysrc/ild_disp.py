@@ -263,8 +263,8 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
             
             #fix references in the lookup table
             for res_fun in res_fun_list:
-                for insn_map in list(l1_lookup.keys()):
-                    for opcode in list(l1_lookup[insn_map].keys()):
+                for insn_map in l1_lookup.keys():
+                    for opcode in l1_lookup[insn_map].keys():
                         cur_fn = l1_lookup[insn_map][opcode]
                         if cur_fn == res_fun.function_name:
                             l1_lookup[insn_map][opcode] = cur_buck_name

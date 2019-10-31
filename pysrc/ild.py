@@ -53,9 +53,6 @@ debugdir = '.'
 #the debug file
 debug = None
 
-#FIXME: can we get it from generator.py?
-_xed_3dnow_category = '3DNOW'
-
 _mode_token = 'MODE'
 
 #just to know how many there are and how hard it is
@@ -63,7 +60,7 @@ _mode_token = 'MODE'
 #mostly modrm-related
 def _get_nested_nts(agi):
     nested_nts = set()
-    for nt_name in list(agi.nonterminal_dict.keys()):
+    for nt_name in agi.nonterminal_dict.keys():
         g = agi.generator_dict[nt_name]
         ii = g.parser_output.instructions[0]
         if genutil.field_check(ii,'iclass'):
@@ -166,11 +163,10 @@ def work(agi):
     # Collect up interesting NT names.
     # We are going to use them when we generate pattern_t objects
     # and also when we build resolution functions.
-    eosz_nts = ild_eosz.get_eosz_binding_nts(agi)
-    easz_nts = ild_easz.get_easz_binding_nts(agi)
-    imm_nts = ild_imm.get_imm_binding_nts(agi)
-
-    disp_nts = ild_disp.get_disp_binding_nts(agi)
+    eosz_nts   = ild_eosz.get_eosz_binding_nts(agi)
+    easz_nts   = ild_easz.get_easz_binding_nts(agi)
+    imm_nts    = ild_imm.get_imm_binding_nts(agi)
+    disp_nts   = ild_disp.get_disp_binding_nts(agi)
     brdisp_nts = ild_disp.get_brdisp_binding_nts(agi)
 
     #just for debugging
@@ -203,14 +199,14 @@ def work(agi):
     all_state_space = ild_cdict.get_all_constraints_state_space(agi)
     _msg("ALL_STATE_SPACE:")
     for k,v in list(all_state_space.items()):
-            _msg("%s: %s"% (k,v))
+        _msg("%s: %s"% (k,v))
 
     #Get widths for the operands
     all_ops_widths = ild_cdict.get_state_op_widths(agi, all_state_space)
 
     _msg("ALL_OPS_WIDTHS:")
     for k,v in list(all_ops_widths.items()):
-            _msg("%s: %s"% (k,v))
+        _msg("%s: %s"% (k,v))
 
     #generate a list of pattern_t objects that describes the ISA.
     #This is the main data structure for XED3
@@ -303,7 +299,7 @@ def get_patterns(agi, eosz_nts, easz_nts,
     information for the ILD. Returns these objects as a list.
     """
     patterns = []
-    pattern_t.map_info = agi.map_info
+    pattern_t.map_info_g = agi.map_info
     for g in agi.generator_list:
         ii = g.parser_output.instructions[0]
         if genutil.field_check(ii,'iclass'):
@@ -348,11 +344,10 @@ def dump_patterns(patterns, fname):
 #Maybe pattern_t should inherit from instruction_info_t
 #Let it inherit from object for now.
 class pattern_t(object):
-    map_info = None
+    map_info_g = None 
 
-    def __init__(self, ii, eosz_nts,
-                 easz_nts, imm_nts, disp_nts, brdisp_nts, mode_space,
-                 state_space):
+    def __init__(self, ii, eosz_nts, easz_nts, imm_nts, disp_nts,
+                 brdisp_nts, mode_space, state_space):
 
         self.ptrn = ii.ipattern_input
         self.ptrn_wrds = self.ptrn.split()
@@ -392,16 +387,16 @@ class pattern_t(object):
         #we will use it to create the eosz lookup table for the pattern
         self.eosz_nt_seq = None
 
-
         #same for EASZ
         self.easz_nt_seq = None
 
         #operand deciders of the pattern
         self.constraints = None
-
         self._set_constraints(ii, state_space)
-        self.vv = None
+        
+        self.vv = None # vexvalid, integer
         self._set_vexvalid()
+        
         self.encspace = None
         self._set_encoding_space()
 
@@ -428,14 +423,7 @@ class pattern_t(object):
         
         self.actions = [actions.gen_return_action(ii.inum)]
 
-        #FIXME: for analysis only
-        if self.is_3dnow():
-            if not self.has_modrm:
-                _msg('3DNOW with no MODRM: %s\n' % self)
-
-    def is_3dnow(self):
-        return self.category == _xed_3dnow_category
-
+        
     def is_legal(self):
         return (self.legal and
                 self.opcode != None and
@@ -478,6 +466,7 @@ class pattern_t(object):
                 del self.constraints[od]
 
     def _set_vexvalid(self):
+        # FIXME: could just look at the pattern...
         lst = list(self.special_constraints['VEXVALID'].keys())
         if len(lst) != 1:
             genutil.die("Not one value for VEXVALID in {}: {}".format(self.iclass, self.ptrn))
@@ -580,7 +569,7 @@ class pattern_t(object):
             
     def _get_map_opcode(self):
         encspace = self.get_encoding_space()
-        for mi in pattern_t.map_info:
+        for mi in pattern_t.map_info_g:
             if mi.space == encspace:
                 # if no search pattern we are on the last record  for map 0
                 if mi.search_pattern == '' or self.ptrn.find(mi.search_pattern) != -1:

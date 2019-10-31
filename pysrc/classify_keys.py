@@ -90,7 +90,7 @@ def classify(kys,env):
         env.funky.append(kys)
     
 def dump_classifications(env):
-    for k in list(env.lengths.keys()):
+    for k in env.lengths.keys():
         v = env.lengths[k]
         print("LENGTH {} COUNT {}".format(k,v))
 

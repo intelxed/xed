@@ -15,6 +15,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+import collections
 
 import ild_nt
 import ildutil
@@ -226,10 +227,21 @@ def is_constant_l2_func(nt_seq, nt_dict):
 
 _ordered_maps = ['']
 
-def _test_map_all_zero(vv,phash_map_lu):
+def _test_map_all_zero_wip(vv, phash_map_lu):
+    """phash_map_lu is a dict[maps][0...255] pointing to a 2nd level
+       lookup or it might be None indicating an empty map."""
+    all_zero_map= collections.defaultdict(bool) # Default False
+    for xmap in phash_map_lu.keys():
+        omap = phash_map_lu[xmap]
+        if omap == None:
+            all_zero_map[xmap]=True
+            mbuild.msgb("ALL ZEROS", "VV={} MAP={}".format(vv, xmap))
+    return all_zero_map
+            
+def _test_map_all_zero(vv,phash_map_lu): # FIXME:2019-10-30: remove this, now unused, super-slow
     """phash_map_lu is a dict[maps][0...255] pointing to a 2nd level lookup  """
     all_zero_map = {}
-    for xmap in  list(phash_map_lu.keys()):
+    for xmap in phash_map_lu.keys():
         omap = phash_map_lu[xmap]
         all_zero=True
         for i in range(0,256):
@@ -260,7 +272,7 @@ def gen_static_decode(agi,
     all_zero_by_map = {}
     for vv in sorted(vv_lu.keys()):
         (phash_map_lu, lu_fo_list) = vv_lu[vv]
-        all_zero_by_map[vv] =_test_map_all_zero(vv,phash_map_lu)
+        all_zero_by_map[vv] = _test_map_all_zero_wip(vv, phash_map_lu)
 
         # dump a file w/prototypes and per-opcode functions pointed to
         # by the elements of the various 256-entry arrays.
@@ -275,7 +287,7 @@ def gen_static_decode(agi,
         name_pfx = 'xed3_phash_vv{}'.format(vv)
         elem_type = 'xed3_find_func_t'
 
-        dump_lookup(agi,                #dump the 256 entry array
+        dump_lookup(agi,  #dump 256-entry arrays for maps in this encspace
                     phash_map_lu,
                     name_pfx,
                     map_lu_cfn,
@@ -326,15 +338,15 @@ def gen_static_decode(agi,
 
     maps = ild_info.get_maps_wip(agi)
 
-    vv_num = [ int(x) for x in list(vv_lu.keys())]
-    vv_index = max(vv_num) + 1
-    max_maps = ild_info.get_maps_max_id(agi)+1
+    vv_num = [ int(x) for x in vv_lu.keys() ]
+    vv_max = max(vv_num) + 1
+    max_maps = ild_info.get_maps_max_id(agi) + 1
     arr_name = 'xed3_phash_lu'
     h_file.add_code('#define XED_PHASH_MAP_LIMIT {}'.format(max_maps))
     h_file.add_code('const xed3_find_func_t* {}[{}][XED_PHASH_MAP_LIMIT] = {{'.format(
-         arr_name, vv_index))
+         arr_name, vv_max))
 
-    for vv in range(0,vv_index):
+    for vv in range(0,vv_max):
         maps = ild_info.get_maps_for_space(agi,vv)
         dmap = {mi.map_id:mi for mi in maps} # dict indexed by map_id
 
@@ -379,7 +391,7 @@ def dump_lookup(agi, l1_lookup, name_pfx, lu_h_fn, headers,
     map-opcode is illegal, then l1_lookup['0x0']['0x0F'] should be set
     to some string indicating that L1 function is undefined.
 
-    all_zero_by_map is an optional dict[map] -> {True,False}. If False
+    all_zero_by_map is an optional dict[map] -> {True,False}. If True
     skip emitting the map    """
     if output_dir:
         ofn = mbuild.join(output_dir,lu_h_fn)
@@ -540,7 +552,7 @@ def gen_l1_byreg_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
 
 def _add_int_dict_dispatching(fo, int_dict, dispatch_var, data_name):
     cond_starter = 'if'
-    for interval in list(int_dict.keys()):
+    for interval in int_dict.keys():
         min = interval[0]
         max = interval[-1]
         #avoid comparing unsigned int to 0, this leads to build errors
@@ -560,7 +572,7 @@ def _add_int_dict_dispatching(fo, int_dict, dispatch_var, data_name):
 
 def _add_switch_dispatching(fo, fun_dict, dispatch_var, data_name):
     fo.add_code("switch(%s) {" % dispatch_var)
-    for key in list(fun_dict.keys()):
+    for key in fun_dict.keys():
         fo.add_code('case %s:' % key)
         call_stmt = '%s(%s)' % (fun_dict[key], data_name)
         fo.add_code_eol(call_stmt)
