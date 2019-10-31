@@ -227,7 +227,7 @@ def is_constant_l2_func(nt_seq, nt_dict):
 
 _ordered_maps = ['']
 
-def _test_map_all_zero_wip(vv, phash_map_lu):
+def _test_map_all_zero(vv, phash_map_lu):
     """phash_map_lu is a dict[maps][0...255] pointing to a 2nd level
        lookup or it might be None indicating an empty map."""
     all_zero_map= collections.defaultdict(bool) # Default False
@@ -238,25 +238,6 @@ def _test_map_all_zero_wip(vv, phash_map_lu):
             mbuild.msgb("ALL ZEROS", "VV={} MAP={}".format(vv, xmap))
     return all_zero_map
             
-def _test_map_all_zero(vv,phash_map_lu): # FIXME:2019-10-30: remove this, now unused, super-slow
-    """phash_map_lu is a dict[maps][0...255] pointing to a 2nd level lookup  """
-    all_zero_map = {}
-    for xmap in phash_map_lu.keys():
-        omap = phash_map_lu[xmap]
-        all_zero=True
-        for i in range(0,256):
-            value = omap[hex(i)]
-            #mbuild.msgb("MAP VAL", "VV={} MAP={} OPCODE={} VALUE={}".format(
-            #    vv, xmap, i, value))
-            if value != '(xed3_find_func_t)0':
-                all_zero=False
-                break
-        if all_zero:
-            mbuild.msgb("ALL ZEROS", "VV={} MAP={}".format(vv, xmap))
-            all_zero_map[xmap]=True
-        else:
-            all_zero_map[xmap]=False
-    return all_zero_map
 
 def gen_static_decode(agi,
                       vv_lu,
@@ -272,7 +253,7 @@ def gen_static_decode(agi,
     all_zero_by_map = {}
     for vv in sorted(vv_lu.keys()):
         (phash_map_lu, lu_fo_list) = vv_lu[vv]
-        all_zero_by_map[vv] = _test_map_all_zero_wip(vv, phash_map_lu)
+        all_zero_by_map[vv] = _test_map_all_zero(vv, phash_map_lu)
 
         # dump a file w/prototypes and per-opcode functions pointed to
         # by the elements of the various 256-entry arrays.
@@ -311,7 +292,6 @@ def gen_static_decode(agi,
                     elem_type, arr_name))
         h_file.close()                    
 
-
     #dump all the operand lookup functions in the list to a header file
     hdr = 'xed3-operand-lu.h'
     dump_flist_2_header(agi, hdr,
@@ -323,7 +303,6 @@ def gen_static_decode(agi,
                         op_lu_list,
                         is_private=False,
                         emit_headers=False)
-
 
     # write xed3-phash.h (top most thing).
     #
@@ -356,22 +335,7 @@ def gen_static_decode(agi,
                 init_vals[imap] = _get_map_lu_name( 'xed3_phash_vv{}'.format(vv),
                                                     dmap[imap].map_name )
         h_file.add_code('{{ {} }},'.format(', '.join(init_vals)))
-        
-        if 0:
-            map_lus = []
-            #it's important that maps are correctly ordered
 
-            for imap in maps: # FIXME:2019-10-29 this needs to change for new map_info_t stuff
-                if vv in vv_num:
-                    if all_zero_by_map[str(vv)][imap]:
-                        arr_name = '0'
-                    else:
-                        arr_name = _get_map_lu_name('xed3_phash_vv%d' % vv, imap)
-                else:
-                    arr_name = '0'
-                map_lus.append(arr_name)
-            vv_arr_name = '{' + ', '.join(map_lus) + '},'
-            h_file.add_code(vv_arr_name)
     h_file.add_code('};')
     h_file.close()
 
