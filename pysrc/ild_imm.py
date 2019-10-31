@@ -27,24 +27,14 @@ import operand_storage
 
 _imm_token         = 'IMM_WIDTH'
 _ild_t_imm_member  = 'imm_width'
-
 _uimm1_nt          = 'UIMM8_1'
-
 _l3_header_fn      = 'xed-ild-imm-l3.h'
-_l3_c_fn           = 'xed-ild-imm-l3.c'
-
 _l2_header_fn      = 'xed-ild-imm-l2.h'
 _l1_header_fn      = 'xed-ild-imm-l1.h'
+_l3_c_fn           = 'xed-ild-imm-l3.c'
 _l2_c_fn           = 'xed-ild-imm-l2.c'
-
-_eosz_const_suffix = 'CONST'
-
 _imm0_fn           = 'xed_lookup_function_0_IMM_WIDTH_CONST_l2'
-
-_l1_header_fn      = 'xed-ild-imm-l1.h'
-
 _imm_lu_header_fn  = 'xed-ild-imm-bytes.h'
-
 
 
 def get_imm_nt_seq(ptrn_wrds, imm_nts):
@@ -118,23 +108,27 @@ def get_l2_fn_from_info(info, imm_dict):
     is_const = ild_codegen.is_constant_l2_func(info.imm_nt_seq, imm_dict)
     
     if is_const:
-        l2_fn = ild_codegen.get_l2_fn(info.imm_nt_seq, _imm_token, [], None,
-              _imm0_fn, True)
+        l2_fn = ild_codegen.get_l2_fn(info.imm_nt_seq,
+                                      _imm_token,
+                                      [],
+                                      None,
+                                      _imm0_fn,
+                                      True)
     else:
-        l2_fn = ild_codegen.get_l2_fn(info.imm_nt_seq, _imm_token, 
+        l2_fn = ild_codegen.get_l2_fn(info.imm_nt_seq,
+                                      _imm_token, 
                                       info.eosz_nt_seq,
                                       ild_eosz.get_target_opname(),
-                                      _imm0_fn, False)
+                                      _imm0_fn,
+                                      False)
     return l2_fn
   
 
 
 def _gen_imm0_function(agi):
-    """
-    for patterns that don't set IMM_WIDTH token
-    these patterns have has_im==0
-    and we define a L2 lookup function that returns 0
-    """
+    """for patterns that don't set IMM_WIDTH token these patterns have
+    has_imm==0p and we define a L2 lookup function that returns 0"""
+    
     #return_type = operand_storage.get_ctype(_imm_token)
     return_type = 'void'
     fo = codegen.function_object_t(_imm0_fn, return_type,
@@ -286,7 +280,8 @@ def gen_l1_functions_and_lookup(agi, instr_by_map_opcode, imm_dict):
             #this will happen for opcodes like 0F in 0F map - totally illegal
             #opcodes, that should never be looked up in runtime.
             elif len(info_list) == 0:
-                l1_fn = '(%s)0' % (ildutil.l1_ptr_typename)
+                #l1_fn = '(%s)0' % (ildutil.l1_ptr_typename) # FIXME:2019-10-31 this needs an "empty" fn option like ild_disp.py
+                l1_fn = _imm0_fn
             else:
                 #there are no conflicts, we can use L2 function as L1
                 info = info_list[0]
