@@ -97,12 +97,12 @@ def _bool2has_modrm_str(val):
     return _has_modrm_false
     
 
-def _gen_modrm_lookup(agi,united_lookup, debug):
+def _gen_modrm_lookup(agi,instr_by_map_opcode, debug):
     modrm_lookup = {}
     for insn_map in ild_info.get_dump_maps_modrm(agi):
         modrm_lookup[insn_map] = {}
         for opcode in range(0, 256):
-            info_list = united_lookup.get_info_list(insn_map, hex(opcode))
+            info_list = instr_by_map_opcode.get_info_list(insn_map, hex(opcode))
             info_list = ild_info.get_min_prio_list(info_list)
             if len(info_list) == 0:
                 #no infos in map-opcode, illegal opcode
@@ -126,11 +126,11 @@ def _gen_modrm_lookup(agi,united_lookup, debug):
 
 
 
-def work(agi, united_lookup, debug):
+def work(agi, instr_by_map_opcode, debug):
     """
     dumps MODRM lookup tables to xed_ild_modrm.h
     """
-    modrm_lookup = _gen_modrm_lookup(agi, united_lookup, debug)
+    modrm_lookup = _gen_modrm_lookup(agi, instr_by_map_opcode, debug)
     ild_codegen.dump_lookup(agi, modrm_lookup, 'has_modrm', _modrm_header_fn,
                             [], _has_modrm_typename,
                             define_dict=_hasmodrm_defines)

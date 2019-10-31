@@ -24,6 +24,7 @@ def _die(s):
     genutil.die(s)
 
 def get_lookup(agi):
+    """Return a dict[map][opcode]->list"""
     map_names = ild_info.get_maps_wip(agi)
     lookup = {}    
     for insn_map in map_names:

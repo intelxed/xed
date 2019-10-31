@@ -70,18 +70,18 @@ def get_imm_nt_seq(ptrn_wrds, imm_nts):
 
 
 
-def get_all_imm_seq(united_lookup):
+def get_all_imm_seq(instr_by_map_opcode):
     """
-    @param united_lookup: lookup of ild_info.ild_info_t objects representing
+    @param instr_by_map_opcode: lookup of ild_info.ild_info_t objects representing
     current ISA. This lookup should have been built from storage+grammar
-    @type uinted_lookup: ild_info.ild_storage_t
+    @type instr_by_map_opcode: ild_info.ild_storage_t
     
     @return seq_list: list of all variations of IMM-binding NT sequences in
-    united_lookup.
+    instr_by_map_opcode.
     @type seq_list: [ [string] ]
     """
     all_seq = set()
-    infos = united_lookup.get_all_infos()
+    infos = instr_by_map_opcode.get_all_infos()
     for info in infos:
         #lists are unhashable, hence we have to use tuples instead
         all_seq.add(tuple(info.imm_nt_seq))
@@ -245,14 +245,14 @@ def _resolve_conflicts(agi, info_list, imm_dict):
             return fo
     return None
 
-def gen_l1_functions_and_lookup(agi, united_lookup, imm_dict):
+def gen_l1_functions_and_lookup(agi, instr_by_map_opcode, imm_dict):
     """Compute L1(conflict resolution) functions list and imm_bytes 
     lookup tables dict.
     @param agi: all generators info
     
-    @param united_lookup: the 2D lookup by map-opcode to info objects list.
-    united_lookup['0x0']['0x78'] == [ild_info1, ild_info2, ... ]
-    @type united_lookup: 
+    @param instr_by_map_opcode: the 2D lookup by map-opcode to info objects list.
+    instr_by_map_opcode['0x0']['0x78'] == [ild_info1, ild_info2, ... ]
+    @type instr_by_map_opcode: 
     {string(insn_map) : {string(opcode): [ild_info.ild_info_t]} }
     
     
@@ -268,7 +268,7 @@ def gen_l1_functions_and_lookup(agi, united_lookup, imm_dict):
                 l1_fn = _hardcoded_res_functions_imm[(insn_map, hex(opcode))]
                 l1_lookup[insn_map][hex(opcode)] = l1_fn
                 continue
-            info_list = united_lookup.get_info_list(insn_map, hex(opcode))
+            info_list = instr_by_map_opcode.get_info_list(insn_map, hex(opcode))
             #get only info objects with minimum priority
             info_list = ild_info.get_min_prio_list(info_list)
             is_conflict = _is_imm_conflict(info_list, imm_dict)
@@ -301,7 +301,7 @@ def _filter_uimm1_nt(imm_nt_names):
     return list(filter(lambda x: x!=_uimm1_nt, imm_nt_names))
 
        
-def work(agi, united_lookup, imm_nts, ild_gendir, eosz_dict, 
+def work(agi, instr_by_map_opcode, imm_nts, ild_gendir, eosz_dict, 
          debug):
     """
     main entry point of the module.
@@ -336,7 +336,7 @@ def work(agi, united_lookup, imm_nts, ild_gendir, eosz_dict,
     #get all IMM NT sequences that are used in patterns
     #The only case of IMM sequence is when we have UIMM1() NT - the second
     #immediate NT.    
-    all_imm_seq = get_all_imm_seq(united_lookup)
+    all_imm_seq = get_all_imm_seq(instr_by_map_opcode)
     debug.write('IMM SEQS: %s\n' % all_imm_seq)
 
     # L2 / Level2 functions: set imm_width
@@ -367,12 +367,12 @@ def work(agi, united_lookup, imm_nts, ild_gendir, eosz_dict,
     # These functions will be the value of map,opcode lookup tables.
     
     # These functions should be dumped after we have a look on the
-    # united_lookup mapping in order to know what conflicts exist and
+    # instr_by_map_opcode mapping in order to know what conflicts exist and
     # for each conflict to create a resolution lookup table.
     
     # L1 functions are defined by a list of ild_info_t objects that
     # have same map,opcode.
-    res = gen_l1_functions_and_lookup(agi, united_lookup, nt_dict)
+    res = gen_l1_functions_and_lookup(agi, instr_by_map_opcode, nt_dict)
 
     l1_functions,l1_lookup = res
 

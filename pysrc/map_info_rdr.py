@@ -39,6 +39,7 @@ class map_info_t(object):
         self.map_id = None  # N/A or 0,1,2,3,... 8,9,0xA
         # "var" means variable, requires a table generated based on defined instructions
         self.modrm = None  # var,yes,no, has modrm
+        self.disp = None  # var,yes,no, has disp
         self.imm8 = None   # var,yes,no, has imm8
         self.imm32 = None  # var,yes,no, has imm32
         self.opcpos = None  # 0,1,2, ... -1 (last) opcode position in pattern
@@ -79,6 +80,9 @@ class map_info_t(object):
     def has_regular_modrm(self):
         return self.modrm == 'yes'
     
+    def has_variable_disp(self):
+        return self.disp == 'var'
+    
     def has_variable_imm8(self):
         return self.imm8 == 'var'
     def has_regular_imm8(self):
@@ -97,6 +101,7 @@ class map_info_t(object):
         s.append("legacyopc: {}".format(self.legacy_opcode))
         s.append("mapid: {}".format(self.map_id))
         s.append("modrm: {}".format(self.modrm))
+        s.append("disp: {}".format(self.disp))
         s.append("imm8: {}".format(self.imm8))
         s.append("imm32: {}".format(self.imm32))
         s.append("opcpos: {}".format(self.opcpos))
@@ -104,27 +109,32 @@ class map_info_t(object):
         s.append("search_pattern: {}".format(self.search_pattern))        
         return " ".join(s)
 
+_map_info_fields = ['map_name',
+                    'space',
+                    'legacy_escape',
+                    'legacy_opcode',
+                    
+                    'map_id',
+                    'modrm',
+                    'disp',
+                    'imm8',
+                    
+                    'imm32',
+                    'opcpos',
+                    'search_pattern' ]
 
 def _parse_map_line(s):
+    global _map_info_fields
     # shlex allows for quoted substrings containing spaces as
     # individual args.
     t = shlex.split(s.strip())
-    if len(t) != 10:
+    if len(t) != len(_map_info_fields):
         _die("Bad map description line: [{}]".format(s))
     mi = map_info_t()
-    
+    for i,fld in enumerate(_map_info_fields):
+        setattr(mi,fld,t[i])
     # this gets used in function names so must only be legal characters
-    mi.map_name = re.sub('-', '_', t[0])
-    
-    mi.space = t[1]
-    mi.legacy_escape = t[2]
-    mi.legacy_opcode = t[3]
-    mi.map_id = t[4]
-    mi.modrm = t[5]
-    mi.imm8 = t[6]
-    mi.imm32 = t[7]
-    mi.opcpos = t[8]
-    mi.search_pattern = t[9]
+    mi.map_name = re.sub('-', '_', mi.map_name)
     mi.map_id_fixup=False
     
     if mi.space not in ['legacy','vex','evex', 'xop']:
@@ -156,6 +166,8 @@ def _parse_map_line(s):
         else:
             _die("Bad map description map id [{}]".format(s))
 
+    if mi.disp not in ['var','no']:
+        _die("Bad map description disp specifier [{}]".format(s))
     if mi.modrm not in ['var','yes','no']:
         _die("Bad map description modrm specifier [{}]".format(s))
     if mi.imm8 not in ['var','yes','no']:

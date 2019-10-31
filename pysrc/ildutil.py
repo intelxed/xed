@@ -41,7 +41,7 @@ ild_header          = 'xed-ild.h'
 # ild
 ild_private_header  = 'xed-ild-private.h'
 
-#ild
+#ild_imm, ild_eosz, ild_easz, ild_disp
 l1_ptr_typename     = 'xed_ild_l1_func_t'
 
 # dec_dyn

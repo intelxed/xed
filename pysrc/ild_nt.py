@@ -110,12 +110,12 @@ def gen_nt_seq_lookup(agi, nt_seq, target_op, target_type=None):
     state_space = agi.common.state_space
     gi = agi.generator_dict[nt_seq[0]]
     argnames = generate_lookup_function_basis(gi,state_space)
-    base_dict = gen_lookup_dict(agi, nt_seq[0], target_op, argnames)
+    base_dict = _gen_lookup_dict(agi, nt_seq[0], target_op, argnames)
     if not base_dict:
         return None
     map_list = []
     for nt_name in nt_seq[1:]:
-        lookup_dict = gen_lookup_dict(agi, nt_name, target_op, argnames)
+        lookup_dict = _gen_lookup_dict(agi, nt_name, target_op, argnames)
         if not lookup_dict:
             return None
         map_list.append(lookup_dict)
@@ -123,8 +123,8 @@ def gen_nt_seq_lookup(agi, nt_seq, target_op, target_type=None):
     comb_map = combine_mapping_seq(base_dict, map_list)
     if not comb_map:
         return None
-    return gen_lookup_array(agi, nt_seq, comb_map, target_op, argnames,
-                            target_type)
+    return _gen_lookup_array(agi, nt_seq, comb_map, target_op, argnames,
+                             target_type)
 
 #nt_name: string - the name of NT that defines the mapping
 #target_opname: string - the name of the operand the mapping maps to
@@ -140,7 +140,7 @@ def gen_nt_seq_lookup(agi, nt_seq, target_op, target_type=None):
 #same value. It happens when there are other operands bounded too. We need
 #to detect such cases and generate empty dict so that constant function would
 #be generated for such NTs.
-def gen_lookup_dict(agi, nt_name, target_opname, argnames):
+def _gen_lookup_dict(agi, nt_name, target_opname, argnames):
     gi = agi.generator_dict[nt_name]
     options = agi.common.options
     state_space = agi.common.state_space
@@ -233,7 +233,7 @@ def _is_constant_mapping(val_dict):
     operand values.
     @type val_dict:
     [ ([ dict(opname:string -> opval:string) ], value:string) ]
-    The return type of gen_lookup_dict function
+    The return type of _gen_lookup_dict function
     
     @return bool: True if mapping defined by val_dict always returns same 
     value. And hence we can define a constant function, not dependent on
@@ -258,7 +258,7 @@ def _is_constant_mapping(val_dict):
 #Parameters:
 #nt_seq: [string] - list of NT names that define the mapping
 #val_dict: [ ([{token:string -> index_value:string}], return-value:string) ]
-#(the type returned by gen_lookup_dict), it defines the mapping
+#(the type returned by _gen_lookup_dict), it defines the mapping
 #opname: string - the name of target operand e.g. EOSZ
 #argnames: {string -> { string -> Boolean } } a dict of dicts 
 #optype: string - the type of target op (the return type of the 
@@ -270,8 +270,8 @@ def _is_constant_mapping(val_dict):
 #first key is operand decider name, second key is operand decider value
 #argnames['MOD']['0'] == True iff operand decider MOD can have value '0'
 #returns codegen.array_gen_t lookup array that defines the mapping
-def gen_lookup_array(agi, nt_seq, val_dict, opname, argnames,
-                     optype=None, flevel=''):
+def _gen_lookup_array(agi, nt_seq, val_dict, opname, argnames,
+                      optype=None, flevel=''):
     operand_storage = agi.operand_storage
     (lu_arr, init_fn, lu_fn) = gen_lu_names(nt_seq, opname, level=flevel)
     if not optype:
@@ -383,9 +383,9 @@ def gen_nt_lookup(agi, nt_name, target_op, target_type=None, level=''):
     state_space = agi.common.state_space
     gi = agi.generator_dict[nt_name]
     argnames = generate_lookup_function_basis(gi,state_space)
-    all_values = gen_lookup_dict(agi, nt_name, target_op, argnames)
-    return gen_lookup_array(agi, [nt_name], all_values, target_op, argnames,
-                            target_type, flevel=level)
+    all_values = _gen_lookup_dict(agi, nt_name, target_op, argnames)
+    return _gen_lookup_array(agi, [nt_name], all_values, target_op, argnames,
+                             target_type, flevel=level)
 
 #Parameters:
 #base_row: {op_name:string -> op_val:string}
@@ -415,7 +415,7 @@ def row_match(base_row, row):
 
 #base_mapping and all_values are both of the type
 #[ ([dict token->index_value], return-value) ] 
-#the gen_lookup_dict return type.
+#the _gen_lookup_dict return type.
 #For each row defined in all_values mapping that matches a row from bas_mapping
 #this function sets the mapped value to the all_values mapping value.
 #For example when we have OSZ_NONTERM-CR_BASE NT sequence,
@@ -450,7 +450,7 @@ def override_mapping(base_mapping, all_values):
 
 #Parameters:
 #base_mapping: [ ([{token:string -> index_value:string}], return-value:string)]
-#the gen_lookup_dict return type, it is the object that defines the mapping
+#the _gen_lookup_dict return type, it is the object that defines the mapping
 #map_list: list of objects of the same type with base_mapping
 #take a list of mapping objects and return a mapping
 #object that is a result of overriding of first mapping by next ones

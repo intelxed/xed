@@ -63,6 +63,12 @@ def get_dump_maps_imm(agi):
             maps.append(mi.map_name)
     return maps
         
+def get_dump_maps_disp(agi):
+    maps = []
+    for mi in agi.map_info:
+        if mi.has_variable_disp():
+            maps.append(mi.map_name)
+    return maps
 
 #10 is enough i think
 storage_priority = 10

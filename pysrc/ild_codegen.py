@@ -436,14 +436,12 @@ def _gen_byreg_fun_dict(info_list, nt_dict, is_conflict_fun,
     return fun_dict
 
 def _gen_intervals_dict(fun_dict):
-    """
-    If there are consequent keys that map to the same value, we want to unite
-    them to intervals in order to have less conditional branches in code.
-    For example if fun_dict is something like:
-    {0:f1, 1:f1, 2:f2, 3:f2 , ...}
-    we will generate dict
-    {(0,1):f1, (2,3,4,5,6,7):f2}
-    """
+    """If there are keys that map to the same value, we want to unite
+    them to intervals in order to have less conditional branches in
+    code.  For example if fun_dict is something like: 
+    {0:f1, 1:f1,  2:f2, 3:f2 , ...} then we will generate dict
+    {(0,1):f1, (2,3,4,5,6,7):f2} """
+    
     sorted_keys = sorted(fun_dict.keys())
     cur_int = [sorted_keys[0]]
     int_dict = {}
