@@ -73,25 +73,21 @@ def _get_all_cnames(gi):
     return set(cnames)
     
 def _gen_cdict(agi, nt_name, all_state_space):
-    """
-    Creates a ild_cdict.constraint_dict_t corresponding to NT 
-    defined by gi.
-    """
+    """Creates a ild_cdict.constraint_dict_t corresponding to NT defined
+    by gi.    """
+    
     gi = agi.generator_dict[nt_name]
     options = agi.common.options
     
     state_space = {}
     for opname in all_state_space:
         state_space[opname] = list(all_state_space[opname].keys())
-    
-    
-    cdict_list = []
-     
+
     for rule in gi.parser_output.instructions:
         rule.xed3_constraints = get_ii_constraints(rule, state_space)
     
     cnames = _get_all_cnames(gi)
-        
+    cdict_list = []        
     for rule in gi.parser_output.instructions:
         cdict = ild_cdict.constraint_dict_t(
                                     cnames, 
@@ -99,12 +95,13 @@ def _gen_cdict(agi, nt_name, all_state_space):
                                     all_state_space,
                                     rule)
         cdict_list.append(cdict)
+        
     msg = "cdict conflict in NT %s\n" % nt_name
-    united_dict = ild_cdict.constraint_dict_t.unite_dicts(
+    all_cdict = ild_cdict.constraint_dict_t.unite_dicts(
                                             cdict_list, 
                                             msg, 
                                             cnames)
-    return united_dict
+    return all_cdict
 
 
 _xed3_capture_fn_pfx = 'xed3_capture'

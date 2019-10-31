@@ -30,27 +30,16 @@ import mbuild
 
 _disp_token        = 'DISP_WIDTH'
 _brdisp_token      = 'BRDISP_WIDTH'
-
 _ild_t_disp_member = 'disp_width'
-
-_l3_header_fn      = 'xed-ild-disp-l3.h'
 _l3_c_fn           = 'xed-ild-disp-l3.c'
-
+_l2_c_fn           = 'xed-ild-disp-l2.c'
+_l3_header_fn      = 'xed-ild-disp-l3.h'
 _l2_header_fn      = 'xed-ild-disp-l2.h'
 _l1_header_fn      = 'xed-ild-disp-l1.h'
-_l2_c_fn           = 'xed-ild-disp-l2.c'
-
 _const_suffix      = 'CONST'
-
 _empty_fn          = 'xed_lookup_function_EMPTY_DISP_CONST_l2'
 
-_l1_header_fn      = 'xed-ild-disp-l1.h'
-
 _disp_lu_header_fn = 'xed-ild-disp-bytes.h'
-
-_l1_ptr_typename   = 'disp_bytes_l1_func_t'
-
-
 
 def get_disp_nt_seq(ptrn_wrds, disp_nts):
     """
@@ -68,18 +57,16 @@ def get_disp_nt_seq(ptrn_wrds, disp_nts):
 
 
 
-def get_all_disp_seq(united_lookup):
-    """
-    @param uinted_lookup: lookup of ild_info.ild_info_t objects representing
-    current ISA. This lookup should have been built from storage+grammar
-    @type uinted_lookup: ild_info.ild_storage_t
+def get_all_disp_seq(instr_by_map_opcode):
+    """@param instr_by_map_opcode: dict(map,opcode) -> list
+    ild_info.ild_info_t objects representing current ISA. 
     
     @return seq_list: list of all variations of DISP-binding NT sequences in
-    united_lookup.
-    @type seq_list: [ [string] ]
-    """
+    instr_by_map_opcode.
+    @type seq_list: [ [string] ]    """
+    
     all_seq = set()
-    infos = united_lookup.get_all_infos()
+    infos = instr_by_map_opcode.get_all_infos()
     #infos = plist
     for info in infos:
         #lists are unhashable, hence we have to use tuples instead
@@ -151,10 +138,8 @@ def _is_disp_conflict(info_list, disp_dict):
 
 #a list of conflict resolution functions to use when we have conflicts 
 #between info objects in the same map-opcode
-_resolution_functions = [
-                        ild_codegen.gen_l1_byreg_resolution_function,
-                        ild_codegen.gen_l1_bymode_resolution_function
-                        ]
+_resolution_functions = [ ild_codegen.gen_l1_byreg_resolution_function,
+                          ild_codegen.gen_l1_bymode_resolution_function ]
 
 def _resolve_conflicts(agi, info_list, disp_dict):
     """Try to resolve conflicts by applying the conflict resolution
@@ -172,7 +157,7 @@ def _resolve_conflicts(agi, info_list, disp_dict):
     
     """
     for func in _resolution_functions:
-        fo = func(agi,info_list, disp_dict, _is_disp_conflict,
+        fo = func(agi, info_list, disp_dict, _is_disp_conflict,
                         get_l2_fn_from_info, 'DISP') 
         if fo:
             return fo
@@ -180,24 +165,21 @@ def _resolve_conflicts(agi, info_list, disp_dict):
 
 _hardcoded_res_functions_disp = {}
 
-def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
+def gen_l1_functions_and_lookup(agi, instr_by_map_opcode, disp_dict):
     """Compute L1(conflict resolution) functions list and disp_bytes lookup 
     tables dict.
     @param agi: all generators info
     
-    @param united_lookup: the 2D lookup by map-opcode to info objects list.
-    united_lookup['0x0']['0x78'] == [ild_info1, ild_info2, ... ]
-    @type united_lookup: 
-    {string(insn_map) : {string(opcode): [ild_info.ild_info_t]} }
-    
-    
-    """
+    @param instr_by_map_opcode: the 2D lookup by map-opcode to info objects list.
+    instr_by_map_opcode['0x0']['0x78'] == [ild_info1, ild_info2, ... ]
+    @type instr_by_map_opcode: 
+    {string(insn_map) : {string(opcode): [ild_info.ild_info_t]} }    """
     #list of L1 function objects that resolve conflicts in map-opcodes
-    #functions. This list will be dumped to xed_ild_imm_l1.h
+    #functions. This list will be dumped to xed-ild--disp-l1.h
     l1_resolution_fos = []
     
     #dictionary l1_lookup[insn_map][opcode] = l1_function_name
-    #this dictionary will be used to dump the has_imm lookup tables
+    #this dictionary will be used to dump the has_disp lookup tables
     l1_lookup = {}
     
     #dictionary from function body(as string) to list of function objects
@@ -206,8 +188,7 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
     #not define same functions more than once.
     l1_bucket_dict = collections.defaultdict(list)
     
-    
-    for insn_map in ild_info.get_maps_wip(agi):
+    for insn_map in ild_info.get_dump_maps_disp(agi):
         l1_lookup[insn_map] = {}
         for opcode in range(0, 256):
             #look in the hardcoded resolution functions
@@ -215,7 +196,7 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
                 l1_fn = _hardcoded_res_functions_disp[(insn_map, hex(opcode))]
                 l1_lookup[insn_map][hex(opcode)] = l1_fn
                 continue
-            info_list = united_lookup.get_info_list(insn_map, hex(opcode))
+            info_list = instr_by_map_opcode.get_info_list(insn_map, hex(opcode))
             #get only info objects with minimum priority
             info_list = ild_info.get_min_prio_list(info_list)
             is_conflict = _is_disp_conflict(info_list, disp_dict)
@@ -234,7 +215,9 @@ def gen_l1_functions_and_lookup(agi, united_lookup, disp_dict):
                 #This will happen for opcodes like 0F in 0F map - totally 
                 #illegal opcodes, that should never be looked up in runtime.
                 #We define NULL pointer for such map-opcodes
-                l1_fn = '(%s)0' % (ildutil.l1_ptr_typename)
+                
+                #l1_fn = '(%s)0' % (ildutil.l1_ptr_typename) # FIXME:2019-10-31: remove this
+                l1_fn = _empty_fn
             else:
                 #there are no conflicts, we can use L2 function as L1
                 info = info_list[0]
@@ -285,10 +268,9 @@ def _gen_empty_function(agi):
     and we define a L2 lookup function that does nothing
     """
     operand_storage = agi.operand_storage
-    #return_type = operand_storage.get_ctype(_imm_token)
     return_type = 'void'
     fo = codegen.function_object_t(_empty_fn, return_type,
-                                       static=True, inline=True)
+                                   static=True, inline=True)
     data_name = 'x'
     fo.add_arg(ildutil.ild_c_type + ' %s' % data_name)
     fo.add_code('/*This function does nothing for map-opcodes whose')
@@ -313,17 +295,14 @@ def _gen_l3_array_dict(agi, nt_names, target_op):
     return nt_dict
 
        
-def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir, 
+def work(agi, instr_by_map_opcode,  disp_nts, brdisp_nts, ild_gendir, 
          eosz_dict, easz_dict, debug):
-    """
-    Main entry point of the module.
-    Generates all the L1-3 functions and dumps disp_bytes lookup
-    tables.
-    """
+    """Main entry point of the module.  Generates all the L1-3 functions
+    and dumps disp_bytes lookup tables.    """
     
     #get all used DISP NT sequences that appear in patterns
     #we are going to generate L1-3 functions only for these sequences
-    all_disp_seq = get_all_disp_seq(united_lookup)
+    all_disp_seq = get_all_disp_seq(instr_by_map_opcode)
     
     #check that all sequences are actually single NTs 
     #(each sequence has only one NT)
@@ -341,14 +320,12 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
     disp_nts = list(filter(lambda nt: nt in all_nts, disp_nts))
     brdisp_nts = list(filter(lambda nt: nt in all_nts, brdisp_nts))
 
-    
     debug.write('DISP SEQS: %s\n' % all_disp_seq)
     debug.write('DISP NTs: %s\n' % disp_nts)
     debug.write('BRDISP NTs: %s\n' % brdisp_nts)
     
     brdisp_dict = _gen_l3_array_dict(agi, brdisp_nts, _brdisp_token)
-    disp_dict = _gen_l3_array_dict(agi, disp_nts, _disp_token)
-
+    disp_dict   = _gen_l3_array_dict(agi, disp_nts,   _disp_token)
     
     nt_arr_list = list(brdisp_dict.values()) + list(disp_dict.values())
     #create function that calls all initialization functions
@@ -361,9 +338,8 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
     
     #create L2 functions
     
-    #The thing is that we need to know for each
-    #DISP NT whether it depends on EOSZ or EASZ and supply appropriate arg_dict
-    #to gen_l2_func_list()
+    #We need to know for each DISP NT whether it depends on EOSZ or
+    #EASZ and supply appropriate arg_dict to gen_l2_func_list()
     l2_functions = []
     eosz_op = ild_eosz.get_target_opname()
     easz_op = ild_easz.get_target_opname()
@@ -392,21 +368,27 @@ def work(agi, united_lookup,  disp_nts, brdisp_nts, ild_gendir,
     
     #create the L1 functions and lookup tables
     
-    #unite brdisp and dips dictionaries
+    #join the brdisp and disp dictionaries
     disp_dict.update(brdisp_dict)
     
     #generate L1 functions and lookup tables
-    res = gen_l1_functions_and_lookup(agi, united_lookup, disp_dict)
-
-    l1_functions,l1_lookup = res
+    l1_functions, l1_lookup = gen_l1_functions_and_lookup(agi,
+                                                          instr_by_map_opcode,
+                                                          disp_dict)
     #dump L1 functions
-    ild_codegen.dump_flist_2_header(agi, _l1_header_fn, [_l2_header_fn], 
+    ild_codegen.dump_flist_2_header(agi,
+                                    _l1_header_fn,
+                                    [_l2_header_fn], 
                                     l1_functions)
     #dump lookup tables
-    headers = [_l1_header_fn, ildutil.ild_private_header,
-               operand_storage.get_operand_accessors_fn()]
-    ild_codegen.dump_lookup(agi, l1_lookup, _ild_t_disp_member, 
-                            _disp_lu_header_fn, headers, 
+    headers = [ _l1_header_fn,
+                ildutil.ild_private_header,
+                operand_storage.get_operand_accessors_fn() ]
+    ild_codegen.dump_lookup(agi,
+                            l1_lookup,
+                            _ild_t_disp_member, 
+                            _disp_lu_header_fn,
+                            headers, 
                             ildutil.l1_ptr_typename)
 
 

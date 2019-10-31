@@ -16,7 +16,7 @@
 #  
 #END_LEGAL
 
-#  name     space   esc  mapopc mapno modrm imm8 imm32 opcpos pattern
-vex-map1     vex     N/A  N/A    1     yes   no   no   1       'V0F'
-vex-map2     vex     N/A  N/A    2     yes   no   no   1       'V0F38'
-vex-map3     vex     N/A  N/A    3     yes   yes  no   1       'V0F3A'
+#  name     space   esc  mapopc mapno modrm disp imm8 imm32 opcpos pattern
+vex-map1     vex     N/A  N/A    1     yes  no    no   no   1       'V0F'
+vex-map2     vex     N/A  N/A    2     yes  no    no   no   1       'V0F38'
+vex-map3     vex     N/A  N/A    3     yes  no    yes  no   1       'V0F3A'
