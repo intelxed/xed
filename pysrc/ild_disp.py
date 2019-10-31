@@ -262,11 +262,10 @@ def gen_l1_functions_and_lookup(agi, instr_by_map_opcode, disp_dict):
 
 
 def _gen_empty_function(agi):
-    """
-    This function is for patterns that don't set [BR]DISP_WIDTH tokens.
-    These patterns have disp_bytes set earlier in xed-ild.c
-    and we define a L2 lookup function that does nothing
-    """
+    """This function is for patterns that don't set [BR]DISP_WIDTH tokens.
+    These patterns have disp_bytes set earlier in xed-ild.c and we
+    define a L2 lookup function that does nothing    """
+    
     operand_storage = agi.operand_storage
     return_type = 'void'
     fo = codegen.function_object_t(_empty_fn, return_type,

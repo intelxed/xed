@@ -920,65 +920,57 @@ static void disp_scanner(xed_decoded_inst_t* d)
     xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
     xed_uint8_t disp_bytes;
     xed_uint8_t length = xed_decoded_inst_get_length(d);
-    /*Checked dumped tables of maps 2 ,3 and 3dnow:
-      they all have standard displacement resolution, we are not going
-      to use their lookup tables*/
-  if (map < XED_ILD_MAP2) {
-      /*get the L1 function pointer and use it */
+    if (map < XED_ILD_MAP2) {
+        /*get the L1 function pointer and use it */
         xed_ild_l1_func_t fptr = disp_bits_2d[map][opcode];
-        /*most map-opcodes have disp_bytes set in modrm/sib scanners
-          for those we  have L1 functions that do nothing*/
-        if (fptr == 0){
-            xed3_operand_set_error(d,XED_ERROR_GENERAL_ERROR);
+        xed_assert(fptr); // fptr is always valid by design
+        (*fptr)(d);
+    }
+    /*All other maps should have been set earlier*/
+    disp_bytes = bits2bytes(xed3_operand_get_disp_width(d));
+    if (disp_bytes) {
+        xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
+        if ((length + disp_bytes) <= max_bytes) {
+
+            //set disp value
+            const xed_uint8_t* itext = d->_byte_array._dec;
+            xed_uint8_t* disp_ptr = (xed_uint8_t*)(itext + length);
+          
+            // sign extend the displacement to 64b while passing to accessor
+          
+            switch(ilog2[disp_bytes]) { 
+              case 0: { // 1B=8b. ilog2(1) = 0
+                  xed_int8_t byte = *(xed_int8_t*)disp_ptr;
+                  xed3_operand_set_disp(d, byte);  
+                  break;
+              }
+              case 1: { // 2B=16b ilog2(2) = 1
+                  xed_int16_t word = *(xed_int16_t*)disp_ptr;
+                  xed3_operand_set_disp(d, word);  
+                  break;
+              }
+              case 2: { // 4B=32b ilog2(4) = 2
+                  xed_int32_t dword = *(xed_int32_t*)disp_ptr;
+                  xed3_operand_set_disp(d, dword);
+                  break;
+              }
+              case 3: {// 8B=64b ilog2(8) = 3
+                  xed_int64_t qword = *(xed_int64_t*)disp_ptr;
+                  xed3_operand_set_disp(d, qword);
+                  break;
+              }
+              default:
+                xed_assert(0);
+            }
+
+            xed3_operand_set_pos_disp(d, length);
+            xed_decoded_inst_set_length(d, length + disp_bytes);
+        }
+        else {
+            too_short(d);
             return;
         }
-        (*fptr)(d);
-  }
-  /*All other maps should have been set earlier*/
-  disp_bytes = bits2bytes(xed3_operand_get_disp_width(d));
-  if (disp_bytes) {
-      xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
-      if ((length + disp_bytes) <= max_bytes) {
-
-          //set disp value
-          const xed_uint8_t* itext = d->_byte_array._dec;
-          xed_uint8_t* disp_ptr = (xed_uint8_t*)(itext + length);
-          
-          // sign extend the displacement to 64b while passing to accessor
-          
-          switch(ilog2[disp_bytes]) { 
-            case 0: { // 1B=8b. ilog2(1) = 0
-                xed_int8_t byte = *(xed_int8_t*)disp_ptr;
-                xed3_operand_set_disp(d, byte);  
-                break;
-            }
-            case 1: { // 2B=16b ilog2(2) = 1
-                xed_int16_t word = *(xed_int16_t*)disp_ptr;
-                xed3_operand_set_disp(d, word);  
-                break;
-            }
-            case 2: { // 4B=32b ilog2(4) = 2
-                xed_int32_t dword = *(xed_int32_t*)disp_ptr;
-                xed3_operand_set_disp(d, dword);
-                break;
-            }
-            case 3: {// 8B=64b ilog2(8) = 3
-                xed_int64_t qword = *(xed_int64_t*)disp_ptr;
-                xed3_operand_set_disp(d, qword);
-                break;
-            }
-            default:
-              xed_assert(0);
-          }
-
-          xed3_operand_set_pos_disp(d, length);
-          xed_decoded_inst_set_length(d, length + disp_bytes);
-      }
-      else {
-          too_short(d);
-          return;
-      }
-  }
+    }
 }
 
 
@@ -1027,17 +1019,11 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
     xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
     xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
     xed_uint8_t imm_bits = xed3_operand_get_imm_width(d);
-    /* FIXME: not taking care of illegal map-opcodes yet.
-    Probably should fill them in ild_storage.py 
-    Now illegal map-opcodes have 0 as function pointer in lookup tables*/
     if (!imm_bits) {
          if (map < XED_ILD_MAP2) {
              /*get the L1 function pointer and use it */
             xed_ild_l1_func_t fptr = imm_bits_2d[map][opcode];
-            if (fptr == 0){
-                xed3_operand_set_error(d,XED_ERROR_GENERAL_ERROR);
-                return;
-            }
+            xed_assert(fptr); // fptr guaranteed to be valid by construction
             (*fptr)(d);
             return;
          }
