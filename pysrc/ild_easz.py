@@ -171,7 +171,7 @@ def work(agi, united_lookup, easz_nts, ild_gendir, debug):
                           mbuild.join('include-private', _easz_header_fn),
                           init_f)
     getter_fos = []
-    for names in list(nt_seq_arrays.keys()):
+    for names in nt_seq_arrays.keys():
         arr = nt_seq_arrays[names]
         getter_fo = ild_codegen.gen_derived_operand_getter(agi, _easz_token,
                                                            arr, list(names))

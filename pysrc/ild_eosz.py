@@ -209,7 +209,7 @@ def work(agi, united_lookup, eosz_nts, ild_gendir, debug):
     #and return EOSZ value (corresponding to EOSZ NT sequence 
     #that they represent) 
     getter_fos = []
-    for names in list(nt_seq_arrays.keys()):
+    for names in nt_seq_arrays.keys():
         arr = nt_seq_arrays[names]
         getter_fo = ild_codegen.gen_derived_operand_getter(agi, _eosz_token,
                                                            arr, list(names))

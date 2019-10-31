@@ -628,7 +628,7 @@ def compute_state_space(state_dict):
    # a dictionary of the values of a each operand_decider
    state_values = {}
    
-   for k in list(state_dict.keys()):
+   for k in state_dict.keys():
       vals = state_dict[k]
       for wrd in vals.list_of_str:
          m = restriction_pattern.search(wrd)
@@ -1345,7 +1345,7 @@ class instruction_info_t(partitionable_info_t):
       if reached_closing_bracket:
          if found_operands == False:
             die("Did not find operands for " + self.iclass)
-         for k in  list(structured_input_dict.keys()):
+         for k in  structured_input_dict.keys():
             if structured_input_dict[k] == False:
                if structured_input_tags[k]:
                   die("Required token missing: "+ k)
@@ -3485,9 +3485,9 @@ def emit_enum_info(agi):
    graph."""
    msge('emit_enum_info')
    # make everything uppercase
-   nonterminals = [  s.upper() for s in list(agi.nonterminal_dict.keys())]
-   operand_types = [ s.upper() for s in list(agi.operand_types.keys())]
-   operand_widths = [ s.upper() for s in list(agi.operand_widths.keys())]
+   nonterminals = [  s.upper() for s in agi.nonterminal_dict.keys()]
+   operand_types = [ s.upper() for s in agi.operand_types.keys()]
+   operand_widths = [ s.upper() for s in agi.operand_widths.keys()]
 
    operand_names = [ s.upper() for s in 
                      list(agi.operand_storage.get_operands().keys()) ]
@@ -3525,7 +3525,7 @@ def emit_enum_info(agi):
    #nt_enum_numeric_value -> nt_name
    xed3_nt_enum_val_map = {}
    upper_dict = {}
-   for nt_name in list(agi.nonterminal_dict.keys()):
+   for nt_name in agi.nonterminal_dict.keys():
        nt_name_upper = nt_name.upper()
        upper_dict[nt_name_upper] = nt_name 
    for i,upper_nt in enumerate(nonterminals):
@@ -4004,7 +4004,7 @@ def find_common_operand_sequences(agi):
 
     msgb("Unique Operand Sequences", str(next_oid_seqeuence))
     n = 0
-    for k in list(global_oid_sequences.keys()):
+    for k in global_oid_sequences.keys():
         n = n + len(k.lst)
     global_max_operand_sequences = n
     msgb("Number of required operand sequence pointers", 
@@ -4325,7 +4325,7 @@ def compress_iform_strings(values):
                                                             len(bases),
                                                             len(operand_sigs)))
 
-    if len(h) != (max( [ int(x) for x in list(h.keys())] )+1):
+    if len(h) != (max( [ int(x) for x in h.keys() ] )+1):
         print("PROBLEM IN h LENGTH")
     # make an numerically indexed version of the bases table
     bi = {}
@@ -4568,7 +4568,7 @@ def merge_child_nodes(options,node):
    # more "next" nodes.
    tnode = {}
    for k,child in node.next.items():      # children  # MERGING 
-      for j in list(child.next.keys()):  # grandchildren
+      for j in child.next.keys():  # grandchildren
          bigkey = str(k) + str(j)
          if vmerge():
             msge("Bigkey= %s"  % (bigkey))
@@ -4759,7 +4759,7 @@ def print_bit_groups(bit_groups, s=''):
 def emit_function_headers(fp, fo_dict):
    """For each function in the fo_dict dictionary, emit the function
    prototype to the fp file emitter object."""
-   for fname in list(fo_dict.keys()):
+   for fname in fo_dict.keys():
       fo = fo_dict[fname]
       fp.write(fo.emit_header())
       
@@ -5291,7 +5291,7 @@ class all_generator_info_t(object):
          
    def extend_operand_names_with_input_states(self):
       type ='xed_uint32_t'
-      for operand_decider in list(self.common.state_space.keys()):
+      for operand_decider in self.common.state_space.keys():
          #msge("STATESPACE: considering " + operand_decider)
          if operand_decider not in self.operand_names:
             self.operand_names[operand_decider] = type
@@ -5738,7 +5738,7 @@ def make_cpuid_mappings(agi,mappings):
 
     # check that each isa set in the cpuid files has a corresponding XED_ISA_SET_ value
     fail = False
-    for cisa in list(mappings.keys()):
+    for cisa in mappings.keys():
         t = re.sub('XED_ISA_SET_','',cisa)
         if t not in agi.all_enums['xed_isa_set_enum_t']:
             fail = True

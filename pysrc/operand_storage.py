@@ -221,8 +221,7 @@ class operands_storage_t(object):
         fo.add_arg('void* %s' % ret_arg)
         
         switch_gen = codegen.c_switch_generator_t('operand',fo)
-        op_names = list(self.operand_fields.keys())
-        op_names.sort()
+        op_names = sorted(self.operand_fields.keys())
         for op in op_names:
             switch_key = "XED_OPERAND_%s" % op
             ctype = self.get_ctype(op)
@@ -250,8 +249,7 @@ class operands_storage_t(object):
         fo.add_arg('xed_uint32_t %s' % in_value)
         
         switch_gen = codegen.c_switch_generator_t('operand',fo)
-        op_names = list(self.operand_fields.keys())
-        op_names.sort()
+        op_names = sorted(self.operand_fields.keys())
         for op in op_names:
             switch_key = "XED_OPERAND_%s" % op
             ctype = self.get_ctype(op)
@@ -270,7 +268,7 @@ class operands_storage_t(object):
         h_fname = get_operand_accessors_fn()
         c_fname = h_fname.replace('.h', '.c') 
         
-        for opname in list(self.operand_fields.keys()):
+        for opname in self.operand_fields.keys():
             getter_fo = self._gen_op_getter_fo(opname)
             setter_fo = self._gen_op_setter_fo(opname)
             fo_list.append(getter_fo)

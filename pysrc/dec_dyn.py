@@ -246,7 +246,7 @@ def _add_switchcase_lines(fo,
     
     int2key = {}
     key2int = {}
-    for key in list(cdict.tuple2rule.keys()):
+    for key in cdict.tuple2rule.keys():
         keyval = tup2int.tuple2int(key, cdict.cnames, all_ops_widths)
         #This checks for a nasty conflict that should never happen:
         #when two different tuple keys have the same integer value.
@@ -664,7 +664,7 @@ def work(agi, all_state_space, all_ops_widths, patterns):
     
     #generate NT capturing functions
     capture_fn_list = []
-    for nt_name in list(agi.nonterminal_dict.keys()):
+    for nt_name in agi.nonterminal_dict.keys():
         #skip nonterminals that we don't want to capture:
         #PREFIXES, AVX_SPLITTER, *ISA, etc.
         if _skip_nt(nt_name):
