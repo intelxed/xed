@@ -453,17 +453,17 @@ class instruction_codegen_t(object):
         return fo_list
 
     def _compute_map(self, first_byte, second_byte=None):
-        if first_byte != 0x0F:
-            return 'XED_ILD_MAP0'
+        if first_byte != 0x0F:    #FIXME: Genericize
+            return 'XED_ILD_LEGACY_MAP0'
         else:
             if second_byte == None:
-                return 'XED_ILD_MAP1'
+                return 'XED_ILD_LEGACY_MAP1'
             if second_byte == 0x38:
-                return 'XED_ILD_MAP2'
+                return 'XED_ILD_LEGACY_MAP2'
             if second_byte == 0x3A:
-                return 'XED_ILD_MAP3'
+                return 'XED_ILD_LEGACY_MAP3'
             if second_byte == 0x0F and self.amd_enabled:
-                return 'XED_ILD_MAPAMD'
+                return 'XED_ILD_AMD_3DNOW'
 
         die("Unhandled escape {} / map {} bytes".format(first_byte, second_byte))
     
@@ -523,13 +523,13 @@ class instruction_codegen_t(object):
             #this action represents the opcode
             iform.nominal_opcode = first.int_value
             iform.nom_opcode_bits = first.nbits
-            iform.map = 'XED_ILD_MAP0' # this is used to avoid emitting legacy escapes
+            iform.map = 'XED_ILD_LEGACY_MAP0' # this is used to avoid emitting legacy escapes
             # see above "disabled" comment
             if 0:
                 if mapno < 8:
-                    iform.map = 'XED_ILD_MAP{}'.format(mapno)
+                    iform.map = 'XED_ILD_LEGACY_MAP{}'.format(mapno)
                 else:
-                    iform.map = 'XED_ILD_MAP_XOP{}'.format(hex(mapno)[-1].upper())
+                    iform.map = 'XED_ILD_AMD_XOP{}'.format(hex(mapno)[-1].upper())
             iform.rule.actions[i] = actions.dummy_emit(first,'NOM_OPCODE') # replace opcode
         elif first.int_value != 0x0F:
             #this action represents the opcode

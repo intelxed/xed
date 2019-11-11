@@ -6337,7 +6337,8 @@ def main():
    # emit functions to identify AVX and AVX512 instruction groups
    classifier.work(agi) 
    ild.work(agi)
-
+   map_info_rdr.emit_ild_enum(agi)
+   
    gen_cpuid_map(agi)
    agi.close_output_files()
    agi.dump_generated_files()

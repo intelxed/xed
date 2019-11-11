@@ -24,6 +24,7 @@ END_LEGAL */
 #include "xed-encode-private.h"
 #include "xed-operand-accessors.h"
 #include "xed-reg-class.h"
+#include "xed-ild-enum.h"
 
 #include "xed-encoder.h" // a generated file of prototypes
 #include <string.h>  // memset
@@ -43,26 +44,26 @@ void xed_encoder_request_emit_legacy_map(xed_encoder_request_t* q)
     map = XED_STATIC_CAST(xed_ild_map_enum_t,xed_encoder_get_map(q));
 
     switch(map) {
-    case XED_ILD_MAP0:
+    case XED_ILD_LEGACY_MAP0:
       // FIXME: this case is also used to avoid emitting anything for VEX/EVEX/XOP maps
       return;
       
-    case XED_ILD_MAP1:
+    case XED_ILD_LEGACY_MAP1:
       value = 0x0F;
       bits = 8;
       break;
       
-    case XED_ILD_MAP2:
+    case XED_ILD_LEGACY_MAP2:
       value = 0x380F; //need to convert big to little endian
       bits = 16;
       break;
       
-    case XED_ILD_MAP3:
+    case XED_ILD_LEGACY_MAP3:
       value = 0x3A0F; //need to convert big to little endian
       bits = 16;
       break;
       
-    case XED_ILD_MAPAMD:
+    case XED_ILD_AMD_3DNOW:
       value = 0x0F0F;
       bits = 16;
       break;
