@@ -68,18 +68,10 @@ static XED_INLINE int xed3_mode_64b(xed_decoded_inst_t* d) {
     return (xed3_operand_get_mode(d) == XED_GRAMMAR_MODE_64);
 }
 
-/*
- * The scanners cannot return arbitrarily. They MUST return by calling the
- * next scanner.
- */
-
-
 static void init_has_disp_regular_table(void);
 static void init_eamode_table(void);
 static void init_has_sib_table(void);
 static void set_has_modrm(xed_decoded_inst_t* d);
-
-
 
 static void set_hint(xed_uint8_t b,  xed_decoded_inst_t* d){
     switch(b){
@@ -101,6 +93,10 @@ static void set_hint(xed_uint8_t b,  xed_decoded_inst_t* d){
 //   Average: 384.08s  Minimum: 352.74s
 // With the filter:
 //   Average: 362.97s  Minimum: 346.26s
+//
+// The filter includes the 16 values of the REX prefix even in 32b mode.
+// If we had a separate filter for 64b mode we could omit the REX prefixes
+// from the 32b mode table.
 // Could use 2x the space and the 64b mode thing to pick the right table.
 // That would speed up 32b prefix decodes.
 
@@ -146,7 +142,7 @@ static void init_prefix_table(void)
     for (i=0;legacy_prefixes[i];i++)
         set_prefix_table_bit(legacy_prefixes[i]);
 
-    // add the rex prefixes even for 32b mode
+    // add the 16 values of the REX prefixes even for 32b mode
     for(i=0x40;i<0x50;i++)
         set_prefix_table_bit(XED_CAST(xed_uint8_t,i));
 }
@@ -241,7 +237,7 @@ static void prefix_scanner(xed_decoded_inst_t* d)
           case 0xF3:
             xed3_operand_set_ild_f3(d, 1);
             xed3_operand_set_last_f2f3(d, 3);
-            if(xed3_operand_get_first_f2f3(d) == 0)
+            if (xed3_operand_get_first_f2f3(d) == 0)
                 xed3_operand_set_first_f2f3(d, 3);
             
             rex = 0;
@@ -250,7 +246,7 @@ static void prefix_scanner(xed_decoded_inst_t* d)
           case 0xF2:
             xed3_operand_set_ild_f2(d, 1);
             xed3_operand_set_last_f2f3(d, 2);
-            if(xed3_operand_get_first_f2f3(d) == 0)
+            if (xed3_operand_get_first_f2f3(d) == 0)
                 xed3_operand_set_first_f2f3(d, 2);
             
             rex = 0;
@@ -521,9 +517,8 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
         set_vl(d,   c5byte1.s.l);        
         xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c5byte1.s.pp]);
 
-        /* MAP is a special case - although it is a derived operand in
-        * (FIXME: fn name?) newvex_prefix(), we need to set it here,
-        * because we use map later in ILD - for modrm, imm and disp */
+        /* Implicitly map1. We use map later in the ILD - for modrm, imm
+         * and disp. */
         xed3_operand_set_map(d, XED_ILD_MAP1);
 
         // this is a success indicator for downstreaam decoding
@@ -1047,7 +1042,7 @@ static void catch_invalid_rex_or_legacy_prefixes(xed_decoded_inst_t* d)
 static void catch_invalid_mode(xed_decoded_inst_t* d)
 {
     // we know we have VEX or EVEX instr.
-    if(xed3_operand_get_realmode(d)) {
+    if (xed3_operand_get_realmode(d)) {
         xed3_operand_set_error(d,XED_ERROR_INVALID_MODE);
     }
 }
@@ -1231,7 +1226,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
     if (b == 0x62)
     {
         /*first check that it is not a BOUND instruction */
-        if(!xed3_mode_64b(d)) {
+        if (!xed3_mode_64b(d)) {
             /*make sure we can read one additional byte */
             if (length + 1 < max_bytes) {
                 xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
