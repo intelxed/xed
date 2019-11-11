@@ -24,6 +24,8 @@ import shlex
 import collections
 
 import genutil
+import enumer
+import enum_txt_writer
 
 def _die(s):
     genutil.die(s)
@@ -182,6 +184,37 @@ def _parse_map_line(s):
     # we want the longer patterns first when we sort the map_info_t.
     mi.priority = 100-len(mi.search_pattern)
     return mi
+
+
+
+def emit_ild_enum(agi):
+    evalues = []
+
+    sorted_list = sorted(agi.map_info, key=lambda x: x.map_name)
+    
+    for mi in sorted_list:
+        val = None
+        if isinstance(mi.map_id,int):
+            val = str(mi.map_id)
+
+        e = enumer.enumer_value_t(mi.map_name.upper(), val)
+        evalues.append(e)
+        
+    evalues.append('MAP_INVALID')
+        
+    enum = enum_txt_writer.enum_info_t(evalues,
+                                       agi.common.options.xeddir,
+                                       agi.common.options.gendir,
+                                       'xed-ild', 
+                                       'xed_ild_map_enum_t',
+                                       'XED_ILD_',
+                                       cplusplus=False)
+    
+    enum.run_enumer()
+    agi.add_file_name(enum.src_full_file_name)
+    agi.add_file_name(enum.hdr_full_file_name, header=True)
+    agi.all_enums['xed_ild_enum_t'] = evalues
+
 
 def fix_nonnumeric_maps(maps):
     d = collections.defaultdict(list)

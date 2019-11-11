@@ -21,6 +21,7 @@ END_LEGAL */
 
 
 #include "xed-ild.h"
+#include "xed-ild-enum.h"
 #include "xed3-phash.h"
 
 /* returns the index for xed_inst_table */

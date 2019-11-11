@@ -3010,6 +3010,7 @@ class encoder_configuration_t(object):
         fe = xed_file_emitter_t(self.xeddir, self.gendir, 
                                 filename, shell_file=False)
         fe.add_header('xed-ild.h')
+        fe.add_header('xed-ild-enum.h')        
         fe.start()
         
         ptrn = ("/*(%4d)%20s*/  {%4d, %4d, %4s," +
