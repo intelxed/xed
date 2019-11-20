@@ -62,6 +62,7 @@ END_LEGAL */
 #include "xed-ild-imm-bytes.h"
 #include "xed-operand-accessors.h"
 #include "xed-ild-enum.h"
+#include "xed-map-features-tables.h"
 
 
 static XED_INLINE int xed3_mode_64b(xed_decoded_inst_t* d) {
@@ -433,6 +434,13 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
 
       xed3_operand_set_map(d,c4byte1.s.map);
 
+      eff_map = c4byte1.s.map;
+      if (xed_ild_map_valid_vex(eff_map) == 0) {
+          bad_map(d);
+          return; 
+      }
+
+#if 0
       // FIXME: 2017-03-03 this masking of the VEX map with 0x3 an attempt
       // at matching an undocumented implementation convention that can and
       // most likely will change as architectural map usage evolves.
@@ -443,7 +451,10 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       }
       else if (eff_map == XED_ILD_EVEX_MAP3)
           xed3_operand_set_imm_width(d, bytes2bits(1));
-
+#endif
+      if (xed_ild_has_imm8_vex(eff_map) == 1)
+          xed3_operand_set_imm_width(d, bytes2bits(1));
+      
       // this is a success indicator for downstreaam decoding
       xed3_operand_set_vexvalid(d, 1); // AVX1/2
 
@@ -694,8 +705,9 @@ static void get_next_as_opcode(xed_decoded_inst_t* d) {
     if (length < xed3_operand_get_max_bytes(d)) {     
         xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
         xed3_operand_set_nominal_opcode(d, b);
+        xed3_operand_set_pos_nominal_opcode(d, length);
         xed_decoded_inst_inc_length(d);
-        //st SRM (partial opcode instructions need it)
+        //set SRM (partial opcode instructions need it)
         xed3_operand_set_srm(d, xed_modrm_rm(b));
     }
     else {
@@ -911,12 +923,12 @@ static void disp_scanner(xed_decoded_inst_t* d)
     /*                                   0   1  2  3   4  5   6   7   8 */
     static const xed_uint8_t ilog2[] = { 99 , 0, 1, 99, 2, 99, 99, 99, 3 };
 
-    xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
-    xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
     xed_uint8_t disp_bytes;
     xed_uint8_t length = xed_decoded_inst_get_length(d);
-    if (map < 2) { // could use any map... FIXME: genericize
-        /*get the L1 function pointer and use it */
+    xed_uint_t yes_no_var = xed3_operand_get_has_disp();
+    if (yes_no_var == 2) {
+        xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
+        xed_uint8_t opcode     = xed3_operand_get_nominal_opcode(d);
         xed_ild_l1_func_t fptr = disp_bits_2d[map][opcode];
         xed_assert(fptr); // fptr is always valid by design
         (*fptr)(d);
@@ -984,16 +996,10 @@ const xed_uint8_t* has_modrm_2d[2] = { //FIXME: genericize
 };
 
 static void set_has_modrm(xed_decoded_inst_t* d) {
-    /* This assumes that the lookup arrays do not have undefined opcodes.
-       It means we must fill has_modrm property for illegal opcodes at 
-       build time in (ild.py) */
-    /*some 3dnow instructions conflict on has_modrm property with other 
-      instructions. However all 3dnow instructions have modrm, hence we 
-      just set has_modrm to 1 in case of 3dnow (map==XED_ILD_AMD_3DNOW) */
-    xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
-    xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
-    xed3_operand_set_has_modrm(d,1);
-    if (map < 2) { // FIXME: genericize
+    xed_uint_t yes_no_var = xed3_operand_get_has_modrm(d);
+    if (yes_no_var == 2) {
+        xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
+        xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
         // need to set more complex codes like XED_ILD_HASMODRM_IGNORE_MOD
         // from the has_modrm_2d[][] tables.
         xed3_operand_set_has_modrm(d,has_modrm_2d[map][opcode]);
@@ -1011,18 +1017,24 @@ const xed_ild_l1_func_t* imm_bits_2d[2] = { //FIXME: genericize
 };
 
 static void set_imm_bytes(xed_decoded_inst_t* d) {
-    xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
-    xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
     xed_uint8_t imm_bits = xed3_operand_get_imm_width(d);
     if (!imm_bits) {
-        if (map < 2) { // FIXME: genericize
-            /*get the L1 function pointer and use it */
+        //FIXME: this is ugly and branchy
+        xed_uint_t yes_no_var8 = xed3_operand_get_has_imm8(d);
+        xed_uint_t yes_no_var32 = xed3_operand_get_has_imm32(d);
+        if (yes_no_var8 == 1) 
+            xed3_operand_set_imm_width(d,bytes2bits(1));
+        else if (yes_no_var8 == 2 || yes_no_var32 == 2) {
+            xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
+            xed_uint8_t opcode     = xed3_operand_get_nominal_opcode(d);
             xed_ild_l1_func_t fptr = imm_bits_2d[map][opcode];
             xed_assert(fptr); // fptr guaranteed to be valid by construction
             (*fptr)(d);
             return;
         }
-        /*All other maps should have been set earlier*/     
+        else if (yes_no_var32 == 2) 
+            xed3_operand_set_imm_width(d,bytes2bits(4));
+
     }
 }
 
@@ -1053,13 +1065,92 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
     scanner */
     unsigned char length = xed_decoded_inst_get_length(d);
     xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+
     xed3_operand_set_nominal_opcode(d, b);
     xed3_operand_set_pos_nominal_opcode(d, length);
     xed_decoded_inst_inc_length(d);
     catch_invalid_rex_or_legacy_prefixes(d);
     catch_invalid_mode(d);
+    set_downstream_info(d,xed3_operand_get_vexvalid(d));
 }
 #endif
+
+static void opcode_scanner_wip(xed_decoded_inst_t* d)
+{
+    unsigned char length = xed_decoded_inst_get_length(d);
+    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+    xed_int_t i;
+
+    // matching maps vs having a summary of which opcodes are definately map0.
+    // Common case is map 0, but the loop would check them all and deduce map 0, slowly.
+    // Could just hardcode 0x0F for map escapes loop scan
+    // Or I hard code the known maps and handle "extra maps" with a loop
+    if (b != 0x0F) {
+        xed3_operand_set_map(d, XED_ILD_LEGACY_MAP0); //FIXME
+        xed3_operand_set_nominal_opcode(d, b);
+        xed3_operand_set_pos_nominal_opcode(d, length);
+        xed3_operand_set_srm(d, xed_modrm_rm(b));
+        xed_decoded_inst_inc_length(d);
+        set_downstream_info(d,0);
+        return;
+    }
+    // things that start with 0x0F are escape maps...
+    length++; /* eat the 0x0F */
+    if (length >= xed3_operand_get_max_bytes(d)) {
+        too_short(d);
+        return;
+    }
+
+    b = xed_decoded_inst_get_byte(d, length); // get next byte
+
+    //FIXME: could split into two loops and have the map1-like loop first..
+    //FIXME: const max_legacy_maps, legacy_maps
+    for(i=0;i<max_legacy_maps;i++) {
+        map_info_t* m = legacy_maps+i;
+        // if no secondary map, or we match the secondary map, we are set.
+        if (m->legacy_escape == 0x0F) {
+            if (m->has_legacy_opcode==0) {
+                length++; /* eat the 2nd  opcode byte */
+                xed3_operand_set_nominal_opcode(d, b);
+                xed3_operand_set_pos_nominal_opcode(d, length);
+                xed3_operand_set_map(d, m->map_id);
+                xed_decoded_inst_set_length(d, length);
+                //set SRM (partial opcode instructions need it)
+                xed3_operand_set_srm(d, xed_modrm_rm(b));
+                set_downstream_info(d,0);
+                return;
+            }
+            else if (m->legacy_opcode == b) {
+                length++; /* eat the secondary map byte */
+                xed3_operand_set_map(d, m->map_id);
+                xed_decoded_inst_set_length(d, length);
+                get_next_as_opcode(d);
+                // need this to denote required pick-up of 3dnow opcode
+                // later in imm_scanner.
+                xed3_operand_set_amd3dnow(d, m->opc_pos == -1);
+                set_downstream_info(d,0);
+                return;
+            }
+        }
+    }
+    // handle no map found... FIXME
+    bad_map(d);
+}
+
+static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
+    xed_uint_t mapno;
+    xed_uint_t has_modrm, has_disp, has_imm8, has_imm32;
+    mapno     = xed3_operand_get_map(d);
+    has_modrm = xed_ild_has_modrm(vv,mapno);
+    has_disp  = xed_ild_has_disp(vv,mapno);
+    has_imm8  = xed_ild_has_imm8(vv,mapno);
+    has_imm32 = xed_ild_has_imm32(vv,mapno);
+    
+    xed3_operand_set_has_modrm(has_modrm);
+    xed3_operand_set_has_disp(has_disp);
+    xed3_operand_set_has_imm8(has_imm8); 
+    xed3_operand_set_has_imm32(has_imm32);
+}
 
 static void opcode_scanner(xed_decoded_inst_t* d)
 {
@@ -1069,18 +1160,18 @@ static void opcode_scanner(xed_decoded_inst_t* d)
     
     /*no need to check max_bytes - it was checked in previous scanners*/
 
-    /* no need to check for VEX here anymore, because if VEX
-    prefix was encountered, we would get to evex_vex_opcode_scanner */
+    /* no need to check for VEX here anymore, because if VEX prefix was
+       encountered, we would get to evex_vex_opcode_scanner */
     if (b != 0x0F) {
         xed3_operand_set_map(d, XED_ILD_LEGACY_MAP0);
         xed3_operand_set_nominal_opcode(d, b);
         xed3_operand_set_pos_nominal_opcode(d, length);
         xed_decoded_inst_inc_length(d);
+        xed3_operand_set_srm(d, xed_modrm_rm(b));
         goto out;
     }
 
     length++; /* eat the 0x0F */
-    xed3_operand_set_pos_nominal_opcode(d, length);
     
     /* 0x0F opcodes MAPS 1,2,3 */
     if (length < xed3_operand_get_max_bytes(d)) {
@@ -1137,6 +1228,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
         }
 #endif
         else {
+            xed3_operand_set_pos_nominal_opcode(d, length); 
             length++; /* eat the 2nd  opcode byte */
             xed3_operand_set_nominal_opcode(d, m);
             xed3_operand_set_map(d, XED_ILD_LEGACY_MAP1);
@@ -1152,6 +1244,7 @@ out:
     //set SRM (partial opcode instructions need it)
     opcode = xed3_operand_get_nominal_opcode(d);
     xed3_operand_set_srm(d, xed_modrm_rm(opcode));
+    set_downstream_info(d,0);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1282,7 +1375,13 @@ static void evex_scanner(xed_decoded_inst_t* d)
             }
             
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
-            
+
+            eff_map = evex1.s.map;
+            if (xed_ild_map_valid_evex(eff_map) == 0) {
+                bad_map(d);
+                return; 
+            }
+#if 0
             eff_map = evex1.s.map & 3; //FIXME: genericize
             if (eff_map == XED_ILD_LEGACY_MAP0 || evex1.s.map >  XED_MAX_MAP_EVEX)  {
                 bad_map(d);
@@ -1290,7 +1389,10 @@ static void evex_scanner(xed_decoded_inst_t* d)
             }
             else if (eff_map == XED_ILD_EVEX_MAP3)
                 xed3_operand_set_imm_width(d, bytes2bits(1));
-            
+#endif
+            if (xed_ild_has_imm8_evex(eff_map) == 1)
+                xed3_operand_set_imm_width(d, bytes2bits(1));
+      
             if (evex2.s.ubit)  // AVX512 only (Not KNC)
             {
 #if defined(XED_SUPPORTS_AVX512)                

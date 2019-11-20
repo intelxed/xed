@@ -19,6 +19,7 @@
 #END_LEGAL
 
 import sys
+import os
 import re
 import shlex
 import collections
@@ -26,6 +27,7 @@ import collections
 import genutil
 import enumer
 import enum_txt_writer
+import codegen
 
 def _die(s):
     genutil.die(s)
@@ -187,7 +189,163 @@ def _parse_map_line(s):
 
 
 
-def emit_ild_enum(agi):
+def emit_enums(agi):
+    emit_ild_enum_dups(agi)    # XED_ILD_*
+    emit_ild_enum_unique(agi)  # XED_MAPU_*
+    emit_map_info_tables(agi)
+
+def emit_map_info_tables(agi):
+    '''variable modrm,disp,imm8 tables, per encoding space using natural
+       map ids.'''
+    map_features_cfn = 'xed-map-feature-tables.c'
+    map_features_hfn = 'xed-map-feature-tables.h'
+    private_gendir = os.path.join(agi.common.options.gendir,'include-private')
+    hfe = codegen.xed_file_emitter_t(agi.common.options.xeddir,
+                                     private_gendir,
+                                     map_features_hfn)
+    if 0:
+        for h in [ 'xed-mapu-enum.h' ]:
+            hfe.add_header(h)
+    hfe.start()
+
+    sorted_list = sorted(agi.map_info, key=lambda x: x.map_name)
+
+    if 0:
+        # print some defines to indicate the first map in each set of maps.
+        firsts = {}
+        curspace = None
+        for mi in sorted_list:
+            if mi.space != curspace:
+                firsts[mi.space] = (mi.mapu_name,mi.map_id)
+                curspace = mi.space
+        for space,x in firsts.items():
+            (mapu, map_id) = x
+            space_upper = space.upper()
+            hfe.add_code('#define XED_ILD_MAP_FIRST_{} {}'.format(space_upper, mapu))
+            hfe.add_code('#define XED_ILD_MAP_OFFSET_{} {}'.format(space_upper, map_id))
+
+
+    spaces = list(set([ mi.space for mi in sorted_list ]))
+    fields = ['modrm', 'disp', 'imm8', 'imm32']
+
+    def collect_codes(field, space_maps):
+        cvt = { 'yes':1, 'no':0, 'var':2 }
+        max_id = max( [mi.map_id for mi in space_maps ] )
+        codes = { key:0 for key in range(0,max_id+1) }
+        
+        for mi in space_maps:
+            codes[mi.map_id] = cvt[getattr(mi,field)]
+            
+        codes_as_list = [ codes[i] for i in range(0,max_id+1) ]
+        return codes_as_list
+
+    def convert_list_to_integer(lst, bits_per_field):
+        tot = 0
+        shift = 0
+        for v in lst:
+            if shift >= 64:
+                # if more than 64 bits, then we need an array of
+                # constants and an array indexing step. future work.
+                _die("Too many maps for a uint64")
+            tot = tot + (v << shift)
+            shift = shift + bits_per_field
+        return tot
+
+    for space in spaces:
+        space_maps = [ mi for mi in sorted_list if mi.space == space ]
+        
+        for field in fields:
+            f = codegen.function_object_t('xed_ild_has_{}_{}'.format(field,space),
+                                          'xed_bool_t',
+                                          static=True, inline=True)
+            f.add_arg('xed_uint_t m')
+            codes = collect_codes(field,space_maps)
+            constant = convert_list_to_integer(codes,2)
+            f.add_code('/* {} */'.format(codes))
+            f.add_code('/* 0=no, 1=yes, 2=variable */')
+            if set(codes) == {0}:  # all zero values...
+                f.add_code_eol('return 0')
+            else:
+                f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
+                f.add_code_eol('return (xed_bool_t)((data_const >> m) & 3)')
+            hfe.write(f.emit())  # emit the inline function in the header
+
+
+    # emit a function that covers all spaces
+    for field in fields:
+        f = codegen.function_object_t('xed_ild_has_{}'.format(field),
+                                      'xed_bool_t',
+                                      static=True, inline=True)
+        f.add_arg('xed_uint_t vv')
+        f.add_arg('xed_uint_t m')
+        f.add_code('/* 0=no, 1=yes, 2=variable */')
+        nspaces = 5 # FIXME: 0=legacy,1=vex,2=evex,3=xop,4=knc make configurable
+        f.add_code_eol('const xed_uint64_t data_const[{}] = {{'.format(nspaces))
+
+        for space in spaces:
+            space_maps = [ mi for mi in sorted_list if mi.space == space ]
+            codes = collect_codes(field,space_maps)
+            constant = convert_list_to_integer(codes,2)
+            f.add_code('/* {} */'.format(codes))
+            f.add_code_eol(' 0x{:x}ULL,'.format(constant))
+            
+        f.add_code_eol('}}')
+        f.add_code_eol('xed_assert(vv < {})'.format(nspaces))
+        f.add_code_eol('return (xed_bool_t)((data_const[vv] >> m) & 3)')
+        hfe.write(f.emit())  # emit the inline function in the header
+
+
+            
+    # emit a set of functions for determining the valid maps in each encoding space
+    for space in spaces:
+        space_maps = [ mi for mi in sorted_list if mi.space == space ]
+        f = codegen.function_object_t('xed_ild_map_valid_{}'.format(space),
+                                      'xed_bool_t',
+                                      static=True, inline=True)
+        f.add_arg('xed_uint_t m')
+        
+        max_id = max( [mi.map_id for mi in space_maps ] )
+        codes_dict = { key:0 for key in range(0,max_id+1) }
+        for mi in space_maps:
+            codes_dict[mi.map_id] = 1
+        codes = [ codes_dict[i] for i in range(0,max_id+1) ]
+        
+        f.add_code('/* {} */'.format(codes))
+        constant = convert_list_to_integer(codes,1)
+        f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
+        # no need for a max-map test since, the upper bits of the
+        # constant will be zero already
+        f.add_code_eol('return (xed_bool_t)((data_const >> m) & 1)')
+        hfe.write(f.emit())  # emit the inline function in the header                    
+            
+    hfe.close()
+    return [hfe.full_file_name]
+
+def emit_ild_enum_unique(agi):
+    """modify map_info_t values to include mapu enum name so that we can
+       build other arrays for the C-code based on that unique enum"""
+    sorted_list = sorted(agi.map_info, key=lambda x: x.map_name)
+    evalues = ['INVALID']
+    for mi in sorted_list:
+        s = mi.map_name.upper()
+        evalues.append(s)
+        mi.mapu_name = 'XED_MAPU_{}'.format(s)
+
+    enum = enum_txt_writer.enum_info_t(evalues,
+                                       agi.common.options.xeddir,
+                                       agi.common.options.gendir,
+                                       'xed-mapu', 
+                                       'xed_mapu_enum_t',
+                                       'XED_MAPU_',
+                                       cplusplus=False)
+    
+    enum.run_enumer()
+    agi.add_file_name(enum.src_full_file_name)
+    agi.add_file_name(enum.hdr_full_file_name, header=True)
+    agi.all_enums['xed_mapu_enum_t'] = evalues
+    
+    
+def emit_ild_enum_dups(agi):
     evalues = []
 
     sorted_list = sorted(agi.map_info, key=lambda x: x.map_name)
@@ -213,8 +371,9 @@ def emit_ild_enum(agi):
     enum.run_enumer()
     agi.add_file_name(enum.src_full_file_name)
     agi.add_file_name(enum.hdr_full_file_name, header=True)
-    agi.all_enums['xed_ild_enum_t'] = evalues
+    agi.all_enums['xed_ild_map_enum_t'] = evalues
 
+    
 
 def fix_nonnumeric_maps(maps):
     d = collections.defaultdict(list)
