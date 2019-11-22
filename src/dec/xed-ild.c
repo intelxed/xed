@@ -62,7 +62,7 @@ END_LEGAL */
 #include "xed-ild-imm-bytes.h"
 #include "xed-operand-accessors.h"
 #include "xed-ild-enum.h"
-#include "xed-map-features-tables.h"
+#include "xed-map-feature-tables.h"
 
 
 static XED_INLINE int xed3_mode_64b(xed_decoded_inst_t* d) {
@@ -1039,6 +1039,20 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
+    xed_uint_t mapno;
+    xed_uint_t has_modrm, has_disp, has_imm8, has_imm32;
+    mapno     = xed3_operand_get_map(d);
+    has_modrm = xed_ild_has_modrm(vv,mapno);
+    has_disp  = xed_ild_has_disp(vv,mapno);
+    has_imm8  = xed_ild_has_imm8(vv,mapno);
+    has_imm32 = xed_ild_has_imm32(vv,mapno);
+    
+    xed3_operand_set_has_modrm(has_modrm);
+    xed3_operand_set_has_disp(has_disp);
+    xed3_operand_set_has_imm8(has_imm8); 
+    xed3_operand_set_has_imm32(has_imm32);
+}
 
 #if defined(XED_AVX)
 static void catch_invalid_rex_or_legacy_prefixes(xed_decoded_inst_t* d)
@@ -1104,9 +1118,10 @@ static void opcode_scanner_wip(xed_decoded_inst_t* d)
     b = xed_decoded_inst_get_byte(d, length); // get next byte
 
     //FIXME: could split into two loops and have the map1-like loop first..
-    //FIXME: const max_legacy_maps, legacy_maps
-    for(i=0;i<max_legacy_maps;i++) {
-        map_info_t* m = legacy_maps+i;
+
+    // start at i=0 to skip map 0 since that was already handled...
+    for(i=1;i<sizeof(xed_legacy_maps)/sizeof(xed_map_info_t);i++) {
+        xed_map_info_t const* m = xed_legacy_maps+i;
         // if no secondary map, or we match the secondary map, we are set.
         if (m->legacy_escape == 0x0F) {
             if (m->has_legacy_opcode==0) {
@@ -1137,20 +1152,6 @@ static void opcode_scanner_wip(xed_decoded_inst_t* d)
     bad_map(d);
 }
 
-static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
-    xed_uint_t mapno;
-    xed_uint_t has_modrm, has_disp, has_imm8, has_imm32;
-    mapno     = xed3_operand_get_map(d);
-    has_modrm = xed_ild_has_modrm(vv,mapno);
-    has_disp  = xed_ild_has_disp(vv,mapno);
-    has_imm8  = xed_ild_has_imm8(vv,mapno);
-    has_imm32 = xed_ild_has_imm32(vv,mapno);
-    
-    xed3_operand_set_has_modrm(has_modrm);
-    xed3_operand_set_has_disp(has_disp);
-    xed3_operand_set_has_imm8(has_imm8); 
-    xed3_operand_set_has_imm32(has_imm32);
-}
 
 static void opcode_scanner(xed_decoded_inst_t* d)
 {
