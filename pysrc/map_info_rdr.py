@@ -203,9 +203,9 @@ def emit_map_info_tables(agi):
     hfe = codegen.xed_file_emitter_t(agi.common.options.xeddir,
                                      private_gendir,
                                      map_features_hfn)
-    if 0:
-        for h in [ 'xed-mapu-enum.h' ]:
-            hfe.add_header(h)
+
+    for h in [ 'xed-map-info.h' ]:
+        hfe.add_header(h)
     hfe.start()
 
     sorted_list = sorted(agi.map_info, key=lambda x: x.map_name)
@@ -225,7 +225,10 @@ def emit_map_info_tables(agi):
             hfe.add_code('#define XED_ILD_MAP_OFFSET_{} {}'.format(space_upper, map_id))
 
 
+    space_id = {'legacy':0, 'vex':1, 'evex':2, 'xop':3, 'knc':4}
     spaces = list(set([ mi.space for mi in sorted_list ]))
+    sorted_spaces = sorted(spaces, key=lambda x: space_id[x])
+    max_space_id = space_id[sorted_spaces[-1]]
     fields = ['modrm', 'disp', 'imm8', 'imm32']
 
     def collect_codes(field, space_maps):
@@ -279,18 +282,18 @@ def emit_map_info_tables(agi):
         f.add_arg('xed_uint_t vv')
         f.add_arg('xed_uint_t m')
         f.add_code('/* 0=no, 1=yes, 2=variable */')
-        nspaces = 5 # FIXME: 0=legacy,1=vex,2=evex,3=xop,4=knc make configurable
-        f.add_code_eol('const xed_uint64_t data_const[{}] = {{'.format(nspaces))
 
-        for space in spaces:
+        f.add_code('const xed_uint64_t data_const[{}] = {{'.format(max_space_id+1))
+
+        for space in sorted_spaces:
             space_maps = [ mi for mi in sorted_list if mi.space == space ]
             codes = collect_codes(field,space_maps)
             constant = convert_list_to_integer(codes,2)
-            f.add_code('/* {} */'.format(codes))
-            f.add_code_eol(' 0x{:x}ULL,'.format(constant))
+            f.add_code('/* {} {} */'.format(codes,space))
+            f.add_code(' 0x{:x}ULL,'.format(constant))
             
-        f.add_code_eol('}}')
-        f.add_code_eol('xed_assert(vv < {})'.format(nspaces))
+        f.add_code_eol('}')
+        f.add_code_eol('xed_assert(vv < {})'.format(max_space_id+1))
         f.add_code_eol('return (xed_bool_t)((data_const[vv] >> m) & 3)')
         hfe.write(f.emit())  # emit the inline function in the header
 
@@ -316,7 +319,24 @@ def emit_map_info_tables(agi):
         # no need for a max-map test since, the upper bits of the
         # constant will be zero already
         f.add_code_eol('return (xed_bool_t)((data_const >> m) & 1)')
-        hfe.write(f.emit())  # emit the inline function in the header                    
+        hfe.write(f.emit())  # emit the inline function in the header
+
+    # emit a table filling in "xed_map_info_t xed_legacy_maps[] = { ... }"
+
+    legacy_maps = [ mi for mi in sorted_list if mi.space == 'legacy' ]
+    legacy_maps = sorted(legacy_maps, key=lambda x: x.map_id)
+    hfe.add_code('const xed_map_info_t xed_legacy_maps[] = {')
+    for mi in legacy_maps:
+        has_legacy_opcode = 1 if mi.legacy_opcode != 'N/A' else 0
+        legacy_opcode = mi.legacy_opcode if mi.legacy_opcode != 'N/A' else 0
+        legacy_escape = mi.legacy_escape if mi.legacy_escape != 'N/A' else 0
+        
+        hfe.add_code('{{ {}, {}, {}, {}, {} }},'.format(legacy_escape,
+                                                        has_legacy_opcode,
+                                                        legacy_opcode,
+                                                        mi.map_id,
+                                                        mi.opcpos))
+    hfe.add_code_eol('}')
             
     hfe.close()
     return [hfe.full_file_name]
