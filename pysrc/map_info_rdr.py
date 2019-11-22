@@ -192,11 +192,12 @@ def _parse_map_line(s):
 def emit_enums(agi):
     emit_ild_enum_dups(agi)    # XED_ILD_*
     emit_ild_enum_unique(agi)  # XED_MAPU_*
-    emit_map_info_tables(agi)
+    file_list = emit_map_info_tables(agi)
+    agi.hdr_files.extend(file_list)
 
 def emit_map_info_tables(agi):
     '''variable modrm,disp,imm8 tables, per encoding space using natural
-       map ids.'''
+       map ids. returns list of files generated'''
     map_features_cfn = 'xed-map-feature-tables.c'
     map_features_hfn = 'xed-map-feature-tables.h'
     private_gendir = os.path.join(agi.common.options.gendir,'include-private')
