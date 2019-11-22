@@ -103,8 +103,8 @@ def gen_xed3(agi, ild_info, ild_patterns,
     for vv in sorted(all_state_space['VEXVALID'].keys()):
         #cdict is a 2D dictionary:
         #cdict[map][opcode] = ild_cdict.constraint_dict_t
-        #each constraint_dict_t describes all the patterns that fall
-        #into corresponding map-opcode
+        #Each constraint_dict_t describes all the patterns that fall
+        #into corresponding map-opcode.
         #cnames is a set of all constraint names from the patterns
         #in the given vv space
         cdict,cnames = ild_cdict.get_constraints_lu_table(agi,
@@ -112,9 +112,6 @@ def gen_xed3(agi, ild_info, ild_patterns,
                                                           all_state_space,
                                                           vv,
                                                           all_ops_widths)
-        
-        #print "AAA VV={}: {}".format(vv, ild_cdict.replacement_stats())
-        
         all_cnames = all_cnames.union(cnames)
         _msg("vv%s cnames: %s" % (vv,cnames))
         
@@ -127,13 +124,11 @@ def gen_xed3(agi, ild_info, ild_patterns,
         # ph_lu            map from map,opcode -> hash fn name
         # lu_fo_list       list of all phash fn objects
         # operands_lu_list list of operands lookup fns
-        #
-        (ph_lu, lu_fo_list, operands_lu_list) = ild_cdict.gen_ph_fos(
-            agi, 
-            cdict,
-            constraints_log_file,
-            ptrn_dict, 
-            vv)
+        ph_lu, lu_fo_list, operands_lu_list = ild_cdict.gen_ph_fos(agi, 
+                                                                   cdict,
+                                                                   constraints_log_file,
+                                                                   ptrn_dict, 
+                                                                   vv)
         #hold only one instance of each function
         for op in operands_lu_list:
             if op.function_name not in op_lu_map:

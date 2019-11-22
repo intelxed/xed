@@ -405,9 +405,7 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
 
     This gets called with all the patterns for a specific map &
     opcode, but for all encoding spaces. So first we filter based on
-    encoding space (vexvalid).
-
-    """
+    encoding space (vexvalid).    """
     global mod3_repl, vd7_repl, rm4_repl, masknot0_repl, mask0_repl
     cnames = []
 
