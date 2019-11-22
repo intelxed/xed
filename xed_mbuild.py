@@ -1542,6 +1542,7 @@ def add_encoder2_command(env, dag, input_files, config):
 
 def add_decoder_command(env, gc, gen_dag, prep):
     dec_py =['pysrc/generator.py',
+             'pysrc/map_info_rdr.py',
              'pysrc/actions.py', 'pysrc/genutil.py',
              'pysrc/ild_easz.py', 'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
              'pysrc/encutil.py', 'pysrc/verbosity.py', 'pysrc/ild_eosz.py',
@@ -1549,9 +1550,9 @@ def add_decoder_command(env, gc, gen_dag, prep):
              'pysrc/actions_codegen.py', 'pysrc/patterns.py',
              'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/hashlin.py',
              'pysrc/hashfks.py', 'pysrc/ild_info.py', 'pysrc/ild_cdict.py',
-             'pysrc/xed3_nt.py', 'pysrc/codegen.py', 'pysrc/ild_nt.py',
+             'pysrc/codegen.py', 'pysrc/ild_nt.py',
              'pysrc/hashmul.py', 'pysrc/enumer.py', 'pysrc/enum_txt_writer.py',
-             'pysrc/xed3_nt.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
+             'pysrc/dec_dyn.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
              'pysrc/ild_modrm.py', 'pysrc/ild_storage.py',
              'pysrc/slash_expand.py',
              'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
@@ -1578,7 +1579,7 @@ def add_decoder_command(env, gc, gen_dag, prep):
                        args=gc,
                        env=env,
                        input=dec_input_files,
-                       output= dd)
+                       output=dd)
     dec_cmd = gen_dag.add(env,c1)
 
 def wq_build(env,work_queue, dag):
