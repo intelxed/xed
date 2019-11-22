@@ -332,8 +332,15 @@ def gen_static_decode(agi,
         init_vals = ['0'] * max_maps 
         for imap in range(0,max_maps):
             if imap in dmap:
-                init_vals[imap] = _get_map_lu_name( 'xed3_phash_vv{}'.format(vv),
-                                                    dmap[imap].map_name )
+                mi = dmap[imap]
+                # if there are maps without instructions, then there
+                # won't be top-level variables to look at for those
+                # maps.
+                if all_zero_by_map[str(vv)][mi.map_name]:
+                    init_vals[imap] = '0'
+                else:
+                    init_vals[imap] = _get_map_lu_name( 'xed3_phash_vv{}'.format(vv),
+                                                        mi.map_name )
         h_file.add_code('{{ {} }},'.format(', '.join(init_vals)))
 
     h_file.add_code('};')
