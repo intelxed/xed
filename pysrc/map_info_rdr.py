@@ -271,7 +271,7 @@ def emit_map_info_tables(agi):
                 f.add_code_eol('return 0')
             else:
                 f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
-                f.add_code_eol('return (xed_bool_t)((data_const >> m) & 3)')
+                f.add_code_eol('return (xed_bool_t)((data_const >> (2*m)) & 3)')
             hfe.write(f.emit())  # emit the inline function in the header
 
 
@@ -295,7 +295,7 @@ def emit_map_info_tables(agi):
             
         f.add_code_eol('}')
         f.add_code_eol('xed_assert(vv < {})'.format(max_space_id+1))
-        f.add_code_eol('return (xed_bool_t)((data_const[vv] >> m) & 3)')
+        f.add_code_eol('return (xed_bool_t)((data_const[vv] >> (2*m)) & 3)')
         hfe.write(f.emit())  # emit the inline function in the header
 
 
