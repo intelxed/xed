@@ -925,7 +925,7 @@ static void disp_scanner(xed_decoded_inst_t* d)
 
     xed_uint8_t disp_bytes;
     xed_uint8_t length = xed_decoded_inst_get_length(d);
-    xed_uint_t yes_no_var = xed3_operand_get_has_disp();
+    xed_uint_t yes_no_var = xed_ild_get_has_disp(d);
     if (yes_no_var == 2) {
         xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
         xed_uint8_t opcode     = xed3_operand_get_nominal_opcode(d);
@@ -996,7 +996,7 @@ const xed_uint8_t* has_modrm_2d[2] = { //FIXME: genericize
 };
 
 static void set_has_modrm(xed_decoded_inst_t* d) {
-    xed_uint_t yes_no_var = xed3_operand_get_has_modrm(d);
+    xed_uint_t yes_no_var = xed_ild_get_has_modrm(d);
     if (yes_no_var == 2) {
         xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
         xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
@@ -1020,8 +1020,8 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
     xed_uint8_t imm_bits = xed3_operand_get_imm_width(d);
     if (!imm_bits) {
         //FIXME: this is ugly and branchy
-        xed_uint_t yes_no_var8 = xed3_operand_get_has_imm8(d);
-        xed_uint_t yes_no_var32 = xed3_operand_get_has_imm32(d);
+        xed_uint_t yes_no_var8 = xed_ild_get_has_imm8(d); 
+        xed_uint_t yes_no_var32 = xed_ild_get_has_imm32(d); 
         if (yes_no_var8 == 1) 
             xed3_operand_set_imm_width(d,bytes2bits(1));
         else if (yes_no_var8 == 2 || yes_no_var32 == 2) {
@@ -1040,18 +1040,12 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
 
 ////////////////////////////////////////////////////////////////////////////////
 static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
-    xed_uint_t mapno;
-    xed_uint_t has_modrm, has_disp, has_imm8, has_imm32;
-    mapno     = xed3_operand_get_map(d);
-    has_modrm = xed_ild_has_modrm(vv,mapno);
-    has_disp  = xed_ild_has_disp(vv,mapno);
-    has_imm8  = xed_ild_has_imm8(vv,mapno);
-    has_imm32 = xed_ild_has_imm32(vv,mapno);
-    
-    xed3_operand_set_has_modrm(has_modrm);
-    xed3_operand_set_has_disp(has_disp);
-    xed3_operand_set_has_imm8(has_imm8); 
-    xed3_operand_set_has_imm32(has_imm32);
+    xed_uint_t mapno = xed3_operand_get_map(d);
+
+    xed_ild_set_has_modrm(d, xed_ild_has_modrm(vv,mapno));
+    xed_ild_set_has_disp(d,  xed_ild_has_disp(vv,mapno));
+    xed_ild_set_has_imm8(d,  xed_ild_has_imm8(vv,mapno));
+    xed_ild_set_has_imm32(d, xed_ild_has_imm32(vv,mapno));
 }
 
 #if defined(XED_AVX)
@@ -1089,7 +1083,7 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
 }
 #endif
 
-static void opcode_scanner_wip(xed_decoded_inst_t* d)
+static void opcode_scanner(xed_decoded_inst_t* d)
 {
     unsigned char length = xed_decoded_inst_get_length(d);
     xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
@@ -1152,7 +1146,7 @@ static void opcode_scanner_wip(xed_decoded_inst_t* d)
     bad_map(d);
 }
 
-
+#if 0 // FIXME: remove old code
 static void opcode_scanner(xed_decoded_inst_t* d)
 {
     unsigned char length = xed_decoded_inst_get_length(d);
@@ -1247,6 +1241,7 @@ out:
     xed3_operand_set_srm(d, xed_modrm_rm(opcode));
     set_downstream_info(d,0);
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 // KNC/AVX512 EVEX and EVEX-IMM8 scanners
