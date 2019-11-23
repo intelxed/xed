@@ -997,7 +997,10 @@ const xed_uint8_t* has_modrm_2d[2] = { //FIXME: genericize
 
 static void set_has_modrm(xed_decoded_inst_t* d) {
     xed_uint_t yes_no_var = xed_ild_get_has_modrm(d);
-    if (yes_no_var == 2) {
+    if (yes_no_var == 1) {
+        xed3_operand_set_has_modrm(d, XED_ILD_HASMODRM_TRUE);
+    }
+    else if (yes_no_var == 2) {
         xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
         xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
         // need to set more complex codes like XED_ILD_HASMODRM_IGNORE_MOD
@@ -1113,8 +1116,8 @@ static void opcode_scanner(xed_decoded_inst_t* d)
 
     //FIXME: could split into two loops and have the map1-like loop first..
 
-    // start at i=0 to skip map 0 since that was already handled...
-    for(i=1;i<sizeof(xed_legacy_maps)/sizeof(xed_map_info_t);i++) {
+    // map 0 was removed from the static list of maps for this loop
+    for(i=0;i<sizeof(xed_legacy_maps)/sizeof(xed_map_info_t);i++) {
         xed_map_info_t const* m = xed_legacy_maps+i;
         // if no secondary map, or we match the secondary map, we are set.
         if (m->legacy_escape == 0x0F) {
