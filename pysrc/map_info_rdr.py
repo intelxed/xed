@@ -325,9 +325,13 @@ def emit_map_info_tables(agi):
     # emit a table filling in "xed_map_info_t xed_legacy_maps[] = { ... }"
 
     legacy_maps = [ mi for mi in sorted_list if mi.space == 'legacy' ]
-    legacy_maps = sorted(legacy_maps, key=lambda x: x.map_id)
+    legacy_maps = sorted(legacy_maps,
+                         key=lambda x: -len(x.search_pattern) * 10 + x.map_id)
+    
     hfe.add_code('const xed_map_info_t xed_legacy_maps[] = {')
     for mi in legacy_maps:
+        if mi.map_id == 0:
+            continue
         has_legacy_opcode = 1 if mi.legacy_opcode != 'N/A' else 0
         legacy_opcode = mi.legacy_opcode if mi.legacy_opcode != 'N/A' else 0
         legacy_escape = mi.legacy_escape if mi.legacy_escape != 'N/A' else 0
