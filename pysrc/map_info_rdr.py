@@ -269,6 +269,7 @@ def emit_map_info_tables(agi):
             f.add_code('/* 0=no, 1=yes, 2=variable */')
             if set(codes) == {0}:  # all zero values...
                 f.add_code_eol('return 0')
+                f.add_code_eol('(void)m')
             else:
                 f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
                 f.add_code_eol('return (xed_bool_t)((data_const >> (2*m)) & 3)')
