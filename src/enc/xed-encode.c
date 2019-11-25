@@ -62,11 +62,12 @@ void xed_encoder_request_emit_legacy_map(xed_encoder_request_t* q)
       value = 0x3A0F; //need to convert big to little endian
       bits = 16;
       break;
-      
+#if defined(XED_AMD_ENABLED)      
     case XED_ILD_AMD_3DNOW:
       value = 0x0F0F;
       bits = 16;
       break;
+#endif
       
     default:
       xed3_operand_set_error(q,XED_ERROR_GENERAL_ERROR);
