@@ -317,7 +317,7 @@ def _get_info_storage(agi, ptrn_list, priority):
     storage = ild_storage.ild_storage_t(lookup)
 
     for p in ptrn_list:
-        info = ild_info.ptrn_to_info(p, priority)
+        info = ild_info.ptrn_to_info(p, priority) # convert to ild_info_t
         if info not in storage.get_info_list(p.insn_map,p.opcode):
             storage.append_info(p.insn_map, p.opcode, info)
     return storage
@@ -467,6 +467,7 @@ class pattern_t(object):
             genutil.die("Not one value for VEXVALID in {}: {}".format(self.iclass, self.ptrn))
         self.vv = int(lst[0])
     def _set_encoding_space(self):
+        """returns a string"""
         vv = self.get_vexvalid()
         self.encspace = ild_info.vexvalid_to_encoding_space(vv)
         

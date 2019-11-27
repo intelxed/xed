@@ -97,7 +97,7 @@ def _bool2has_modrm_str(val):
     return _has_modrm_false
     
 
-def _gen_modrm_lookup(agi,instr_by_map_opcode, debug):
+def _gen_modrm_lookup(agi, instr_by_map_opcode, debug):
     modrm_lookup = {}
     for insn_map in ild_info.get_dump_maps_modrm(agi):
         modrm_lookup[insn_map] = {}
@@ -127,12 +127,14 @@ def _gen_modrm_lookup(agi,instr_by_map_opcode, debug):
 
 
 def work(agi, instr_by_map_opcode, debug):
-    """
-    dumps MODRM lookup tables to xed_ild_modrm.h
-    """
+    """dumps MODRM lookup tables to xed-ild-modrm.h"""
     modrm_lookup = _gen_modrm_lookup(agi, instr_by_map_opcode, debug)
-    ild_codegen.dump_lookup(agi, modrm_lookup, 'has_modrm', _modrm_header_fn,
-                            [], _has_modrm_typename,
-                            define_dict=_hasmodrm_defines)
-    
+    ild_codegen.dump_lookup_new(agi,
+                                modrm_lookup,
+                                'has_modrm',
+                                _modrm_header_fn, # output file name
+                                [], # headers
+                                _has_modrm_typename,
+                                define_dict=_hasmodrm_defines)
 
+        

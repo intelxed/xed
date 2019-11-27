@@ -987,14 +987,6 @@ static void disp_scanner(xed_decoded_inst_t* d)
 # include "xed-ild-extension.h"
 #endif
 
-/*probably this table should be generated. Leaving it here for now.
-  Maybe in one of the following commits it will be moved to auto generated
-  code.*/
-const xed_uint8_t* has_modrm_2d[2] = { //FIXME: genericize
-    has_modrm_map_legacy_map0,
-    has_modrm_map_legacy_map1
-};
-
 static void set_has_modrm(xed_decoded_inst_t* d) {
     xed_uint_t yes_no_var = xed_ild_get_has_modrm(d);
     if (yes_no_var == 1) {
@@ -1002,10 +994,11 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
     }
     else if (yes_no_var == 2) {
         xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
-        xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
-        // need to set more complex codes like XED_ILD_HASMODRM_IGNORE_MOD
-        // from the has_modrm_2d[][] tables.
-        xed3_operand_set_has_modrm(d,has_modrm_2d[map][opcode]);
+        xed_uint_t      vv = xed3_operand_get_vexvalid(d);
+        xed_uint_t     map = xed3_operand_get_map(d);
+        xed_uint8_t const* modrm_for_vv_map = xed_ild_modrm_table[vv][map];
+        xed_assert(modrm_for_vv_map!=0);
+        xed3_operand_set_has_modrm(d,modrm_for_vv_map[opcode]);
     }
 }
 

@@ -39,8 +39,17 @@ _vexvalid_to_encoding_space_dict = { # FIXME: should come from map_info_t
     3:'xop',
     4:'knc'
 }
+_encoding_space_to_vexvalid_dict = { # FIXME: should come from map_info_t
+    'legacy':0,
+    'vex':1,
+    'evex':2,
+    'xop':3,
+    'knc':4
+}
 def vexvalid_to_encoding_space(vv):
     return _vexvalid_to_encoding_space_dict[vv]
+def encoding_space_to_vexvalid(space):
+    return _encoding_space_to_vexvalid_dict[space]
 
 
 def get_maps_for_space(agi,vv):
@@ -75,12 +84,14 @@ storage_priority = 10
                 
 
 class ild_info_t(object):
-    def __init__(self, insn_map=None, opcode=None, incomplete_opcode=None,
-                missing_bits=None, has_modrm=None, eosz_nt_seq=None,
-                easz_nt_seq=None,
-                imm_nt_seq=None, disp_nt_seq=None,ext_opcode=None, 
-                mode=None,
-                priority=storage_priority):
+    def __init__(self, vexvalid=None,
+                 insn_map=None, opcode=None, incomplete_opcode=None,
+                 missing_bits=None, has_modrm=None, eosz_nt_seq=None,
+                 easz_nt_seq=None,
+                 imm_nt_seq=None, disp_nt_seq=None,ext_opcode=None, 
+                 mode=None,
+                 priority=storage_priority):
+        self.vexvalid = vexvalid # numeric
         self.insn_map = insn_map
         self.opcode = opcode
         
@@ -123,6 +134,7 @@ class ild_info_t(object):
         self.priority = priority
         
     #This method is important because it defines which objects conflict
+    # NOTE: SKIPPING vexvalid field in comparison
     def __eq__(self, other):
         return (other != None and
                 self.insn_map == other.insn_map and
@@ -136,6 +148,7 @@ class ild_info_t(object):
                 self.disp_nt_seq == other.disp_nt_seq)
         
     #This method is not less important than __eq__
+    # NOTE: SKIPPING vexvalid field in comparison
     def __ne__(self, other):
         return (other == None or
                 self.insn_map != other.insn_map or
@@ -170,7 +183,9 @@ class ild_info_t(object):
 
 #convert pattern_t object to ild_info_t object
 def ptrn_to_info(pattern, prio=storage_priority):
-    return ild_info_t(insn_map=pattern.insn_map, opcode=pattern.opcode, 
+    return ild_info_t(vexvalid=pattern.get_vexvalid(),
+                      insn_map=pattern.insn_map,
+                      opcode=pattern.opcode, 
                       incomplete_opcode=pattern.incomplete_opcode, 
                       missing_bits=pattern.missing_bits, 
                       has_modrm=pattern.has_modrm, 

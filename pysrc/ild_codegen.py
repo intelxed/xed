@@ -349,21 +349,16 @@ def gen_static_decode(agi,
 def _get_map_lu_name(pfx, insn_map):
     return '%s_map_%s' % (pfx, insn_map)
 
-def dump_lookup(agi, l1_lookup, name_pfx, lu_h_fn, headers,
-                lu_elem_type, define_dict=None,
-                all_zero_by_map=None,
-                output_dir='include-private'):
-    """Dump the lookup tables - from opcode value to
-    the L1 function pointers (in most cases they are L2 function pointers,
-    which doesn't matter, because they have the same signature)
-    @param l1_lookup: 2D dict so that
-    l1_lookup[string(insn_map)][string(opcode)] == string(L1_function_name)
-    all 0..255 opcode values should be set in the dict, so that if 0x0,0x0F
-    map-opcode is illegal, then l1_lookup['0x0']['0x0F'] should be set
-    to some string indicating that L1 function is undefined.
-
-    all_zero_by_map is an optional dict[map] -> {True,False}. If True
-    skip emitting the map    """
+def dump_lookup_new(agi,
+                    l1_lookup,
+                    name_pfx,
+                    lu_h_fn,
+                    headers,
+                    lu_elem_type,
+                    define_dict=None,
+                    all_zero_by_map=None,
+                    output_dir='include-private'):
+    
     if output_dir:
         ofn = mbuild.join(output_dir,lu_h_fn)
     else:
@@ -376,13 +371,120 @@ def dump_lookup(agi, l1_lookup, name_pfx, lu_h_fn, headers,
     if define_dict:
         print_defines(h_file, define_dict)
 
+    array_names = dump_lookup_low(agi,
+                                  h_file,
+                                  l1_lookup,
+                                  name_pfx,
+                                  lu_elem_type,
+                                  all_zero_by_map)
+
+    _dump_top_level_dispatch_array(agi,
+                                   h_file,
+                                   array_names,
+                                   'xed_ild_modrm_table')
+    
+    h_file.close()
+
+
+def _dump_top_level_dispatch_array(agi, h_file, array_names, emit_array_name):
+    vv_max = max( [ ild_info.encoding_space_to_vexvalid(mi.space)
+                    for mi in agi.map_info ] )
+    max_maps = ild_info.get_maps_max_id(agi) + 1
+    h_file.add_code('#if !defined(XED_MAP_ROW_LIMIT)')
+    h_file.add_code('# define XED_MAP_ROW_LIMIT {}'.format(max_maps))
+    h_file.add_code('#endif')
+    h_file.add_code('#if !defined(XED_VEXVALID_LIMIT)')
+    h_file.add_code('# define XED_VEXVALID_LIMIT {}'.format(vv_max+1))
+    h_file.add_code('#endif')
+    h_file.add_code('const xed_uint8_t* {}[XED_VEXVALID_LIMIT][XED_MAP_ROW_LIMIT] = {{'.format(emit_array_name))
+
+    for vv in range(0,vv_max+1):
+        maps = ild_info.get_maps_for_space(agi,vv)
+        dmap = {mi.map_id:mi for mi in maps} # dict indexed by map_id
+
+        init_vals = ['0'] * max_maps 
+        for imap in range(0,max_maps):
+            if imap in dmap:
+                mi = dmap[imap]
+                if mi.map_name in array_names:
+                    init_vals[imap] = array_names[mi.map_name]
+        h_file.add_code('{{ {} }},'.format(', '.join(init_vals)))
+    h_file.add_code('};')
+
+    
+def dump_lookup(agi,
+                l1_lookup,
+                name_pfx,
+                lu_h_fn,
+                headers,
+                lu_elem_type,
+                define_dict=None,
+                all_zero_by_map=None,
+                output_dir='include-private'):
+    """Dump the lookup tables - from opcode value to
+    the L1 function pointers (in most cases they are L2 function pointers,
+    which doesn't matter, because they have the same signature)
+    @param l1_lookup: 2D dict so that
+    l1_lookup[string(insn_map)][string(opcode)] == string(L1_function_name)
+    all 0..255 opcode values should be set in the dict, so that if 0x0,0x0F
+    map-opcode is illegal, then l1_lookup['0x0']['0x0F'] should be set
+    to some string indicating that L1 function is undefined.
+
+    all_zero_by_map is an optional dict[map] -> {True,False}. If True
+    skip emitting the map.
+   
+    return a dictionary of the array names generated.   """
+    if output_dir:
+        ofn = mbuild.join(output_dir,lu_h_fn)
+    else:
+        ofn = lu_h_fn
+    h_file = agi.open_file(ofn, start=False)
+    for header in headers:
+        h_file.add_header(header)
+    h_file.start()
+
+    if define_dict:
+        print_defines(h_file, define_dict)
+
+    array_names = dump_lookup_low(agi,
+                                  h_file,
+                                  l1_lookup,
+                                  name_pfx, 
+                                  lu_elem_type, 
+                                  all_zero_by_map)
+    h_file.close()
+    return array_names
+
+
+def dump_lookup_low(agi,
+                    h_file,
+                    l1_lookup,
+                    name_pfx, 
+                    lu_elem_type, 
+                    all_zero_by_map=None):
+    """Dump the lookup tables - from opcode value to
+    the L1 function pointers (in most cases they are L2 function pointers,
+    which doesn't matter, because they have the same signature)
+    @param l1_lookup: 2D dict so that
+    l1_lookup[string(insn_map)][string(opcode)] == string(L1_function_name)
+    all 0..255 opcode values should be set in the dict, so that if 0x0,0x0F
+    map-opcode is illegal, then l1_lookup['0x0']['0x0F'] should be set
+    to some string indicating that L1 function is undefined.
+
+    all_zero_by_map is an optional dict[map] -> {True,False}. If True
+    skip emitting the map.
+   
+    return a dictionary of the array names generated.   """
+    array_names = {}
     for insn_map in sorted(l1_lookup.keys()):
         arr_name = _get_map_lu_name(name_pfx, insn_map)
         if all_zero_by_map==None or all_zero_by_map[insn_map]==False:
             ild_dump_map_array(l1_lookup[insn_map], arr_name,
                                lu_elem_type, h_file)
+        array_names[insn_map] = arr_name
+        
+    return array_names
 
-    h_file.close()
 
 def _gen_bymode_fun_dict(info_list, nt_dict, is_conflict_fun,
                         gen_l2_fn_fun):
