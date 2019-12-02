@@ -23,7 +23,7 @@
 ## The ild_info.py map information is really just the raw map names
 ##  in order as we all as an indicator for which maps are irregular.
 
-    
+import map_info_rdr    
 
 def get_maps_wip(agi):
     map_names = [ mi.map_name for mi in agi.map_info ]
@@ -32,24 +32,12 @@ def get_maps_wip(agi):
 def get_maps_max_id(agi):
     return  max([mi.map_id for mi in agi.map_info])
 
-_vexvalid_to_encoding_space_dict = { # FIXME: should come from map_info_t
-    0:'legacy',
-    1:'vex',
-    2:'evex',
-    3:'xop',
-    4:'knc'
-}
-_encoding_space_to_vexvalid_dict = { # FIXME: should come from map_info_t
-    'legacy':0,
-    'vex':1,
-    'evex':2,
-    'xop':3,
-    'knc':4
-}
 def vexvalid_to_encoding_space(vv):
-    return _vexvalid_to_encoding_space_dict[vv]
+    """Input number, output string"""
+    return map_info_rdr.vexvalid_to_encoding_space(vv)
 def encoding_space_to_vexvalid(space):
-    return _encoding_space_to_vexvalid_dict[space]
+    """Input string, output number"""
+    return map_info_rdr.encoding_space_to_vexvalid(space)
 
 
 def get_maps_for_space(agi,vv):

@@ -29,6 +29,20 @@ import enumer
 import enum_txt_writer
 import codegen
 
+# dict space name -> numerical space id
+_space_id = {'legacy':0, 'vex':1, 'evex':2, 'xop':3, 'knc':4}
+
+# list ordered by numerical space id
+_space_id_sorted  = sorted(_space_id.keys(), key=lambda x: _space_id[x])
+
+def vexvalid_to_encoding_space(vv):
+    """Input number, output string"""
+    return _space_id_sorted[vv]
+def encoding_space_to_vexvalid(space):
+    """Input string, output number"""
+    return _space_id[space]
+
+
 def _die(s):
     genutil.die(s)
 def _msgb(b,s=''):
@@ -225,11 +239,9 @@ def emit_map_info_tables(agi):
             hfe.add_code('#define XED_ILD_MAP_FIRST_{} {}'.format(space_upper, mapu))
             hfe.add_code('#define XED_ILD_MAP_OFFSET_{} {}'.format(space_upper, map_id))
 
-
-    space_id = {'legacy':0, 'vex':1, 'evex':2, 'xop':3, 'knc':4}
     spaces = list(set([ mi.space for mi in sorted_list ]))
-    sorted_spaces = sorted(spaces, key=lambda x: space_id[x])
-    max_space_id = space_id[sorted_spaces[-1]]
+    sorted_spaces = sorted(spaces, key=lambda x: encoding_space_to_vexvalid(x))
+    max_space_id = encoding_space_to_vexvalid(sorted_spaces[-1])
     fields = ['modrm', 'disp', 'imm8', 'imm32']
 
     def collect_codes(field, space_maps):
