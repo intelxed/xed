@@ -39,8 +39,7 @@ typedef union {
     struct {
         xed_uint8_t has_modrm;
         xed_uint8_t has_disp;
-        xed_uint8_t has_imm8;
-        xed_uint8_t has_imm32;
+        xed_uint8_t has_imm;
     } s;
 } xed_ild_vars_t;
 

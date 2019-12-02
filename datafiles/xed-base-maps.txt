@@ -16,8 +16,8 @@
 #  
 #END_LEGAL
 
-#  name     space   esc  mapopc mapno modrm disp imm8 int32  opcpos pattern
-legacy-map0  legacy  N/A  N/A    0     var  var  var  no    0       ''
-legacy-map1  legacy  0x0F N/A    1     var  var  var  no    1       '0x0F'
-legacy-map2  legacy  0x0F 0x38   2     yes  no   no   no    2       '0x0F 0x38'
-legacy-map3  legacy  0x0F 0x3A   3     yes  no   yes  no    2       '0x0F 0x3A'
+#  name     space   esc  mapopc mapno modrm disp imm   opcpos  2pattern
+legacy-map0  legacy  N/A  N/A    0     var  var  var   0       ''
+legacy-map1  legacy  0x0F N/A    1     var  var  var   1       '0x0F'
+legacy-map2  legacy  0x0F 0x38   2     yes  no   0     2       '0x0F 0x38'
+legacy-map3  legacy  0x0F 0x3A   3     yes  no   1     2       '0x0F 0x3A'

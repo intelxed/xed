@@ -452,7 +452,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       else if (eff_map == XED_ILD_EVEX_MAP3)
           xed3_operand_set_imm_width(d, bytes2bits(1));
 #endif
-      if (xed_ild_has_imm8_vex(eff_map) == 1)
+      if (xed_ild_has_imm_vex(eff_map) == 1)
           xed3_operand_set_imm_width(d, bytes2bits(1));
       
       // this is a success indicator for downstreaam decoding
@@ -1015,22 +1015,17 @@ const xed_ild_l1_func_t* imm_bits_2d[2] = { //FIXME: genericize
 static void set_imm_bytes(xed_decoded_inst_t* d) {
     xed_uint8_t imm_bits = xed3_operand_get_imm_width(d);
     if (!imm_bits) {
-        //FIXME: this is ugly and branchy
-        xed_uint_t yes_no_var8 = xed_ild_get_has_imm8(d); 
-        xed_uint_t yes_no_var32 = xed_ild_get_has_imm32(d); 
-        if (yes_no_var8 == 1) 
-            xed3_operand_set_imm_width(d,bytes2bits(1));
-        else if (yes_no_var8 == 2 || yes_no_var32 == 2) {
+        xed_uint_t var_or_bytes = xed_ild_get_has_imm(d); 
+        if (var_or_bytes < 7) 
+            xed3_operand_set_imm_width(d,bytes2bits(var_or_bytes));
+        else {
             xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
             xed_uint8_t opcode     = xed3_operand_get_nominal_opcode(d);
             xed_ild_l1_func_t fptr = imm_bits_2d[map][opcode];
-            xed_assert(fptr); // fptr guaranteed to be valid by construction
+            xed_assert(fptr); // fptr guaranteed to be valid by constructionx
             (*fptr)(d);
             return;
         }
-        else if (yes_no_var32 == 2) 
-            xed3_operand_set_imm_width(d,bytes2bits(4));
-
     }
 }
 
@@ -1040,8 +1035,7 @@ static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
 
     xed_ild_set_has_modrm(d, xed_ild_has_modrm(vv,mapno));
     xed_ild_set_has_disp(d,  xed_ild_has_disp(vv,mapno));
-    xed_ild_set_has_imm8(d,  xed_ild_has_imm8(vv,mapno));
-    xed_ild_set_has_imm32(d, xed_ild_has_imm32(vv,mapno));
+    xed_ild_set_has_imm(d,  xed_ild_has_imm(vv,mapno));
 }
 
 #if defined(XED_AVX)
@@ -1382,7 +1376,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
             else if (eff_map == XED_ILD_EVEX_MAP3)
                 xed3_operand_set_imm_width(d, bytes2bits(1));
 #endif
-            if (xed_ild_has_imm8_evex(eff_map) == 1)
+            if (xed_ild_has_imm_evex(eff_map) == 1)
                 xed3_operand_set_imm_width(d, bytes2bits(1));
       
             if (evex2.s.ubit)  // AVX512 only (Not KNC)
