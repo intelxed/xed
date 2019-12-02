@@ -996,7 +996,7 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
         xed_uint8_t opcode = xed3_operand_get_nominal_opcode(d);
         xed_uint_t      vv = xed3_operand_get_vexvalid(d);
         xed_uint_t     map = xed3_operand_get_map(d);
-        xed_uint8_t const* modrm_for_vv_map = xed_ild_modrm_table[vv][map];
+        xed_uint8_t const* modrm_for_vv_map = xed_ild_has_modrm_table[vv][map];
         xed_assert(modrm_for_vv_map!=0);
         xed3_operand_set_has_modrm(d,modrm_for_vv_map[opcode]);
     }
