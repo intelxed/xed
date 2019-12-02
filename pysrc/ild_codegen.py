@@ -371,17 +371,17 @@ def dump_lookup_new(agi,
     if define_dict:
         print_defines(h_file, define_dict)
 
-    array_names = dump_lookup_low(agi,
-                                  h_file,
-                                  l1_lookup,
-                                  name_pfx,
-                                  lu_elem_type,
-                                  all_zero_by_map)
+    array_names = _dump_lookup_low(agi,
+                                   h_file,
+                                   l1_lookup,
+                                   name_pfx,
+                                   lu_elem_type,
+                                   all_zero_by_map)
 
     _dump_top_level_dispatch_array(agi,
                                    h_file,
                                    array_names,
-                                   'xed_ild_modrm_table')
+                                   'xed_ild_{}_table'.format(name_pfx))
     
     h_file.close()
 
@@ -446,22 +446,22 @@ def dump_lookup(agi,
     if define_dict:
         print_defines(h_file, define_dict)
 
-    array_names = dump_lookup_low(agi,
-                                  h_file,
-                                  l1_lookup,
-                                  name_pfx, 
-                                  lu_elem_type, 
-                                  all_zero_by_map)
+    array_names = _dump_lookup_low(agi,
+                                   h_file,
+                                   l1_lookup,
+                                   name_pfx, 
+                                   lu_elem_type, 
+                                   all_zero_by_map)
     h_file.close()
     return array_names
 
 
-def dump_lookup_low(agi,
-                    h_file,
-                    l1_lookup,
-                    name_pfx, 
-                    lu_elem_type, 
-                    all_zero_by_map=None):
+def _dump_lookup_low(agi,
+                     h_file,
+                     l1_lookup,
+                     name_pfx, 
+                     lu_elem_type, 
+                     all_zero_by_map=None):
     """Dump the lookup tables - from opcode value to
     the L1 function pointers (in most cases they are L2 function pointers,
     which doesn't matter, because they have the same signature)
