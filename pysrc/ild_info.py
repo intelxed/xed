@@ -56,7 +56,7 @@ def get_dump_maps_modrm(agi):
 def get_dump_maps_imm(agi):
     maps = []
     for mi in agi.map_info:
-        if mi.has_variable_imm8() or mi.has_variable_imm32():
+        if mi.has_variable_imm():
             maps.append(mi.map_name)
     return maps
         

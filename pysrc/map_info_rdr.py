@@ -58,8 +58,7 @@ class map_info_t(object):
         # "var" means variable, requires a table generated based on defined instructions
         self.modrm = None  # var,yes,no, has modrm
         self.disp = None  # var,yes,no, has disp
-        self.imm8 = None   # var,yes,no, has imm8
-        self.imm32 = None  # var,yes,no, has imm32
+        self.imm = None   # var,0,1,2,4 (bytes) var=7
         self.opcpos = None  # 0,1,2, ... -1 (last) opcode position in pattern
         self.priority = 10
         # search_pattern is the string that we use to identify this
@@ -101,15 +100,9 @@ class map_info_t(object):
     def has_variable_disp(self):
         return self.disp == 'var'
     
-    def has_variable_imm8(self):
-        return self.imm8 == 'var'
-    def has_regular_imm8(self):
-        return self.imm8 == 'yes'
+    def has_variable_imm(self):
+        return self.imm == 'var'
     
-    def has_variable_imm32(self):
-        return self.imm32 == 'var'
-    def has_regular_imm32(self):
-        return self.imm32 == 'yes'
     
     def __str__(self):
         s = []
@@ -120,8 +113,7 @@ class map_info_t(object):
         s.append("mapid: {}".format(self.map_id))
         s.append("modrm: {}".format(self.modrm))
         s.append("disp: {}".format(self.disp))
-        s.append("imm8: {}".format(self.imm8))
-        s.append("imm32: {}".format(self.imm32))
+        s.append("imm: {}".format(self.imm))
         s.append("opcpos: {}".format(self.opcpos))
         s.append("priority: {}".format(self.priority))
         s.append("search_pattern: {}".format(self.search_pattern))        
@@ -135,9 +127,8 @@ _map_info_fields = ['map_name',
                     'map_id',
                     'modrm',
                     'disp',
-                    'imm8',
+                    'imm',
                     
-                    'imm32',
                     'opcpos',
                     'search_pattern' ]
 
@@ -188,10 +179,8 @@ def _parse_map_line(s):
         _die("Bad map description disp specifier [{}]".format(s))
     if mi.modrm not in ['var','yes','no']:
         _die("Bad map description modrm specifier [{}]".format(s))
-    if mi.imm8 not in ['var','yes','no']:
-        _die("Bad map description imm8 specifier [{}]".format(s))
-    if mi.imm32 not in ['var','yes','no']:
-        _die("Bad map description imm32 specifier [{}]".format(s))
+    if mi.imm not in ['var','0','1','2','4']:
+        _die("Bad map description imm specifier [{}]".format(s))
     if genutil.numeric(mi.opcpos):
         mi.opcpos = genutil.make_numeric(mi.opcpos)
     else:
@@ -210,7 +199,7 @@ def emit_enums(agi):
     agi.hdr_files.extend(file_list)
 
 def emit_map_info_tables(agi):
-    '''variable modrm,disp,imm8 tables, per encoding space using natural
+    '''variable modrm,disp,imm tables, per encoding space using natural
        map ids. returns list of files generated'''
     map_features_cfn = 'xed-map-feature-tables.c'
     map_features_hfn = 'xed-map-feature-tables.h'
@@ -225,27 +214,25 @@ def emit_map_info_tables(agi):
 
     sorted_list = sorted(agi.map_info, key=lambda x: x.map_name)
 
-    if 0:
-        # print some defines to indicate the first map in each set of maps.
-        firsts = {}
-        curspace = None
-        for mi in sorted_list:
-            if mi.space != curspace:
-                firsts[mi.space] = (mi.mapu_name,mi.map_id)
-                curspace = mi.space
-        for space,x in firsts.items():
-            (mapu, map_id) = x
-            space_upper = space.upper()
-            hfe.add_code('#define XED_ILD_MAP_FIRST_{} {}'.format(space_upper, mapu))
-            hfe.add_code('#define XED_ILD_MAP_OFFSET_{} {}'.format(space_upper, map_id))
-
     spaces = list(set([ mi.space for mi in sorted_list ]))
     sorted_spaces = sorted(spaces, key=lambda x: encoding_space_to_vexvalid(x))
     max_space_id = encoding_space_to_vexvalid(sorted_spaces[-1])
-    fields = ['modrm', 'disp', 'imm8', 'imm32']
+    fields = ['modrm', 'disp', 'imm']
 
+    cvt_yes_no_var = { 'yes':1, 'no':0, 'var':2 }
+    cvt_imm        = { '0':0, '1':1, '2':2, '4':4, 'var':7 }
+
+    field_to_cvt = { 'modrm': cvt_yes_no_var,
+                     'disp' : cvt_yes_no_var,
+                     'imm'  : cvt_imm }
+    
+    field_to_bits = { 'modrm': 2,
+                      'disp' : 2,
+                      'imm'  : 3 }
+    
     def collect_codes(field, space_maps):
-        cvt = { 'yes':1, 'no':0, 'var':2 }
+        '''cvt is dict converting strings to integers'''
+        cvt = field_to_cvt[field]
         max_id = max( [mi.map_id for mi in space_maps ] )
         codes = { key:0 for key in range(0,max_id+1) }
         
@@ -266,49 +253,54 @@ def emit_map_info_tables(agi):
             tot = tot + (v << shift)
             shift = shift + bits_per_field
         return tot
-
+    
     for space in spaces:
         space_maps = [ mi for mi in sorted_list if mi.space == space ]
         
         for field in fields:
+            bits_per_field = field_to_bits[field]
+            mask = (1<<bits_per_field)-1
+            
             f = codegen.function_object_t('xed_ild_has_{}_{}'.format(field,space),
                                           'xed_bool_t',
                                           static=True, inline=True)
             f.add_arg('xed_uint_t m')
-            codes = collect_codes(field,space_maps)
-            constant = convert_list_to_integer(codes,2)
+            codes = collect_codes(field, space_maps)
+            constant = convert_list_to_integer(codes,bits_per_field)
             f.add_code('/* {} */'.format(codes))
-            f.add_code('/* 0=no, 1=yes, 2=variable */')
             if set(codes) == {0}:  # all zero values...
                 f.add_code_eol('return 0')
                 f.add_code_eol('(void)m')
             else:
                 f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
-                f.add_code_eol('return (xed_bool_t)((data_const >> (2*m)) & 3)')
+                f.add_code_eol('return (xed_bool_t)((data_const >> ({}*m)) & {})'.format(bits_per_field,
+                                                                                         mask))
             hfe.write(f.emit())  # emit the inline function in the header
 
 
     # emit a function that covers all spaces
     for field in fields:
+        bits_per_field = field_to_bits[field]
+        mask = (1<<bits_per_field)-1
+
         f = codegen.function_object_t('xed_ild_has_{}'.format(field),
                                       'xed_bool_t',
                                       static=True, inline=True)
         f.add_arg('xed_uint_t vv')
         f.add_arg('xed_uint_t m')
-        f.add_code('/* 0=no, 1=yes, 2=variable */')
-
         f.add_code('const xed_uint64_t data_const[{}] = {{'.format(max_space_id+1))
 
         for space in sorted_spaces:
             space_maps = [ mi for mi in sorted_list if mi.space == space ]
-            codes = collect_codes(field,space_maps)
-            constant = convert_list_to_integer(codes,2)
+            codes = collect_codes(field, space_maps)
+            constant = convert_list_to_integer(codes,bits_per_field)
             f.add_code('/* {} {} */'.format(codes,space))
             f.add_code(' 0x{:x}ULL,'.format(constant))
             
         f.add_code_eol('}')
         f.add_code_eol('xed_assert(vv < {})'.format(max_space_id+1))
-        f.add_code_eol('return (xed_bool_t)((data_const[vv] >> (2*m)) & 3)')
+        f.add_code_eol('return (xed_bool_t)((data_const[vv] >> ({}*m)) & {})'.format(bits_per_field,
+                                                                                     mask))
         hfe.write(f.emit())  # emit the inline function in the header
 
 

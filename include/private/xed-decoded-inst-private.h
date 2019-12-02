@@ -87,18 +87,12 @@ static XED_INLINE xed_uint8_t xed_ild_get_has_disp(xed_decoded_inst_t const* d) 
     return d->u.ild_data.s.has_disp;
 }
 
-static XED_INLINE void xed_ild_set_has_imm8(xed_decoded_inst_t* d, xed_uint8_t v) {
-    d->u.ild_data.s.has_imm8 = v;
+static XED_INLINE void xed_ild_set_has_imm(xed_decoded_inst_t* d, xed_uint8_t v) {
+    d->u.ild_data.s.has_imm = v;
 }
-static XED_INLINE xed_uint8_t xed_ild_get_has_imm8(xed_decoded_inst_t const* d) {
-    return d->u.ild_data.s.has_imm8;
+static XED_INLINE xed_uint8_t xed_ild_get_has_imm(xed_decoded_inst_t const* d) {
+    return d->u.ild_data.s.has_imm;
 }
 
-static XED_INLINE void xed_ild_set_has_imm32(xed_decoded_inst_t* d, xed_uint8_t v) {
-    d->u.ild_data.s.has_imm32 = v;
-}
-static XED_INLINE xed_uint8_t xed_ild_get_has_imm32(xed_decoded_inst_t const* d) {
-    return d->u.ild_data.s.has_imm32;
-}
 
 #endif
