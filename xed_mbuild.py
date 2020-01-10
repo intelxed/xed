@@ -1548,7 +1548,7 @@ def add_decoder_command(env, gc, gen_dag, prep):
              'pysrc/hashmul.py', 'pysrc/enumer.py', 'pysrc/enum_txt_writer.py',
              'pysrc/xed3_nt.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
              'pysrc/ild_modrm.py', 'pysrc/ild_storage.py',
-             'pysrc/ild_storage_data.py', 'pysrc/slash_expand.py',
+             'pysrc/slash_expand.py',
              'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
              'pysrc/hlist.py', 'pysrc/ctables.py', 'pysrc/ild.py',
              'pysrc/refine_regs.py', 'pysrc/metaenum.py', 'pysrc/classifier.py']
