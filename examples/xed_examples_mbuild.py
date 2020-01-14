@@ -247,7 +247,8 @@ def init(env):
     if nchk(env,'xed_lib_dir'):
         env['xed_lib_dir'] = '../lib'
     if nchk(env,'xed_enc2_libs'):
-        env['xed_enc2_libs'] = mbuild.glob(env['xed_lib_dir'],'*xed-*enc2-*')
+        env['xed_enc2_libs'] = ( mbuild.glob(env['xed_lib_dir'],'*xed-chk-enc2-*') + 
+                                 mbuild.glob(env['xed_lib_dir'],'*xed-enc2-*')      )
     if nchk(env,'xed_inc_dir'):
         env['xed_inc_dir'] = ['../include']
     if nchk(env,'xed_dir'):
