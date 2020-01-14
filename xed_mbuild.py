@@ -1978,7 +1978,8 @@ def build_examples(env):
         env_ex['set_copyright'] = env['set_copyright']
 
     if env['enc2']:
-        env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, '*xed-*enc2-*')
+        env_ex['xed_enc2_libs'] = ( mbuild.glob(wkit.lib, '*xed-chk-enc2-*') + 
+                                    mbuild.glob(wkit.lib, '*xed-enc2-*')      )
 
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
