@@ -462,7 +462,7 @@ class xed_reader_t(object):
                         opcode = pattern[mi.opcpos]
                         break
                     elif mi.legacy_opcode == pattern[1]:
-                        if mi.map_id == 'AMD':
+                        if mi.map_id == 'AMD3DNOW':
                             mapno = mi.map_id
                         else:
                             mapno = int(mi.map_id)
@@ -517,9 +517,10 @@ class xed_reader_t(object):
                 opcode = pattern[1]
             else: # legacy maps and AMD 3dNow (if enabled)
                 v.map, opcode = self._find_legacy_map_opcode(pattern)
+
             v.opcode = opcode
             v.partial_opcode = False
-
+            
             v.amd_3dnow_opcode = None
             # conditional test avoids prefetches and FEMMS.
             if v.extension == '3DNOW' and v.category == '3DNOW':
