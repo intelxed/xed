@@ -31,7 +31,8 @@ def _emit_function(fe, isa_sets, name):
     fo.add_code_eol('    const xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(d)')
     # FIXME: 2017-07-14 optimization: could use a static array for faster checking, smaller code
     switch = codegen.c_switch_generator_t('isa_set', fo)
-    for c in isa_sets:
+    isa_sets_sorted = sorted(isa_sets)
+    for c in isa_sets_sorted:
         switch.add_case('XED_ISA_SET_{}'.format(c.upper()),[],do_break=False)
     if len(isa_sets) > 0:
         switch.add('return 1;')
