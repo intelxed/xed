@@ -41,7 +41,6 @@ import enc2argcheck
 
 from enc2common import *
 
-
 def get_fname(depth=1): # default is current caller
     #return sys._getframe(depth).f_code.co_name
     return traceback.extract_stack(None, depth+1)[0][2]
@@ -5178,7 +5177,9 @@ def work():
                                      args.instructions_filename,
                                      args.widths_filename,
                                      args.element_types_filename,
-                                     args.cpuid_filename)
+                                     args.cpuid_filename,
+                                     args.map_descriptions)
+
 
     width_info_dict = xeddb.get_width_info_dict()
     for k in width_info_dict.keys():
@@ -5220,8 +5221,7 @@ def work():
 
 
     output_file_emitters = []
-
-
+        
     
     #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:
