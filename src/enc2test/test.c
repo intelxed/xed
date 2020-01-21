@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+nCopyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ END_LEGAL */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include "xed-histogram.h"
 
 typedef xed_uint32_t (*test_func_t)(xed_uint8_t* output_buffer);
@@ -43,11 +44,33 @@ xed_state_t dstate;
 
 xed_histogram_t histo;
 
+int enable_emit=0;
+int enable_emit_byte=0;
+
 static void dump(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
     for(i=0;i<len;i++) {
         printf("%02x ",buf[i]);
     }
+}
+
+static void dump_emit_byte(xed_uint8_t* buf, xed_uint32_t len) {
+    xed_uint_t i;
+    printf(".byte ");
+    for(i=0;i<len;i++) {
+        if (i>0)
+            printf(", ");
+        printf("0x%02x", buf[i]);
+    }
+    printf("\n");
+}
+
+static void dump_emit(xed_uint8_t* buf, xed_uint32_t len) {
+    xed_uint_t i;
+    for(i=0;i<len;i++) {
+        printf("__emit 0x%02x\n", buf[i]);
+    }
+    printf("\n");
 }
 
 xed_uint64_t total = 0;
@@ -102,6 +125,13 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
             dump(output_buffer,enclen);
             printf("\n");
             return 1;
+        }
+
+        if (enable_emit) {
+            dump_emit(output_buffer, enclen);
+        }
+        else if (enable_emit_byte) {
+            dump_emit_byte(output_buffer, enclen);
         }
     }
     else {
@@ -183,12 +213,24 @@ int main(int argc, char** argv) {
     m = i;
     printf("Total tests %d\n",m);
     for(i=1;i<argc;i++) {
-        if (strcmp(argv[i],"--histo")==0) {
+        if (strcmp(argv[i],"--reps")==0) {
+            assert( i+1 < argc );
+            reps = atoi(argv[i+1]);
+            i = i + 1;
+        }
+        else if (strcmp(argv[i],"--histo")==0) {
             enable_histogram = 1;
+        }
+        else if (strcmp(argv[i],"--emit")==0) {
+            enable_emit = 1;
+        }
+        else if (strcmp(argv[i],"--byte")==0) {
+            enable_emit_byte = 1;
         }
         else if ( strcmp(argv[i],"-h")==0 ||
                   strcmp(argv[i],"--help")==0 )  {
-            fprintf(stderr,"%s [-h|--help] [--histo] [test_id ...]\n", argv[0]);
+            fprintf(stderr,"%s [-h|--help] [--histo] [--byte|--emit] [--reps N] [test_id ...]\n",
+                    argv[0]);
             exit(0);
         }
         else {
@@ -209,6 +251,11 @@ int main(int argc, char** argv) {
                 printf("test id %d success\n", test_id);
             }
         }
+    }
+
+    if (enable_emit_byte && enable_emit) {
+        printf("Cannot specify --byte and --emit in the same run\n");
+        exit(1);
     }
     if (specific_tests==0) {
         printf("Testing all...\n");
