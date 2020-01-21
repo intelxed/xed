@@ -743,6 +743,10 @@ def emit_required_legacy_map_escapes(ii,fo):
     elif ii.map == 3:
         fo.add_code_eol('emit(r,0x0F)', 'escape map 3')
         fo.add_code_eol('emit(r,0x3A)', 'escape map 3')
+    elif ii.map == 'AMD3DNOW':
+        fo.add_code_eol('emit(r,0x0F)', 'escape map 3dNOW')
+        fo.add_code_eol('emit(r,0x0F)', 'escape map 3dNOW')
+
         
 def get_implicit_operand_name(op):
     if op_implicit(op):
@@ -794,6 +798,9 @@ def emit_vex_prefix(env, ii, fo, register_only=False):
         fo.add_code_eol('emit_vex_c4(r)')
     
 def emit_opcode(ii,fo):
+    if ii.amd_3dnow_opcode:
+        return # handled later. See add_enc_func()
+
     opcode = "0x{:02X}".format(ii.opcode_base10)
     fo.add_code_eol('emit(r,{})'.format(opcode),
                     'opcode')
