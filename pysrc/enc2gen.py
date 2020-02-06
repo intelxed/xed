@@ -632,6 +632,8 @@ def one_nonmem_operand(ii):
     for op in _gen_opnds(ii):
         if op_mem(op):
             return False
+        if op_implicit_or_suppressed(op): # for RCL/ROR etc with implicit imm8
+            continue
         n = n + 1
     return n == 1
 
@@ -1134,8 +1136,12 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
                     ii.encoder_skipped = True
                     return
             else:
-                _dump_fields(ii)
-                die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
+                # we have soem XCHG opcodes encoded as partia register
+                # instructions but have fixed RM fields.
+                fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+
+                #dump_fields(ii)
+                #die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
 
         emit_rex(env,fo,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
@@ -2562,7 +2568,7 @@ def create_legacy_one_gpr_reg_one_mem_fixed(env,ii):
             width = get_reg_width(op)
             break
     if width == None:
-        _dump_fields(ii)
+        dump_fields(ii)
         die("Bad search for width")
     
     widths = [width]
@@ -4976,7 +4982,7 @@ def spew(ii):
     s.append(hex(ii.opcode_base10))
     s.append(str(ii.map))
     #dbg('XA: {}'.format(" ".join(s)))
-    # _dump_fields(ii)
+    # dump_fields(ii)
 
     modes = ['m16','m32','m64']
     if ii.mode_restriction == 'unspecified':
