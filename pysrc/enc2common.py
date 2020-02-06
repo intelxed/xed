@@ -46,7 +46,7 @@ def warn(s):
     print("\t"+s, file=sys.stderr, flush=True)
     #genutil.warn(s)
     
-def _dump_fields(x):
+def dump_fields(x):
     for fld in sorted(x.__dict__.keys()):
         msge("{}: {}".format(fld,getattr(x,fld)))
     msge("\n\n")

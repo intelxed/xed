@@ -126,9 +126,15 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
     xed3_operand_set_wbnoinvd(&xedd, 1);
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err == XED_ERROR_NONE) {
-        if (xed_decoded_inst_get_iclass(&xedd) != ref_iclass) {
+        xed_iclass_enum_t observed_iclass = xed_decoded_inst_get_iclass(&xedd);
+        if (observed_iclass == XED_ICLASS_NOP &&
+            ref_iclass == XED_ICLASS_XCHG &&
+            output_buffer[enclen-1] == 0x90) {
+            // allow variants of 0x90 to masquerade as NOPs
+        }
+        else if (observed_iclass != ref_iclass) {
             printf("\ttest id %d ICLASS MISMATCH: observed: %s expected: %s (%s)\n", test_id,
-                   xed_iclass_enum_t2str( xed_decoded_inst_get_iclass(&xedd) ),
+                   xed_iclass_enum_t2str( observed_iclass ),
                    xed_iclass_enum_t2str( ref_iclass ),
                    fn_name);
             printf("\t");
