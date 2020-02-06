@@ -536,6 +536,8 @@ def two_scalable_regs(ii): # allow optional imm8, immz, allow one implicit GPR
     return n==2 and i <= 1 and implicit <= 1
 def op_implicit(op):
     return op.visibility == 'IMPLICIT'
+def op_implicit_or_suppressed(op):
+    return op.visibility in ['IMPLICIT','SUPPRESSED']
     
 def one_x87_reg(ii):
     n = 0
@@ -657,8 +659,11 @@ def op_immv(op):
 def op_imm8(op):
     if op.name == 'IMM0':
         if op.oc2 == 'b':
+            if op_implicit_or_suppressed(op):
+                return False
             return True
     return False
+
 def op_imm16(op):
     if op.name == 'IMM0':
         if op.oc2 == 'w':
@@ -2073,36 +2078,42 @@ def create_legacy_one_x87_reg(env,ii):
 
     
 def gpr8_imm8(ii):
+    reg,imm=0,0
     for i,op in enumerate(_gen_opnds(ii)):
         if i == 0:
             if op.name == 'REG0' and op_luf_start(op,'GPR8'): 
-                continue
+                reg = reg + 1
             else:
                 return False
         elif i == 1:
             if op.name == 'IMM0' and op.oc2 == 'b':
-                continue
+                if op_implicit_or_suppressed(op):
+                    return False
+                imm = imm + 1
             else:
                 return False
         else:
             return False
-    return True
+    return reg == 1 and imm == 1
             
 def gprv_imm8(ii):
+    reg,imm=0,0
     for i,op in enumerate(_gen_opnds(ii)):
         if i == 0:
             if op.name == 'REG0' and  op_luf_start(op,'GPRv'):
-                continue
+                reg = reg + 1
             else:
                 return False
         elif i == 1:
             if op.name == 'IMM0' and op.oc2 == 'b':
-                continue
+                if op_implicit_or_suppressed(op):
+                    return False
+                imm = imm + 1
             else:
                 return False
         else:
             return False
-    return True
+    return reg == 1 and imm == 1
 
 def gprv_immz(ii):
     for i,op in enumerate(_gen_opnds(ii)):
@@ -3925,10 +3936,16 @@ def create_vex_regs_mem(env,ii):
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
                 
         if var_se:
-            fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(sz_se, var_se))
+            if immw:
+                immw=0
+                fo.add_code_eol('enc_imm8_reg_{}_and_imm(r,{},{})'.format(sz_se, var_se, var_imm8))
+            else:
+                fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(sz_se, var_se))
 
         encode_mem_operand(env, ii, fo, use_index, dispsz)
         emit_vex_prefix(env, ii,fo,register_only=False)
+        
+
         finish_memop(env, ii, fo, dispsz, immw,  space='vex')
         if var_se:
             fo.add_code_eol('emit_se_imm8_reg(r)')

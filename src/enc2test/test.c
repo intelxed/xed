@@ -53,9 +53,18 @@ static void dump(xed_uint8_t* buf, xed_uint32_t len) {
         printf("%02x ",buf[i]);
     }
 }
+static void dump_comment(xed_uint8_t* buf, xed_uint32_t len) {
+    xed_uint_t i;
+    printf("// ");
+    for(i=0;i<len;i++) {
+        printf("%02x",buf[i]);
+    }
+    printf("\n");
+}
 
 static void dump_emit_byte(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
+    dump_comment(buf,len);
     printf(".byte ");
     for(i=0;i<len;i++) {
         if (i>0)
@@ -67,6 +76,7 @@ static void dump_emit_byte(xed_uint8_t* buf, xed_uint32_t len) {
 
 static void dump_emit(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
+    dump_comment(buf,len);
     for(i=0;i<len;i++) {
         printf("__emit 0x%02x\n", buf[i]);
     }
@@ -167,12 +177,12 @@ int test_all(test_func_t* base, const char** str_table, const xed_iclass_enum_t*
     delta = t2-t1;
 
 
-    printf("Tests:   %6d\n", test_id);
-    printf("Repeats: %6d\n", reps);
-    printf("Errors:  %6d\n", errors);
-    printf("Cycles: " XED_FMT_LU "\n", delta);
-    printf("Cycles/(enc+dec) : %7.1lf\n", 1.0*delta/(reps*test_id));
-    printf("Cycles/encode    : %7.1lf\n", 1.0*total/(reps*test_id));
+    printf("//Tests:   %6d\n", test_id);
+    printf("//Repeats: %6d\n", reps);
+    printf("//Errors:  %6d\n", errors);
+    printf("//Cycles: " XED_FMT_LU "\n", delta);
+    printf("//Cycles/(enc+dec) : %7.1lf\n", 1.0*delta/(reps*test_id));
+    printf("//Cycles/encode    : %7.1lf\n", 1.0*total/(reps*test_id));
     return errors;
 }
 
@@ -211,7 +221,7 @@ int main(int argc, char** argv) {
 
 
     m = i;
-    printf("Total tests %d\n",m);
+    printf("//Total tests %d\n",m);
     for(i=1;i<argc;i++) {
         if (strcmp(argv[i],"--reps")==0) {
             assert( i+1 < argc );
@@ -258,7 +268,7 @@ int main(int argc, char** argv) {
         exit(1);
     }
     if (specific_tests==0) {
-        printf("Testing all...\n");
+        printf("//Testing all...\n");
         errors = test_all(base, str_table, iclass_table);
     }
     if (enable_histogram)
