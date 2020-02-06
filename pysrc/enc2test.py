@@ -45,7 +45,7 @@ gpr64 = "RAX RCX RDX RBX RSI RDI RBP RSP R8 R9 R10 R11 R12 R13 R14 R15".split()
 gpr64_index = "RAX RCX RDX RBX RSI RDI RBP R8 R9 R10 R11 R12 R13 R14 R15".split()
 
 gpr32_not64 = "EAX ECX EDX EBX ESI EDI EBP ESP".split()
-gpr32_not64 = "ECX EDX EBX ESI EDI EBP ESP".split() # omit EAX for XCHG EAX,EAX vs NOP issue
+gpr32_not64 = "EAX ECX EDX EBX ESI EDI EBP ESP".split() 
 gpr32_index_not64 = "EAX ECX EDX EBX ESI EDI EBP".split()
 
 gpr16_not64 = "AX CX DX BX SI DI BP SP".split()
