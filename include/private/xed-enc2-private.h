@@ -469,6 +469,12 @@ void enc_imm8_reg_xmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst);
 void enc_imm8_reg_ymm(xed_enc2_req_t* r, 
                       xed_reg_enum_t dst);
+void enc_imm8_reg_xmm_and_imm(xed_enc2_req_t* r, 
+                              xed_reg_enum_t dst,
+                              xed_uint_t imm);
+void enc_imm8_reg_ymm_and_imm(xed_enc2_req_t* r, 
+                              xed_reg_enum_t dst,
+                              xed_uint_t imm);
 
 
 // CRs and DRs, SEG regs
