@@ -298,9 +298,7 @@ def _filter_uimm1_nt(imm_nt_names):
        
 def work(agi, instr_by_map_opcode, imm_nts, ild_gendir, eosz_dict, 
          debug):
-    """
-    main entry point of the module.
-    """
+    """main entry point of the module."""
     #dump lookup functions for each NT
     #Let's call these function Level3 functions (L3)
     nt_dict = {}
@@ -349,9 +347,10 @@ def work(agi, instr_by_map_opcode, imm_nts, ild_gendir, eosz_dict,
     #append function for imm_bytes==0
     l2_functions.append(_gen_imm0_function(agi))
     
-    l2_headers = [ild_eosz.get_ntseq_header_fn(),
-                  _l3_header_fn, ildutil.ild_header,
-                  operand_storage.get_operand_accessors_fn()]
+    l2_headers = [ ild_eosz.get_ntseq_header_fn(),
+                   _l3_header_fn,
+                   ildutil.ild_header,
+                   operand_storage.get_operand_accessors_fn() ]
     ild_codegen.dump_flist_2_header(agi, _l2_header_fn, l2_headers, 
                                     l2_functions)
 
@@ -367,16 +366,20 @@ def work(agi, instr_by_map_opcode, imm_nts, ild_gendir, eosz_dict,
     
     # L1 functions are defined by a list of ild_info_t objects that
     # have same map,opcode.
-    res = gen_l1_functions_and_lookup(agi, instr_by_map_opcode, nt_dict)
-
-    l1_functions,l1_lookup = res
+    l1_functions,l1_lookup = gen_l1_functions_and_lookup(agi,
+                                                         instr_by_map_opcode,
+                                                         nt_dict)
 
     ild_codegen.dump_flist_2_header(agi, _l1_header_fn, [_l2_header_fn], 
                                     l1_functions)
     
-    headers = [_l1_header_fn, ildutil.ild_private_header, 
-               operand_storage.get_operand_accessors_fn()]
-    ild_codegen.dump_lookup(agi, l1_lookup, _ild_t_imm_member, 
-                            _imm_lu_header_fn, headers, 
-                            ildutil.l1_ptr_typename)
+    headers = [ _l1_header_fn,
+                ildutil.ild_private_header, 
+                operand_storage.get_operand_accessors_fn() ]
+    ild_codegen.dump_lookup_new(agi,
+                                l1_lookup,
+                                _ild_t_imm_member, 
+                                _imm_lu_header_fn,
+                                headers, 
+                                ildutil.l1_ptr_typename)
 

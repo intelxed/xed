@@ -381,12 +381,17 @@ def dump_lookup_new(agi,
     _dump_top_level_dispatch_array(agi,
                                    h_file,
                                    array_names,
-                                   'xed_ild_{}_table'.format(name_pfx))
+                                   'xed_ild_{}_table'.format(name_pfx),
+                                   lu_elem_type)
     
     h_file.close()
 
 
-def _dump_top_level_dispatch_array(agi, h_file, array_names, emit_array_name):
+def _dump_top_level_dispatch_array(agi,
+                                   h_file,
+                                   array_names,
+                                   emit_array_name,
+                                   sub_data_type):
     vv_max = max( [ ild_info.encoding_space_to_vexvalid(mi.space)
                     for mi in agi.map_info ] )
     max_maps = ild_info.get_maps_max_id(agi) + 1
@@ -396,7 +401,9 @@ def _dump_top_level_dispatch_array(agi, h_file, array_names, emit_array_name):
     h_file.add_code('#if !defined(XED_VEXVALID_LIMIT)')
     h_file.add_code('# define XED_VEXVALID_LIMIT {}'.format(vv_max+1))
     h_file.add_code('#endif')
-    h_file.add_code('const xed_uint8_t* {}[XED_VEXVALID_LIMIT][XED_MAP_ROW_LIMIT] = {{'.format(emit_array_name))
+    h_file.add_code('const {}* {}[XED_VEXVALID_LIMIT][XED_MAP_ROW_LIMIT] = {{'.format(
+                                                                            sub_data_type,
+                                                                            emit_array_name))
 
     for vv in range(0,vv_max+1):
         maps = ild_info.get_maps_for_space(agi,vv)
