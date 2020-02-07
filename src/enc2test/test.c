@@ -127,7 +127,18 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
     err = xed_decode(&xedd, output_buffer, enclen);
     if (err == XED_ERROR_NONE) {
         xed_iclass_enum_t observed_iclass = xed_decoded_inst_get_iclass(&xedd);
-        if (observed_iclass == XED_ICLASS_NOP &&
+        xed_uint_t declen = xed_decoded_inst_get_length(&xedd);
+        if (enclen != xed_decoded_inst_get_length(&xedd)) {
+               printf("\ttest id %d LENGTH MISMATCH: encode: %d decode: %d iclass: %s (%s)\n", test_id,
+                      enclen, declen,
+                      xed_iclass_enum_t2str( observed_iclass ),
+                      fn_name);
+               printf("\t");
+               dump(output_buffer,enclen);
+               printf("\n");
+               return 1;
+        }
+        else if (observed_iclass == XED_ICLASS_NOP &&
             ref_iclass == XED_ICLASS_XCHG &&
             output_buffer[enclen-1] == 0x90) {
             // allow variants of 0x90 to masquerade as NOPs

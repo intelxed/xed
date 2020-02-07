@@ -2636,7 +2636,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         opnd_types_org = get_opnd_types(env,ii, osz_translate(width))        
         opnd_types  = copy.copy(opnd_types_org)
         if ii.has_immz:
-            immw = 16 if width == 16 else 32
+            immw = 16 if (width == 16 or width == 'w') else 32
             
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
         fname = "{}_{}_{}_{}".format(enc_fn_prefix,
