@@ -40,12 +40,14 @@ extern char const* test_functions_m32_a32_str[];
 extern const xed_iclass_enum_t test_functions_m32_a32_iclass[];
 #endif
 
-xed_state_t dstate;
+static xed_state_t dstate;
 
-xed_histogram_t histo;
+static xed_histogram_t histo;
 
-int enable_emit=0;
-int enable_emit_byte=0;
+static int enable_emit=0;
+static int enable_emit_byte=0;
+static int enable_emit_main=0;
+static int enable_emit_gnu_asm=0;
 
 static void dump(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
@@ -65,12 +67,17 @@ static void dump_comment(xed_uint8_t* buf, xed_uint32_t len) {
 static void dump_emit_byte(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
     dump_comment(buf,len);
+    if (enable_emit_gnu_asm)
+        printf("  asm(\"");
     printf(".byte ");
     for(i=0;i<len;i++) {
         if (i>0)
             printf(", ");
         printf("0x%02x", buf[i]);
     }
+    if (enable_emit_gnu_asm)
+        printf("\\n\");");
+
     printf("\n");
 }
 
@@ -254,9 +261,16 @@ int main(int argc, char** argv) {
         else if (strcmp(argv[i],"--byte")==0) {
             enable_emit_byte = 1;
         }
+        else if (strcmp(argv[i],"--main")==0) {
+            enable_emit_main = 1;
+        }
+        else if (strcmp(argv[i],"--gnuasm")==0) {
+            enable_emit_gnu_asm = 1;
+            enable_emit_byte = 1;
+        }
         else if ( strcmp(argv[i],"-h")==0 ||
                   strcmp(argv[i],"--help")==0 )  {
-            fprintf(stderr,"%s [-h|--help] [--histo] [--byte|--emit] [--reps N] [test_id ...]\n",
+            fprintf(stderr,"%s [-h|--help] [--histo] [--byte|--emit] [--main] [--gnuasm] [--reps N] [test_id ...]\n",
                     argv[0]);
             exit(0);
         }
@@ -284,9 +298,24 @@ int main(int argc, char** argv) {
         printf("Cannot specify --byte and --emit in the same run\n");
         exit(1);
     }
+    if (enable_emit_main) {
+        if (enable_emit)
+            printf("//Compile this with -fasm-blocks using icc\n\n");
+        if (enable_emit_gnu_asm)
+            printf("//Compile this with gcc\n\n");
+        printf("int main(int argc, char** argv) {\n");
+        if (enable_emit)
+            printf("  __asm {\n");
+    }
     if (specific_tests==0) {
         printf("//Testing all...\n");
         errors = test_all(base, str_table, iclass_table);
+    }
+    if (enable_emit_main) {
+        if (enable_emit)
+            printf("   }\n"); // end __asm block
+        printf("   return 0;\n");
+        printf(" }\n");
     }
     if (enable_histogram)
         xed_histogram_dump(&histo, 1);
