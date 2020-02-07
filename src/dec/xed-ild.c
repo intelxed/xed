@@ -1004,9 +1004,6 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
 
 
 
-/*probably this table should be generated. Leaving it here for now.
-  Maybe in one of the following commits it will be moved to auto generated
-  code.*/
 const xed_ild_l1_func_t* imm_bits_2d[2] = { //FIXME: genericize
     imm_width_map_legacy_map0,
     imm_width_map_legacy_map1
@@ -1016,15 +1013,18 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
     xed_uint8_t imm_bits = xed3_operand_get_imm_width(d);
     if (!imm_bits) {
         xed_uint_t var_or_bytes = xed_ild_get_has_imm(d); 
-        if (var_or_bytes < 7) 
+        if (var_or_bytes < 7) // fixed 0,1,2,4 bytes handled here
             xed3_operand_set_imm_width(d,bytes2bits(var_or_bytes));
-        else {
-            xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
-            xed_uint8_t opcode     = xed3_operand_get_nominal_opcode(d);
-            xed_ild_l1_func_t fptr = imm_bits_2d[map][opcode];
-            xed_assert(fptr); // fptr guaranteed to be valid by constructionx
+        else { // var_or_bytes == 7 denotes that a complex length determination is reqd
+            xed_uint_t               vv = xed3_operand_get_vexvalid(d);
+            xed_ild_map_enum_t      map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
+            xed_uint8_t          opcode = xed3_operand_get_nominal_opcode(d);
+            xed_ild_l1_func_t const* fptr_tbl = xed_ild_imm_width_table[vv][map];
+            xed_ild_l1_func_t      fptr = 0;
+            xed_assert(fptr_tbl); // fptr_tbl guaranteed to be valid by construction
+            fptr = fptr_tbl[opcode];
+            xed_assert(fptr); // fptr guaranteed to be valid by construction
             (*fptr)(d);
-            return;
         }
     }
 }
@@ -1136,107 +1136,8 @@ static void opcode_scanner(xed_decoded_inst_t* d)
     bad_map(d);
 }
 
-#if 0 // FIXME: remove old code
-static void opcode_scanner(xed_decoded_inst_t* d)
-{
-    unsigned char length = xed_decoded_inst_get_length(d);
-    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
-    xed_uint8_t opcode = 0;
-    
-    /*no need to check max_bytes - it was checked in previous scanners*/
-
-    /* no need to check for VEX here anymore, because if VEX prefix was
-       encountered, we would get to evex_vex_opcode_scanner */
-    if (b != 0x0F) {
-        xed3_operand_set_map(d, XED_ILD_LEGACY_MAP0);
-        xed3_operand_set_nominal_opcode(d, b);
-        xed3_operand_set_pos_nominal_opcode(d, length);
-        xed_decoded_inst_inc_length(d);
-        xed3_operand_set_srm(d, xed_modrm_rm(b));
-        goto out;
-    }
-
-    length++; /* eat the 0x0F */
-    
-    /* 0x0F opcodes MAPS 1,2,3 */
-    if (length < xed3_operand_get_max_bytes(d)) {
-        xed_uint8_t m = xed_decoded_inst_get_byte(d, length);
-        if (m == 0x38) {
-            length++; /* eat the 0x38 */
-            xed3_operand_set_map(d, XED_ILD_LEGACY_MAP2);
-            xed_decoded_inst_set_length(d, length);
-            get_next_as_opcode( d);
-            return;
-        }
-        else if (m == 0x3A) {
-            length++; /* eat the 0x3A */
-            xed3_operand_set_map(d, XED_ILD_LEGACY_MAP3);
-            xed_decoded_inst_set_length(d, length);
-            xed3_operand_set_imm_width(d, bytes2bits(1));
-            get_next_as_opcode( d);
-            return;
-        }
-        else if (m == 0x3B) {
-            length++; /* eat the 0x3B */
-            bad_map(d);
-            xed_decoded_inst_set_length(d, length);
-            get_next_as_opcode( d);
-            return; 
-            //FIXME: TNI maps have no modrm, imm, disp ??
-            /* BTW we use MAP as index to static decoding lookup tables..
-             * with INVALID_MAP we will have segv there, need to check
-             * for it after ILD phase.
-             * Maybe set some common ILD_INVALID member to indicate that
-             * there is no need to do static decoding?
-             */
-        }
-        else if (m > 0x38 && m <= 0x3F) {
-            length++; /* eat the 0x39...0x3F (minus 3A and 3B) */
-            bad_map(d);
-
-            xed_decoded_inst_set_length(d, length);
-            get_next_as_opcode( d);
-            return; //FIXME: TNI maps have no modrm, imm, disp ??
-            /* BTW we use MAP as index static decoding lookup tables..
-             * with INVALID_MAP we will have segv there, need to check
-             * for it after ILD phase */
-        }
-#if defined(XED_AMD_ENABLED)
-        else if (m == 0x0F) { 
-            xed3_operand_set_amd3dnow(d, 1);
-            /* opcode is in immediate later on */
-            length++; /*eat the second 0F */
-            xed3_operand_set_nominal_opcode(d, 0x0F);
-             /*special map for amd3dnow */
-            xed3_operand_set_map(d, XED_ILD_AMD_3DNOW);
-            xed_decoded_inst_set_length(d, length);
-        }
-#endif
-        else {
-            xed3_operand_set_pos_nominal_opcode(d, length); 
-            length++; /* eat the 2nd  opcode byte */
-            xed3_operand_set_nominal_opcode(d, m);
-            xed3_operand_set_map(d, XED_ILD_LEGACY_MAP1);
-            xed_decoded_inst_set_length(d, length);
-        }
-    }
-    else{
-        too_short(d);
-        return;
-    }
-
-out:
-    //set SRM (partial opcode instructions need it)
-    opcode = xed3_operand_get_nominal_opcode(d);
-    xed3_operand_set_srm(d, xed_modrm_rm(opcode));
-    set_downstream_info(d,0);
-}
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 // KNC/AVX512 EVEX and EVEX-IMM8 scanners
-
-
 
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
 
