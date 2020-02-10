@@ -38,6 +38,12 @@ def msgb(b,s=''):
 class inst_t(object):
     def __init__(self):
         pass
+    def __str__(self):
+        s = []
+        for fld in sorted(self.__dict__.keys()):
+            s.append("{}: {}".format(fld,getattr(self,fld)))
+        return "\n".join(s) + '\n'
+    
 
 
 class width_info_t(object):
