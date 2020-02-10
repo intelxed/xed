@@ -652,7 +652,8 @@ print_rel_sym(xed_print_info_t* pi,
      
      eosz = xed_operand_values_get_effective_operand_width(
                          xed_decoded_inst_operands_const(pi->p));
-     if (eosz == 16) 
+
+     if (pi->truncate_eip_eosz16 && eosz == 16) 
          effective_addr = effective_addr & 0xFFFF;
 
      symbolic = xed_get_symbolic_disassembly(pi,
@@ -980,8 +981,10 @@ static void xed_print_operand( xed_print_info_t* pi )
 
       }
       case XED_OPERAND_RELBR:
-          print_relbr(pi);
-          break;
+        if (xed_inst_iclass(xi) == XED_ICLASS_XBEGIN)
+            pi->truncate_eip_eosz16 = 0;
+        print_relbr(pi);
+        break;
 
       default: {
           xed_operand_ctype_enum_t  ctype = xed_operand_get_ctype(op_name);
@@ -1043,7 +1046,9 @@ setup_print_info(xed_print_info_t* pi)
     pi->operand_indx = 0;
     pi->skip_operand = 0;
     pi->implicit = 0;    
-    pi->extra_index_operand = XED_REG_INVALID; 
+    pi->extra_index_operand = XED_REG_INVALID;
+    // normally we truncate the EIP for 16b eosz Jcc
+    pi->truncate_eip_eosz16 = 1; 
 
     pi->buf[0]=0; /* allow use of strcat for everything */
 
@@ -1431,8 +1436,10 @@ xed_decoded_inst_dump_att_format_internal(
           }
 
           case XED_OPERAND_RELBR:
-              print_relbr(pi);
-              break;
+            if (xed_inst_iclass(xi) == XED_ICLASS_XBEGIN)
+                pi->truncate_eip_eosz16 = 0;
+            print_relbr(pi);
+            break;
 
           default: {
               xed_operand_ctype_enum_t  ctype = xed_operand_get_ctype(op_name);

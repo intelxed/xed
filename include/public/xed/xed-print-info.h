@@ -87,6 +87,9 @@ typedef struct {
 
     /// internal, do not use
     xed_bool_t implicit;
+    
+    /// internal, do not use
+    xed_bool_t truncate_eip_eosz16;
 
 } xed_print_info_t;
 
