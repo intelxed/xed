@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -162,6 +162,7 @@ void print_flags(xed_decoded_inst_t* xedd) {
     unsigned int i, nflags;
     if (xed_decoded_inst_uses_rflags(xedd)) {
         const xed_simple_flag_t* rfi = xed_decoded_inst_get_rflags_info(xedd);
+        assert(rfi);
         printf("FLAGS:\n");
         if (xed_simple_flag_reads_flags(rfi)) {
             printf("   reads-rflags ");

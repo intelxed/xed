@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,8 +42,28 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
     // the decoder does not set the iclass field
     xed3_operand_set_iclass(d,xed_decoded_inst_get_iclass(d));
 
-    if (xed3_operand_get_mem0(d))
+    if (xed3_operand_get_mem0(d)) {
         xed_decoded_inst_cache_memory_operand_length(d);
+#if defined(XED_SUPPORTS_AVX512)
+        if (xed_operand_values_has_memory_displacement(d)  &&
+            xed3_operand_get_disp_width(d) == 8 &&
+            xed3_operand_get_nelem(d)  &&  // proxy for evex 
+            !xed_decoded_inst_get_attribute(d, XED_ATTRIBUTE_MASKOP_EVEX) )
+        {
+            // if we are an evex masked op, we'll always be re-encoded in
+            // evex space; no need force the use of avx512 (or to scale the
+            // disp8 and use disp32).  We only need to force the use of
+            // avx512 (or scale the disp8 and use disp32) if there is a
+            // chance the instruction will be re-encoded in the vex space.
+
+            // (if we ever remove that deficiency in the encoder (evex
+            // masked ops always re-encode into eve space) we'll have to
+            // remove last test condition above)
+
+            xed3_operand_set_must_use_evex(d,1);
+        }
+#endif
+    }
     
     
     xed3_operand_set_rex(d,0);

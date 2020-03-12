@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,13 +17,11 @@
 #END_LEGAL
 
 import ild_nt
-import genutil
 import ildutil
 import codegen
 import mbuild
 import ild_info
 import operand_storage
-import os
 
 _arg_const_suffix = 'CONST'
 

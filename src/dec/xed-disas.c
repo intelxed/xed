@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -455,7 +455,8 @@ xed_print_operand_decorations(
         int i;
         for( i=0; i<XED_MAX_DECORATIONS_PER_OPERAND; i++ )  {
             xed_operand_convert_enum_t v = xed_operand_convert[cvt_idx][i];
-            if (v == XED_OPERAND_CONVERT_INVALID)
+            if (v == XED_OPERAND_CONVERT_INVALID ||
+                v >=  XED_OPERAND_CONVERT_LAST    )
                 break;
             pi->blen = xed_print_cvt(pi->p, pi->buf, pi->blen, v);
         }

@@ -1,5 +1,8 @@
 language: c
 
+before_install:
+    - if [ `uname -s` = 'Linux' ]; then sudo apt-get install -y python3 python3-pip ; fi
+
 addons:
     apt:
         packages:
@@ -11,11 +14,10 @@ matrix:
     - compiler: gcc
       os: linux
       sudo: enabled
-      dist: trusty
+      dist: xenial
     - compiler: clang
       os: osx
       
-before_install:
-    - if [ `uname -s` = 'Linux' ]; then sudo apt-get install -y python python-pip python3 python3-pip ; else brew upgrade python ; brew install python2; fi
 script:
-    - python ci.py
+    - sudo pip3 install --upgrade setuptools
+    - python3 ci.py

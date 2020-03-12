@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,17 +15,11 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-import random
 import math
-import sys
 import genutil
 import ildutil
 import collections
-import itertools
-import operator
-import ild_codegen
 import codegen
-import ild_nt
 import hashmul
 import hashfks
 import hashlin
@@ -189,9 +183,6 @@ class phash_t(object):
             fo.add_code(elem)
 
         fo.add_code_eol('}')
-
-    def get_find_fn(self, func_id):
-        return '%s_%s' %(_find_fn_pfx, func_id)
 
     def gen_find_fos(self, fname):  # phash_t
         obj_str = self.cdict.strings_dict['obj_str']

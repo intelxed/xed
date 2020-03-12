@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 #END_LEGAL
 from __future__ import print_function
 import sys
-import os
 import math
 import xedhash
 
@@ -100,8 +99,7 @@ class hashmul_t(xedhash.hash_fun_interface_t):
     def emit_cvar_decl(self):
         if self.pow2:
             return "xed_union64_t t"
-        else:
-            return "xed_union64_t t, u"
+        return "xed_union64_t t, u"
 
 
     def emit_cexpr(self, key_str="key"):
@@ -197,12 +195,15 @@ def test4():
     return 0
 
 def test():
+    fail = 0
     for f in [test1, test2, test3, test4]:
         r = f()
         if r:
             print("FAIL: {}".format(f.__name__))
+            fail = 1
         else:
             print("PASS: {}".format(f.__name__))
+    return fail
 
 if __name__ == "__main__":
     r = test()

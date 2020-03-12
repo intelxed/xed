@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -377,7 +377,7 @@ process_elf32(xed_disas_info_t* fi,
                 text = 1;
         }
 
-        if (text) {
+        if (text && name) {
             if (fi->xml_format == 0) {
                 printf("# SECTION " XED_FMT_D " ", i);
                 printf("%25s ", name);
@@ -467,7 +467,7 @@ process_elf64(xed_disas_info_t* fi,
                 text = 1;
         }
 
-        if (text) {
+        if (text && name) {
             if (fi->xml_format == 0) {
                 printf("# SECTION " XED_FMT_U " ", i);
                 printf("%25s ", name);

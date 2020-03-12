@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 #  
 #END_LEGAL
 from verbosity import *
-import re
 import patterns
 import genutil
 import encutil
@@ -284,8 +283,7 @@ class action_t(object):
         elif self.is_nonterminal():
             return self._emit_nonterminal_code(bind_or_emit)
         
-        else:
-            return [ '/* FIXME action code not done yet for ' + self.__str__() + '*/' ]
+        return [ '/* FIXME action code not done yet for ' + self.__str__() + '*/' ]
 
     def _generate_code_for_field_binding(self, bind_or_emit):
         if bind_or_emit == 'EMIT':
@@ -300,8 +298,8 @@ class action_t(object):
                             obj_name, self.value)
         if self.field_name == 'ERROR':
             return [ s, "    return 0; /* error */" ]
-        else:
-            return [ s ]
+        return [ s ]
+    
     def _generate_code_for_emit_action(self,bind_or_emit):
         """Emit code for emit action """
         if bind_or_emit == 'BIND':
@@ -350,6 +348,6 @@ class action_t(object):
                                                        bind_or_emit,obj_name))
             return s
     
-        else: #'EMIT'
-            code = '%s_%s_%s(%s);' %(nt_prefix, self.nt, bind_or_emit, obj_name)
-            return ['    ' + code] 
+        #'EMIT'
+        code = '%s_%s_%s(%s);' %(nt_prefix, self.nt, bind_or_emit, obj_name)
+        return ['    ' + code] 

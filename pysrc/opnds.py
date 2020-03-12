@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,9 +19,6 @@
 #END_LEGAL
 
 import re
-import sys
-import os
-import types
 from verbosity import *
 import genutil
 
@@ -46,7 +43,7 @@ class operand_info_t(object):
                 lookupfn_name=None,
                 vis='DEFAULT',
                 oc2=None,
-                cvt=[],
+                cvt=None,
                 xtype=None,
                 internal=False,
                 multireg=0):
@@ -76,8 +73,10 @@ class operand_info_t(object):
       self.rw = rw # r,w,rw, cw (conditional write, may write)
 
       # ascii conversion function
-      self.cvt = cvt
-
+      if cvt:
+          self.cvt = cvt
+      else:
+          self.cvt = []
 
       # accept some shorthand.
       if vis == 'SUPP':
@@ -88,11 +87,8 @@ class operand_info_t(object):
          self.visibility = 'EXPLICIT'
       else:
          # The default visibililty comes from the field definitions
-         if ( vis == 'DEFAULT' or 
-              vis == 'EXPLICIT' or
-              vis == 'IMPLICIT' or
-              vis == 'SUPPRESSED' ):
-            self.visibility = vis # DEFAULT, EXPLICIT, IMPLICIT or SUPPRESSED
+         if vis in ['DEFAULT', 'EXPLICIT', 'IMPLICIT', 'SUPPRESSED', 'ECOND']:
+            self.visibility = vis
          else:
             genutil.die("Bad visibility qualifier: " + vis)
 
@@ -148,7 +144,7 @@ class operand_info_t(object):
          if ( len(self.bits) == 1 and
               operand_info_t.decimal_number_pattern.match(self.bits[0]) ):
                return True
-      elif genutil.is_stirngish(self.bits):
+      elif genutil.is_stringish(self.bits):
          if operand_info_t.decimal_number_pattern.match(self.bits):
             return True
       return False
@@ -289,7 +285,8 @@ def parse_one_operand(w,
                       default_vis='DEFAULT', 
                       xtypes=None, 
                       default_xtypes=None,
-                      internal=False):
+                      internal=False,
+                      skip_encoder_conditions=True):
    """Format examples:
    name=xxxxxy:{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
    name=NTLUR():{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
@@ -316,7 +313,6 @@ def parse_one_operand(w,
    # get the r/w/rw info, if any
    vis = default_vis
    oc2 = None
-   otype = None
    rw = 'r'
    cvt = []
    invert = False
@@ -367,7 +363,7 @@ def parse_one_operand(w,
    else:
       a = w
       
-   if vis == 'ECOND':
+   if skip_encoder_conditions and vis == 'ECOND':
       return None
    
       
@@ -488,4 +484,3 @@ def parse_one_operand(w,
                          multireg=multireg)
 
    return xop
-

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import re
 import shutil
 import copy
 import time
-import glob
 import types
 import optparse
 import mbuild 
@@ -54,6 +53,13 @@ def cdie(s):
     raise xed_exception_t("die", 1, s)
 def cexit(r=0):
     raise xed_exception_t("exit", r)
+
+def write_file(fn, stream):
+    """Write stream to fn"""
+    mbuild.msgb("WRITING", fn)
+    f = open(fn,'w')
+    f.writelines(stream)
+    f.close()
 
 def add_to_flags(env,s):
     env.add_to_var('CCFLAGS',s)
@@ -177,11 +183,14 @@ def _compile_with_pin_crt(env):
        _compile_with_pin_crt_mac(env)
    elif env.on_windows():
        _compile_with_pin_crt_win(env)
-
-def  _greater_than_gcc(env,amaj,amin,aver):
+       
+def  _gcc_version_string(env):
     gcc = env.expand('%(CC)s')
     vstr = mbuild.get_gcc_version(gcc)
-    mbuild.msgb("GCC VERSION", vstr)
+    return vstr
+
+def  _greater_than_gcc(env,amaj,amin,aver):
+    vstr = _gcc_version_string(env)
     try:
         (vmaj, vmin, vver) = vstr.split('.')
     except:
@@ -208,18 +217,14 @@ def set_env_gnu(env):
     #env['LIBS'] += ' -lgcov'
     
     flags += ' -Wall'
+    flags += ' -Wformat-security'
+    # the windows compiler finds this stuff so flag it on other platforms
+    flags += ' -Wunused' 
     
     # 2018-11-28: I am working on hammering out all the issues found by these knobs:
     #flags += ' -Wconversion'
     #flags += ' -Wsign-conversion'
 
-    # 2014-06-23: tried out address sanitizer. it did not find any
-    # issues.
-    if 0:
-        address_santizer = ' -fsanitize=address -g'
-        flags += address_santizer
-        env['LINKFLAGS'] += address_santizer
-        
     if env['use_werror']:
         flags += ' -Werror'
     if env['compiler'] != 'icc':
@@ -238,10 +243,10 @@ def set_env_gnu(env):
                                     env['icc_version'] != '7'):
         flags += ' -fno-exceptions'
 
-    # required for gcc421 xcode (I have v 3.2.5) to avoid 
-    # undefined symbols when linking tools.
-    if env.on_mac():
-        flags += ' -fno-common'
+    # 2019-06-05: disabled - no longer needed
+    # required for gcc421 xcode to avoidundefined symbols when linking tools.
+    #if env.on_mac():
+    #    flags += ' -fno-common'
 
     if env['build_os'] == 'win':
         # gcc3.4.4 on windows has problems with %x for xed_int32_t.
@@ -259,7 +264,9 @@ def set_env_gnu(env):
             # -fvisibility=hidden only works on gcc>4. If not gcc,
             # assume it works. Really only a problem for older icc
             # compilers.
-            _greater_than_gcc(env,4,0,0)
+            if env['compiler'] == 'gcc':
+                vstr = _gcc_version_string(env)
+                mbuild.msgb("GCC VERSION", vstr)
             if env['compiler'] != 'gcc' or _greater_than_gcc(env,4,0,0):
                 hidden = ' -fvisibility=hidden' 
                 env['LINKFLAGS'] += hidden
@@ -429,7 +436,7 @@ def strip_file(env,fn,options=''):
     fne = env.expand(fn)
     mbuild.msgb("STRIPPING", fne)
     strip_cmd = " ".join([env['strip'], options, fne])
-    mbuild.msgb("STRIP CMD", strip_cmd)
+    #mbuild.msgb("STRIP CMD", strip_cmd)
     (retcode,stdout,stderr) = mbuild.run_command(strip_cmd)
     if retcode != 0:
        dump_lines("strip stdout", stdout)
@@ -463,7 +470,7 @@ def make_lib_dll(env,base):
 def _xed_lib_dir_join(env, s):
     return mbuild.join(env['xed_lib_dir'],s)
 
-def get_libxed_names(env,work_queue):
+def get_libxed_names(env):
     libxed_lib, libxed_dll = make_lib_dll(env,'xed')
     env['link_libxed'] = _xed_lib_dir_join(env,libxed_lib)
     env['shd_libxed']  = _xed_lib_dir_join(env,libxed_dll)

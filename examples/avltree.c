@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -185,6 +185,7 @@ void* avl_find_lower_bound  (avl_tree_t* tree, avl_key_t key,
 static avl_node_t* make_node(avl_key_t key, void* value)
 {
     avl_node_t* n = (avl_node_t*) malloc(sizeof(avl_node_t));
+    assert(n != 0);
     n->key = key;
     n->data = value;
     n->balance_factor = 0;
@@ -348,6 +349,7 @@ void avl_iter_begin( avl_iter_t* iter, avl_tree_t* tree)
     iter->tail = 0;
     if (tree->top) {
         avl_link_node_t* n = (avl_link_node_t*)malloc(sizeof(avl_link_node_t));
+        assert(n != 0);
         n->node = tree->top;
         n->next = 0;
         iter->head = n;
@@ -366,6 +368,7 @@ static void add_link_node(avl_iter_t* iter, avl_node_t* anode)
     if (anode)
     {
         avl_link_node_t* n = (avl_link_node_t*)malloc(sizeof(avl_link_node_t));
+        assert(n != 0);
         n->next = 0;
         n->node = anode;
         iter->tail->next = n;

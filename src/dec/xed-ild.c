@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -372,6 +372,11 @@ typedef union { // C5 payload 1
 
 static void evex_vex_opcode_scanner(xed_decoded_inst_t* d); //prototype
 
+static void set_vl(xed_decoded_inst_t* d, xed_uint_t vl) {
+    xed3_operand_set_vl(d, vl);
+    xed3_operand_set_vlx(d, vl+1);
+}
+
 static void vex_c4_scanner(xed_decoded_inst_t* d)
 {
     /* assumption: length < max_bytes  
@@ -411,6 +416,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
     if (length + 2 < max_bytes) {
       xed_avx_c4_payload1_t c4byte1;
       xed_avx_c4_payload2_t c4byte2;
+      xed_uint_t eff_map;
 
       c4byte1.u32 = xed_decoded_inst_get_byte(d, length);
       c4byte2.u32 = xed_decoded_inst_get_byte(d, length + 1);
@@ -426,7 +432,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       xed3_operand_set_vexdest3(d,   c4byte2.s.v3);
       xed3_operand_set_vexdest210(d, c4byte2.s.vvv210);
 
-      xed3_operand_set_vl(d,   c4byte2.s.l);
+      set_vl(d,   c4byte2.s.l);
 
       xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c4byte2.s.pp]);
 
@@ -435,7 +441,12 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       // FIXME: 2017-03-03 this masking of the VEX map with 0x3 an attempt
       // at matching an undocumented implementation convention that can and
       // most likely will change as architectural map usage evolves.
-      if ((c4byte1.s.map & 0x3) == XED_ILD_MAP3)
+      eff_map = c4byte1.s.map & 0x3;
+      if (eff_map == XED_ILD_MAP0 || c4byte1.s.map > XED_MAX_MAP_VEX) {
+          bad_map(d);
+          return; 
+      }
+      else if (eff_map == XED_ILD_MAP3)
           xed3_operand_set_imm_width(d, bytes2bits(1));
 
       // this is a success indicator for downstreaam decoding
@@ -454,7 +465,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
        */
         xed_decoded_inst_set_length(d, length);
         too_short(d);
-      return;
+        return;
     }
 }
 
@@ -508,7 +519,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
         xed3_operand_set_vexdest3(d,   c5byte1.s.v3);
         xed3_operand_set_vexdest210(d, c5byte1.s.vvv210);
 
-        xed3_operand_set_vl(d,   c5byte1.s.l);        
+        set_vl(d,   c5byte1.s.l);        
         xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c5byte1.s.pp]);
 
         /* MAP is a special case - although it is a derived operand in 
@@ -619,7 +630,7 @@ static void xop_scanner(xed_decoded_inst_t* d)
       xed3_operand_set_vexdest3(d, xop_byte2.s.v3);
       xed3_operand_set_vexdest210(d, xop_byte2.s.vvv210);
 
-      xed3_operand_set_vl(d, xop_byte2.s.l);
+      set_vl(d, xop_byte2.s.l);
       xed3_operand_set_vex_prefix(d, vex_prefix_recoding[xop_byte2.s.pp]);
       
       xed3_operand_set_vexvalid(d, 3);
@@ -1038,107 +1049,6 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if !defined(XED_SUPPORTS_AVX512) && !defined(XED_SUPPORTS_KNC)
-static void imm_scanner(xed_decoded_inst_t* d)
-{
-  xed_uint8_t imm_bytes;
-  xed_uint8_t imm1_bytes;
-  xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
-  unsigned char length = xed_decoded_inst_get_length(d);
-  unsigned int pos_imm = 0;
-  const xed_uint8_t* itext = d->_byte_array._dec;
-  const xed_uint8_t* imm_ptr = 0;
-
-  set_imm_bytes(d);
-#if defined(XED_AMD_ENABLED)
-  if (xed3_operand_get_amd3dnow(d)) {
-      if (length < max_bytes) {
-         /*opcode is in immediate*/
-          xed3_operand_set_nominal_opcode(d, 
-              xed_decoded_inst_get_byte(d, length));
-          /*count the pseudo immediate byte, which is opcode*/
-          xed_decoded_inst_inc_length(d); 
-          /*imm_bytes == imm_bytes1 == 0 for amd3dnow */
-          return;
-      }
-      else {
-          too_short(d);
-          return;
-      }
-  }
-#endif
-  
-  imm_bytes = bits2bytes(xed3_operand_get_imm_width(d));
-  imm1_bytes = xed3_operand_get_imm1_bytes(d);
-
-  if (imm_bytes)  {
-      if (length + imm_bytes <= max_bytes) {
-          xed3_operand_set_pos_imm(d, length);
-          /* eat imm */
-          length += imm_bytes;
-          xed_decoded_inst_set_length(d, length); 
-
-          if (imm1_bytes)  {
-              if (length + imm1_bytes <= max_bytes) {
-                  xed3_operand_set_pos_imm1(d, length);
-                  imm_ptr = itext + length;
-                  length += imm1_bytes; /* eat imm1 */
-                  xed_decoded_inst_set_length(d, length);
-                  //set uimm1 value
-                  xed3_operand_set_uimm1(d, *imm_ptr);
-              }
-              else {/* Ugly code */
-                    too_short(d);
-                    return;
-              }
-            }
-      }
-      else {
-          too_short(d);
-          return;
-      }
-  }
-
-  /* FIXME: setting UIMM chunks. This can be done better, 
-   * for example special capturing function in ILD, like for imm_bytes*/
-  pos_imm = xed3_operand_get_pos_imm(d);
-  imm_ptr = itext + pos_imm;
-  switch(imm_bytes){
-  case 0:
-      break;
-  case 1: {
-      xed_uint8_t uimm0 =  *(xed_uint8_t*)(imm_ptr);
-      xed3_operand_set_uimm0(d, uimm0);
-      
-      //for SE_IMM8() we need to set here the esrc as well
-      xed3_operand_set_esrc(d,uimm0 >> 4);
-      break;
-          }
-  case 2:{
-      xed_uint16_t uimm0 =  *(xed_uint16_t*)(imm_ptr);
-      xed3_operand_set_uimm0(d, uimm0);
-      break;
-      }
-  case 4:{
-      xed_uint32_t uimm0 =  *(xed_uint32_t*)(imm_ptr);
-      xed3_operand_set_uimm0(d, uimm0);
-      break;
-      }
-  case 8:{
-      xed_uint64_t uimm0 =  *(xed_uint64_t*)(imm_ptr);
-      xed3_operand_set_uimm0(d, uimm0);
-      break;
-      }
-  default:
-      /*Unexpected immediate width, this should never happen*/
-      xed_assert(0);
-  }
-
-  /* uimm1 is set earlier */
-}
-#endif // !defined(XED_SUPPORTS_AVX512) && !defined(XED_SUPPORTS_KNC)
-////////////////////////////////////////////////////////////////////////////////
-
 #if defined(XED_AVX)
 static void catch_invalid_rex_or_legacy_prefixes(xed_decoded_inst_t* d)
 {
@@ -1362,6 +1272,8 @@ static void evex_scanner(xed_decoded_inst_t* d)
         if (length + 4 < max_bytes) {
             xed_avx512_payload1_t evex1;
             xed_avx512_payload2_t evex2;
+            xed_uint_t eff_map;
+
 
             evex1.u32 = xed_decoded_inst_get_byte(d, length+1);
             evex2.u32 = xed_decoded_inst_get_byte(d, length+2);
@@ -1392,10 +1304,15 @@ static void evex_scanner(xed_decoded_inst_t* d)
             }
             
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
-
-            if (evex1.s.map == XED_ILD_MAP3)
+            
+            eff_map = evex1.s.map & 3;
+            if (eff_map == XED_ILD_MAP0 || evex1.s.map >  XED_MAX_MAP_EVEX)  {
+                bad_map(d);
+                return;
+            }
+            else if (eff_map == XED_ILD_MAP3)
                 xed3_operand_set_imm_width(d, bytes2bits(1));
-
+            
             if (evex2.s.ubit)  // AVX512 only (Not KNC)
             {
 #if defined(XED_SUPPORTS_AVX512)                
@@ -1408,7 +1325,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 // during decode.
                 xed3_operand_set_llrc(d, evex3.s.llrc);
                 
-                xed3_operand_set_vl(d, evex3.s.llrc);
+                set_vl(d, evex3.s.llrc);
                 xed3_operand_set_bcrc(d, evex3.s.bcrc);
                 xed3_operand_set_vexdest4(d, ~evex3.s.vexdest4p&1);
                 if (!xed3_mode_64b(d) && evex3.s.vexdest4p==0)
@@ -1425,7 +1342,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 const xed_uint_t vl_512=2;
                 xed_knc_payload3_t evex3;
                 evex3.u32 = xed_decoded_inst_get_byte(d, length+3);
-                xed3_operand_set_vl(d, vl_512); //Indicates vector length 512b
+                set_vl(d, vl_512); //Indicates vector length 512b
 
                 xed3_operand_set_nr(d, evex3.s.nr);
                 xed3_operand_set_swiz(d, evex3.s.swiz);
@@ -1448,7 +1365,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
     }
 }
 
-static void evex_imm_scanner(xed_decoded_inst_t* d)
+static void imm_scanner(xed_decoded_inst_t* d)
 {
   xed_uint8_t imm_bytes;
   xed_uint8_t imm1_bytes;
@@ -1458,14 +1375,15 @@ static void evex_imm_scanner(xed_decoded_inst_t* d)
   const xed_uint8_t* itext = d->_byte_array._dec;
   const xed_uint8_t* imm_ptr = 0;
 
+  // Figure out how many imm bytes we need to collect, if any
   set_imm_bytes(d);
-
+    
 #if defined(XED_AMD_ENABLED)
   if (xed3_operand_get_amd3dnow(d)) {
       if (length < max_bytes) {
-         /*opcode is in immediate*/
+          /*opcode is in immediate*/
           xed3_operand_set_nominal_opcode(d, 
-              xed_decoded_inst_get_byte(d, length));
+                                          xed_decoded_inst_get_byte(d, length));
           /*count the pseudo immediate byte, which is opcode*/
           xed_decoded_inst_inc_length(d); 
           /*imm_bytes == imm_bytes1 == 0 for amd3dnow */
@@ -1477,11 +1395,15 @@ static void evex_imm_scanner(xed_decoded_inst_t* d)
       }
   }
 #endif
+
+
+  // Denote location of the imm byte(s) from the byte stream
+  // (consume imm1 if present)
   
   imm_bytes = bits2bytes(xed3_operand_get_imm_width(d));
   imm1_bytes = xed3_operand_get_imm1_bytes(d);
-
   if (imm_bytes)  {
+
       if (length + imm_bytes <= max_bytes) {
           xed3_operand_set_pos_imm(d, length);
           /* eat imm */
@@ -1509,16 +1431,16 @@ static void evex_imm_scanner(xed_decoded_inst_t* d)
       }
   }
 
+  // Store the imm byte(s)
+  
   /* FIXME: setting UIMM chunks. This can be done better, 
    * for example special capturing function in ILD, like for imm_bytes*/
   pos_imm = xed3_operand_get_pos_imm(d);
   imm_ptr = itext + pos_imm;
-  switch(imm_bytes)
-  {
+  switch(imm_bytes)  {
   case 0:
       break;
-  case 1:
-    {
+  case 1:    {
         xed_uint8_t uimm0 =  *imm_ptr;
         xed_uint8_t esrc = uimm0 >> 4;
         
@@ -1578,20 +1500,23 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     vex_scanner(ild);
 #endif
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
+
+    // evex scanner assumes it can read bytes so we must check for limit first.
+    if (xed3_operand_get_out_of_bytes(ild))
+        return;
+
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
-    if (!xed3_operand_get_vexvalid(ild)) {  
-        if (xed3_operand_get_out_of_bytes(ild))
-            return;
+    if (!xed3_operand_get_vexvalid(ild)) 
         evex_scanner(ild);
-    }
 #endif
 
-    if (xed3_operand_get_out_of_bytes(ild)) 
+    if (xed3_operand_get_out_of_bytes(ild))
         return;
 #if defined(XED_AVX)
     // vex/xop prefixes also eat the vex/xop opcode
-    if (!xed3_operand_get_vexvalid(ild)) 
+    if (!xed3_operand_get_vexvalid(ild) &&
+        !xed3_operand_get_error(ild)     )
         opcode_scanner(ild);
 #else
     opcode_scanner(ild);
@@ -1599,11 +1524,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     modrm_scanner(ild);
     sib_scanner(ild);
     disp_scanner(ild);
-#if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
-    evex_imm_scanner(ild);
-#else
     imm_scanner(ild);
-#endif
 }
 
 #include "xed-chip-modes.h"
@@ -1630,10 +1551,7 @@ xed_ild_decode(xed_decoded_inst_t* xedd,
     
     if (xed3_operand_get_out_of_bytes(xedd))
         return XED_ERROR_BUFFER_TOO_SHORT;
-    if (xed3_operand_get_map(xedd) == XED_ILD_MAP_INVALID)
-        return XED_ERROR_GENERAL_ERROR;
-
-    return XED_ERROR_NONE;
+    return xed3_operand_get_error(xedd);
 }
 
 

@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -50,6 +50,10 @@ END_LEGAL */
 # include "xed-encoder-hl.h"
 # include "xed-patch.h"
 #endif
+#if defined(XED_ENC2_ENCODER)
+# include "xed-encode-direct.h"
+# include "xed-encode-check.h"
+#endif
 
 #include "xed-util.h"
 #include "xed-operand-action.h"
@@ -78,7 +82,8 @@ END_LEGAL */
 
 
 #include "xed-agen.h"
-#include "xed-cpuid-rec.h"  
+#include "xed-cpuid-rec.h"
+#include "xed-isa-set.h"  
 
 
 #endif

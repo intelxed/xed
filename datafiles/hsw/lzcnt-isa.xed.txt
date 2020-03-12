@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ VERSION   : 2
 CPL       : 3
 CATEGORY  : LZCNT
 EXTENSION : LZCNT
-COMMENT:  : These next one WAS introduced first by AMD circa SSE4a.
+COMMENT   : These next one WAS introduced first by AMD circa SSE4a.
 FLAGS     : MUST [ cf-mod zf-mod of-u af-u pf-u sf-u ]
 PATTERN   : 0x0F 0xBD f3_refining_prefix LZCNT=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() 
 OPERANDS  : REG0=GPRv_R():w:v     MEM0:r:v     

@@ -1,5 +1,5 @@
 #BEGIN_LEGAL
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,11 +20,15 @@
 
 
 // ========================================================================================  
-/*! 
-@mainpage XED Build Guide
+/*!
+@if  (EXTERNAL)
+@mainpage *EXTERNAL* XED Build Guide
+@else
+@mainpage *INTERNAL* XED Build Guide
+@endif
 by Mark Charney
 
-2016-12-14
+2019-05-28
 
 @section INTRO Introduction
 
@@ -61,10 +65,6 @@ Table of Contents
 XED is stored in an GIT repository. Request access from
 me if you want to build XED.
 
-It is a good idea to set up an ssh-agent and cache your private keys
-so you do not have to repeatedly type your ssh passphrase when doing the
-git clone operations.
-
 Here's how to check out XED and mbuild, as sibling directories:
 
 @if  (EXTERNAL)
@@ -74,8 +74,8 @@ git clone https://github.com/intelxed/mbuild.git mbuild
 @endcode
 @else
 @code
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-xed xed
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-mbuild mbuild
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 @endcode
 @endif
 
@@ -116,7 +116,8 @@ https://intelxed.github.io (or inside Intel http://mjc.intel.com/mjcharne/mbuild
 The XED build using mbuild is dependence driven It uses file and
 command signatures to detect the need to rebuild files.
 
-The mbuild script requires python version 2.7, python 3.4 or later. 
+The mbuild script requires python version 2.7, python 3.4 or later.
+
 
 Assuming you checked out the tree as described above, you can build
 XED using mbuild as follows on linux:
@@ -132,7 +133,7 @@ cd build
 ../xed/mfile.py examples install zip    (optional, makes a zip file that includes the examples)
 @endcode
 
-Actual windows example (password prompts omitted):
+Actual windows example:
 
 @if (EXTERNAL)
 @code
@@ -140,15 +141,15 @@ git clone https://github.com/intelxed/xed.git xed
 git clone https://github.com/intelxed/mbuild.git mbuild
 mkdir test
 cd test
-C:/Python27/python ../xed/mfile.py examples install zip
+C:/Python37/python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-xed xed
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-mbuild mbuild
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 mkdir test
 cd test
-C:/Python27/python ../xed/mfile.py examples install zip
+C:/Python37/python ../xed/mfile.py examples install zip
 @endcode
 @endif
 
@@ -166,8 +167,8 @@ python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-xed xed
-git clone ssh://git-ger-3.devtools.intel.com:29418/ssgsde-mbuild mbuild
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
+git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
 mkdir test
 cd test
 python ../xed/mfile.py examples install zip
@@ -176,7 +177,7 @@ python ../xed/mfile.py examples install zip
 
 To build 32b on a 64b platform, add to the mfile.py execution "host_cpu=ia32":
 @code
-C:/Python27/python ../xed/mfile.py examples install zip host_cpu=ia32
+C:/Python37/python ../xed/mfile.py examples install zip host_cpu=ia32
 @endcode
 
 @section INSTALL Making XED kits
@@ -214,6 +215,20 @@ quicker than the sequence of commands.
 ../xed/mfile.py doc doc-build examples install   
 @endcode
 
+@section ENC2 Building the fast encoder
+
+A set of additional encoder libraries can be created and built by
+adding the --enc2 option to the command line.  See the XED reference
+manual for more information about the XED ENC2.  A test for every
+encode function can be built by adding the --enc2-test option.  One
+library is built for 64b mode with 64b addressing (m64,a64) and
+another library is built for 32b mode with 32b addressing (m32,a32).
+Due to the large amount of code generated, compilation time is
+sigificantly longer when using the --enc2 options.  The XED ENC2
+libraries and headers are placed in the build directory's
+wkit/{include,lib} directories as well as the installed kit if the
+"install" target is used.
+
 
 @section WINDOWS Windows notes
 
@@ -229,20 +244,20 @@ during MSVS installation.
 On windows you can build from a cmd.exe or a cygwin  window, with MSVS or GNU gcc.
 @code
 /* Run the Visual Studio setup script (vcvars32.bat or vcvarsamd64.bat) from your compiler installation */
-C:/Python27/python ../xed/mfile.py examples    ( from a cmd.exe window using win32 python)
+C:/Python37/python ../xed/mfile.py examples    ( from a cmd.exe window using win32 python)
 
 /* or from cygwin, using MSVS, you must ensure your MSVS compiler environment is set up properly */
 ../xed/mfile.py examples                        ( from a cygwin window, using cygwin's python)
 
 /* if you installed the compiler in a standard place, you can have MBUILD set it up*/
-C:/Python27/python ../xed/mfile.py --setup-msvs --msvs-version 10 examples
+C:/Python37/python ../xed/mfile.py --setup-msvs --msvs-version 10 examples
 
 /* or from cygwin, using GCC */
 ../xed/mfile.py --compiler=gnu examples         ( from a cygwin window, using cygwin's gcc)
 @endcode
 
 The cygwin builds will use cygwin's python to launch the mfile, but
-win32 c:/Python27/python to run the generators. I try to avoid
+win32 c:/Python37/python to run the generators. I try to avoid
 building using cygwin's python because those builds are single
 threaded because of long standing bugs in cygwin.
 
@@ -261,7 +276,6 @@ objects/DLL you are required to define XED_DLL (/DXED_DLL on Windows
 or -DXED_DLL on Linux).
 
 @section HELP The mbuild options
-
 
 If you supply the \-\-help message to the ../xed/mfile.py you'll
 see the various options controlling compilation. Some options are

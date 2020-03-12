@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -119,25 +119,24 @@ FLAGS   flags 16 RFLAGS/EFLAGS
 EFLAGS  flags 32 RFLAGS/EFLAGS
 RFLAGS  flags 64 RFLAGS
 
-CS   sr    16 CS
-DS   sr    16 DS
+# natural order for the seg regs. See SEG() nonterminal
 ES   sr    16 ES
+CS   sr    16 CS
 SS   sr    16 SS
+DS   sr    16 DS
 FS   sr    16 FS
 GS   sr    16 GS
 
 
+MMX0  mmx 64  MMX0  0 - mm0
+MMX1  mmx 64  MMX1  1 - mm1
+MMX2  mmx 64  MMX2  2 - mm2
+MMX3  mmx 64  MMX3  3 - mm3
 
-
-MMX0  mmx 64  MMX0  0
-MMX1  mmx 64  MMX1  1
-MMX2  mmx 64  MMX2  2
-MMX3  mmx 64  MMX3  3
-
-MMX4  mmx 64  MMX4  4
-MMX5  mmx 64  MMX5  5
-MMX6  mmx 64  MMX6  6
-MMX7  mmx 64  MMX7  7
+MMX4  mmx 64  MMX4  4 - mm4
+MMX5  mmx 64  MMX5  5 - mm5
+MMX6  mmx 64  MMX6  6 - mm6
+MMX7  mmx 64  MMX7  7 - mm7
 
 
 ST0   x87 80  ST0  0 - st(0)

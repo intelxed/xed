@@ -4,7 +4,7 @@
 # Enumeration support
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,12 +19,6 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-# subprocess requires python 2.4 (replaces all os.popen() )
-import os
-import sys
-import re
-import types
 
 import codegen
 import enumer

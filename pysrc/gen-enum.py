@@ -6,7 +6,7 @@
 # Mark Charney
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,6 @@
 
 import os
 import sys
-import re
 
 
 ############################################################################
@@ -61,9 +60,9 @@ def warn(m):
 
 # Require python 2.4 (or later) for this script
 def check_python_version():
-   tuple = sys.version_info
-   major = tuple[0]
-   minor = tuple[1]
+   tup = sys.version_info
+   major = tup[0]
+   minor = tup[1]
    if (major > 2 ) or \
       (major == 2 and minor >= 4):
        return 
@@ -71,17 +70,7 @@ def check_python_version():
    
 check_python_version()
 
-import glob
-import re
-#import time
-#import tempfile
-#import platform # requires python 2.3
-#import subprocess # requires python 2.4 (replaces all os.popen() )
-#from getpass import getuser
-#from threading import Thread
 from optparse import OptionParser # requires python 2.3
-import stat # for chmod
-import pickle
 
 parser = OptionParser()
 

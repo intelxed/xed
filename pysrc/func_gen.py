@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@
 #END_LEGAL
 
 
-import constraint_vec_gen  # FIXME: not used, delete
 import codegen
-import actions
 import ild_phash
 import actions_codegen
 import verbosity
- 
+import genutil
 
 
 class func_gen_t(object):

@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ static int asp_dbg_verbosity = 1;
 
 /* PROTOTYPES */
 static char* asp_strdup(const char* s);
-static void asp_dbg_printf(const char* format, ...);
 static void upcase(char* s);
 static void delete_slist_t(slist_t* s);
 static slist_t* get_slist_node(void);
@@ -42,6 +41,7 @@ static void delete_opnd_list_t(opnd_list_t* s);
 static opnd_list_t* get_opnd_list_node(void);
 static void add_decorator(opnd_list_t* onode, char* d);
 static void grab_prefixes(char**p, xed_enc_line_parsed_t* v);
+static void study_prefixes(xed_enc_line_parsed_t* v);
 static void grab_inst(char**p, xed_enc_line_parsed_t* v);
 static void grab_operand(char**p, xed_enc_line_parsed_t* v);
 //static slist_t* reverse_list(slist_t* head);
@@ -52,11 +52,12 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative);
 static int ismemref(char* s);
 static int valid_decorator(char const* s);
 static int grab_decorator(char* s, unsigned int pos, char** optr);
-static void parse_reg(char* s, opnd_list_t* onode);
+static void parse_reg(xed_enc_line_parsed_t* v, char* s, opnd_list_t* onode);
 static void parse_decorator(char* s, opnd_list_t* onode);
 static void parse_memref(char* s, opnd_list_t* onode);
 static void refine_operand(xed_enc_line_parsed_t* v, char* s);
 static void refine_operands(xed_enc_line_parsed_t* v);
+static unsigned int skip_spaces(char *s, unsigned int offset);
 
 /////////////////////////
 
@@ -83,7 +84,7 @@ void asp_printf(const char* format, ...) {
     va_end(args);
 }
 
-static void asp_dbg_printf(const char* format, ...) {
+void asp_dbg_printf(const char* format, ...) {
     if (asp_dbg_verbosity < 2)
         return;
     va_list args;
@@ -119,6 +120,7 @@ static void delete_slist_t(slist_t* s) {
 
 static slist_t* get_slist_node() {
     slist_t* node = (slist_t*)malloc(sizeof(slist_t));
+    assert(node != 0);
     node->s = 0;
     node->next = 0;
     return node;
@@ -159,20 +161,17 @@ static void delete_opnd_list_t(opnd_list_t* s) {
 xed_enc_line_parsed_t* asp_get_xed_enc_node(void) {
     xed_enc_line_parsed_t*  v = (xed_enc_line_parsed_t*)
                                   malloc(sizeof(xed_enc_line_parsed_t));
-    v->input = 0;
-    v->iclass = 0;
-    v->valid = 0;
-    v->operands = 0;
-    v->prefixes = 0;
-    v->opnds = 0;
-    v->mode =0;
+    assert(v != 0);
+    memset(v, 0, sizeof(xed_enc_line_parsed_t));
     return v;
 }
 
 void asp_delete_xed_enc_line_parsed_t(xed_enc_line_parsed_t* v) {
-    // iclass not allocated
-    if (v->input)
+    if (v->iclass_str)
+        free(v->iclass_str);
+    if (v->input) 
         free(v->input);
+
     delete_slist_t(v->operands);
     delete_slist_t(v->prefixes);
     delete_opnd_list_t(v->opnds);
@@ -181,21 +180,9 @@ void asp_delete_xed_enc_line_parsed_t(xed_enc_line_parsed_t* v) {
 
 static opnd_list_t* get_opnd_list_node() {
     opnd_list_t* p  = (opnd_list_t*)malloc(sizeof(opnd_list_t));
-    p->next = 0;
-    p->decorators = 0;
+    assert(p != 0);
+    memset(p, 0, sizeof(opnd_list_t));
     p->type = OPND_INVALID;
-    p->s = 0;
-    p->imm = 0;
-    p->mem.len = 0;
-    p->mem.seg = 0;
-    p->mem.base = 0;
-    p->mem.index = 0;
-    p->mem.scale = 0;
-    p->mem.disp = 0;
-    p->mem.minus = 0;
-    p->mem.mem_size = 0;
-    p->mem.mem_bits = 0;
-    p->mem.ndisp = 0;
     return p;
 }
 
@@ -234,9 +221,9 @@ static char const* mem_size_qualifiers[] = {
     "WORD",
     "DWORD",
     "QWORD",
-    "XWORD",
-    "YWORD",
-    "ZWORD",
+    "XMMWORD",
+    "YMMWORD",
+    "ZMMWORD",
     0
 };
 
@@ -247,6 +234,21 @@ static char const* scales[] = {
     "8",
     0
 };
+
+static void study_prefixes(xed_enc_line_parsed_t* v) {
+    slist_t* p = v->prefixes;
+    while(p) {
+        if (strcmp("REPNE",p->s) == 0) 
+            v->seen_repne = 1;
+        else if (strcmp("REPE",p->s) == 0) 
+            v->seen_repe = 1;
+        else if (strcmp("REP",p->s) == 0) 
+            v->seen_repe = 1;
+        else if (strcmp("LOCK",p->s) == 0) 
+            v->seen_lock = 1;
+        p = p->next;
+    }
+}
 
 static void grab_prefixes(char**p, xed_enc_line_parsed_t* v)
 {
@@ -317,8 +319,9 @@ static void grab_inst(char**p, xed_enc_line_parsed_t* v)
         }
         q++;
     }
-    v->iclass = *p;
-    asp_dbg_printf("ICLASS [%s]\n",v->iclass);
+    v->iclass_str = asp_strdup(*p);
+    /* Note that it is not the final iclass as it may require mangling */
+    asp_dbg_printf("MNEMONIC [%s]\n",v->iclass_str);
     *p = q;
 }
 
@@ -415,9 +418,11 @@ static int isreg(char* s) {  // including decorators
         if (isalpha(s[0])) {
             int i;
             for(i=1;s[i];i++)
-                // allow alnum, dash & curlies, else bail
+                // allow alnum, dash & parens (x87), curlies, else bail
                 if ( !isalnum(s[i])  &&
                      s[i] != '{'     &&
+                     s[i] != '('     &&
+                     s[i] != ')'     &&
                      s[i] != '-'     &&
                      s[i] != '}'      )
                     return 0;
@@ -442,6 +447,35 @@ static int isdecorator(char* s) {
     return 0;
 }
 
+/* Return true if s matches pattern "num:num" */
+static int islongptr(char *s) {
+    if (!s)
+        return 0;
+    /* skip optional "far" */
+    if (s[0] == 'F' && s[1] == 'A' && s[2] == 'R') {
+        s += 3;
+        s += skip_spaces(s, 0);
+    }
+    
+    int column_pos = -1;
+    for (int i = 0; s[i]; i++) {
+        if (s[i] == ':') {
+            column_pos = i;
+            break;
+        }
+    }
+    if (column_pos < 0)
+        return 0;
+    char *first = s;
+    char *second = s + column_pos + 1;
+    s[column_pos] = '\0'; // temporarily split the string
+    int64_t unused = 0;
+    int res = asm_isnumber(first, &unused, 0) 
+              && asm_isnumber(second, &unused, 0); // both parts are numbers
+    s[column_pos] = ':'; // restore the separator
+    return res;
+}
+
 static int64_t letter_cvt(char a, char base) {
     return (int64_t)(a-base);
 }
@@ -456,7 +490,7 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
     // when parsing displacements where the minus sign was already eaten by
     // the parser and I didn't want to reallocate the string just to
     // reassociate the minus sign with the number. So for that case, I
-    // added a arg_negative to allow me to force the numbre to be negative
+    // added a arg_negative to allow me to force the number to be negative
     // without there being an actual leading minus sign present.
     
     
@@ -474,6 +508,9 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
     }
     if (s[0]=='-') {
         negative = 1;
+        i++;
+    }
+    if (s[0] == '+') {
         i++;
     }
     
@@ -544,6 +581,13 @@ static int asm_isnumber(char* s, int64_t* onum, int arg_negative) {
     return 0;
 }
 
+static unsigned int skip_spaces(char *s, unsigned int offset) {
+    while (s[offset] && isspace(s[offset])) {
+        offset++;
+    }
+    return offset;
+}
+
 static int ismemref(char* s) {  // FIXME include directorators
     if (s) {
         unsigned int i=0,offset=0;
@@ -555,9 +599,13 @@ static int ismemref(char* s) {  // FIXME include directorators
                 break;
             }
         }
-        while(s[offset] && isspace(s[offset])) {
-            offset++;
+        offset = skip_spaces(s, offset);
+        /* skip optional "ptr" part of memref */
+        if (!strncmp(s + offset, "PTR", 3)) {
+            offset += 3;
+            offset = skip_spaces(s, offset);
         }
+
         if (s[offset] == '[') {
             // search backwards from end as there might be some {...} decorators.
             unsigned int len = xed_strlen(s);
@@ -622,7 +670,7 @@ static int grab_decorator(char* s, unsigned int pos, char** optr)
     return 0;
 }
 
-static void parse_reg(char* s, opnd_list_t* onode)
+static void parse_reg(xed_enc_line_parsed_t* v, char* s, opnd_list_t* onode)
 {
     char tbuf[BLEN];
     unsigned int i=0;
@@ -638,6 +686,16 @@ static void parse_reg(char* s, opnd_list_t* onode)
     asp_dbg_printf("REGISTER: %s\n",tbuf);
     onode->s = asp_strdup(tbuf);
     onode->type = OPND_REG;
+    onode->reg = str2xed_reg_enum_t(onode->s);
+
+    if (onode->reg >= XED_REG_CR0 && onode->reg <= XED_REG_CR15) {
+        v->seen_cr = 1;
+    }
+    if (onode->reg >= XED_REG_DR0 && onode->reg <= XED_REG_DR7) {
+        v->seen_dr = 1;
+    }
+    
+    
     while (i<len && s[i] == '{') {
         char* d = 0;
         int r;
@@ -699,7 +757,9 @@ static void parse_decorator(char* s, opnd_list_t* onode)
 static void parse_memref(char* s, opnd_list_t* onode)
 {
     // [ seg:reg + index * [1,2,4,8]  +/- disp ]
-    memparse_rec_t r;
+    memparse_rec_t r = { 0 };
+    r.len = xed_strlen(s);
+    assert(r.len < BLEN);
 
     char tbuf[BLEN];
     char stmp[BLEN];    
@@ -709,20 +769,6 @@ static void parse_memref(char* s, opnd_list_t* onode)
     int plusses=0;
     int last_star=0;
     unsigned int offset=0;
-    r.minus=0;
-    r.seg=0;
-    r.base=0;
-    r.index=0;
-    r.scale=0;
-    r.nscale=0;
-    r.disp=0;
-    r.ndisp=0;
-    r.mem_size = 0;
-    r.mem_bits = 0;
-
-    r.len = xed_strlen(s);
-    assert(r.len < BLEN);
-
 
     for(i=0;mem_size_qualifiers[i];i++) {
         unsigned int len;
@@ -735,6 +781,11 @@ static void parse_memref(char* s, opnd_list_t* onode)
             break;
         }
     }
+    /* skip optional "ptr" part */
+    offset = skip_spaces(s, offset);
+    if (!strncmp(s+offset, "PTR", 3)) {
+        offset += 3;
+    }
 
     // remove spaces -- makes figuring out terminators much easier!
     for(i=0;s[offset+i];i++) {
@@ -745,7 +796,8 @@ static void parse_memref(char* s, opnd_list_t* onode)
     stmp[p]=0;
     p=0;
     r.len=xed_strlen(stmp);
-    
+
+
     for(i=0;i<r.len;i++) {
         if (stmp[i] == '[') {
             assert(i==0);
@@ -870,6 +922,37 @@ static void parse_memref(char* s, opnd_list_t* onode)
     onode->mem = r;
 }
 
+/* Extract semantic values from string: "far number:number" */
+static void parse_long_pointer(char* s, opnd_list_t* onode)
+{
+    /* skip optional "far" part */
+    if (s[0] == 'F' && s[1] == 'A' && s[2] == 'R') {
+        s += 3;
+        s += skip_spaces(s, 0);
+    }
+
+    int column_pos = -1;
+    for (int i = 0; s[i]; i++) {
+        if (s[i] == ':') {
+            column_pos = i;
+            break;
+        }
+    }
+    assert(column_pos >= 0);
+    char *first = s;
+    char *second = s + column_pos + 1;
+    s[column_pos] = '\0'; // split the string
+    int64_t first_num, second_num;
+    asm_isnumber(first, &first_num, 0);
+    asm_isnumber(second, &second_num, 0);
+
+    onode->farptr.seg = s;
+    onode->farptr.offset = s + column_pos + 1;
+    onode->farptr.seg_value = first_num;
+    onode->farptr.offset_value = second_num;
+    onode->type = OPND_FARPTR;
+}
+
 static void refine_operand(xed_enc_line_parsed_t* v, char* s)
 {
     opnd_list_t* onode = get_opnd_list_node();
@@ -878,10 +961,11 @@ static void refine_operand(xed_enc_line_parsed_t* v, char* s)
     asp_dbg_printf("REFINE OPERAND [%s]\n", s);
     if (isreg(s)) {
         asp_dbg_printf("REGISTER-ish: %s\n",s);
-        parse_reg(s,onode);
+        parse_reg(v,s,onode);
     }
     else if (asm_isnumber(s,&num,0)) {
-        asp_dbg_printf("Immediate: %s\n",s);
+        /* Actual meaning depends on opcode */
+        asp_dbg_printf("Immediate or displacement: %s\n",s);
         onode->type = OPND_IMM;
         onode->s = asp_strdup(s);
         onode->imm = num;
@@ -894,6 +978,11 @@ static void refine_operand(xed_enc_line_parsed_t* v, char* s)
     else if (isdecorator(s)) {
         asp_dbg_printf("LONE DECORATOR\n");
         parse_decorator(s,onode);
+    }
+    else if (islongptr(s)) {
+        asp_dbg_printf("LONG POINTER\n");
+        v->seen_far_ptr = 1;
+        parse_long_pointer(s,onode);
     }
     else {
         asp_error_printf("Bad operand: %s\n",s);
@@ -921,6 +1010,7 @@ static void refine_operands(xed_enc_line_parsed_t* v)
 void asp_parse_line(xed_enc_line_parsed_t* v)
 {
     char* p  = asp_strdup(v->input);
+    char* q  = p; // for deletion
     int inst = 0;
     int prefixes = 0;
     upcase(p);
@@ -930,6 +1020,7 @@ void asp_parse_line(xed_enc_line_parsed_t* v)
         }
         if (prefixes==0) {
             grab_prefixes(&p,v);
+            study_prefixes(v);
             prefixes = 1;
             continue;
         }
@@ -947,6 +1038,7 @@ void asp_parse_line(xed_enc_line_parsed_t* v)
     }
 
     refine_operands(v);
+    free(q);
 }
 
 
@@ -954,7 +1046,7 @@ void asp_print_parsed_line(xed_enc_line_parsed_t* v) {
     slist_t* p=0;
     opnd_list_t* q=0;
     asp_printf("MODE: %d\n",v->mode);
-    asp_printf("ICLASS: %s\n",v->iclass);
+    asp_printf("MNEMONIC: %s\n",v->iclass_str);
     asp_printf("PREFIXES: ");
     p = v->prefixes;
     while(p) {
@@ -978,21 +1070,30 @@ void asp_print_parsed_line(xed_enc_line_parsed_t* v) {
         slist_t* d = 0;
         asp_printf("\t");
         if (q->s) asp_printf("%s ", q->s);
-        if (q->type == OPND_REG) asp_printf("REG ");
-        if (q->type == OPND_IMM) asp_printf("IMM 0x%016llx  ",q->imm);
-        if (q->type == OPND_MEM) asp_printf("MEM  ");
-        if (q->type == OPND_DECORATOR) asp_printf("DECORATOR  ");
-        if (q->type == OPND_INVALID) asp_printf("INVALID  ");
-        if (q->type == OPND_MEM) {
-            asp_printf ("%d %s [%s:%s + %s*%s %s %s] ",
-                    q->mem.len,
-                    (q->mem.mem_size ? q->mem.mem_size : "n/a"),
-                    (q->mem.seg ? q->mem.seg : "n/a"),
-                    (q->mem.base ? q->mem.base : "n/a"),
-                    (q->mem.index ? q->mem.index : "n/a"),                    
-                    q->mem.scale,
-                    (q->mem.minus ? "-" : "+"),
-                    (q->mem.disp ? q->mem.disp : "n/a"));
+
+        switch (q->type) {
+        case OPND_REG: asp_printf("REG "); break;
+        case OPND_IMM: asp_printf("IMM 0x%016llx  ", q->imm); break;
+        case OPND_DECORATOR: asp_printf("DECORATOR  "); break;
+        case OPND_INVALID: asp_printf("INVALID  "); break;
+        case OPND_MEM: 
+            asp_printf("MEM  "); break;
+            asp_printf("%d %s [%s:%s + %s*%s %s %s] ",
+                q->mem.len,
+                (q->mem.mem_size ? q->mem.mem_size : "n/a"),
+                (q->mem.seg ? q->mem.seg : "n/a"),
+                (q->mem.base ? q->mem.base : "n/a"),
+                (q->mem.index ? q->mem.index : "n/a"),
+                q->mem.scale,
+                (q->mem.minus ? "-" : "+"),
+                (q->mem.disp ? q->mem.disp : "n/a"));
+            break;
+        case OPND_FARPTR:
+            asp_printf("FAR PTR %s:%s", q->farptr.seg, q->farptr.offset);
+            break;
+        default:
+            assert(0 && "Unhandled operand type");
+            break;
         }
         d = q->decorators;
         while(d) {

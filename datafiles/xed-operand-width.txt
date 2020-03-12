@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -66,8 +66,14 @@ xb          i8       16
 xw          i16      16
 xd          i32      16
 xq          i64      16
-#
-#
+
+# relocated from AVX512 for use with other instructions
+zb         i8       512bits
+zw         i16      512bits
+zd         i32      512bits
+zq         i64      512bits
+
+
 mb          i8        8
 mw          i16       8
 md          i32       8

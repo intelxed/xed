@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ class reg_info_t(object):
                 display_str=None):
       self.name = name.upper()
       if display_str:
-          self.display_str = display_str
+          self.display_str = display_str.upper()
       else:
           self.display_str = self.name
       self.type = type.upper()

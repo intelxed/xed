@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,7 +28,10 @@ END_LEGAL */
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 
-#define ASP_MAX_OPERANDS (XED_ENCODER_OPERANDS_MAX+3)
+
+//static xed_bool_t check_property_of_mnemonic(const char *mnem, xed_bool_t test_fn(const xed_inst_t* p));
+static xed_bool_t test_has_relbr(const xed_inst_t* p);
+static xed_bool_t has_relbr(xed_iclass_enum_t iclass);
 
 static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
                          int* verbose) {
@@ -48,6 +51,8 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
     v->mode = 32;
     while(keep_going) {
         keep_going = 0;
+        if (first_arg >= argc)
+            break;
         if (strcmp("-32",argv[first_arg])==0) {
             if (mode_found) {
                 asp_error_printf("Duplicate mode knob: %s\n", argv[first_arg]);
@@ -93,7 +98,14 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
         // add one for trailing space or null at end
         len = len + xed_strlen(argv[i]) + 1;
     }
+    
+    if (len == 0) {
+        asp_error_printf("Need a command line to parse\n");
+        exit(1);
+    }
+
     p = s = (char*) malloc(len);
+    assert(p!=0);
     for(i=first_arg;i<argc;i++) {
         if (i>first_arg) // spaces between secondary args
            *p++ = ' ';
@@ -126,23 +138,38 @@ static void set_state(xed_state_t* dstate, xed_enc_line_parsed_t* v) {
     }
 
 }
+
+/* Make string p1 + "_" + p2, put it into result
+   Check if matching iclass exists.
+   If it exists, return true, otherwise false */
+static xed_bool_t probe_iclass_string(const char *p1, const char *p2, 
+                                      char *result, int maxlen) {
+    xed_strncpy(result, p1, maxlen);
+    xed_strncat(result, "_", maxlen);
+    xed_strncat(result, p2, maxlen);
+    xed_iclass_enum_t valid_iclass = str2xed_iclass_enum_t(result);
+    return (valid_iclass != XED_ICLASS_INVALID);
+}
+
 static void process_prefixes(xed_enc_line_parsed_t* v,
                              xed_encoder_instruction_t* inst)
 {
     slist_t* q = v->prefixes;
     while(q) {
         if (strcmp(q->s, "LOCK") == 0) {
-            // FIXME: need to change iclass
+            /* nothing required */
         }
         else if (strcmp(q->s, "REP") == 0 || 
-                 strcmp(q->s, "REPE") == 0 || 
-                 strcmp(q->s, "XRELEASE") == 0) {
-            // FIXME: *may* need to change iclass for rep-string ops
+                 strcmp(q->s, "REPE") == 0) {
             xed_rep(inst); 
         }
-        else if (strcmp(q->s, "REPNE") == 0 || 
-                 strcmp(q->s, "XACQUIRE") == 0) {
-            // FIXME: *may* need to change iclass for rep-string ops
+        else if (strcmp(q->s, "XRELEASE") == 0) {
+            xed_rep(inst);
+        }
+        else if (strcmp(q->s, "XACQUIRE") == 0) {
+            xed_repne(inst);
+        }
+        else if (strcmp(q->s, "REPNE") == 0) {
             xed_repne(inst); 
         }
         else if (strcmp(q->s, "DATA16") == 0) {
@@ -220,7 +247,7 @@ static void process_mem_decorator(slist_t* decos, xed_encoder_operand_t* operand
 }
 
 static void check_too_many_operands(int op_pos) {
-    if (op_pos >= ASP_MAX_OPERANDS) {
+    if (op_pos >= XED_ENCODER_OPERANDS_MAX) {
         asp_error_printf("Too many operands\n");
         exit(1);
     }
@@ -228,6 +255,7 @@ static void check_too_many_operands(int op_pos) {
 
 static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint_t* pos)
 {
+#if defined(XED_SUPPORTS_AVX512)
     xed_uint_t i = *pos;
     if (strcmp("{RNE-SAE}",s)==0) {
         check_too_many_operands(i+1);
@@ -263,10 +291,11 @@ static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint
         *pos = i;
         return 1;
     }
-
+#endif
     asp_error_printf("Unhandled decorator: %s\n",s);
     exit(1);
     return 0;
+    (void) operand; (void) pos;
 }
 
 
@@ -358,9 +387,11 @@ static void set_mode_vec(xed_reg_enum_t reg,
     else if (rc == XED_REG_CLASS_YMM) {
         regid = reg - XED_REG_YMM0;
     }
+#if defined(XED_SUPPORTS_AVX512)
     else if (rc == XED_REG_CLASS_ZMM) {
         regid = reg - XED_REG_ZMM0;
     }
+#endif
     if (regid > 7 && *mode != 64) {
         asp_printf("Forcing mode to 64b based on regs used\n");
         *mode = 64;
@@ -393,6 +424,18 @@ static xed_uint_t count_nibbles(const char *s)
 
 static char const*  const kmasks[] = { "{K0}","{K1}","{K2}","{K3}","{K4}","{K5}","{K6}","{K7}", 0 };
 
+/* If user padded the number with leading zeroes, consider this to be
+   an attempt to precisely control the width of the literal. Otherwise,
+   choose a width that is just wide enough to fit the value */
+static int get_constant_width(char *text, int64_t val) {
+    if (string_has_padding_zeroes(text)) {
+        return 4 * count_nibbles(text);
+    }
+    else {
+        return get_nbits_signed(val);
+    }
+}
+
 static void process_operand(xed_enc_line_parsed_t* v,
                             opnd_list_t* q,
                             xed_uint_t* noperand,
@@ -404,18 +447,22 @@ static void process_operand(xed_enc_line_parsed_t* v,
     int found_a_kmask = 0;
     
     xed_uint_t i = *noperand;
-    if (q->type == OPND_REG) {
-        xed_reg_enum_t reg = str2xed_reg_enum_t(q->s);
+
+    switch (q->type) {
+    case OPND_REG: {
+        xed_reg_enum_t reg = q->reg;
         if (reg == XED_REG_INVALID) {
             asp_error_printf("Bad register: %s\n", q->s);
             exit(1);
         }
+
         check_too_many_operands(i);
         operands[i++] = xed_reg(reg);
         set_eosz(reg, eosz);
         set_mode_vec(reg, &(v->mode));
     }
-    else if (q->type == OPND_DECORATOR) {
+        break;
+    case OPND_DECORATOR: {
         if (process_rc_sae(q->s, operands, &i))  {
             check_too_many_operands(i);
         }
@@ -424,33 +471,35 @@ static void process_operand(xed_enc_line_parsed_t* v,
             exit(1);
         }
     }
-    else if (q->type == OPND_IMM) {
-        /* If user padded the number with leading zeroes, consider this to be
-           an attempt to precisely control the width of the literal. Otherwise,
-           choose a width that is just wide enough to fit the value */
-        xed_uint_t nbits = 0;
-        if (string_has_padding_zeroes(q->s)) {
-            nbits = 4 * count_nibbles(q->s);
-        }
-        else {
-            nbits = get_nbits_signed(q->imm);
-        }
-        if (*has_imm0==0) {
+        break;
+    case OPND_IMM: {
+        xed_uint_t nbits = get_constant_width(q->s, q->imm);
+        uint64_t literal_val = (uint64_t)q->imm;
+
+        if (has_relbr(v->iclass_e)) {
+            asp_dbg_printf("The literal is treated as relbranch\n");
             check_too_many_operands(i);
-            operands[i++] = xed_imm0((uint64_t)q->imm, nbits); //FIXME: cast or make imm0 signed?
-            *has_imm0=1;
+            operands[i++] = xed_relbr(literal_val, nbits);
         }
-        else {
-            if (nbits != 8) {
-                asp_error_printf(
-                    "The second literal constant can only be 8 bit wide\n");
-                exit(1);
+        else { // literal immediate
+            if (*has_imm0 == 0) {
+                check_too_many_operands(i);
+                operands[i++] = xed_imm0(literal_val, nbits); //FIXME: cast or make imm0 signed?
+                *has_imm0 = 1;
             }
-            check_too_many_operands(i);
-            operands[i++] = xed_imm1(XED_STATIC_CAST(xed_uint8_t,q->imm));
+            else {
+                if (nbits != 8) {
+                    asp_error_printf(
+                        "The second literal constant can only be 8 bit wide\n");
+                    exit(1);
+                }
+                check_too_many_operands(i);
+                operands[i++] = xed_imm1(XED_STATIC_CAST(xed_uint8_t, q->imm));
+            }
         }
     }
-    else if (q->type == OPND_MEM) {
+        break;
+    case OPND_MEM: {
         xed_reg_enum_t seg = XED_REG_INVALID;
         xed_reg_enum_t base = XED_REG_INVALID;
         xed_reg_enum_t indx = XED_REG_INVALID;
@@ -473,10 +522,52 @@ static void process_operand(xed_enc_line_parsed_t* v,
         operands[i++] = xed_mem_gbisd(seg, base, indx, scale, disp, width_bits);
         process_mem_decorator(q->decorators, operands, &i);
     }
-    else {
+        break;
+    case OPND_FARPTR: {
+        if (*has_imm0) {
+            asp_error_printf(
+                "Long pointer cannot follow immediate operand\n");
+            exit(1);
+        }
+        xed_uint16_t seg = (xed_uint16_t)q->farptr.seg_value;
+        xed_uint32_t offset = (xed_uint32_t)q->farptr.offset_value;
+        xed_uint_t seg_bits = get_constant_width(q->farptr.seg,
+                                                 q->farptr.seg_value);
+        xed_uint_t offset_bits = get_constant_width(q->farptr.offset,
+                                                    q->farptr.offset_value);
+
+        seg_bits = seg_bits < 16 ? 16 : seg_bits;
+        if (seg_bits != 16) {
+            asp_error_printf(
+                "Segment value in far pointer must be 16 bits\n");
+            exit(1);
+        }
+        
+        if (offset_bits > 32) {
+            asp_error_printf(
+                "Far pointer offset must be either 16 or 32 bits");
+            exit(1);
+        }
+
+        if (offset_bits <= 16) 
+            offset_bits = 16;
+        else 
+            offset_bits = 32;
+        *eosz = offset_bits;
+        
+        check_too_many_operands(i);
+        operands[i++] = xed_ptr(offset, offset_bits);
+
+        /* segment is encoded as immediate and must follow offset */
+        check_too_many_operands(i);
+        operands[i++] = xed_imm0(seg, seg_bits);
+        *has_imm0 = 1;
+    }
+        break;
+    default:
         asp_error_printf("Bad operand encountered: %s", q->s);
         exit(1);
-    }
+    } // switch (q->type)
 
     //Add k-mask decorators as operands.
     //Not checking for multiple k-masks - Let XED do it; that would not encode.
@@ -528,13 +619,15 @@ static void encode(xed_encoder_instruction_t* inst)
 static void process_other_decorator(char const* s,
                                     xed_uint_t* noperand,
                                     xed_encoder_operand_t* operands)
+
 {
     // handle zeroing.
-    // allow but ignore k-masks and broadcasts decrorators.
+    // allow but ignore k-masks and broadcasts decorators.
     
     // rounding/sae indicators are required to be indepdent operands (at
     // least for now)
-    
+
+#if defined(XED_SUPPORTS_AVX512)
     xed_uint_t i = *noperand;
     
     if (strcmp("{Z}",s) == 0) {
@@ -569,27 +662,126 @@ static void process_other_decorator(char const* s,
     }
 
     *noperand = i;
+#else
+    (void) s; (void) noperand; (void)operands;    
+#endif
+
+}
+
+/* Change result to alias mnemonic that is accepted by xed, return true
+   Otherwise keep it unchanged and return false */
+static xed_bool_t find_jcc_alias(char* result, int maxlen) {
+    typedef struct {
+        const char *from;
+        const char *to;
+    } jcc_aliases_t;
+
+    /* Internally, xed uses only one variant per each alias,
+       others have to be converted to it */
+    const jcc_aliases_t aliases[] = {
+       {"JNAE", "JB"},
+       {"JC", "JB"},
+       {"JNA", "JBE"},
+       {"JNGE", "JL"},
+       {"JNG", "JLE"},
+       {"JAE", "JNB"},
+       {"JNC", "JNB"},
+       {"JA", "JNBE"},
+       {"JGE", "JNL"},
+       {"JG", "JNLE"},
+       {"JPO", "JNP"},
+       {"JNE", "JNZ"},
+       {"JPE", "JP"},
+       {"JE", "JZ"},
+    };
+    const size_t n_aliases = sizeof(aliases) / sizeof(aliases[0]);
+
+    /* Resolve conditional jumps aliases */
+    size_t i = 0;
+    for (i = 0; i < n_aliases; i++) {
+        const char *from = aliases[i].from;
+        const char *to = aliases[i].to;
+        if (!strncmp(result, from, maxlen)) {
+            xed_strncpy(result, to, maxlen);
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Try all known suffixes and prefixes with the original mnemonic if 
+   certain operands or prefixes were seen.
+   Put (un)modified iclass string into result */
+static void revise_mnemonic(xed_enc_line_parsed_t *v, char* result, int maxlen) {
+    const char *orig = v->iclass_str;
+    assert(xed_strlen(orig) > 0);
+
+    /* Try _NEAR and _FAR variants for "call" and "ret" */
+    if (!v->seen_far_ptr && probe_iclass_string(orig, "NEAR", result, maxlen)) {
+        return;
+    }
+    else if (v->seen_far_ptr && probe_iclass_string(orig, "FAR", result, maxlen)) {
+        return;
+    }
+    /* all aliases for conditional jumps start with 'J' */
+    if (orig[0] == 'J' && find_jcc_alias(result, maxlen)) {
+        return;
+    }
+
+    if (v->seen_cr && probe_iclass_string(orig, "CR", result, maxlen)) // mov_cr
+        return;
+    if (v->seen_dr && probe_iclass_string(orig, "DR", result, maxlen)) // mov_dr
+        return;
+
+    /* iclasses contain all three forms: REP_, REPE_ and REPNE_ */
+    if (v->seen_repne && probe_iclass_string("REPNE", orig, result, maxlen)) {
+        return;
+    } 
+    else if (v->seen_repe && probe_iclass_string("REPE", orig, result, maxlen)) {
+        return;
+    }
+    else if (v->seen_repe && probe_iclass_string("REP", orig, result, maxlen)) {
+        return;
+    }
+
+    if (v->seen_lock && probe_iclass_string(orig, "LOCK", result, maxlen)) {
+        return;
+    }
+
+    /* string vs SSE instructions with similar mnemonics */
+    if ((v->deduced_vector_length > 0) 
+        && probe_iclass_string(orig, "XMM", result, maxlen))
+        return;
+
+    /* TODO handle remaining cases:
+        FXRSTOR vs FXRSTOR64 and other *SAVE/ *RSTR(64)
+        PEXTRW PEXTRW_SSE4
+        VPEXTRW VPEXTRW_c5
+        Long NOPs: XED_ICLASS_NOP2 - NOP9 */
+
+    /* Reaching the end of the function means no modifications */
+    xed_strncpy(result, orig, maxlen);
 }
 
 static void encode_with_xed(xed_enc_line_parsed_t* v)
 {
     xed_encoder_instruction_t inst;
     xed_state_t dstate;
-    xed_iclass_enum_t iclass=XED_ICLASS_INVALID;
     xed_uint_t eosz=0; 
     xed_uint_t noperand=0;
-    xed_encoder_operand_t operand_array[ASP_MAX_OPERANDS];
+    xed_encoder_operand_t operand_array[XED_ENCODER_OPERANDS_MAX];
     opnd_list_t* q=0;
     xed_uint_t has_imm0 = 0;
     
-    iclass = str2xed_iclass_enum_t(v->iclass);
-    if (iclass == XED_ICLASS_INVALID) {
-        asp_error_printf("Invalid iclass: %s\n", v->iclass);
-        exit(1);
-    }
+    process_prefixes(v, &inst);
 
-    process_prefixes(v,&inst);
-        
+    /* Instruction's mnemonic is not always unambiguous;
+       iclass is sometimes affected by arguments and prefixes.
+       Use operand knowledge to adjust the mnemonic if needed */
+    char revised_mnemonic[100] = { 0 };
+    revise_mnemonic(v, revised_mnemonic, sizeof(revised_mnemonic));
+    v->iclass_e = str2xed_iclass_enum_t(revised_mnemonic);
+
     // handle operands
     q = v->opnds;
     while(q) {
@@ -598,7 +790,14 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
         q = q->next;
     }
 
-    // handle other decorators (zeroing, kmasks, broadcast masks)
+    if (v->iclass_e == XED_ICLASS_INVALID) {
+        asp_error_printf("Bad instruction name: '%s'\n", revised_mnemonic);
+        exit(1);
+    }
+
+    asp_dbg_printf("ICLASS [%s]\n", xed_iclass_enum_t2str(v->iclass_e));
+
+    // handle other operand decorators (zeroing, kmasks, broadcast masks)
     q = v->opnds;
     while(q) {
         slist_t* r = q->decorators;
@@ -622,20 +821,54 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     }
     asp_printf("MODE=%d, EOSZ=%d\n", v->mode, eosz);
     set_state(&dstate, v);
-    xed_inst(&inst, dstate, iclass, eosz, noperand, operand_array);
+    xed_inst(&inst, dstate, v->iclass_e, eosz, noperand, operand_array);
     encode(&inst);
+}
+
+/* Return true if the instruction accepts relative branch as an operand */
+static xed_bool_t test_has_relbr(const xed_inst_t* p) {
+    const unsigned noperands = xed_inst_noperands(p);
+    for (unsigned i = 0; i < noperands; i++) {
+        const xed_operand_t* o = xed_inst_operand(p, i);
+        if (xed_operand_name(o) == XED_OPERAND_RELBR) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* relbr_table is an array initialized at startup that tells us if we have
+ * a relative branch displacement */
+static xed_bool_t relbr_table[XED_ICLASS_LAST];
+
+static xed_bool_t has_relbr(xed_iclass_enum_t iclass) {
+    assert(iclass < XED_ICLASS_LAST);
+    return relbr_table[iclass];
+}
+static void setup(void) {
+    memset(relbr_table, 0, sizeof(xed_bool_t)*XED_ICLASS_LAST);
+    
+    for (unsigned i = 0; i < XED_MAX_INST_TABLE_NODES; i++) {
+        const xed_inst_t *inst = xed_inst_table_base() + i;
+        xed_iclass_enum_t ic = xed_inst_iclass(inst);
+        assert(ic < XED_ICLASS_LAST);
+        relbr_table[ic] =  test_has_relbr(inst);
+    }
 }
 
 int main(int argc, char** argv)
 {
-    xed_tables_init();
     int verbose  = 1;
+    xed_enc_line_parsed_t* v = 0;
+    
+    setup();
+    xed_tables_init();
 
-    xed_enc_line_parsed_t* v = asp_get_xed_enc_node();
+    v = asp_get_xed_enc_node();
 
     process_args(argc, argv, v, &verbose);
-    asp_parse_line(v);
     asp_set_verbosity(verbose);
+    asp_parse_line(v);
 
     if (verbose > 1)
         asp_print_parsed_line(v);

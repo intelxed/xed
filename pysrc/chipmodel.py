@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -118,9 +118,8 @@ def  parse_lines(input_file_name, lines): # returns a dictionary
     chips = []
     for line in lines:
         if line.find(':') == -1:
-            _die("reading file %s. " + 
-                 "Missing colon in line: %s" % 
-                 (input_file_name, line))
+            _die("reading file {}: missing colon in line: {}".format(
+                 input_file_name, line))
         try:
             (chip, extensions) = line.split(':')
         except:

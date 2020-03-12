@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@
 #END_LEGAL
 from __future__ import print_function
 import copy
-import math
-import collections
 import genutil 
 import encutil
 
@@ -70,7 +68,8 @@ class constraint_vec_gen_t(object):
             if a rule does not have constraint over certain operand then 
             we splatter all the possible values '''
         verbose=False
-        if verbose: print("_make_tuple2rule")
+        if verbose:
+            print("_make_tuple2rule")
         for rule in self.rules:
             #print "\t RULE", str(rule)
             # ctup is a list of tuples of all possible value
@@ -78,37 +77,44 @@ class constraint_vec_gen_t(object):
             ctup = [] 
             first = True
             for cname in self.cnames:
-                if verbose: print("CNAME: {}".format(cname))
+                if verbose:
+                    print("CNAME: {}".format(cname))
                 new_ctup = []
                 if cname in rule.cdict:
                     vals = rule.cdict[cname]
-                    if verbose: print("\tTHIS RULE VALS: {}".format(vals))
+                    if verbose:
+                        print("\tTHIS RULE VALS: {}".format(vals))
                 else:
                     vals = self.state_space[cname]
-                    if verbose: print("\tSTATE SPACE VALS: {}".format(vals))
+                    if verbose:
+                        print("\tSTATE SPACE VALS: {}".format(vals))
                 if first:
                     first = False    
                     for val in vals:
                         ctup.append((val,))
-                    if verbose:print("\tFIRST CTUP: {}".format(ctup))
+                    if verbose:
+                        print("\tFIRST CTUP: {}".format(ctup))
                     continue    
                 else:  
                     # cross product of constraints
                     for val in vals:
                         for c in ctup:
                             new_ctup.append(c+(val,))
-                if verbose: print("\tNEW_CTUP: {}".format(new_ctup))
+                if verbose:
+                    print("\tNEW_CTUP: {}".format(new_ctup))
                 ctup = new_ctup
-            for tuple in ctup:
-                if tuple not in self.tuple2rule:
-                    if verbose: print("TUPLE: {} RULE: {}".format(tuple, rule))
-                    self.tuple2rule[tuple] = rule
-                    self.tuple2conditions[tuple] = rule.conditions
+            for tupl in ctup:
+                if tupl not in self.tuple2rule:
+                    if verbose:
+                        print("TUPLE: {} RULE: {}".format(tupl, rule))
+                    self.tuple2rule[tupl] = rule
+                    self.tuple2conditions[tupl] = rule.conditions
                 else:
                     err = "in nt {}\n".format(self.nt_name)
                     err += "generated tuple for constraint {} already exists\n"
                     err =  err.format(str(rule.cdict))
-                    if verbose: print(err)
+                    if verbose:
+                        print(err)
                     genutil.die(err)
             
     def _gen_tuple2int(self):

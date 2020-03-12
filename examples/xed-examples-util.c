@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -225,7 +225,7 @@ xed_int64_t xed_atoi_general(char* buf, int mul) {
     }
 
     b = xed_strtoll(buf,0);
-    if (p)
+    if (*p)
     {
         while(*p && (*p == '-' || *p == '+'))
         {
@@ -449,6 +449,7 @@ xed_map_region(const char* path,
     ilen = ftell(f);
     fprintf(stderr,"#Trying to read " XED_FMT_SIZET "\n", ilen);
     p = (xed_uint8_t*)malloc(ilen);
+    assert(p!=0);
     t=0;
     err = fseek(f,0, SEEK_SET);
     if (err != 0) {
@@ -585,6 +586,23 @@ print_hex_line(const xed_uint8_t* p,
         printf("%s\n", buf);
 }
 
+static void 
+print_attributes(xed_decoded_inst_t* xedd) {
+    /* Walk the attributes. Generally, you'll know the one you want to
+     * query and just access that one directly. */
+
+    const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
+
+    unsigned int i, nattributes  =  xed_attribute_max();
+
+    printf("ATTRIBUTES: ");
+    for(i=0;i<nattributes;i++) {
+        xed_attribute_enum_t attr = xed_attribute(i);
+        if (xed_inst_get_attribute(xi,attr))
+            printf("%s ", xed_attribute_enum_t2str(attr));
+    }
+    printf("\n");
+}
 
 
 xed_uint_t
@@ -629,16 +647,20 @@ disas_decode_binary(xed_disas_info_t* di,
             char buf[XED_TMP_BUF_LEN];
             if (xed_decoded_inst_valid(xedd)) 
             {
-                printf( "ICLASS: %s   CATEGORY: %s   EXTENSION: %s  IFORM: %s"
-                        "   ISA_SET: %s\n", 
-                xed_iclass_enum_t2str(xed_decoded_inst_get_iclass(xedd)),
-                xed_category_enum_t2str(xed_decoded_inst_get_category(xedd)),
-                xed_extension_enum_t2str(xed_decoded_inst_get_extension(xedd)),
-                xed_iform_enum_t2str(xed_decoded_inst_get_iform_enum(xedd)),
-                xed_isa_set_enum_t2str(xed_decoded_inst_get_isa_set(xedd)));
+                printf( "ICLASS:     %s\n"
+                        "CATEGORY:   %s\n"
+                        "EXTENSION:  %s\n"
+                        "IFORM:      %s\n"
+                        "ISA_SET:    %s\n", 
+                        xed_iclass_enum_t2str(xed_decoded_inst_get_iclass(xedd)),
+                        xed_category_enum_t2str(xed_decoded_inst_get_category(xedd)),
+                        xed_extension_enum_t2str(xed_decoded_inst_get_extension(xedd)),
+                        xed_iform_enum_t2str(xed_decoded_inst_get_iform_enum(xedd)),
+                        xed_isa_set_enum_t2str(xed_decoded_inst_get_isa_set(xedd)));
+                print_attributes(xedd);
             }
             disassemble(di, buf,XED_TMP_BUF_LEN, xedd, runtime_address,0);
-            printf("SHORT: %s\n", buf);
+            printf("SHORT:      %s\n", buf);
         }
         return 1;
     }
@@ -1541,6 +1563,7 @@ char const* xedex_append_string(char const* p, // p is free()'d
     char const* t = 0; //temp ptr for copying
     size_t tl = (p?strlen(p):0) + strlen(x) + 1;
     m = n = (char*) malloc(tl);
+    assert(m!=0);
     if (p) {
         t = p;
         while(*t)
@@ -1558,7 +1581,9 @@ char const* xedex_append_string(char const* p, // p is free()'d
 
 ////
 static xed_str_list_t* alloc_str_node(void) {
-    return (xed_str_list_t*) malloc(sizeof(xed_str_list_t));
+    xed_str_list_t* p = (xed_str_list_t*)malloc(sizeof(xed_str_list_t));
+    assert(p!=0);
+    return p;
 }
 
 // MS does not have strsep()

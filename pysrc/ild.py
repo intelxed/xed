@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import ild_storage
 import ild_storage_data
 import ild_eosz
 import ild_easz
-import ild_nt
 import ild_imm
 import ild_disp
 import ild_modrm
@@ -34,10 +33,7 @@ import codegen
 import os
 import collections
 import shutil
-import ild_phash
 import ild_codegen
-import math
-import opnds
 import ild_cdict
 import xed3_nt
 import actions
@@ -395,7 +391,7 @@ def get_info_storage(ptrn_list, priority, is_3dnow):
 
     for p in ptrn_list:
         info = ild_info.ptrn_to_info(p, priority)
-        if not (info in storage.get_info_list(p.insn_map,p.opcode)):
+        if info not in storage.get_info_list(p.insn_map,p.opcode):
             storage.append_info(p.insn_map, p.opcode, info)
     return storage
 

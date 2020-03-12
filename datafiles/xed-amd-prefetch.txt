@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ CPL       : 3
 ATTRIBUTES: PREFETCH
 CATEGORY  : PREFETCH
 EXTENSION : 3DNOW
-COMMENT:  : was PREFETCH_MODIFIED, prefetch on >=broadwell and >=silvermont
+COMMENT   : was PREFETCH_MODIFIED, prefetch on >=broadwell and >=silvermont
 ISA_SET   : PREFETCH_NOP
 PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM()
 OPERANDS  : MEM0:r:mprefetch
@@ -74,7 +74,7 @@ CPL       : 3
 ATTRIBUTES: PREFETCH
 CATEGORY  : PREFETCH
 EXTENSION : 3DNOW
-COMMENT:  : was PREFETCH_MODIFIED
+COMMENT   : was PREFETCH_MODIFIED
 ISA_SET   : PREFETCH_NOP
 PATTERN   : 0x0F 0x0D MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM()
 OPERANDS  : MEM0:r:mprefetch

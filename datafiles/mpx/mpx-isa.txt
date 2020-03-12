@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refi
 OPERANDS: MEM0:w:q:u32 REG0=BND_R():r
 
 # 32b refs 64b memop (2x32b)
-PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode32
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  osz_refining_prefix REFINING66() mode32 eamode32
 OPERANDS: MEM0:w:q:u32 REG0=BND_R():r
 
 # 64b refs 128b memop (2x64b)

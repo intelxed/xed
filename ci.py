@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,22 +21,10 @@ import subprocess
 
 def get_python_cmds():
     if platform.system() == 'Windows':
-        lst = []
-        pyvers = ['27','35']
-        #pyvers = ['27']
-        for pyver in pyvers:
-            pycmd = 'C:/python{}/python'.format(pyver)
-            lst.append((pyver,pycmd))
-        return lst
-    elif platform.system() == 'Linux':
-        # The file .travis.yml installs python2 and python3
-        return [('2.7','python'),
-                ('3.x','python3')]
-    elif platform.system() == 'Darwin':
-        # The file .travis.yml installs python2 and python3
-        return [('2.7','/usr/local/bin/python2'),
-                ('3.x','/usr/local/bin/python3')]
-    
+        return [ (x,'C:/python{}/python'.format(x)) for x in ['37'] ]
+    elif platform.system() in ['Darwin','Linux']:
+        # The file .travis.yml installs python3 on linux. Already present on mac
+        return [ ('3.x','python3')]
     return [('dfltpython','python')]
         
     

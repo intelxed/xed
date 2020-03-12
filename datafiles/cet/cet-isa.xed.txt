@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
 PATTERN:    0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]   f3_refining_prefix     MODRM() 
-OPERANDS:    MEM0:w:q:u64
+OPERANDS:    MEM0:rw:q:u64
 IFORM:       CLRSSBSY_MEMu64
 }
 

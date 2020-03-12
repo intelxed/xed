@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-class hnode_t:
+class hnode_t(object):
     def __init__(self, lst=None, id=None):
         self.lst = lst
         self.token = id
     
 
-class hash_compare_t:
+class hash_compare_t(object):
     def __init__(self):
         self.bins = {} # indexed by hash values
         self.token = 1

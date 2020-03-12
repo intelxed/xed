@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -124,8 +124,6 @@ def vinputs():
     return 'inputs' in _verbosity_options
 def vread():
     return 'read' in _verbosity_options
-def vcapture():
-    return 'capture' in _verbosity_options
 def vrule():
     return 'rule' in _verbosity_options
 def vaction():

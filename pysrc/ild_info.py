@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ ild_dump_maps = ['0x0', '0x0F']
 def get_maps(is_with_amd):
     if is_with_amd:
         return ild_maps_with_amd
-    else:
-        return ild_maps
+    return ild_maps
 
 #return maps that should be dumped in C header files.
 #Now it seems that only 0 and 0F maps should be dumped.

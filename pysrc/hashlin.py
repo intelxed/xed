@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,12 +18,7 @@
 #  
 #END_LEGAL
 
-import sys
-import os
-import math
 import xedhash
-
-
    
 class linear_func_t(xedhash.hash_fun_interface_t):
     ''' This function is used when the keys are sequential '''
@@ -59,16 +54,16 @@ class linear_func_t(xedhash.hash_fun_interface_t):
             # completely inappropriate warnings from the frequently
             # stupid klockwork tool.
             return 'if(%s == %d)' % (hidx_str, self.max_key)
-        else:
-            # 2016-07-28 klockwork complains about unsigned hidx with
-            # hidx < 0. I considered adding adding "&& hidx >= 0" to
-            # the test to quiet KW warnings. But that extra clause
-            # causes the clang compiler to complain that I did
-            # something stupid (with -Wall) since that that expression
-            # is always true for unsigned numbers. Stupid KW just does
-            # not understand unsigned arithmetic. Someone should make
-            # KW smarter...
-            return 'if(%s <= %d)' % (hidx_str, self.max_key)
+        
+        # 2016-07-28 klockwork complains about unsigned hidx with
+        # hidx < 0. I considered adding adding "&& hidx >= 0" to
+        # the test to quiet KW warnings. But that extra clause
+        # causes the clang compiler to complain that I did
+        # something stupid (with -Wall) since that that expression
+        # is always true for unsigned numbers. Stupid KW just does
+        # not understand unsigned arithmetic. Someone should make
+        # KW smarter...
+        return 'if(%s <= %d)' % (hidx_str, self.max_key)
     def __str__(self):
         
         return 'h(x) = linear(x - %d)' % self.k

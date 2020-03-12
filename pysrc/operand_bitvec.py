@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,8 +22,7 @@
 Build a bit vector based on the operand names
 """
 ################################################################################
-import os, sys, types, re
-import codegen, genutil
+import genutil
 
 def build_operand_bitvector(operand_names):
     """Build a bit vector in C of the operand names. Return the lines

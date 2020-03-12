@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -236,7 +236,7 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
         else if (i==2)
             addr_token = p->s;
     }
-        
+    assert(main_token != 0);
     if (strcmp(main_token,"AGEN")==0)
         self->agen=1;
     else if (strncmp(main_token,"MEM",3)==0) {
@@ -317,8 +317,10 @@ static void find_vl(xed_reg_enum_t reg, xed_int_t* vl)
         *vl = 0;
     else if (rc == XED_REG_CLASS_YMM && nvl < 1) // not set, set to xmm and then see ymm
         *vl = 1;
+#if defined(XED_SUPPORTS_AVX512)
     else if (rc == XED_REG_CLASS_ZMM && nvl < 2) // not set, set to xmm or ymm and then see zmm
         *vl = 2;
+#endif
 }
 
 
@@ -374,18 +376,13 @@ parse_encode_request(ascii_encode_request_t areq)
 
     for ( ; p ; token_index++, p=p->next ) {
         slash_split(p->s, &cfirst, &csecond);
+        assert(cfirst);
         upcase(cfirst);
         if (CLIENT_VERBOSE3)
-            printf( "[%s][%s][%s]\n", p->s, cfirst, csecond);
+            printf( "[%s][%s][%s]\n", p->s,
+                    (cfirst?cfirst:"NULL"),
+                    (csecond?csecond:"NULL"));
 
-        if (token_index == 0 && strcmp(cfirst,"REP")==0) {
-            xed_encoder_request_set_rep(&req);
-            continue;
-        }
-        else if (token_index == 0 && strcmp(cfirst,"REPNE")==0) {
-            xed_encoder_request_set_repne(&req);
-            continue;
-        }
         // consumed token, advance & exit
         p = p->next;
         break;
@@ -411,7 +408,7 @@ parse_encode_request(ascii_encode_request_t areq)
             uvl = 2;
     }
 
-
+    assert(cfirst != 0);
     iclass =  str2xed_iclass_enum_t(cfirst);
     if (iclass == XED_ICLASS_INVALID) {
         fprintf(stderr,"[XED CLIENT ERROR] Bad instruction name: %s\n",

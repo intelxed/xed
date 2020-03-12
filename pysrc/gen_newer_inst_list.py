@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,28 +18,18 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
 import sys
-import argparse
-import re
-import collections
-
 import read_xed_db
+import gen_setup
 import chipmodel
-
-def die(s):
-    sys.stdout.write("ERROR: {0}\n".format(s))
-    sys.exit(1)
-def msgb(b,s=''):
-    sys.stdout.write("[{0}] {1}\n".format(b,s))
 
 
 def check(chip, xeddb, chipdb):
-    all = []
+    all_inst = []
     for inst in xeddb.recs:
         if inst.isa_set in chipdb[chip]:
-            all.append(inst)
-    return all
+            all_inst.append(inst)
+    return all_inst
 
 
 def chip_list(chip, xeddb, chip_db):
@@ -47,7 +37,7 @@ def chip_list(chip, xeddb, chip_db):
     return insts
 
 def work(args):  # main function
-    msgb("READING XED DB")
+    gen_setup.msge("READING XED DB")
     (chips, chip_db) = chipmodel.read_database(args.chip_filename)
 
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
@@ -91,25 +81,14 @@ def work(args):  # main function
 
 
 def setup():
-    parser = argparse.ArgumentParser(
-        description='Generate instruction differences between two chips')
-    parser.add_argument('basechip', 
+    parser = gen_setup.create('Generate instruction differences between two chips')
+    
+    parser.add_argument('--basechip', 
                         help='First chip name')
-    parser.add_argument('newchip', 
+    parser.add_argument('--newchip', 
                         help='Second chip name')
-    parser.add_argument('state_bits_filename', 
-                        help='Input state bits file')
-    parser.add_argument('instructions_filename', 
-                        help='Input instructions file')
-    parser.add_argument('chip_filename', 
-                        help='Input chip file')
-    parser.add_argument('widths_filename', 
-                        help='Input widths file')
-    parser.add_argument('element_types_filename', 
-                        help='Input element type file ')
 
-    args = parser.parse_args()
-
+    args = gen_setup.parse(parser)
     return args
 
 if __name__ == "__main__":

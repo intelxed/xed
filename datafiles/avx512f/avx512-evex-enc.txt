@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ SEQUENCE ISA_BINDINGS
    FIXUP_EOSZ_ENC_BIND()
    FIXUP_EASZ_ENC_BIND()
    ASZ_NONTERM_BIND()  
-   INSTRUCTIONS_BIND()     # not calling tree splitter! GSSE instructions must set VEXVALID=1
+   INSTRUCTIONS_BIND()      # not calling tree splitter! AVX instructions must set VEXVALID=1
    OSZ_NONTERM_ENC_BIND()   # OSZ must be after the instructions so that DF64 is bound (and before any prefixes obviously)
    PREFIX_ENC_BIND() 
    VEXED_REX_BIND()

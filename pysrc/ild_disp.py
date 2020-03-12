@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 
 import collections
 import ild_nt
-import genutil
 import ildutil
 import codegen
 import ild_eosz
@@ -154,7 +153,7 @@ def _is_disp_conflict(info_list, disp_dict):
     l2_fn_first = get_l2_fn_from_info(first, disp_dict)
     for info in info_list[1:]:
         l2_fn_cur = get_l2_fn_from_info(info, disp_dict)
-        if (l2_fn_first != l2_fn_cur):
+        if l2_fn_first != l2_fn_cur:
             return True
     return False
 

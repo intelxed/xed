@@ -240,12 +240,12 @@ ENC                  ; BUILDDIR/xed-ex3 -16 pop/32 edx
 ENC                  ; BUILDDIR/xed-ex3 -32 pop/16 dx
 ENC                  ; BUILDDIR/xed-ex3 -32 pop    edx
 ENC                  ; BUILDDIR/xed-ex3 -32 pop    rdx
-DEC                  ; BUILDDIR/xed -32 -d 0f05
+DEC AMD              ; BUILDDIR/xed -32 -d 0f05
 DEC                  ; BUILDDIR/xed -64 -d 0f05
 ENC                  ; BUILDDIR/xed-ex3 -64 sysret
 ENC                  ; BUILDDIR/xed-ex3 -64 sysret/64
 ENC                  ; BUILDDIR/xed-ex3 -32 sysret
-ENC                  ; BUILDDIR/xed-ex3 -32 sysret_amd
+ENC AMD              ; BUILDDIR/xed-ex3 -32 sysret_amd
 DEC                  ; BUILDDIR/xed -64 -d 66 36 64 2e    f0 67 f2 26     3e f3 65 0f     16 8d 4b
 DEC                  ; BUILDDIR/xed -64 -d 66 36 64 2e    f0 67 f2 26     3e f3 65 0f     16 8d
 DEC                  ; BUILDDIR/xed-ex1 -64 0fb20000
@@ -306,16 +306,16 @@ DEC XOP              ; BUILDDIR/xed-ex-ild2 -64 -chip WESTMERE  8f e9 78 81 ca
 DEC ENC              ; BUILDDIR/xed -64 -de  0f1aff
 DEC ENC              ; BUILDDIR/xed -64 -de  0f1bff
 DEC ENC              ; BUILDDIR/xed -64 -de  f30f1bff
-DEC AVX              ; BUILDDIR/xed -32 -d c4 c3 bd 79 f2 45
-DEC AVX              ; BUILDDIR/xed -64 -d c4 c3 bd 79 f2 45
-DEC AVX              ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45
-DEC ENC AVX          ; BUILDDIR/xed -64 -de c4 c3 39 79 f2 45
+DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 bd 79 f2 45
+DEC AVX AMD          ; BUILDDIR/xed -64 -d c4 c3 bd 79 f2 45
+DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45
+DEC ENC AVX AMD      ; BUILDDIR/xed -64 -de c4 c3 39 79 f2 45
 DEC AVX              ; BUILDDIR/xed -d c5 fd 57 c0
 DEC ENC AVX          ; BUILDDIR/xed -64 -de c5 fd 57 c0
 ENC AVX              ; BUILDDIR/xed-ex3 -64 vxorpd ymm0 ymm0 ymm0
 ENC AVX              ; BUILDDIR/xed-ex3 vxorpd ymm0 ymm0 ymm0
-DEC AVX              ; BUILDDIR/xed -32 -d c4 e3 fd 79 42 45 93
-DEC AVX              ; BUILDDIR/xed -64 -d c4 e3 fd 79 42 45 93
+DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 e3 fd 79 42 45 93
+DEC AVX AMD          ; BUILDDIR/xed -64 -d c4 e3 fd 79 42 45 93
 DEC                  ; BUILDDIR/xed -64 -d 8F 43 24
 DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 f1 49 fe 0f
 DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 71 49 fe 0f

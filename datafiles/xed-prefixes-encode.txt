@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -167,29 +167,33 @@ mode64 -> DF64=1 ### EOSZ=3 -- removed EOSZ=3 because it broke encoding pop 16b 
 # the EOSZ computation.
 #
 OSZ_NONTERM_ENC()::
-mode16 EOSZ=1        -> nothing
-mode16 EOSZ=2 DF32=1 -> nothing
+VEXVALID=0 mode16 EOSZ=1        -> nothing
+VEXVALID=0 mode16 EOSZ=2 DF32=1 -> nothing
 
 # We don't use SKIP_OSZ=1 with the MOV_CR instructions but this is
 #  here for completeness.
-mode16 EOSZ=2 DF32=0 SKIP_OSZ=1       -> nothing
-mode16 EOSZ=2 DF32=0 SKIP_OSZ=0       -> 66_prefix
+#VEXVALID=0 mode16 EOSZ=2 DF32=0 SKIP_OSZ=1       -> nothing
+#VEXVALID=0 mode16 EOSZ=2 DF32=0 SKIP_OSZ=0       -> 66_prefix
+VEXVALID=0 mode16 EOSZ=2 DF32=0      -> 66_prefix
 
-mode32 EOSZ=1 SKIP_OSZ=1  -> nothing
-mode32 EOSZ=1 SKIP_OSZ=0  -> 66_prefix
+#VEXVALID=0 mode32 EOSZ=1 SKIP_OSZ=1  -> nothing
+#VEXVALID=0 mode32 EOSZ=1 SKIP_OSZ=0  -> 66_prefix
+VEXVALID=0 mode32 EOSZ=1  -> 66_prefix
 
-mode32 EOSZ=2        -> nothing
+VEXVALID=0 mode32 EOSZ=2        -> nothing
 
-mode64 EOSZ=1 SKIP_OSZ=1   -> nothing
-mode64 EOSZ=1 SKIP_OSZ=0   -> 66_prefix
+#VEXVALID=0 mode64 EOSZ=1 SKIP_OSZ=1   -> nothing
+#VEXVALID=0 mode64 EOSZ=1 SKIP_OSZ=0   -> 66_prefix
+VEXVALID=0 mode64 EOSZ=1  -> 66_prefix
 
-mode64 EOSZ=2 DF64=1 -> error
-mode64 EOSZ=2 DF64=0 -> nothing 
-mode64 EOSZ=3 DF64=1 -> nothing
+VEXVALID=0 mode64 EOSZ=2 DF64=1 -> error
+VEXVALID=0 mode64 EOSZ=2 DF64=0 -> nothing 
+VEXVALID=0 mode64 EOSZ=3 DF64=1 -> nothing
 
-mode64 EOSZ=3 DF64=0 SKIP_OSZ=1 -> nothing
-mode64 EOSZ=3 DF64=0 SKIP_OSZ=0 -> REXW=1
-
+#VEXVALID=0 mode64 EOSZ=3 DF64=0 SKIP_OSZ=1 -> nothing
+#VEXVALID=0 mode64 EOSZ=3 DF64=0 SKIP_OSZ=0 -> REXW=1
+VEXVALID=0 mode64 EOSZ=3 DF64=0 -> REXW=1
+otherwise -> nothing
 
 # The REFINING66() decode version is required for when we have a 66
 # prefix that should not change the EOSZ. The REFINING66() decode

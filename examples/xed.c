@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ END_LEGAL */
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 int main(int argc, char** argv);
 static int intel_asm_emit = 0;
@@ -213,6 +214,12 @@ static void xed_assemble(const xed_state_t* dstate,
     fclose(f);
 }
 #endif
+
+static void emit_version(void) {
+    printf("%s\n", xed_get_copyright());
+    printf("XED version: [%s]\n\n", xed_get_version());
+}
+
 static void usage(char* prog) {
     unsigned int i;
     static const char* usage_msg[] = {
@@ -300,16 +307,18 @@ static void usage(char* prog) {
       "",
       "\t-sp           (Search path for windows symbols)",
 #endif
+      "\t-version      (The version message)",
+      "\t-help         (This help message)",
       " ",
       0
     };      
 
-    printf("%s\n", xed_get_copyright());
-    printf("XED version: [%s]\n\n", xed_get_version());
+    emit_version();
     printf("Usage: %s [options]\n", prog);
     for(i=0; usage_msg[i]  ; i++)
         printf("%s\n", usage_msg[i]);
 }
+
  
 
 static char const* remove_spaces(char const*  s) { //frees original string
@@ -326,6 +335,7 @@ static char const* remove_spaces(char const*  s) { //frees original string
     }
     c++; // add the null
     p = (char*)malloc(c);
+    assert(p!=0);
     i=0;
     c=0;
     while(s[i]) {
@@ -697,6 +707,10 @@ main(int argc, char** argv)
         else if (strcmp(argv[i],"-emit") ==0) {
             intel_asm_emit = 1;
         }
+        else if (strcmp(argv[i],"-version") == 0 ) {
+            emit_version();
+            exit(0);
+        }
         else   {
             usage(argv[0]);
             exit(1);
@@ -731,7 +745,10 @@ main(int argc, char** argv)
     if (CLIENT_VERBOSE2)
         printf("Done initialing XED tables.\n");
 
-    decode_text = remove_spaces(decode_text);
+    if (decode_text) {
+        decode_text = remove_spaces(decode_text);
+        assert(decode_text);
+    }
     
 #if defined(XED_DECODER)
     xed_format_set_options(format_options);
@@ -802,6 +819,7 @@ main(int argc, char** argv)
     else if (decode_encode)
     {
 #if defined(XED_DECODER) && defined(XED_ENCODER)
+        assert(decode_text);
         obytes = disas_decode_encode(&decode_info,
                                      decode_text,
                                      &xedd,
@@ -812,6 +830,7 @@ main(int argc, char** argv)
     else if (encode)
     {
 #if defined(XED_ENCODER)
+        assert(encode_text != 0);
         obytes = disas_encode(&dstate,
                               encode_text,
                               operand,

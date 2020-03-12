@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,7 +22,12 @@
 VEXDEST3   SCALAR xed_bits_t 1           SUPPRESSED    NOPRINT INTERNAL DO EO
 VEXDEST210 SCALAR xed_bits_t 3           SUPPRESSED    NOPRINT INTERNAL DO EO
 VL         SCALAR xed_bits_t 2           SUPPRESSED    NOPRINT INTERNAL DO EI
+
+# VLX is for instr that do not use convention VL, but have required values for VEX.L.
+VLX        SCALAR xed_bits_t 2           SUPPRESSED    NOPRINT INTERNAL DO EO
+
 VEX_PREFIX SCALAR xed_bits_t 2           SUPPRESSED    NOPRINT INTERNAL DO EO # VEX.PP
 VEX_C4     SCALAR xed_bits_t 1           SUPPRESSED    NOPRINT INTERNAL DO EO # ENCONLY
 BCAST      SCALAR xed_bits_t 5           SUPPRESSED    NOPRINT INTERNAL DO EO
 
+MUST_USE_EVEX  SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI

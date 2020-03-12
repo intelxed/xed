@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -36,6 +36,11 @@ END_LEGAL */
 #include "xed-decode-supp.h"
 #if defined(XED_ENCODER)
 # include "xed-encode-isa-functions.h"
+#endif
+#if defined(XED_ENC2_ENCODER)
+# include "xed-encode-direct.h"
+# include "xed-enc2-private.h"
+# include "xed-enc2-check.h"
 #endif
 
 #endif

@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
      mess up subsequent encodes if the iclass or operands get changed by
      the user. */
 
-#if 0 // FIXME: DO NOT COMMIT
+#if 0 // FIXME: Do we want this?
     if (xed3_operand_get_rep(xds) &&
         !xed_decoded_inst_get_attribute(xds,XED_ATTRIBUTE_REP))
     {

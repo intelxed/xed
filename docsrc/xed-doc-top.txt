@@ -1,5 +1,5 @@
 #BEGIN_LEGAL
-#Copyright (c) 2016 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@
 @mainpage X86 Encoder Decoder User Guide
 by Mark Charney
 
-2018-04-13
+2019-08-09
 
 @section INTRO Introduction
 
@@ -36,9 +36,26 @@ Intel XED is a software library (and associated headers) written in C
 for encoding and decoding X86 (IA-32 instruction set and Intel&reg; 64
 instruction set) instructions. The decoder takes sequences of 1-15
 bytes along with machine mode information and produces a data
-structure describing the opcode and operands, and flags. The encoder
+structure describing the opcode and operands, and flags. The generic encoder
 takes a similar data structure and produces a sequence of 1 to 15
-bytes. Intel XED is multi-thread safe.
+bytes.
+
+There another encoder called "enc2" available that is much faster than
+the generic encoder mentioned above.  Rather than using a generic
+interface, in enc2, instruction encoding is done by calling one of a
+very large number of functions, passing as arguments the registers and
+constants that would be used the assembly language description of the
+instruction.  There are two interfaces to the enc2 encoder:
+"unchecked" and "checked". The unchecked version is faster and assumes
+the arguments passed to it are in the correct ranges. The checked
+version validates that the argument passed in are in the correct
+ranges and if that succeeds, it calls the corresponding unchecked
+version of the function.  The checking can be skipped if desired using
+a runtime setting. The enc2 encoder is available in builds done with
+the "--enc2" option. Due to the large amount of code generated, that
+build takes longer.
+
+Intel XED is multi-thread safe.
 
 Intel XED was designed to be very fast and extensible.
 
@@ -244,13 +261,14 @@ information about the instruction resources.
 The common operand fields, used by both the encoder and decoder, hold
 the operands and the memory addressing information. 
 
-
 The decoder has an operands array that holds order of the decoded
 operands. This array indicates whether or not the operands are read or
 written.
 
 The encoder has an operand array where the encoder user must specify
 the order of the operands used for encoding.
+
+
 
 // ===========================================================================  
 @section ICLASS Instruction classes 
@@ -528,10 +546,11 @@ set to 0100 (base 2) or 4 (base 10).
 
   - @ref INIT         "INIT"       Initialization
   - @ref DEC          "DEC"        Decoding instructions
-  - @ref ENC          "ENC"        Encoding instructions
-  - @ref ENCHL        "ENCHL"      High level API for encoding instructions
+  - @ref ENC          "ENC"        Generic API for encoding instructions
+  - @ref ENCHL        "ENCHL"      High level API for the generic encoder
   - @ref ENCHLPATCH   "ENCHLPATCH" Patching instructions
-
+  - @ref ENC2         "ENC2"      Fast encoder for specific instructions
+  
   - @ref OPERANDS     "OPERANDS"   Operand storage fields
   - @ref IFORM        "IFORM"      Iforms
   - @ref ISASET       "ISASET"     ISA-sets and chips
@@ -645,10 +664,6 @@ Copyright (c) 2002-2016 Intel Corporation. All Rights Reserved.
     that is where most of the information about the operands,
     resources etc. are stored.
 
-    To add a REP or REPNE prefix to a an encoder request, set it in
-    the encoder request directly by calling
-    #xed_encoder_request_set_rep() or
-    #xed_encoder_request_set_repne().
 
     To get nondefault width operands, during encoding, you have to
     call #xed_encoder_request_set_effective_operand_width() .
@@ -754,6 +769,122 @@ instructions once as templates and re-use them as needed.
 See examples/xed-ex9-patch.c for an example.
 */
 
+
+/*! @defgroup ENC2 Fast Encoder for Specific Instructions
+
+The basic idea for the ENC2 fast encoder is that there is one encode
+function per variant of every instruction. The instructions are
+encoded in 3 encoding spaces (legacy, VEX and EVEX). We need to have
+different function names for every variation as well. To come up with
+unique names, ENC2 uses a few function naming conventions.  For legacy
+encoded instructions, we often have 3 variations in 64b mode (2 in
+other modes) to handle 16-bit, 32-bit and 64-bit operands. Those 3
+sizes are usually differentiated with "_o16", "_o32" and "_o64" in the
+ENC2 function names.  Having unique names is complicated as there are
+often multiple encodings for the same operation in the instrution
+set. To disambiguate alias encodings the some function names include
+substring "_vrN" where N is a integer.  Simlarly, VEX and EVEX
+encodings for related instructions often need to be distinguished when
+their instruction name and operands are the same. To accomplish that
+all ENC2 EVEX encoding functions names contain the substring "_e".
+The checked interface functions end with "_chk".
+
+For instructions that take conventional x86 memory operands, there are
+6 functions generated depending on the addressing mode required. The 6
+functions are denoted: b, bd8, bd32, bis, bids8, and bisd32 where:
+<ul>
+<li> "b" indicates a base register,
+<li> "d8" indicates an 8-bit displacement,
+<li> "d32" indicates an 32-bit displacement,
+<li> "i" indicates an index register, and
+<li> "s" indicates an a scale factor (1,2,4,8) for the index register.
+</ul>
+The idea behind having different functions for the different addressing
+modes is to make the encode functions simpler and more straight-line code.
+Memory instructions also indicate their effective addressing width
+with one of "_a16", "_a32" or "_a64" substrings.
+
+
+The libraries for the ENC2 encoder are built when when includes the
+"--enc2" switch during the build process.  There is one set of
+libraries and headers generated for each supported
+configuration. Currently XED ENC2 supports 64b mode with 64b addrssing
+(m64,a64) and 32b mode with 32b addressing (m32,a32).  The build
+process creates an enc2-m64-a64 directory and an enc2-m32-a32
+directory, each with two libraries for the checked and unchecked
+interfaces. There are 2 headers as well, one for each version of each
+library in the hdr/xed subdirectory of their respective enc2-*
+directory. On linux, for a static build, you'd see:
+@code
+enc2-m64-a64/
+            libxed-chk-enc2-m64-a64.a
+            libxed-enc2-m64-a64.a
+            hdr/
+                xed/
+                    xed-chk-enc2-m64-a64.h
+                    xed-enc2-m64-a64.h
+@endcode
+
+Given the large size of the generated ENC2 headers, doxygen
+documentation is not created for those header files. Please view the
+headers directly in your editor.
+
+Even with the unchecked interface, some register checking is done the
+addressing registers.  In the x86 encoding system, some choices of
+base register require that an 8-bit or 32-bit displacement is also
+used. In those cases, the ENC2 encoder is capable of supplying a
+zero-valued displacement.
+
+Users can install their own error handler by calling
+#xed_enc2_set_error_handler() passing a function pointer that takes
+stdarg variable arguments.  See examples/xed-enc2-2.c for an example.
+
+When using the checked interface, one can disable the checking at
+runtime by calling
+#xed_enc2_set_check_args() with an integer value 0.
+With a nonzero argument, the argument checking can be re-enabled.
+
+To minimize copying, ENC2 users are required to supply a pointer to an
+output buffer where the encoding bytes will be placed. That buffer is
+required to be 15 bytes in length. Valid x86 encodings are shorter
+than 15 bytes and only reach that length if redudant legacy prefixes
+are employed. XED ENC2 does not generate redundant legacy prefixes.
+
+Here is an example of creating an LEA instruction using the checked
+interface and several fixed registers:
+@code
+xed_uint32_t create_lea_64b(xed_uint8_t* output_buffer)
+{
+    xed_reg_enum_t dest, base, index;
+    xed_uint_t scale;
+    xed_int32_t disp32;
+    xed_enc2_req_t request;
+    xed_enc2_req_t_init(&request, output_buffer);
+    dest = XED_REG_R11;
+    base = XED_REG_R12;
+    index = XED_REG_R13;
+    scale = 1;
+    disp32 = 0x11223344;
+    xed_enc_lea_rm_q_bisd32_a64_chk(&request,
+                                    dest,
+                                    base, index, scale, disp32);
+    return xed_enc2_encoded_length(&request);
+}
+@endcode
+
+The call to #xed_enc2_req_t_init() zeros out the request structure and
+sets up the pointer to the output buffer.  It is very important to
+zero the request structure before using it as much of the ENC2 code is
+optimized to not set zero-valued bits to zero.  The call to
+#xed_enc2_encoded_length() returns the number of bytes placed in the
+output buffer. Getting the length of the encoding is useful for
+setting the correct buffer pointer for subsequent encoder requests.
+
+
+See examples/xed-enc2-1.c and
+    examples/xed-enc2-2.c 
+for examples.
+ */
 
 
 /*! @defgroup OPERANDS Operand storage fields

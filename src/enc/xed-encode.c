@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ END_LEGAL */
 #include "xed-reg-class.h"
 
 #include "xed-encoder.h" // a generated file of prototypes
-
+#include <string.h>  // memset
 //FIXME just need one proto from the above file: xed_bool_t
 //xed_encode_nonterminal_ISA_ENCODE(xed_encoder_request_t& xes);
 
@@ -234,10 +234,7 @@ xed_encoder_request__memop_compatible(const xed_encoder_request_t* p,
 
 static XED_INLINE void zero_inst_enc(xed_encoder_request_t* p)
 {
-    unsigned int i;
-    xed_uint32_t* xp = (xed_uint32_t*)p;
-    for(i=0;i<sizeof(xed_encoder_request_t)/4;i++)
-        xp[i]=0;
+    memset(p,0,sizeof(xed_encoder_request_t));
 }
 
 void xed_encoder_request_zero_set_mode(xed_encoder_request_t* p,
@@ -258,15 +255,6 @@ xed_encoder_request_get_iclass( const xed_encoder_request_t* p)
 void   xed_encoder_request_set_iclass( xed_encoder_request_t* p, 
                                        xed_iclass_enum_t iclass) {
     xed3_operand_set_iclass(p,iclass);
-}
-void xed_encoder_request_set_repne(xed_encoder_request_t* p) {
-    xed3_operand_set_rep(p,2);
-}
-void xed_encoder_request_set_rep(xed_encoder_request_t* p) {
-    xed3_operand_set_rep(p,3);
-}
-void xed_encoder_request_clear_rep(xed_encoder_request_t* p) {
-    xed3_operand_set_rep(p,0);
 }
 
 
@@ -512,6 +500,24 @@ static void set_vl(xed_reg_enum_t reg, xed_uint_t* vl)
 static void xed_encode_precondition_vl(xed_encoder_request_t* req)
 {
     xed_uint_t vl;
+    if (xed3_operand_get_vlx(req)) {
+        // Both vl and vlx are set by decoder, decoder outputs. And when
+        //     vlx is set it is set to vlx==(vl+1).
+        
+        // VLX is an encoder output, VL is an encoder input.
+        
+        // If VLX > 0, then we decoded something with a VLX setting but VL
+        // is not used as a vector length. It is just more opcode bits.
+        
+        // If VLX=0 and VL=0, then we might still have a user-set VL, but
+        //   we changed the xed grammar for things that do not use VL as a
+        //   real vector length to use VLX in their patterns.
+
+        // So if VLX=0 and VL=0, we can try to guess the VL value below.
+        
+        // Things that get copied for encode-to-decode, both vl and vlx will be set.
+        return;
+    }
     vl = xed3_operand_get_vl(req);
     // If user set nonzero value, respect it.  If user set vl=0, we cannot
     // tell so we try to override.  Note: It would be very wrong to
@@ -535,8 +541,11 @@ static void xed_encode_precondition_vl(xed_encoder_request_t* req)
                 break;
             set_vl(r,&vl);
         }
-
+#if !defined(XED_SUPPORTS_KNC)
+        // Exclude for KNC which has vex-encoded prefetches of 64 bytes.
+        
         // FIXME: ONLY SET FOR THINGS WITH SIMD (OR K-MASK FOR FPCLASS, VCMP) REGISTERS
+        
         if (xed3_operand_get_mem0(req)) {
             xed_uint_t bytes = xed3_operand_get_mem_width(req);
             if (bytes == 32) {
@@ -547,7 +556,7 @@ static void xed_encode_precondition_vl(xed_encoder_request_t* req)
                 vl = 2;
             }
         }
-            
+#endif       
         
         xed3_operand_set_vl(req,vl);
     }

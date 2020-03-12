@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import re
 import shutil
 import copy
 import time
-import glob
 import types
 import optparse
 import collections
@@ -77,13 +76,6 @@ def check_mbuild_file(mbuild_file, sig_file):
         retval = True
         mbuild.msgb("MBUILD INPUT FILE", "appears to have changes.")
     return retval
-
-def _write_file(fn, stream):
-    """Write stream to fn"""
-    mbuild.msgb("WRITING", fn)
-    f = open(fn,'w')
-    f.writelines(stream)
-    f.close()
 
 ###########################################################################
 # generators
@@ -203,7 +195,7 @@ class generator_inputs_t(object):
                                               self.file_name[f],
                                               self.files[f])
 
-    def decode_command(self, xedsrc, extra_args=None, on_windows=False):
+    def decode_command(self, xedsrc, extra_args=None):
         """Produce a decoder generator command"""
         s = []
         s.append( '%(pythonarg)s' )
@@ -239,8 +231,8 @@ class generator_inputs_t(object):
             s.append(extra_args)
         return ' '.join(s)
 
-    def encode_command(self, xedsrc, extra_args=None, on_windows=False, amd_enabled=True):
-        """Produce a decoder generator command"""
+    def encode_command(self, xedsrc, extra_args=None, amd_enabled=True):
+        """Produce an encoder generator command"""
         s = []
         s.append( '%(pythonarg)s' )
         # s.append("-3") # python3.0 compliance checking using python2.6
@@ -257,6 +249,7 @@ class generator_inputs_t(object):
         if extra_args:
             s.append( extra_args)
         return ' '.join(s)
+    
 
     def concatenate_one_set_of_files(self, env, target, inputs):
         """Concatenate input files creating the target file."""
@@ -305,7 +298,8 @@ def read_file_list(fn):
     return a
 
 def run_decode_generator(gc, env):
-    """Run the decode table generator"""
+    """Run the decode table generator. This function is executed as
+     required by the work_queue."""
     if env == None:
         return (1, ['no env!'])
     
@@ -322,9 +316,8 @@ def run_decode_generator(gc, env):
     if env['compress_operands']:
         gen_extra_args += " --compress-operands" 
         
-    cmd = env.expand_string(gc.decode_command(xedsrc,
-                                              gen_extra_args,
-                                              env.on_windows()))
+    cmd = env.expand(gc.decode_command(xedsrc, gen_extra_args))
+
 
     if mbuild.verbose(2):
         mbuild.msgb("DEC-GEN", cmd)
@@ -332,19 +325,19 @@ def run_decode_generator(gc, env):
                                                         separate_stderr=True)
     oo = env.build_dir_join('DEC-OUT.txt')
     oe = env.build_dir_join('DEC-ERR.txt')
-    _write_file(oo, output)
-    _write_file(oe, error_output)
+    xbc.write_file(oo, output)
+    xbc.write_file(oe, error_output)
 
     if retval == 0:
         list_of_files = read_file_list(gc.dec_output_file)
-        mbuild.hash_files(list_of_files, 
-                          env.build_dir_join(".mbuild.hash.xeddecgen"))
+        mbuild.hash_files(list_of_files, gc.dec_hash_file)
 
     mbuild.msgb("DEC-GEN", "Return code: " + str(retval))
     return (retval, error_output )
 
 def run_encode_generator(gc, env):
-    """Run the encoder table generator"""
+    """Run the encoder table generator. This function is executed as
+     required by the work_queue."""
     if env == None:
         return (1, ['no env!'])
     
@@ -352,26 +345,66 @@ def run_encode_generator(gc, env):
     build_dir = env.escape_string(env['build_dir'])
         
     gen_extra_args = "--gendir %s --xeddir %s" % (build_dir, xedsrc)
-    cmd = env.expand_string(gc.encode_command(xedsrc,
-                                              gen_extra_args,
-                                              env.on_windows(),
-                                              env['amd_enabled']))
+    cmd = env.expand(gc.encode_command(xedsrc,
+                                       gen_extra_args,
+                                       env['amd_enabled']))
     if mbuild.verbose(2):
         mbuild.msgb("ENC-GEN", cmd)
     (retval, output, error_output) = mbuild.run_command(cmd,
                                                         separate_stderr=True)
     oo = env.build_dir_join('ENC-OUT.txt')
     oe = env.build_dir_join('ENC-ERR.txt')
-    _write_file(oo, output)
-    _write_file(oe, error_output)
+    xbc.write_file(oo, output)
+    xbc.write_file(oe, error_output)
 
     if retval == 0:
         list_of_files = read_file_list(gc.enc_output_file)
-        mbuild.hash_files(list_of_files, 
-                          env.build_dir_join(".mbuild.hash.xedencgen"))
+        mbuild.hash_files(list_of_files, gc.enc_hash_file)
 
     mbuild.msgb("ENC-GEN", "Return code: " + str(retval))
     return (retval, [] )
+
+def _encode_command2(args):
+    """Produce an encoder2 generator command."""
+    s = []
+    s.append( '%(pythonarg)s' )
+    s.append( aq(mbuild.join(args.xeddir, 'pysrc', 'enc2gen.py')))
+    s.append('--xeddir %s' % aq(args.xeddir))
+    s.append('--gendir %s' % aq(args.gendir))
+    s.extend( args.config.as_args() )
+    if args.test_checked_interface:
+        s.append('-chk' )  
+    s.append('--output-file-list %s' % aq(args.enc2_output_file))
+    return ' '.join(s)
+
+def run_encode_generator2(args, env):
+    """Run the encoder2 table generator. This function is executed as
+     required by the work_queue."""
+    if env == None:
+        return (1, ['no env!'])
+    
+    args.xeddir = env.escape_string(env['src_dir'])
+    # we append our own paths in the generator
+    args.gendir = env.escape_string(env['libxed_build_dir']) 
+        
+    cmd = env.expand( _encode_command2(args) )
+
+    if mbuild.verbose(2):
+        mbuild.msgb("ENC2-GEN", cmd)
+    (retval, output, error_output) = mbuild.run_command(cmd,
+                                                        separate_stderr=True)
+    oo = env.build_dir_join('ENC2-OUT.txt')
+    oe = env.build_dir_join('ENC2-ERR.txt')
+    xbc.write_file(oo, output)
+    xbc.write_file(oe, error_output)
+
+    if retval == 0:
+        list_of_files = read_file_list(args.enc2_output_file)
+        mbuild.hash_files(list_of_files, args.enc2_hash_file)
+
+    mbuild.msgb("ENC2-GEN", "Return code: " + str(retval))
+    return (retval, [] )
+
 
 def need_to_rebuild(fn,sigfile):
     rebuild = False
@@ -438,7 +471,7 @@ def header_tag_files(env, files, legal_header, script_files=False):
 
     for g in files:
        print("G: ", g)
-       for f in glob.glob(g):
+       for f in mbuild.glob(g):
           print("F: ", f)
           if script_files:
              apply_legal_header.apply_header_to_data_file(legal_header, f)
@@ -446,11 +479,19 @@ def header_tag_files(env, files, legal_header, script_files=False):
              apply_legal_header.apply_header_to_source_file(legal_header, f)
 ###########################################################################
 # Doxygen build
-
+def get_kit(env):
+    if xbc.installing(env):
+        return env['ikit'].kit
+    return env['wkit'].kit
+    
 def doxygen_subs(env,api_ref=True):
+   '''Create substitutions dictionary for customizing doxygen run'''
    subs = {}
    subs['XED_TOPSRCDIR']   = aq(env['src_dir'])
-   subs['XED_KITDIR']      = aq(env['install_dir'])
+   dir = get_kit(env)
+   if not os.path.exists(dir):
+       xbc.cdie("Cannot find kit directory ({}) when building docs.".format(dir))
+   subs['XED_KITDIR']      = aq(dir)
    subs['XED_GENDOC']      = aq(env['doxygen_install'])
    if api_ref:
       subs['XED_INPUT_TOP'] = aq(env.src_dir_join(mbuild.join('docsrc',
@@ -460,6 +501,11 @@ def doxygen_subs(env,api_ref=True):
                                                             'xed-build.txt')))
    #subs['XED_HTML_HEADER'] = aq(env.src_dir_join(mbuild.join('docsrc',
    #                                                 'xed-doxygen-header.txt')))
+   if env['doxygen_internal']:
+       subs['XED_EXTERNAL'] = ''
+   else:
+       subs['XED_EXTERNAL'] = 'EXTERNAL'
+
    return subs
 
 def make_doxygen_build(env, work_queue):
@@ -482,11 +528,23 @@ def make_doxygen_build(env, work_queue):
                                                        'Doxyfile.build'))
 
     subs = doxygen_subs(e2,api_ref=False)
-    e2['doxygen_top_src'] = subs['XED_INPUT_TOP'] 
+    e2['doxygen_top_src'] = subs['XED_INPUT_TOP']
     inputs = [ subs['XED_INPUT_TOP'] ]
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-build')
 
+def create_doxygen_api_documentation(env, work_queue):
+    # After applying the legal header, create the doxygen from the kit
+    # files, and place the output right in the kit.
+    if 'doc' in env['targets']:
+        if xbc.installing(env):
+            kitdoc = env['ikit'].doc
+        else:
+            kitdoc = env['wkit'].doc
+        make_doxygen_api(env, work_queue, kitdoc)
+        if env['doxygen_install']:        
+            make_doxygen_api(env, work_queue, env['doxygen_install'])
+    
 def make_doxygen_api(env, work_queue, install_dir):
     """We may install in the kit or elsewhere using files from the kit"""
     mbuild.msgb("XED BUILDING 'api' DOCUMENTATION")
@@ -499,15 +557,12 @@ def make_doxygen_api(env, work_queue, install_dir):
     e2['doxygen_top_src'] = subs['XED_INPUT_TOP'] 
     inputs = []
     inputs.append(subs['XED_INPUT_TOP'])
-    inputs.extend(  mbuild.glob(mbuild.join(e2['install_dir'],
-                                            'include','*')))
 
-    inputs.extend(  mbuild.glob(mbuild.join(e2['install_dir'],
-                                            'examples','*.c')))
-    inputs.extend(  mbuild.glob(mbuild.join(e2['install_dir'],
-                                            'examples','*.cpp')))
-    inputs.extend(  mbuild.glob(mbuild.join(e2['install_dir'],
-                                            'examples','*.[Hh]')))
+    kitdir = get_kit(e2)
+    inputs.extend(  mbuild.glob(kitdir,'include', 'xed', '*'))
+    inputs.extend(  mbuild.glob(kitdir,'examples','*.c'))
+    inputs.extend(  mbuild.glob(kitdir,'examples','*.cpp'))
+    inputs.extend(  mbuild.glob(kitdir,'examples','*.[Hh]'))
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-ref')
 
@@ -515,12 +570,16 @@ def make_doxygen_api(env, work_queue, install_dir):
 def mkenv():
     """External entry point: create the environment"""
     if not mbuild.check_python_version(2,7):
-        xbc.cdie("Need python 2.7.x...")
+        xbc.cdie("Need python 2.7 or later.  Suggested >= 3.7")
+    if sys.version_info.major >= 3:
+        if not mbuild.check_python_version(3,4):
+            xbc.cdie("Need python 3.4 or later.  Suggested >= 3.7")
 
     # create an environment, parse args
     env = mbuild.env_t()
     standard_defaults = dict(    doxygen_install='',
                                  doxygen='',
+                                 doxygen_internal=False,
                                  clean=False,
                                  die_on_errors=True,
                                  xed_messages=False,
@@ -544,8 +603,11 @@ def mkenv():
                                  skl=True,
                                  skx=True,
                                  clx=True,
+                                 cpx=True,
                                  cnl=True,
                                  icl=True,
+                                 tgl=True,
+                                 spr=True,
                                  future=True,
                                  knl=True,
                                  knm=True,
@@ -582,6 +644,10 @@ def mkenv():
                                  pin_crt='',
                                  static_stripped=False,
                                  set_copyright=False,
+                                 asan=False,
+                                 enc2=False,
+                                 enc2_test=False,
+                                 enc2_test_checked=False,
                                  first_lib=None,
                                  last_lib=None)
 
@@ -621,6 +687,10 @@ def xed_args(env):
                           dest="doxygen", 
                           action="store",
                           help="Doxygen command name")
+    env.parser.add_option("--doxygen-internal", 
+                          dest="doxygen_internal", 
+                          action="store_true",
+                          help="Create internal version of build documentation (just changes paths for git repos)")
     env.parser.add_option("-c","--clean", 
                           dest="clean", 
                           action="store_true",
@@ -730,6 +800,10 @@ def xed_args(env):
                           action="store_false", 
                           dest="clx", 
                           help="Do not include CLX (Cascade Lake Server).")
+    env.parser.add_option("--no-cpx",
+                          action="store_false", 
+                          dest="cpx", 
+                          help="Do not include CPX (Cooper Lake Server).")
     env.parser.add_option("--no-cnl",
                           action="store_false", 
                           dest="cnl", 
@@ -738,6 +812,14 @@ def xed_args(env):
                           action="store_false", 
                           dest="icl", 
                           help="Do not include ICL.")
+    env.parser.add_option("--no-tgl",
+                          action="store_false", 
+                          dest="tgl", 
+                          help="Do not include TGL.")
+    env.parser.add_option("--no-spr",
+                          action="store_false", 
+                          dest="spr", 
+                          help="Do not include SPR.")
     env.parser.add_option("--no-future",
                           action="store_false", 
                           dest="future", 
@@ -859,15 +941,27 @@ def xed_args(env):
                           action="store_true",
                           dest="set_copyright",
                           help="Set the Intel copyright on Windows XED executable")
+    env.parser.add_option("--asan", 
+                          action="store_true",
+                          dest="asan",
+                          help="Use Address Sanitizer (on linux)")
+    env.parser.add_option("--enc2", 
+                          action="store_true",
+                          dest="enc2",
+                          help="Build the enc2 fast encoder. Longer build.")
+    env.parser.add_option("--enc2-test", 
+                          action="store_true",
+                          dest="enc2_test",
+                          help="Build the enc2 fast encoder *tests*. Longer build.")
+    env.parser.add_option("--enc2-test-checked", 
+                          action="store_true",
+                          dest="enc2_test_checked",
+                          help="Build the enc2 fast encoder *tests*. Test the checked interface. Longer build.")
 
     env.parse_args(env['xed_defaults'])
-    
+
 def init_once(env):
     xbc.init_once(env)
-    if 'doc' in env['targets']:
-        if 'install' not in env['targets']:
-            xbc.cdie( "Doxygen API will not get built if not building a\n" +
-                       """XED kit using the "install" command line target.""")
     
 def init(env):
     if env['pythonarg']:
@@ -1121,7 +1215,7 @@ def _parse_extf_files_new(env, gc):
                     gc.add_file(ptype, fname, priority)
                 else: # default is to add "keytype: file" (optional priority)
                     if len(wrds) not in [2,3]:
-                        xbc.die('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
+                        xbc.cdie('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
                     ptype = _get_check(wrds,0)
                     fname = _fn_expand(env, edir, _get_check(wrds,1))
                     priority =  int(_get_check(wrds,2, default=1))
@@ -1162,7 +1256,7 @@ def _configure_libxed_extensions(env):
     if env['avx']:
         env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cnl', 'icl']):
+    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['knc']:
         env.add_define('XED_SUPPORTS_KNC')
@@ -1179,6 +1273,8 @@ def _configure_libxed_extensions(env):
         env.add_define('XED_DECODER')
     if env['encoder']:
         env.add_define('XED_ENCODER')
+    if env['enc2']:
+        env.add_define('XED_ENC2_ENCODER')
 
     #insert default isa files at the front of the extension list
     newstuff = []
@@ -1281,6 +1377,17 @@ def _configure_libxed_extensions(env):
         if env['clx']:
             _add_normal_ext(env,'clx')
             _add_normal_ext(env,'vnni')
+        if env['cpx']:
+            _add_normal_ext(env,'cpx')
+            _add_normal_ext(env,'bf16')
+        if env['tgl']:
+            _add_normal_ext(env,'tgl')
+            _add_normal_ext(env,'cet')
+            _add_normal_ext(env,'movdir')
+            _add_normal_ext(env,'vp2intersect')
+        if env['spr']:
+            _add_normal_ext(env,'spr')
+            _add_normal_ext(env,'enqcmd')
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
@@ -1323,7 +1430,7 @@ def _configure_libxed_extensions(env):
     env['extf'] = newstuff + env['extf']
 
 def _get_src(env,subdir):
-    return mbuild.glob(mbuild.join(env['src_dir'],'src',subdir,'*.c'))
+    return mbuild.glob(env['src_dir'],'src',subdir,'*.c')
 
 def _abspath(lst):
   return [ os.path.abspath(x) for x in  lst]
@@ -1347,6 +1454,148 @@ def _remove_src_list(lst, list_to_remove):
             nlist.append(lfn)
     return nlist
 
+def add_encoder_command(env, gc, gen_dag, prep):
+    enc_py = [ 'pysrc/read-encfile.py',
+               'pysrc/genutil.py', 'pysrc/encutil.py',
+               'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
+               'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',
+               'pysrc/codegen.py', 'pysrc/ild_nt.py', 'pysrc/actions.py',
+               'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
+               'pysrc/constraint_vec_gen.py', 'pysrc/xedhash.py',
+               'pysrc/ild_phash.py', 'pysrc/actions_codegen.py',
+               'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
+               'pysrc/func_gen.py', 'pysrc/refine_regs.py',
+               'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
+               'pysrc/scatter.py', 'pysrc/ins_emit.py']
+
+    enc_py = env.src_dir_join(enc_py)
+    gc.enc_hash_file = env.build_dir_join('.mbuild.hash.xedencgen')
+    
+    ed = env.build_dir_join('ENCGEN-OUTPUT-FILES.txt')
+    if os.path.exists(ed):
+        need_to_rebuild_enc = need_to_rebuild(ed, gc.enc_hash_file)
+        if need_to_rebuild_enc:
+            mbuild.remove_file(ed)
+
+    gc.enc_output_file = ed
+    enc_input_files = gc.all_input_files() + prep.targets + enc_py + [env['mfile']]
+    c2 = mbuild.plan_t(name='encgen',
+                       command=run_encode_generator,
+                       args=gc,
+                       env=env,
+                       input=enc_input_files,
+                       output= ed)
+    enc_cmd = gen_dag.add(env,c2)
+
+class dummy_obj_t(object):
+    def __init__(self):
+        pass
+    
+class enc2_config_t(object):
+    def __init__(self, mode, asz):
+        self.mode=mode
+        self.asz=asz
+        
+    def as_args(self):
+        return ['-m{}'.format(self.mode),
+                '-a{}'.format(self.asz) ]
+    
+    def __str__(self):
+        return 'enc2-m{}-a{}'.format(self.mode,self.asz)
+    def cpp_define(self):
+        return 'XED_ENC2_CONFIG_M{}_A{}'.format(self.mode, self.asz)
+    
+def add_encoder2_command(env, dag, input_files, config):
+    enc_py = ['pysrc/genutil.py',
+              'pysrc/codegen.py',
+              'pysrc/read_xed_db.py',
+              'pysrc/opnds.py',
+              'pysrc/opnd_types.py',
+              'pysrc/cpuid_rdr.py',
+              'pysrc/slash_expand.py',
+              'pysrc/patterns.py',
+              'pysrc/gen_setup.py',              
+              'pysrc/enc2gen.py',
+              'pysrc/enc2test.py',
+              'pysrc/enc2argcheck.py' ]
+
+    enc2args = dummy_obj_t()
+    enc_py = env.src_dir_join(enc_py)
+    enc2args.enc2_hash_file   = env.build_dir_join('.mbuild.hash.xedencgen2-{}'.format(config))
+    enc2args.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES-{}.txt'.format(config))
+    enc2args.config = config
+    enc2args.test_checked_interface = env['enc2_test_checked']
+    if os.path.exists(enc2args.enc2_output_file):
+        need_to_rebuild_enc = need_to_rebuild(enc2args.enc2_output_file,
+                                              enc2args.enc2_hash_file)
+        if need_to_rebuild_enc:
+            mbuild.remove_file(enc2args.enc2_output_file)
+
+    enc_input_files = input_files +  enc_py + [env['mfile']]
+    c = mbuild.plan_t(name='encgen2-{}'.format(config),
+                      command=run_encode_generator2,
+                      args=enc2args,
+                      env=env,
+                      input=enc_input_files,
+                      output=enc2args.enc2_output_file)
+    enc_cmd = dag.add(env,c)
+
+# Python imports used by the 2 generators.
+# generated 2016-04-15 by importfinder.py:
+#   pysrc/importfinder.py generator pysrc
+#   pysrc/importfinder.py read-encfile pysrc
+#  importfinder.py is too slow to use on every build, over 20seconds/run.
+
+def add_decoder_command(env, gc, gen_dag, prep):
+    dec_py =['pysrc/generator.py',
+             'pysrc/actions.py', 'pysrc/genutil.py',
+             'pysrc/ild_easz.py', 'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
+             'pysrc/encutil.py', 'pysrc/verbosity.py', 'pysrc/ild_eosz.py',
+             'pysrc/xedhash.py', 'pysrc/ild_phash.py',
+             'pysrc/actions_codegen.py', 'pysrc/patterns.py',
+             'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/hashlin.py',
+             'pysrc/hashfks.py', 'pysrc/ild_info.py', 'pysrc/ild_cdict.py',
+             'pysrc/xed3_nt.py', 'pysrc/codegen.py', 'pysrc/ild_nt.py',
+             'pysrc/hashmul.py', 'pysrc/enumer.py', 'pysrc/enum_txt_writer.py',
+             'pysrc/xed3_nt.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
+             'pysrc/ild_modrm.py', 'pysrc/ild_storage.py',
+             'pysrc/ild_storage_data.py', 'pysrc/slash_expand.py',
+             'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
+             'pysrc/hlist.py', 'pysrc/ctables.py', 'pysrc/ild.py',
+             'pysrc/refine_regs.py', 'pysrc/metaenum.py', 'pysrc/classifier.py']
+          
+    dec_py = env.src_dir_join(dec_py)
+    dec_py += mbuild.glob(env['src_dir'], 'datafiles/*enum.txt')
+
+    gc.dec_hash_file = env.build_dir_join('.mbuild.hash.xeddecgen')
+
+    dd = env.build_dir_join('DECGEN-OUTPUT-FILES.txt')
+    if os.path.exists(dd):
+        need_to_rebuild_dec = need_to_rebuild(dd, gc.dec_hash_file)
+        if need_to_rebuild_dec:
+            mbuild.remove_file(dd)
+
+    gc.dec_output_file = dd
+
+    dec_input_files = (gc.all_input_files() + prep.targets +
+                       dec_py + [env['mfile']])
+    c1 = mbuild.plan_t(name='decgen',
+                       command=run_decode_generator,
+                       args=gc,
+                       env=env,
+                       input=dec_input_files,
+                       output= dd)
+    dec_cmd = gen_dag.add(env,c1)
+
+def wq_build(env,work_queue, dag):
+    okay = work_queue.build(dag,
+                            die_on_errors=env['die_on_errors'],
+                            show_progress=True, 
+                            show_output=True,
+                            show_errors_only=_wk_show_errors_only())
+    return okay
+    
+    
 def build_libxed(env,work_queue):
     "Run the generator and build libxed"
     
@@ -1376,7 +1625,6 @@ def build_libxed(env,work_queue):
     f.write( "\n".join(gc.all_input_files()) + "\n")
     f.close()
     
-    #mbuild.msgb("PREP INPUTS", ", ".join(gc.all_input_files()))
     c0 = mbuild.plan_t(name='decprep',
                        command=run_generator_preparation,
                        args=gc,
@@ -1397,81 +1645,10 @@ def build_libxed(env,work_queue):
         mbuild.msgb("STOPPING", "after prep")
         xbc.cexit()
 
-    # Python imports used by the 2 generators.
-    # generated 2016-04-15 by importfinder.py:
-    #   pysrc/importfinder.py generator pysrc
-    #   pysrc/importfinder.py read-encfile pysrc
-    #  importfinder.py is too slow to use on every build, over 20seconds/run.
-
-    dec_py =['pysrc/actions.py', 'pysrc/genutil.py',
-             'pysrc/ild_easz.py', 'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
-             'pysrc/encutil.py', 'pysrc/verbosity.py', 'pysrc/ild_eosz.py',
-             'pysrc/xedhash.py', 'pysrc/ild_phash.py',
-             'pysrc/actions_codegen.py', 'pysrc/patterns.py',
-             'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/hashlin.py',
-             'pysrc/hashfks.py', 'pysrc/ild_info.py', 'pysrc/ild_cdict.py',
-             'pysrc/xed3_nt.py', 'pysrc/codegen.py', 'pysrc/ild_nt.py',
-             'pysrc/hashmul.py', 'pysrc/enumer.py', 'pysrc/enum_txt_writer.py',
-             'pysrc/xed3_nt.py', 'pysrc/ild_disp.py', 'pysrc/ild_imm.py',
-             'pysrc/ild_modrm.py', 'pysrc/ild_storage.py',
-             'pysrc/ild_storage_data.py', 'pysrc/slash_expand.py',
-             'pysrc/chipmodel.py', 'pysrc/flag_gen.py', 'pysrc/opnd_types.py',
-             'pysrc/hlist.py', 'pysrc/ctables.py', 'pysrc/ild.py',
-             'pysrc/refine_regs.py', 'pysrc/metaenum.py', 'pysrc/classifier.py']
-          
-    enc_py = ['pysrc/genutil.py', 'pysrc/encutil.py',
-              'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
-              'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',
-              'pysrc/codegen.py', 'pysrc/ild_nt.py', 'pysrc/actions.py',
-              'pysrc/ild_codegen.py', 'pysrc/tup2int.py',
-              'pysrc/constraint_vec_gen.py', 'pysrc/xedhash.py',
-              'pysrc/ild_phash.py', 'pysrc/actions_codegen.py',
-              'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
-              'pysrc/func_gen.py', 'pysrc/refine_regs.py',
-              'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
-              'pysrc/scatter.py', 'pysrc/ins_emit.py']
-
-    dec_py = env.src_dir_join(dec_py)
-    enc_py = env.src_dir_join(enc_py)
-    dec_py += mbuild.glob(env.src_dir_join('datafiles/*enum.txt'))
-
-    dd = env.build_dir_join('DECGEN-OUTPUT-FILES.txt')
-    if os.path.exists(dd):
-        need_to_rebuild_dec = need_to_rebuild(dd, 
-                                  env.build_dir_join(".mbuild.hash.xeddecgen"))
-        if need_to_rebuild_dec:
-            mbuild.remove_file(dd)
-
-    gc.dec_output_file = dd
-
-    dec_input_files = (gc.all_input_files() + prep.targets +
-                       dec_py + [env['mfile']])
-    c1 = mbuild.plan_t(name='decgen',
-                       command=run_decode_generator,
-                       args=gc,
-                       env=env,
-                       input=dec_input_files,
-                       output= dd)
-    dec_cmd = gen_dag.add(env,c1)
-       
+    # Add commands for building decoder and encoder(s)
+    add_decoder_command(env, gc, gen_dag, prep)
     if env['encoder']:
-        ed = previous_output_fn = env.build_dir_join('ENCGEN-OUTPUT-FILES.txt')
-        if os.path.exists(ed):
-            need_to_rebuild_enc = need_to_rebuild(ed,
-                                   env.build_dir_join('.mbuild.hash.xedencgen'))
-            if need_to_rebuild_enc:
-                mbuild.remove_file(ed)
-
-        gc.enc_output_file = ed
-        enc_input_files = (gc.all_input_files() + prep.targets +
-                           enc_py + [env['mfile']])
-        c2 = mbuild.plan_t(name='encgen',
-                           command=run_encode_generator,
-                           args=gc,
-                           env=env,
-                           input=enc_input_files,
-                           output= ed)
-        enc_cmd = gen_dag.add(env,c2)
+        add_encoder_command(env, gc, gen_dag, prep)
 
     phase = "DECODE/ENCODE GENERATORS"
     if 'skip-gen' in env['targets']:
@@ -1508,7 +1685,7 @@ def build_libxed(env,work_queue):
                                                       'include-private')
     env.add_include_dir(env['private_generated_header_dir'])
 
-    generated_library_sources = mbuild.glob(mbuild.join(env['build_dir'],'*.c'))
+    generated_library_sources = mbuild.glob(env['build_dir'],'*.c')
     
     nongen_lib_sources = _get_src(env,'common') 
     if env['decoder']:
@@ -1517,7 +1694,11 @@ def build_libxed(env,work_queue):
         generated_library_sources = _remove_src(generated_library_sources,
                                                 'xed-iform-map-init.c')
     if env['encoder']:
-         nongen_lib_sources.extend(_get_src(env,'enc'))
+         for d in ['enc']:
+             nongen_lib_sources.extend(_get_src(env,d))
+    if env['enc2']:
+         for d in ['enc2','enc2chk']:
+             nongen_lib_sources.extend(_get_src(env,d))
     if env['encoder'] and env['decoder']:
          nongen_lib_sources.extend(_get_src(env,'encdec'))
 
@@ -1564,12 +1745,7 @@ def build_libxed(env,work_queue):
     if 'skip-lib' in env['targets']:
         mbuild.msgb("SKIPPING LIBRARY BUILD")
     else:
-        okay = work_queue.build(lib_dag,
-                                die_on_errors=lib_env['die_on_errors'],
-                                show_progress=True, 
-                                show_output=True,
-                                show_errors_only=_wk_show_errors_only())
-
+        okay = wq_build(env, work_queue, lib_dag)
         if okay and env['shared'] and not env['debug']:
             xbc.strip_file(env,     env['shd_libxed'], '-x')
             if os.path.exists(env['shd_libild']):
@@ -1580,8 +1756,121 @@ def build_libxed(env,work_queue):
             mbuild.msgb("LIBRARY", "build succeeded")
 
     del lib_env
+    input_files = gc.all_input_files() + prep.targets
+    return input_files
+
+def build_libxedenc2(arg_env, work_queue, input_files, config):
+    '''Create and run the builder that creates the xed enc2 encoder source
+       files, header files and associated tests. Then compile the
+       generated files.    '''
+
+    env = copy.deepcopy(arg_env)
+
+    # *** REDEFINE THE BUILD DIRECTORY ***
+    # keep the libxed build dir around in case we need it
+    env['libxed_build_dir'] = env['build_dir']
+    env['build_dir'] = mbuild.join(env['libxed_build_dir'], str(config))
+    mbuild.cmkdir(env['build_dir'])
     
-def _modify_search_path_mac(env, fn):
+    dag = mbuild.dag_t('xedenc2gen-{}'.format(config), env=env)
+    add_encoder2_command(env, dag, input_files, config)
+
+    phase = "ENCODE2 GENERATOR FOR CONFIGURATION {}".format(config)
+    if mbuild.verbose(2):
+        mbuild.msgb(phase, "building...")
+    okay = wq_build(env, work_queue, dag)
+    if not okay:
+        xbc.cdie("[%s] failed. dying..." % phase)
+
+
+    # The unchecked enc2 library
+    lib, dll = xbc.make_lib_dll(env,'xed-{}'.format(config))
+    x = mbuild.join(env['build_dir'], lib)
+    env['shd_enc2_lib']  = x
+    env['link_enc2_lib'] = x
+    if  env['shared']:
+        env['shd_enc2_lib']  = mbuild.join(env['build_dir'], dll)
+        # use gcc for making the shared object
+        env['CXX_COMPILER']= env['CC_COMPILER']
+
+    gen_src    = mbuild.glob(env['build_dir'],'src','*.c')
+    hdr_dir    = mbuild.join(env['build_dir'],'hdr')
+    
+    dag = mbuild.dag_t('xedenc2lib-{}'.format(config), env=env)
+    env.add_include_dir(hdr_dir)
+    objs = env.compile( dag, gen_src)
+    if env['shared']:
+        u = env.dynamic_lib(objs, env['shd_enc2_lib'])
+    else:
+        u = env.static_lib(objs, env['link_enc2_lib'])
+    dag.add(env,u)
+
+
+    # The *checked* enc2 library
+    lib_chk, dll_chk = xbc.make_lib_dll(env,'xed-chk-{}'.format(config))
+    x = mbuild.join(env['build_dir'], lib_chk)
+    env['shd_chk_lib']  = x
+    env['link_chk_lib'] = x
+    if  env['shared']:
+        env['shd_chk_lib']  = mbuild.join(env['build_dir'], dll_chk)
+
+    gen_src    = mbuild.glob(env['build_dir'],'src-chk','*.c')
+    
+    objs = env.compile( dag, gen_src)
+    if env['shared']:
+        u = env.dynamic_lib(objs, env['shd_chk_lib'])
+    else:
+        u = env.static_lib(objs, env['link_chk_lib'])
+    dag.add(env,u)
+
+
+    
+    okay = wq_build(env, work_queue, dag)
+    if not okay:
+        xbc.cdie("XED ENC2Library build failed")
+    if mbuild.verbose(2):
+        mbuild.msgb("LIBRARY", "XED ENC2 build succeeded")
+
+    if env['enc2_test']:
+        build_enc2_test(env, work_queue, config)
+        
+    return (env['shd_enc2_lib'], env['link_enc2_lib'],
+            env['shd_chk_lib'],  env['link_chk_lib']    )
+
+def build_enc2_test(arg_env, work_queue, config):
+    '''Build the enc2 tester program for the specified config '''
+    # this env has build_dir set to the current mode/asz config
+    env = copy.deepcopy(arg_env)
+    env['shared']=False 
+    
+    env['config'] = str(config)
+    exe         = mbuild.join(env['build_dir'],'enc2tester-%(config)s%(EXEEXT)s')
+    gen_src     = mbuild.glob(env['build_dir'],'test','src','*.c')
+    gen_hdr_dir = mbuild.join(env['build_dir'],'test','hdr')
+    static_src  = mbuild.glob(env['src_dir'],'src','enc2test','*.c')
+
+    env.add_define(config.cpp_define())
+    
+    dag = mbuild.dag_t('xedenc2test-{}'.format(config), env=env)
+    env.add_include_dir(gen_hdr_dir)
+    objs = env.compile( dag, gen_src + static_src )
+
+    if env.on_linux() and env['shared']:
+        env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../wkit/lib'"
+    
+    lc = env.link(objs + [ env['link_chk_lib'], env['link_enc2_lib'], env['link_libxed']], exe)
+    cmd = dag.add(env,lc)
+    if mbuild.verbose(2):
+        mbuild.msgb('BUILDING', "ENC2 config {} test program".format(config))
+    okay = wq_build(env, work_queue, dag)
+    if not okay:
+        xbc.cdie("XED ENC2 config {} test program build failed".format(config))
+    if env.on_mac() and env['shared']:
+        _modify_search_path_mac(env, exe, '@loader_path/../wkit/lib')
+    if mbuild.verbose(2):
+        mbuild.msgb("TESTPROG", "XED ENC2 config {} test program build succeeded".format(config))
+
+def _modify_search_path_mac(env, fn, tgt=None):
    """Make example tools refer to the libxed.so from the lib directory
    if doing and install. Mac only."""
    if not env['shared']:
@@ -1591,7 +1880,12 @@ def _modify_search_path_mac(env, fn):
    if not xbc.installing(env):
       return
    env['odll'] = '%(build_dir)s/libxed.dylib'
-   env['ndll'] = '"@loader_path/../lib/libxed.dylib"'
+   
+   if tgt:
+       env['ndll'] = tgt
+   else:
+       env['ndll'] = '"@loader_path/../lib/libxed.dylib"'
+       
    cmd = 'install_name_tool -change %(odll)s %(ndll)s ' + fn
    cmd = env.expand(cmd)
    env['odll'] = None
@@ -1613,8 +1907,9 @@ def _test_perf(env):
         return
 
     # find the XED command line tool binary
-    xed = None    
-    for exe in env['example_exes']:
+    xed = None
+    wkit = env['wkit']
+    for exe in mbuild.glob(wkit.bin, '*'):
         if 'xed' == os.path.basename(exe):
             xed = exe
     if not xed:
@@ -1632,13 +1927,12 @@ def _test_perf(env):
 def _get_xed_min_size(env):
     if not env.on_linux():
         return
-    
+    wkit = env['wkit']
     xed_min = None    
     #check if we have xed-min test
-    for exe in env['example_exes']:
+    for exe in mbuild.glob(wkit.bin, '*'):
         if 'xed-min' in exe:
             xed_min = exe
-
     if not xed_min:
         return 
     
@@ -1654,44 +1948,72 @@ def _get_xed_min_size(env):
     if d:
         elf_sizes.print_table(d)
 
+def _clean_out_wkit_bin(env):        
+    wkit = env['wkit']
+    for f in mbuild.glob(wkit.bin,'*'):
+        mbuild.remove_file(f)
+
+def _copy_examples_to_bin(env,xkit):
+    for f in env['example_exes']:
+        if os.path.exists(f):
+            mbuild.copy_file(f,xkit.bin)
+            _modify_search_path_mac(env,
+                                    mbuild.join( xkit.bin, os.path.basename(f)))
+    
+def _test_examples(env):
+    _get_xed_min_size(env)
+    _test_perf(env)
+
+
 def build_examples(env):
+    '''Build examples in the kit. Copy executables to wkit.bin'''
+
     env['example_exes'] = []
     if not set(['examples','cmdline']).intersection(env['targets']):
         return
-
-    sys.path.insert(0, mbuild.join(env['src_dir'],'examples'))
+    
+    wkit = env['wkit']
+    sys.path.insert(0, wkit.examples )
     import xed_examples_mbuild
     env_ex = copy.deepcopy(env)
-    env_ex['CPPPATH'] = [] # clear out libxed-build headers.
-    env_ex['src_dir'] = mbuild.join(env['src_dir'], 'examples')
-    env_ex['xed_lib_dir'] = env['build_dir']
-    env_ex['xed_inc_dir'] = env['build_dir']
+    env_ex['CPPPATH']   = [] # clear out libxed-build headers.
+    env_ex['src_dir']   = wkit.examples 
+    env_ex['build_dir'] = mbuild.join(wkit.examples, 'obj')
+    mbuild.cmkdir( env_ex['build_dir'] )
+    
+    env_ex['xed_lib_dir'] =   wkit.lib 
+    env_ex['xed_inc_dir'] =  [ wkit.include_top ] 
 
     env_ex['set_copyright'] = False
     if env.on_windows():
         env_ex['set_copyright'] = env['set_copyright']
-    
+
+    if env['enc2']:
+        env_ex['xed_enc2_libs'] = mbuild.glob(  wkit.lib, '*xed-*enc2-*')
+
     try:
         retval = xed_examples_mbuild.examples_work(env_ex)
     except Exception as e:
         xbc.handle_exception_and_die(e)
+        
     if 'example_exes' in env_ex:
         env['example_exes'] = env_ex['example_exes']
-    _get_xed_min_size(env_ex)
-    _test_perf(env_ex)
 
-def copy_dynamic_libs_to_kit(env, kitdir):
+
+def _copy_dynamic_libs_to_kit(env,xkit):
     """Copy *all* the dynamic libs that ldd finds to the extlib dir in the
-       kit"""
+       (wkit or ikit) kit"""
     import external_libs
-    
+
     if not env.on_linux() and not env.on_freebsd() and not env.on_netbsd():
         return
+    
+    xkit.extlib = mbuild.join(xkit.kit,'extlib')
+    if os.path.exists(xkit.extlib):
+        mbuild.remove_tree(xkit.extlib)
+    mbuild.cmkdir(xkit.extlib)
+    executables = mbuild.glob(xkit.bin,'*')
 
-    kit_ext_lib_dir = mbuild.join(kitdir,'extlib')
-    bindir = mbuild.join(kitdir,'bin')
-    executables = glob.glob(mbuild.join(bindir,'*'))
-    mbuild.cmkdir(kit_ext_lib_dir)
     if 'extern_lib_dir' not in env:
         env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
         
@@ -1700,7 +2022,7 @@ def copy_dynamic_libs_to_kit(env, kitdir):
 
     # run LDD to find the shared libs and do the copies
     okay = external_libs.copy_system_libraries(env,
-                                               kit_ext_lib_dir,
+                                               xkit.extlib,
                                                executables,
                                                extra_ld_library_paths)
     if not okay:
@@ -1710,7 +2032,7 @@ def copy_dynamic_libs_to_kit(env, kitdir):
     if env['use_elf_dwarf_precompiled']:
         env2 = copy.deepcopy(env)
         xbc.cond_add_elf_dwarf(env2)
-        mbuild.copy_file(env2['libelf_license'], kit_ext_lib_dir)
+        mbuild.copy_file(env2['libelf_license'], xkit.extlib)
         
 
 def copy_ext_libs_to_kit(env,dest): # 2014-12-02: currently unused
@@ -1763,34 +2085,46 @@ def _gen_lib_names(env):
     libnames = []
     for base_lib in ['xed', 'xed-ild']:
         # use base_lib to trigger mbuild expansion
-        env['base_lib']=base_lib  
-        libnames.extend(env.expand(libnames_template))
+        env['base_lib']=base_lib
+        lib1 = [ env.expand(x) for x in libnames_template ]
+        lib2 = [ mbuild.join(env['build_dir'], x) for x in lib1 ]
+        libnames.extend(lib2)
 
-    libs = [ mbuild.join(env['build_dir'], x) for x in libnames]
-    libs = list(filter(lambda x: os.path.exists(x), libs))
+    if env['enc2']:
+        for config in env['enc2_configs']:
+            c = str(config) # used in template expansion
+            env['base_lib'] = 'xed-{}'.format(c)
+            lib1 = [ env.expand(x) for x in libnames_template ]
+            lib2 = [ mbuild.join(env['build_dir'], c, x ) for x in lib1 ]
+            libnames.extend(lib2)
+            
+            env['base_lib'] = 'xed-chk-{}'.format(c)
+            lib1 = [ env.expand(x) for x in libnames_template ]
+            lib2 = [ mbuild.join(env['build_dir'], c, x ) for x in lib1 ]
+            libnames.extend(lib2)
+    
+    libs = list(filter(lambda x: os.path.exists(x), libnames))
     return libs
 
-do_system_copy = True
-
 def _copy_generated_headers(env, dest):
-    global do_system_copy
-    gen_inc = mbuild.join(mbuild.join(env['build_dir'],'*.h'))
-    gincs= mbuild.glob(gen_inc)
+    gincs = mbuild.glob(env['build_dir'],'*.h')
+
+    if env['enc2']:
+        for config in env['enc2_configs']:
+            gincs += mbuild.glob(env['build_dir'], str(config), 'hdr', 'xed', '*.h')
+    
     if len(gincs) == 0:
         xbc.cdie("No generated include headers found for install")
     for  h in gincs:
-        if do_system_copy:
-            mbuild.copy_file(h,dest)
+        mbuild.copy_file(h,dest)
 
 def _copy_nongenerated_headers(env, dest):
-    global do_system_copy
     src_inc = mbuild.join(env['src_dir'],'include',"public",'xed','*.h')
     incs= mbuild.glob(src_inc)
     if len(incs) == 0:
         xbc.cdie("No standard include headers found for install")
     for  h in incs:
-        if do_system_copy:
-            mbuild.copy_file(h,dest)
+        mbuild.copy_file(h,dest)
 
 def _get_legal_header(env):
     if env['legal_header'] == 'default' or env['legal_header'] == None:
@@ -1806,7 +2140,7 @@ def _apply_legal_header_to_headers(env,dest):
 
     legal_header = _get_legal_header(env)
 
-    for h in  mbuild.glob(mbuild.join(dest,'*.[Hh]')):
+    for h in  mbuild.glob(dest,'*.[Hh]'):
         if mbuild.verbose(2):
             mbuild.msgb("HEADER TAG", h)
         apply_legal_header2(h, legal_header)
@@ -1816,7 +2150,6 @@ def system_install(env, work_queue):
     """Build install in the prefix_dir. Use prefix_lib_dir as library name
        since some systems use lib, lib32 or lib64. non-windows only.
     """
-    global do_system_copy
     if env.on_windows():
         return
 
@@ -1834,7 +2167,6 @@ def system_install(env, work_queue):
                      stat.S_IXUSR|stat.S_IXGRP|stat.S_IXOTH|
                      stat.S_IWUSR)
 
-
     if not os.path.exists(include):
         mbuild.cmkdir(include)
         _set_perm(include)
@@ -1842,103 +2174,111 @@ def system_install(env, work_queue):
         mbuild.cmkdir(lib)
         _set_perm(include)
 
-
     # copy the libraries
     libs = _gen_lib_names(env)
     if len(libs) == 0:
         xbc.cdie("No libraries found for install")
     for f in libs:
-        if do_system_copy:
-            mbuild.copy_file(f, lib)
-            fn = mbuild.join(lib,os.path.basename(f))
-            if env['shared']:
-                _set_perm(fn)
-            else:
-                mbuild.make_read_only(fn)
-
-
+        mbuild.copy_file(f, lib)
+        fn = mbuild.join(lib,os.path.basename(f))
+        if env['shared']:
+            _set_perm(fn)
+        else:
+            mbuild.make_read_only(fn)
 
     _copy_generated_headers(env, include)
     _copy_nongenerated_headers(env, include)
     _apply_legal_header_to_headers(env, include)
 
-    for fn in glob.glob(mbuild.join(include,'*.h')):
+    for fn in mbuild.glob(include,'*.h'):
         mbuild.make_read_only(fn)
 
-def build_kit(env, work_queue):
-    "Build the XED kit"
-    if not xbc.installing(env):
-        return
+def create_install_kit_structure(env, work_queue):
+    if xbc.installing(env):
+        ikit = dummy_obj_t()
+        env['ikit'] = ikit
+        
+        if env['install_dir']:
+            if env['install_dir'] == env['build_dir']:
+                xbc.die("install_dir cannot have same value as build_dir")
+            if env['install_dir'] == env['wkit'].kit:
+                xbc.die("install_dir cannot have same value as build_dir working kit")
+            ikit.kit = env['install_dir']
+        else:
+            date = time.strftime("%Y-%m-%d")
+            sd = 'xed-install-%s-%s-%s-%s' % ( env['kit_kind'], 
+                                               date, 
+                                               env['build_os'], 
+                                               env['host_cpu'] )
+            ikit.kit = os.path.join('kits', sd)
+
+        if os.path.exists(ikit.kit): # start clean
+            mbuild.remove_tree(ikit.kit)
+        mbuild.cmkdir(ikit.kit)
+        _make_kit_dirs(env, ikit)
+
+def _prep_kit_dirs(env):
+    def pr(x):
+        return (x,x)
+    env['kit_dirs'] = [ ('include_top',mbuild.join('include')),
+                        ('include_xed',mbuild.join('include','xed')),
+                        ('mbuild', mbuild.join('mbuild','mbuild')),
+                        pr('lib'),
+                        pr('extlib'),
+                        pr('examples'),
+                        pr('bin'),
+                        pr('doc'),
+                        pr('misc') ]
+    
+def _make_kit_dirs(env,some_kit):
+    for key,pth in env['kit_dirs']:
+        d = mbuild.join(some_kit.kit,pth)
+        setattr(some_kit, key, d)
+        mbuild.cmkdir(d)
+    
+def create_working_kit_structure(env, work_queue):
+    '''Create directories and copy files in to the XED "working" kit.'''
+
+    wkit = dummy_obj_t()
+
     # add a default legal header if we are building a kit and none is
     # specified.
     legal_header = _get_legal_header(env)
-    if not env['install_dir']:
-        date = time.strftime("%Y-%m-%d")
-        sd = 'xed-install-%s-%s-%s-%s' % ( env['kit_kind'], 
-                                           date, 
-                                           env['build_os'], 
-                                           env['host_cpu'] )
-        mbuild.cmkdir('kits')
-        env['install_dir'] = os.path.join('kits', sd)
-    dest = env['install_dir']
-    if os.path.exists(dest): # start clean
-        mbuild.remove_tree(dest)
-    if mbuild.verbose(2):
-        mbuild.msgb("INSTALL DIR", dest)
-    include = mbuild.join(dest,"include",'xed')
-    lib = mbuild.join(dest,"lib")
-    examples = mbuild.join(dest,"examples")
-    bin_dir = mbuild.join(dest,"bin")
-    doc = mbuild.join(dest,"doc")
-    misc = mbuild.join(dest,"misc")
-    mbld = mbuild.join(dest,"mbuild")
-    mbld2 = mbuild.join(mbld,'mbuild')
     
-    for d in [dest,lib,include,examples,bin_dir,misc,mbld, mbld2]:
-        mbuild.cmkdir(d)
-
-    boilerplate = env.src_dir_join([ 'README.md' ])
-    boilerplate.append(mbuild.join(env['src_dir'],'LICENSE'))
+    wkit.kit = mbuild.join(env['build_dir'], 'wkit')
+    
+    # We are not going to start clean because otherwise
+    # examples rebuild on each rebuild.
+    
+    mbuild.cmkdir(wkit.kit)
+    env['wkit'] = wkit
+    _make_kit_dirs(env, wkit)
+    _clean_out_wkit_bin(env)
+    
+    boilerplate = env.src_dir_join([ 'LICENSE', 'README.md' ])
     for f in boilerplate:
         if os.path.exists(f):
-            mbuild.copy_file(f,dest)
+            mbuild.copy_file(f,wkit.kit)
         else:
-            mbuild.warn("Could not find %s" % (f))
+            mbuild.die("Could not find {}".format(f))
 
     # copy the miscellaneous files to the misc directory
     for gfn in ['idata.txt', 'cdata.txt']:
-        full_gfn =mbuild.join(env['build_dir'], gfn)
-        mbuild.copy_file(full_gfn, misc)
-        apply_legal_header2(mbuild.join(misc,gfn), legal_header)
+        full_gfn = mbuild.join(env['build_dir'], gfn)
+        mbuild.copy_file(full_gfn, wkit.misc)
+        apply_legal_header2(mbuild.join(wkit.misc,gfn), legal_header)
 
     # copy mbuild to kit
-    msrc = mbuild.join(env['src_dir'], '..', 'mbuild')
-    for fn in glob.glob(mbuild.join(msrc,'mbuild','*.py')):
-        mbuild.copy_file(fn, mbld2)
-        dfn = mbuild.join(mbld2,os.path.basename(fn))
+    for fn in mbuild.glob(env['src_dir'], '..', 'mbuild', 'mbuild','*.py'):
+        mbuild.copy_file(fn, wkit.mbuild)
+        dfn = mbuild.join(wkit.mbuild, os.path.basename(fn))
         apply_legal_header2(dfn, legal_header)
 
     # copy the common build file to the examples dir of the kits
     common =mbuild.join(env['src_dir'],'xed_build_common.py')
-    mbuild.copy_file(common, examples)
-    apply_legal_header2(mbuild.join(examples,'xed_build_common.py'),
+    mbuild.copy_file(common, wkit.examples)
+    apply_legal_header2(mbuild.join(wkit.examples, 'xed_build_common.py'),
                         legal_header)
-    
-    # copy the examples that we just built
-    example_exes = env['example_exes']
-    copied = False
-    if len(example_exes) > 0:
-        for f in example_exes:
-            if os.path.exists(f):
-                if not env['debug']:
-                    xbc.strip_file(env,f)
-                mbuild.copy_file(f,bin_dir)
-                copied=True
-                _modify_search_path_mac(env, 
-                                        mbuild.join( bin_dir, 
-                                                    os.path.basename(f)))
-    if copied:
-        copy_dynamic_libs_to_kit(env, dest)
 
     # copy dbghelp.dll to the bin on windows
     if env['dbghelp'] and env.on_windows():
@@ -1950,8 +2290,7 @@ def build_kit(env, work_queue):
             dll = mbuild.join(dbghelp,env['arch'],'dbghelp.dll')
             mbuild.msgb("trying to find dll", dll)
             if os.path.exists(dll):
-                mbuild.copy_file(dll,bin_dir)
-            
+                mbuild.copy_file(dll,wkit.bin)
 
     # copy the libraries. (DLL goes in bin)
     libs = _gen_lib_names(env)
@@ -1959,63 +2298,89 @@ def build_kit(env, work_queue):
         xbc.cdie("No libraries found for install")
 
     for f in libs:
-        print(f)
         if f.find('.dll') != -1:
-            mbuild.copy_file(f, bin_dir)
+            mbuild.copy_file(f, wkit.bin)
         else:
-            mbuild.copy_file(f, lib)
+            mbuild.copy_file(f, wkit.lib)
             
     # copy any *.pdb files if one exists
     copy_pdb_files = False
     if copy_pdb_files:
-        pdb_files = mbuild.glob(mbuild.join(env['build_dir'],'*.pdb'))
+        pdb_files = mbuild.glob(env['build_dir'],'*.pdb')
         for pdb in pdb_files:
             if os.path.exists(pdb):
-                mbuild.copy_file(pdb,lib)
-
+                mbuild.copy_file(pdb,wkit.lib)
 
     # copy examples source
-    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', 'README.txt']:
-        esrc = mbuild.glob(mbuild.join(env['src_dir'],'examples',ext))
+    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', '*.txt']:
+        esrc = mbuild.glob(env['src_dir'],'examples',ext)
         if len(esrc) == 0:
-            xbc.cdie( "No standard examples to install")
+            xbc.cdie( "No examples files to install with extension {}".format(ext))
         for  s in esrc:
-            mbuild.copy_file(s,examples)
+            mbuild.copy_file(s,wkit.examples)
 
             # legal header stuff
             base = os.path.basename(s)
-            tgt = mbuild.join(examples,base)
-            if 'LICENSE' not in tgt:
+            tgt = mbuild.join(wkit.examples,base)
+            if 'LICENSE' not in tgt and not 'rc-template' in tgt:
                 apply_legal_header2(tgt, legal_header)
                 
-    _copy_nongenerated_headers(env,include)
-    _copy_generated_headers(env, include)
-    _apply_legal_header_to_headers(env, include)
+    _copy_nongenerated_headers(env,wkit.include_xed)
+    _copy_generated_headers(env, wkit.include_xed)
+    _apply_legal_header_to_headers(env, wkit.include_xed)
 
-    # After applying the legal header, create the doxygen from the kit
-    # files, and place the output right in the kit.
-    if 'doc' in env['targets']:
-        mbuild.cmkdir(doc)
-        make_doxygen_api(env, work_queue, doc)
-        # for the web...
-        if env['doxygen_install']:        
-            make_doxygen_api(env, work_queue, env['doxygen_install'])
 
-    # build a zip file
+def copy_working_kit_to_install_dir(env):
+    def keeper(fn):
+        if fn in ['obj','__pycache__']:
+            return False
+        if fn.endswith('.pyc'):
+            return False
+        if os.path.isdir(fn):
+            return False
+        return True
+
+    
+    if xbc.installing(env):
+        ikit = env['ikit']
+        wkit = env['wkit']
+        mbuild.msgb("INSTALL DIR", ikit.kit)
+
+        for key, kd in env['kit_dirs']:
+            src = getattr(wkit,key)
+            dst = getattr(ikit,key)
+            for f in mbuild.glob(src,'*'):
+                if keeper(f):
+                    mbuild.copy_file(f,dst)
+        
+        # copy the examples that we just built
+        for f in env['example_exes']:
+            if os.path.exists(f):
+                if not env['debug']:
+                    xbc.strip_file(env,f)
+                mbuild.copy_file(f,ikit.bin)
+                _modify_search_path_mac(env, 
+                                        mbuild.join( ikit.bin, 
+                                                     os.path.basename(f)))
+        # we get the extlib files from the wkit
+            
+def compress_kit(env):
+    '''build a zip file'''
     if 'zip' in env['targets']:
-        wfiles = os.walk( env['install_dir'])
+        ikit = env['ikit']
+        wfiles = os.walk( ikit.kit )
         zip_files = []
         for (path,dirs,files) in wfiles:
             zip_files.extend( [ mbuild.join(path,x) for x in  files] )
         import zipfile
-        archive = env['install_dir'] + '.zip'
+        archive = ikit.kit + '.zip'
         z = zipfile.ZipFile(archive,'w')
         for f in zip_files:
             z.write(f)
         z.close()
         mbuild.msgb("ZIPFILE", archive)
         env['kit_zip_file']=archive
-    mbuild.msgb("XED KIT BUILD COMPLETE")
+
 
 def get_git_cmd(env):
    git = 'git'
@@ -2150,7 +2515,8 @@ def _test_cmdline_decoder(env,osenv):
        works. Returns 0 on success, and nonzero on failure."""
 
     output_file = env.build_dir_join('CMDLINE.OUT.txt')
-    cmd = "%(build_dir)s/examples/xed -n 1000 -i %(build_dir)s/examples/xed%(OBJEXT)s"
+    wkit = env['wkit']
+    cmd = "{}/xed -n 1000 -i {}/obj/xed%(OBJEXT)s".format(wkit.bin, wkit.examples)
     cmd  = env.expand_string(cmd)
     (retval, output, oerror) = mbuild.run_command_output_file(cmd,
                                                               output_file,
@@ -2169,8 +2535,9 @@ def _test_cmdline_decoder(env,osenv):
 def _run_canned_tests(env,osenv):
     """Run the tests from the tests subdirectory"""
     retval = 0 # success
-    env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))        
-    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir %(build_dir)s/examples " 
+    env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))
+    wkit = env['wkit']
+    cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
     dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
     if env['cet']:
@@ -2199,6 +2566,8 @@ def _run_canned_tests(env,osenv):
         codes.append('XOP')
     if env['via_enabled']:
         codes.append('VIA')
+    if env['amd_enabled']:
+        codes.append('AMD')
     for c in codes:
         cmd += ' -c ' + c
 
@@ -2209,9 +2578,9 @@ def _run_canned_tests(env,osenv):
     (retcode, stdout, stderr) = mbuild.run_command_output_file(cmd,
                                                                output_file,
                                                                osenv=osenv)
-    if retcode == 1:
-       for l in stdout:
-          print(l.rstrip())
+    #if retcode == 1:
+    #   for l in stdout:
+    #      print(l.rstrip())
 
     for l in stdout:
         l = l.rstrip()
@@ -2244,13 +2613,16 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CNL, ICL, KNL, KNM Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, SPR, KNL, KNM Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
         env['skl'] = False
         env['skx'] = False
         env['clx'] = False
+        env['cpx'] = False
+        env['tgl'] = False
+        env['spr'] = False
         env['cnl'] = False
         env['icl'] = False
         env['knl'] = False
@@ -2267,8 +2639,11 @@ def verify_args(env):
     if not env['avx512']:
         env['skx'] = False
         env['clx'] = False
+        env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
+        env['tgl'] = False
+        env['spr'] = False
         env['knl'] = False
         env['knm'] = False
         env['future'] = False
@@ -2285,33 +2660,53 @@ def verify_args(env):
     if not env['skx']:
         env['cnl'] = False
         env['clx'] = False
+        env['cpx'] = False        
     if not env['cnl']:
         env['icl'] = False
     if not env['icl']:
+        env['tgl'] = False
+    if not env['tgl']:
+        env['cet'] = False
+        env['spr'] = False
+    if not env['spr']:
         env['future'] = False
-
+        
     if env['knc']: 
         mbuild.warn("Disabling AVX512, FUTURE, for KNC build\n\n\n")
         env['knl'] = False
         env['knm'] = False
         env['skx'] = False
         env['clx'] = False
+        env['cpx'] = False
         env['cnl'] = False
         env['icl'] = False
+        env['tgl'] = False
+        env['spr'] = False
         env['future'] = False
         
-    if not env['future']:
-        env['cet'] = False
-
     if env['use_elf_dwarf_precompiled']:
        env['use_elf_dwarf'] = True
        
+
+def macro_args(env):
+    if env.on_linux() and env['asan']:
+        fcmd = '-fsanitize=address'
+        env.add_to_var('CXXFLAGS', fcmd)
+        env.add_to_var('CCFLAGS', fcmd)
+        env.add_to_var('LINKFLAGS', fcmd)
+        
+    if env['enc2_test_checked']:
+        env['enc2_test']=True
+    if env['enc2_test']:
+        env['enc2']=True
+        env['enc']=True
 
 def work(env):
     """External entry point for non-command line invocations.
     Initialize the environment, build libxed, the examples, the kit
     and run the tests"""
 
+    macro_args(env)
     xbc.prep(env)
     env['xed_dir'] = env['src_dir']
     verify_args(env)
@@ -2328,10 +2723,40 @@ def work(env):
     mbuild.cmkdir(mbuild.join(env['build_dir'], 'include-private'))
     work_queue = mbuild.work_queue_t(env['jobs']) 
 
-    build_libxed(env, work_queue)
+    input_files = build_libxed(env, work_queue)
+
+    env['enc2_configs'] = [] # used for installing kits
+    if env['enc2']:
+        configs = [ enc2_config_t(64,64),   # popular
+                    enc2_config_t(32,32),   
+                    #enc2_config_t(16,16),   # infrequent
+                    #enc2_config_t(64,32),   # obscure 
+                    #enc2_config_t(32,16),   # more obscure
+                    #enc2_config_t(16,32)   # more obscure
+                   ]
+
+        test_libs = []
+        for config in configs: 
+            (shd_enc2,lnk_enc2, shd_chk, lnk_chk) = build_libxedenc2(env, work_queue, input_files, config)
+            test_libs.append((shd_enc2, lnk_enc2, shd_chk, lnk_chk))
+            env['enc2_configs'].append(config)
     legal_header_tagging(env)
-    build_examples(env)
-    build_kit(env,work_queue)
+    _prep_kit_dirs(env)
+    create_working_kit_structure(env,work_queue) # wkit
+    create_install_kit_structure(env,work_queue) # ikit
+
+    build_examples(env) # in the working kit now
+    _copy_examples_to_bin(env,env['wkit'])
+    _copy_dynamic_libs_to_kit(env,env['wkit'])
+    _test_examples(env)
+
+    copy_working_kit_to_install_dir(env)
+    # put the doxygen in working kit, if not installing, and the final
+    # kit if installing.
+    create_doxygen_api_documentation(env, work_queue)
+    compress_kit(env)
+    mbuild.msgb("XED KIT BUILD COMPLETE")
+    
     system_install(env,work_queue) # like in /usr/local/{lib,include/xed}
     make_doxygen_build(env,work_queue)
     retval = run_tests(env)

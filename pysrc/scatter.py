@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -89,18 +89,18 @@ def scatter_generate_bit_by_bit(length, trimmed_bits, code, verbose=False):
     bit_count = {}  # count number of each kind of bit
     s = [] # the return string
     first = True
-    bar = ''
+    vbar = ''
     # go bit by bit through the pattern
     for (i,b) in enumerate(trimmed_bits):
         shift = length-i-1
         if not first:
-            bar = '|'
+            vbar = '|'
         first = False            
         if b == '0' or b == '1': # binary bits, just jam them in there...
             if shift == 0:
-                s.append("%s %s " % (bar, b))
+                s.append("%s %s " % (vbar, b))
             else:
-                s.append("%s  (%s << %s)" % (bar, b, length-i-1))
+                s.append("%s  (%s << %s)" % (vbar, b, length-i-1))
         else: # letter -- need to extract from field
             if b in bit_count:
                 bit_count[b] += 1
@@ -111,9 +111,9 @@ def scatter_generate_bit_by_bit(length, trimmed_bits, code, verbose=False):
             if verbose:
                 print("#", i,b, nth_b,key)
             if shift == 0:
-                s.append("%s %s " % (bar, code[key] ))
+                s.append("%s %s " % (vbar, code[key] ))
             else:
-                s.append("%s  (%s << %s)" % (bar, code[key], length-i-1))
+                s.append("%s  (%s << %s)" % (vbar, code[key], length-i-1))
     return ''.join(s)
 
 

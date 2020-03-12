@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -103,15 +103,25 @@ not64  VEXDEST3[u]  VEXDEST210[ddd] -> 1_ddd
 # since they are only referenced by the AVX instructions.
 
 VEX_ESCVL_ENC()::
-VL128 VNP -> 0b000
-VL128 V66 -> 0b001
-VL128 VF3 -> 0b010
-VL128 VF2 -> 0b011
-VL256 VNP -> 0b100
-VL256 V66 -> 0b101
-VL256 VF3 -> 0b110
-VL256 VF2 -> 0b111
+VLXUNDEF VL128 VNP -> 0b000
+VLXUNDEF VL128 V66 -> 0b001
+VLXUNDEF VL128 VF3 -> 0b010
+VLXUNDEF VL128 VF2 -> 0b011
+VLXUNDEF VL256 VNP -> 0b100
+VLXUNDEF VL256 V66 -> 0b101
+VLXUNDEF VL256 VF3 -> 0b110
+VLXUNDEF VL256 VF2 -> 0b111
 
+
+VLX128       VNP -> 0b000
+VLX128       V66 -> 0b001
+VLX128       VF3 -> 0b010
+VLX128       VF2 -> 0b011
+
+VLX256       VNP -> 0b100
+VLX256       V66 -> 0b101
+VLX256       VF3 -> 0b110
+VLX256       VF2 -> 0b111
 
 ##############################################################################
 

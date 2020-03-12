@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,32 +18,83 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-import os
 import sys
-import argparse
-import re
-import collections
-
 import read_xed_db
+import gen_setup
 import chipmodel
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
     sys.exit(1)
 def msgb(b,s=''):
-    sys.stdout.write("[{0}] {1}\n".format(b,s))
+    sys.stderr.write("[{0}] {1}\n".format(b,s))
 
 
 def check(chip, xeddb, chipdb):
-    all = []
+    all_inst = []
     undoc = []
     for inst in xeddb.recs:
         if inst.isa_set in chipdb[chip]:
             if inst.undocumented:
                 undoc.append(inst)
             else:
-                all.append(inst)
-    return (all, undoc)
+                all_inst.append(inst)
+    return (all_inst, undoc)
+
+def prefixes_summary(v):
+    s = []
+    if v.f2_required:
+        s.append('f2')
+    if v.f3_required:
+        s.append('f3')
+    if v.osz_required:
+        s.append('66')
+    if v.no_prefixes_allowed:
+        s.append('NP')
+    if len(s) == 0:
+        s.append('*')
+    return ",".join(s)
+
+def wbit_summary(v):
+    if v.rexw_prefix == 'unspecified':
+        return '*'
+    return v.rexw_prefix
+def mode_summary(v):
+    if v.mode_restriction == 'unspecified':
+        return '*'
+    if v.mode_restriction == 0:
+        return '16b'
+    if v.mode_restriction == 1:
+        return '32b'
+    if v.mode_restriction == 2:
+        return '64b'
+    return  v.mode_restriction
+def print_header():
+    print("iclass, explicit-operands, implicit-operands, memop, public/undoc, isa_set, vl, space, prefix, " +
+          "map, opcode, modrm.mod, modrm.reg, modrm.rm, wbit, mode")
+def print_rec(v,extra='N/A'):
+    s = " ".join(['{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, ',
+                  '{}, ',
+                  '{}, ',
+                  '{}, ',
+                  '{}, ',
+                  '{}'])
+    print(s.format(v.iclass,
+                   "-".join(v.explicit_operands),
+                   "-".join(v.implicit_operands),
+                   v.memop_rw,
+                   extra,
+                   v.isa_set,
+                   v.vl if v.space in ['vex','evex'] else 'N/A',
+                   v.space,
+                   prefixes_summary(v),
+                   v.map,
+                   v.opcode,
+                   '*' if v.mod_required == 'unspecified' else v.mod_required,
+                   '*' if v.reg_required == 'unspecified' else v.reg_required,
+                   '*' if v.rm_required == 'unspecified' else v.rm_required,
+                   wbit_summary(v),
+                   mode_summary(v)))
 
 
 
@@ -83,33 +134,29 @@ def work(args):  # main function
             print("{:20s} BOTH IN: {}   IN: {}".format(i, args.chip, args.otherchip))
         
     else:
-        for i in ilist:
-            print(i)
-        for i in ulist:
-            print(i, "UNDOC")
+        insts.sort(key=lambda x:(x.space,x.iclass,x.isa_set,x.vl))
+        undoc.sort(key=lambda x:(x.space,x.iclass,x.isa_set,x.vl))
+        print_header()
+        for i in insts:
+            public = 'PUBLIC'
+            if hasattr(i,'real_opcode') and i.real_opcode == 'N':
+                public = 'PRIVATE'
+            print_rec(i, public)
+        for i in undoc:
+            print_rec(i, "UNDOC")
     return 0
 
 
 def setup():
-    parser = argparse.ArgumentParser(
-        description='Generate instruction counts per chip')
-    parser.add_argument('chip', 
+    parser = gen_setup.create('Generate instruction counts per chip')
+    
+    parser.add_argument('--chip',
+                        default='FUTURE',
                         help='Chip name')
-    parser.add_argument('state_bits_filename', 
-                        help='Input state bits file')
-    parser.add_argument('instructions_filename', 
-                        help='Input instructions file')
-    parser.add_argument('chip_filename', 
-                        help='Input chip file')
-    parser.add_argument('widths_filename', 
-                        help='Input widths file')
-    parser.add_argument('element_types_filename', 
-                        help='Input element type file ')
     parser.add_argument('--otherchip',
                         help='Other chip name, for computing differences')
 
-    args = parser.parse_args()
-
+    args = gen_setup.parse(parser)
     return args
 
 if __name__ == "__main__":

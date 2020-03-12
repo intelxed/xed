@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2018 Intel Corporation
+Copyright (c) 2019 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -77,9 +77,16 @@ on imm_bytes between AMD's INSERTQ,EXTRQ and Intel's VMREAD.
 We already hardcode L1 functions for double immediate instructions, so we will
 hardcode a conflict resolution here too. */
 static XED_INLINE void xed_ild_hasimm_map0x0F_op0x78_l1(xed_decoded_inst_t* x) {
+#if defined(XED_AVX) 
+    if (xed3_operand_get_vexvalid(x))
+        return;
+#endif
+    /* only strange stuff in legacy encoding space */
     /*FIXME: f3 prefix is not mentioned in INSERTQ or EXTRQ grammar
     definitions, however is forbidden for VMREAD. It seems that it can
     go with INSERTQ and EXTRQ. Right? */
+#if defined(XED_AMD_ENABLED)
+
     if (xed3_operand_get_osz(x) ||
         xed3_operand_get_ild_f2(x)
         //    || xed3_operand_get_ild_f3(x)
@@ -91,7 +98,9 @@ static XED_INLINE void xed_ild_hasimm_map0x0F_op0x78_l1(xed_decoded_inst_t* x) {
         xed3_operand_set_imm1_bytes(x, 1);
         return;
     }
+#endif
     /* for VMREAD imm_bytes is 0*/
+    (void) x;
 }
 
 /*ENTER instruction has UIMM16 and UIMM8_1 NTs*/

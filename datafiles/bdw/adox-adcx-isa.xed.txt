@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,9 +34,9 @@ PATTERN   : 0x0F 0x38 0xF6   MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() osz_refinin
 OPERANDS  : REG0=GPR32_R():rw:d MEM0:r:d  
 
 # 64b
-PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix  W1 IMMUNE66()
+PATTERN   : 0x0F 0x38 0xF6  MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix  W1 IMMUNE66() mode64
 OPERANDS  : REG0=GPR64_R():rw:q  REG1=GPR64_B():r:q 
-PATTERN   : 0x0F 0x38 0xF6  MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() osz_refining_prefix  W1  IMMUNE66()
+PATTERN   : 0x0F 0x38 0xF6  MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() osz_refining_prefix  W1  IMMUNE66() mode64
 OPERANDS  : REG0=GPR64_R():rw:q  MEM0:r:q 
 }
 
@@ -59,9 +59,9 @@ PATTERN   : 0x0F 0x38 0xF6  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() refining_f3 
 OPERANDS  : REG0=GPR32_R():rw:d MEM0:r:d  
 
 # 64b
-PATTERN   : 0x0F 0x38 0xF6 MOD[0b11] MOD=3 REG[rrr] RM[nnn] refining_f3 W1 IMMUNE66()
+PATTERN   : 0x0F 0x38 0xF6 MOD[0b11] MOD=3 REG[rrr] RM[nnn] refining_f3 W1 IMMUNE66()  mode64
 OPERANDS  : REG0=GPR64_R():rw:q  REG1=GPR64_B():r:q 
-PATTERN   : 0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() refining_f3 W1   IMMUNE66()
+PATTERN   : 0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() refining_f3 W1   IMMUNE66() mode64
 OPERANDS  : REG0=GPR64_R():rw:q  MEM0:r:q 
 }
 

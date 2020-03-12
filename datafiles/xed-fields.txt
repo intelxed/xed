@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -66,12 +66,6 @@ DF64           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO E
 
 NOREX          SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
 NEEDREX        SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
-
-# 2013-09-25: This one is "DS" which means "decoder skip". It is 
-# ignored during parsing by the decoder.
-#
-SKIP_OSZ       SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DS EO
-
 
 REX            SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
 REXW           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
@@ -219,4 +213,3 @@ MODRM_BYTE     SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
 ESRC           SCALAR     xed_bits_t      4    SUPPRESSED NOPRINT INTERNAL DO EO
 VEXVALID       SCALAR     xed_bits_t      3    SUPPRESSED NOPRINT INTERNAL DO EO
 DUMMY          SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
-

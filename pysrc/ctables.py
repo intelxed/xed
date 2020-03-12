@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@
 #END_LEGAL
 from __future__ import print_function
 import re
-import types
 import sys
-import os
 import genutil
 import codegen
 import enum_txt_writer
@@ -195,7 +193,6 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
    return srcs
 
 if __name__ == '__main__':
-   import sys
    lines = open(sys.argv[1],'r').readlines()
    srcs = work(lines,xeddir='.',gendir='obj')
    print("WROTE: ", "\n\t".join(srcs))

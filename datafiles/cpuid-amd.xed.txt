@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,3 +21,4 @@ XED_ISA_SET_3DNOW:           n/a
 XED_ISA_SET_SSE4A:           n/a              
 XED_ISA_SET_SVM:             n/a              
 XED_ISA_SET_MONITORX:        monitorx.80000001.0.ecx.29
+XED_ISA_SET_RDPRU:           rdpru.80000008.0.ebx.4

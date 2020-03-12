@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,16 +23,15 @@ import opnds
 import math
 import ild_phash
 import ild_codegen
-import ild_phash
 import ild_eosz
 import ild_easz
 import ild_nt
-import genutil
 import actions_codegen
 import actions
 import copy
 import verbosity
 import tup2int
+import operand_storage
 
 # _token_2_module is for fields that might be modified in the pattern.
 # if fields are modified in the pattern by some NT, then we must be
@@ -498,7 +497,7 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
 #FIXME: maybe it should contain tuple2int function?
 #Now tuple2int is a part of phash object.
 class constraint_dict_t(object):
-    def __init__(self, cnames=[], state_space={}, all_state_space={},
+    def __init__(self, cnames=None, state_space=None, all_state_space=None,
                  rule=None):
          """cnames is sorted list of constraint names.
         
@@ -508,8 +507,11 @@ class constraint_dict_t(object):
 
            rule is the ild.py pattern_t object (essentially the instruction). """
          #cnames is sorted list of strings - constraints' names that we want
-         #this cdict to have
-         self.cnames = sorted(list(cnames))
+         #this cdict to have.
+         if cnames:
+             self.cnames = sorted(list(cnames))
+         else:
+             self.cnames = []
 
          self.strings_dict = ild_codegen._dec_strings
 
@@ -517,7 +519,10 @@ class constraint_dict_t(object):
          #this cdict to represent.
          #For example if we want cdict to allow only MODE=0 we will
          #have state_space['MODE'][0] = True
-         self.state_space = state_space
+         if state_space:
+             self.state_space = state_space
+         else:
+             self.state_space = {}
 
          #all_state_space is a dict with all legal values that constraints
          #have in grammar.
@@ -529,7 +534,10 @@ class constraint_dict_t(object):
          #first we build a separate constraint dict for each pattern, but
          #it includes all the cnames that set has, and then we unite those
          #cdicts. See _get_united_cdict() function
-         self.all_state_space = all_state_space
+         if all_state_space:
+             self.all_state_space = all_state_space
+         else:
+             self.all_state_space = {}
 
          # this is the ild.py:pattern_t
          self.rule = rule
@@ -546,7 +554,7 @@ class constraint_dict_t(object):
          #dict mapping tuples to rules. 
          #tuples are the constraint values (without the constraint names).
          self.tuple2rule = {}
-         if len(state_space) > 0:
+         if self.state_space:
              self.tuple2rule = self._initialize_tuple2rule(self.cnames, {})
 
     @staticmethod
@@ -606,13 +614,13 @@ class constraint_dict_t(object):
             for val in vals:
                 tuple2rule[(val,)] = self.rule
             return self._initialize_tuple2rule(cnames[1:], tuple2rule)
-        else:
-            new_tuple2rule = {}
-            for key_tuple in list(tuple2rule.keys()):
-                for val in vals:
-                    new_key = key_tuple + (val,)
-                    new_tuple2rule[new_key] = self.rule
-            return self._initialize_tuple2rule(cnames[1:], new_tuple2rule)
+
+        new_tuple2rule = {}
+        for key_tuple in list(tuple2rule.keys()):
+            for val in vals:
+                new_key = key_tuple + (val,)
+                new_tuple2rule[new_key] = self.rule
+        return self._initialize_tuple2rule(cnames[1:], new_tuple2rule)
 
     def get_all_keys_by_val(self, val):
         return [k for k,v in self.tuple2rule.items() if v == val]
@@ -637,9 +645,9 @@ class constraint_dict_t(object):
         self.tuple2int = tuple2int
         self.int2tuple = int2tuple    
     
-    def get_ptrn(self, tuple):
+    def get_ptrn(self, tup):
         ''' return the pattern that represents the given tuple '''
-        return self.tuple2rule[tuple].ptrn
+        return self.tuple2rule[tup].ptrn
 
     def filter_tuples(self,tuples):
         '''from all the dictionaries in self, remove the tuples that are not

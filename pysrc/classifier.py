@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2019 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,25 +20,17 @@
 
 
 from __future__ import print_function
-import os
-import sys
-import copy
-import types
-import glob
 import re
-
-import mbuild
-
 import genutil
 import codegen
-import verbosity
+
 
 def _emit_function(fe, isa_sets, name):
     fo = codegen.function_object_t('xed_classify_{}'.format(name)) 
     fo.add_arg('const xed_decoded_inst_t* d')
     fo.add_code_eol('    const xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(d)')
     # FIXME: 2017-07-14 optimization: could use a static array for faster checking, smaller code
-    switch = codegen.c_switch_generator_t('isa_set', fo);
+    switch = codegen.c_switch_generator_t('isa_set', fo)
     for c in isa_sets:
         switch.add_case('XED_ISA_SET_{}'.format(c.upper()),[],do_break=False)
     if len(isa_sets) > 0:
