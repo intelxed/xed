@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2020 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#  
+#
 #END_LEGAL
 #
 #
@@ -28,12 +28,12 @@ INSTRUCTIONS()::
 # EMITTING CLRSSBSY (CLRSSBSY-N/A-1)
 {
 ICLASS:      CLRSSBSY
-CPL:         3
+CPL:         0
 CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]   f3_refining_prefix     MODRM() 
+PATTERN:    0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]  f3_refining_prefix     MODRM()  
 OPERANDS:    MEM0:rw:q:u64
 IFORM:       CLRSSBSY_MEMu64
 }
@@ -154,7 +154,7 @@ IFORM:       SAVEPREVSSP
 # EMITTING SETSSBSY (SETSSBSY-N/A-1)
 {
 ICLASS:      SETSSBSY
-CPL:         3
+CPL:         0
 CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
@@ -196,7 +196,7 @@ IFORM:       WRSSQ_MEMu64_GPR64u64
 # EMITTING WRUSSD (WRUSSD-N/A-1)
 {
 ICLASS:      WRUSSD
-CPL:         3
+CPL:         0
 CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
@@ -210,7 +210,7 @@ IFORM:       WRUSSD_MEMu32_GPR32u32
 # EMITTING WRUSSQ (WRUSSQ-N/A-1)
 {
 ICLASS:      WRUSSQ
-CPL:         3
+CPL:         0
 CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
