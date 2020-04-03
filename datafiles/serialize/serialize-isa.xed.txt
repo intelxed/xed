@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2020 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,10 +15,27 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING SERIALIZE (SERIALIZE-N/A-1)
+{
+ICLASS:      SERIALIZE
+CPL:         3
+CATEGORY:    SERIALIZE
+EXTENSION:   SERIALIZE
+ISA_SET:     SERIALIZE
+REAL_OPCODE: N
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b000]  no_refining_prefix     
+OPERANDS:    
+IFORM:       SERIALIZE
+}
 
-# This is intentionally *completely* inaccurate but Intel is not
-# saying which chips will have these instructions publicly at this
-# time and I had to put the new instructions on some chip so I made
-# somethign up. 
 
-FUTURE: ALL_OF(SPR) CLDEMOTE
