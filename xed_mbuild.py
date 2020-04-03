@@ -1369,14 +1369,6 @@ def _configure_libxed_extensions(env):
         if env['cpx']:
             _add_normal_ext(env,'cpx')
             _add_normal_ext(env,'bf16')
-        if env['tgl']:
-            _add_normal_ext(env,'tgl')
-            _add_normal_ext(env,'cet')
-            _add_normal_ext(env,'movdir')
-            _add_normal_ext(env,'vp2intersect')
-        if env['spr']:
-            _add_normal_ext(env,'spr')
-            _add_normal_ext(env,'enqcmd')
         if env['knl']:
             _add_normal_ext(env,'knl')
         if env['knm']:
@@ -1409,10 +1401,23 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
             _add_normal_ext(env,'vpopcntdq-512')
             _add_normal_ext(env,'vpopcntdq-vl')
+        if env['tgl']:
+            _add_normal_ext(env,'tgl')
+            _add_normal_ext(env,'cet')
+            _add_normal_ext(env,'movdir')
+            _add_normal_ext(env,'vp2intersect')
+        if env['spr']:
+            _add_normal_ext(env,'spr')
+            _add_normal_ext(env,'pt')
+            _add_normal_ext(env,'waitpkg')
+            _add_normal_ext(env,'bf16')
+            _add_normal_ext(env,'enqcmd')
+            _add_normal_ext(env,'tsx-ldtrk')
+            _add_normal_ext(env,'serialize')
             
         if env['future']: # now based on ICL
             _add_normal_ext(env,'future')
-            _add_normal_ext(env,'pt')
+            _add_normal_ext(env,'cldemote')
 
 
         
