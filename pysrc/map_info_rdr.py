@@ -27,7 +27,7 @@ import genutil
 def _die(s):
     genutil.die(s)
 def _msgb(b,s=''):
-    genutil.msgb(b,s)
+    genutil.msgerr("[{}] {}".format(b,s))
 
 class map_info_t(object):
     def __init__(self):
