@@ -23,3 +23,4 @@ XED_ISA_SET_SVM:             n/a
 XED_ISA_SET_MONITORX:        monitorx.80000001.0.ecx.29
 XED_ISA_SET_RDPRU:           rdpru.80000008.0.ebx.4
 XED_ISA_SET_MCOMMIT:         mcommit.80000008.0.ebx.8
+XED_ISA_SET_SNP:             snp.8000001f.0.eax.4
