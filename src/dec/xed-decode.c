@@ -80,13 +80,25 @@ static void check_avx512_gathers(xed_decoded_inst_t* xds) {
 }
 # endif
 #endif
+#if defined(XED_ATTRIBUTE_NO_SRC_DEST_MATCH_DEFINED)
+static void check_src2_dest_match(xed_decoded_inst_t* xds) {
+    // this does not use reg-id's so this is looking for exact matches.
+    xed_reg_enum_t dest = xed3_operand_get_reg0(xds);
+    xed_reg_enum_t src1 = xed3_operand_get_reg1(xds);
+    // src2 might be invalid for memory source version. that's ok.
+    xed_reg_enum_t src2 = xed3_operand_get_reg2(xds); 
+    if (dest == src1 || dest == src2)
+        xed3_operand_set_error(xds,XED_ERROR_BAD_REG_MATCH);
+}
+#endif
 
 static XED_INLINE void
 xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
 {
     // if something is found to be in-error, you must set xed3_operand_get_error(xds)!
 
-    if (xed3_operand_get_lock(xds) && !xed_decoded_inst_get_attribute(xds,XED_ATTRIBUTE_LOCKED)) {
+    if ( xed3_operand_get_lock(xds) &&
+         !xed_decoded_inst_get_attribute(xds,XED_ATTRIBUTE_LOCKED)) {
         // operation cannot take a LOCK prefix, but one was found.
         xed3_operand_set_error(xds,XED_ERROR_BAD_LOCK_PREFIX);
         return;
@@ -106,6 +118,12 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
         {
             xed3_operand_set_rep(xds,0); // clear refining REP
         }
+    }
+#endif
+
+#if defined(XED_ATTRIBUTE_NO_SRC_DEST_MATCH_DEFINED)
+    if (xed_decoded_inst_get_attribute(xds, XED_ATTRIBUTE_NO_SRC_DEST_MATCH)) {
+        check_src2_dest_match(xds);
     }
 #endif
     

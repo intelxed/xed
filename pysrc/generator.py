@@ -3479,6 +3479,16 @@ def emit_attributes_table(agi, attributes):
    cfp.write('\n};\n')
    cfp.close()
 
+   
+def emit_attributes_defines(agi, attributes):
+   """Emit a header with defines for each attribute defined in the
+      enumeration, adding on the suffix _DEFINED. This allows for
+      making code conditional on the existence of defines"""
+   
+   hfp = agi.open_file('xed-attribute-defines.h', private=False)
+   for attr  in attributes:
+      hfp.write('#define XED_ATTRIBUTE_{}_DEFINED 1\n'.format(attr))
+   hfp.close()
 
 
 def emit_enum_info(agi):
@@ -3561,12 +3571,13 @@ def emit_enum_info(agi):
       attributes_list.extend(attributes)
    if lena > 128:
       die("Exceeded 128 attributes. " +
-          " The SDE/XED team needs to add support for more." +
+          " The XED dev team needs to add support for more." +
           " Please report this error.")
    global max_attributes
    max_attributes= lena
 
    emit_attributes_table(agi, attributes)
+   emit_attributes_defines(agi, attributes)
 
    for i,a in enumerate(attributes_list):
        agi.sorted_attributes_dict[a] = i
@@ -5175,13 +5186,14 @@ class all_generator_info_t(object):
       return g
 
 
-   def open_file(self, fn, keeper=True, arg_shell_file=False, start=True):
+   def open_file(self, fn, keeper=True, arg_shell_file=False, start=True, private=True):
       'open and record the file pointers'
 
       fp = xed_file_emitter_t(self.common.options.xeddir,
                               self.common.options.gendir,
                               fn,
-                              shell_file=arg_shell_file)
+                              shell_file=arg_shell_file,
+                              is_private=private)
       if keeper:
           self.add_file_name(fp.full_file_name, is_header(fn))
 
