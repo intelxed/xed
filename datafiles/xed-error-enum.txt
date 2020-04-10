@@ -45,3 +45,4 @@ GATHER_REGS       ///< The index, dest and mask regs for AVX2 gathers must be di
 INSTR_TOO_LONG    ///< Full decode of instruction would exeed 15B.
 INVALID_MODE      ///< The instruction was not valid for the specified mode
 BAD_EVEX_LL       ///< EVEX.LL must not ==3 unless using embedded rounding
+BAD_REG_MATCH     ///< Source registers must not match the destination register for this instruction.
