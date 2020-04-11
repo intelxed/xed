@@ -325,6 +325,7 @@ class enumer_t(object):
         self.hf.close()
 
     def _emit_header_file(self):
+        self._emit_defines()
         self._emit_typedef()
         if self.string_convert >= 0:
             self._emit_convert_protos()
@@ -348,7 +349,11 @@ class enumer_t(object):
             self._emit_ostream()
             self._emit_operators()
         self._emit_comment()
-        
+
+    def _emit_defines(self):
+        for v in self.values + self.duplicates:
+            self.hf.emit_eol('#define {}{}_DEFINED 1'.format(self.prefix, v.name))
+            
     def _emit_typedef(self):
         xmax = len(self.values) + len(self.duplicates)
         self.hf.emit_eol("typedef enum {")
