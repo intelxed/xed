@@ -3480,17 +3480,6 @@ def emit_attributes_table(agi, attributes):
    cfp.close()
 
    
-def emit_attributes_defines(agi, attributes):
-   """Emit a header with defines for each attribute defined in the
-      enumeration, adding on the suffix _DEFINED. This allows for
-      making code conditional on the existence of defines"""
-   
-   hfp = agi.open_file('xed-attribute-defines.h', private=False)
-   for attr  in attributes:
-      hfp.write('#define XED_ATTRIBUTE_{}_DEFINED 1\n'.format(attr))
-   hfp.close()
-
-
 def emit_enum_info(agi):
    """Emit major enumerations based on stuff we collected from the
    graph."""
@@ -3577,7 +3566,6 @@ def emit_enum_info(agi):
    max_attributes= lena
 
    emit_attributes_table(agi, attributes)
-   emit_attributes_defines(agi, attributes)
 
    for i,a in enumerate(attributes_list):
        agi.sorted_attributes_dict[a] = i

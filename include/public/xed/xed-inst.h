@@ -36,7 +36,6 @@ END_LEGAL */
 #include "xed-operand-element-xtype-enum.h" // a generated file
 #include "xed-reg-enum.h" // a generated file
 #include "xed-attribute-enum.h" // a generated file
-#include "xed-attribute-defines.h" // a generated file
 #include "xed-exception-enum.h" // a generated file
 #include "xed-iform-enum.h" // a generated file
 #include "xed-iform-map.h" 

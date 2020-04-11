@@ -66,7 +66,6 @@ END_LEGAL */
 #include "xed-category-enum.h"  /* generated */
 #include "xed-extension-enum.h" /* generated */
 #include "xed-attribute-enum.h" /* generated */
-#include "xed-attribute-defines.h" /* generated */
 #include "xed-exception-enum.h" /* generated */
 #include "xed-operand-element-type-enum.h"  /* generated */
 #include "xed-operand-element-xtype-enum.h" /* generated */
