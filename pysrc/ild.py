@@ -90,7 +90,7 @@ def gen_xed3(agi, ild_info, ild_patterns,
              all_state_space, ild_gendir, all_ops_widths):
     all_cnames = set()
     ptrn_dict = {}  # map,opcode -> pattern
-    maps = ild_info.get_maps_wip(agi)
+    maps = ild_info.get_maps(agi)
     for insn_map in maps:
         ptrn_dict[insn_map] = collections.defaultdict(list)
     for ptrn in ild_patterns:

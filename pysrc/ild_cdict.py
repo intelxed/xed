@@ -741,7 +741,7 @@ def get_constraints_lu_table(agi,
     bin. These cdict objects can later be used for generating hash functions
     from constraint values to patterns (inums).
     """
-    maps = ild_info.get_maps_wip(agi)
+    maps = ild_info.get_maps(agi)
     cdict_by_map_opcode = collections.defaultdict(dict)
     cnames = set()
     for insn_map in maps:
@@ -771,7 +771,7 @@ def gen_ph_fos(agi,
 
     Also writes log file for debugging.
     """
-    maps = ild_info.get_maps_wip(agi)
+    maps = ild_info.get_maps(agi)
     log_f = open(log_fn, 'w')
     cnames = set() # only for logging
     stats = {
