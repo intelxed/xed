@@ -429,8 +429,8 @@ def read_file(fn):
         maps.append( _parse_map_line(line) )
     fix_nonnumeric_maps(maps)
     maps.sort(key=lambda x: x.priority)
-    for m in maps:
-        _msgb("MAPINFO",m)
+    #for m in maps:
+    #    _msgb("MAPINFO",m)
     return maps
 
 if __name__ == "__main__":
