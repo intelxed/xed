@@ -315,7 +315,7 @@ def gen_static_decode(agi,
         h_file.add_header(header)
     h_file.start()
 
-    maps = ild_info.get_maps_wip(agi)
+    maps = ild_info.get_maps(agi)
 
     vv_num = [ int(x) for x in vv_lu.keys() ]
     vv_max = max(vv_num) + 1

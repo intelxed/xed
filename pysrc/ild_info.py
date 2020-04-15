@@ -25,7 +25,7 @@
 
 import map_info_rdr    
 
-def get_maps_wip(agi):
+def get_maps(agi):
     map_names = [ mi.map_name for mi in agi.map_info ]
     return map_names
 
