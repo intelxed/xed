@@ -1123,10 +1123,10 @@ static void opcode_scanner(xed_decoded_inst_t* d)
                 length++; /* eat the secondary map byte */
                 xed3_operand_set_map(d, m->map_id);
                 xed_decoded_inst_set_length(d, length);
-                get_next_as_opcode(d);
-                // need this to denote required pick-up of 3dnow opcode
-                // later in imm_scanner.
-                xed3_operand_set_amd3dnow(d, m->opc_pos == -1);
+                if (m->opc_pos == -1) 
+                    xed3_operand_set_amd3dnow(d, m->opc_pos == -1);
+                else
+                    get_next_as_opcode(d);
                 set_downstream_info(d,0);
                 return;
             }
