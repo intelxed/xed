@@ -4998,7 +4998,9 @@ def spew(ii):
 
     if ii.space == 'evex':
         if ii.avx512_tuple:
-            s.append("TUP:{}-{}-{}-{}".format(ii.avx512_tuple,ii.element_size,ii.memop_width_code,ii.memop_width))
+            mwc = ii.memop_width_code if hasattr(ii,'memop_width_code') else 'MWC???'
+            mw = ii.memop_width if hasattr(ii,'memop_width') else 'MW???'
+            s.append("TUP:{}-{}-{}-{}".format(ii.avx512_tuple,ii.element_size,mwc,mw))
         else:
             s.append("no-tuple")
         if ii.write_masking:
