@@ -240,6 +240,8 @@ class generator_inputs_t(object):
         s.append('--input-fields %s' % aq(self.file_name['fields']))
         s.append('--input-state %s' % aq(self.file_name['state']))
         s.append('--input-regs %s' % aq(self.file_name['registers']))
+        s.append('--map-descriptions ' + aq(self.file_name['map-descriptions']))
+
         if not amd_enabled:
             s.append('--no-amd')
         if extra_args:
@@ -1450,6 +1452,7 @@ def _remove_src_list(lst, list_to_remove):
 
 def add_encoder_command(env, gc, gen_dag, prep):
     enc_py = [ 'pysrc/read-encfile.py',
+               'pysrc/map_info_rdr.py',
                'pysrc/genutil.py', 'pysrc/encutil.py',
                'pysrc/verbosity.py', 'pysrc/patterns.py', 'pysrc/actions.py',
                'pysrc/operand_storage.py', 'pysrc/opnds.py', 'pysrc/ild_info.py',

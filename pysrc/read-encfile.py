@@ -80,6 +80,7 @@ try:
     import slash_expand
     import operand_storage
     import nt_func_gen
+    import map_info_rdr
 
 except:
    sys.stderr.write("\nERROR(read-encfile.py): Could not find " + 
@@ -1485,6 +1486,7 @@ class encoder_input_files_t(object):
         self.encoder_input_files = options.enc_patterns
         self.state_bits_file = options.input_state
         self.instructions_file = options.isa_input_file
+        self.map_info_file = options.map_descriptions_input_fn
 
         # dict of operand_order_t indexed by special keys stored in iform.operand_order_key
         self.all_operand_name_list_dict = None
@@ -1523,6 +1525,7 @@ class encoder_configuration_t(object):
         operands_storage = operand_storage.operands_storage_t(lines) 
         storage_fields = operands_storage.get_operands()
 
+        self.map_info = map_info_rdr.read_file(self.files.map_info_file)
         self.state_bits = None
         
         self.sequences = {}
@@ -3074,6 +3077,11 @@ def setup_arg_parser():
     arg_parser.add_option('--isa',
                       action='store', dest='isa_input_file', default='',
                       help='Read structured input file containing the ISA INSTRUCTIONS() nonterminal')
+    arg_parser.add_option('--map-descriptions',
+                          action='store',
+                          dest='map_descriptions_input_fn',
+                          default='',
+                          help='map descriptions input file')
     arg_parser.add_option('--no-amd',
                       action='store_false', dest='amd_enabled', default=True,
                       help='Omit AMD instructions')
