@@ -208,8 +208,6 @@ _resolution_functions = [
 #so we are killing two birds with one stone 
 _hardcoded_res_functions_imm = {
     #(map, opcode)          :  L1_function_name 
-    #('0x0F', '0x78')       : 'xed_ild_hasimm_map0x0F_op0x78_l1',
-    #('0x0', '0xc8')        : 'xed_ild_hasimm_map0x0_op0xc8_l1'
     ('legacy_map1', '0x78') : 'xed_ild_hasimm_map0x0F_op0x78_l1',
     ('legacy_map0', '0xc8') : 'xed_ild_hasimm_map0x0_op0xc8_l1'
 }
