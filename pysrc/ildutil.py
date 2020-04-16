@@ -48,10 +48,6 @@ l1_ptr_typename     = 'xed_ild_l1_func_t'
 xed3_decoded_inst_t = 'xed_decoded_inst_t'
 xed3_operand_t      = 'xed_operand_values_t'
 
-# ild
-#FIXME: get mode_space from generator
-mode_space          = [0,1,2]
-
 def ild_err(msg):
     genutil.die("ILD_PARSER ERROR: %s\n" % (msg))
 

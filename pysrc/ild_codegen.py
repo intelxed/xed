@@ -493,12 +493,13 @@ def _dump_lookup_low(agi,
     return array_names
 
 
-def _gen_bymode_fun_dict(info_list, nt_dict, is_conflict_fun,
+def _gen_bymode_fun_dict(machine_modes, info_list, nt_dict, is_conflict_fun,
                         gen_l2_fn_fun):
     fun_dict = {}
     insn_map = info_list[0].insn_map
     opcode = info_list[0].opcode
-    for mode in ildutil.mode_space:
+
+    for mode in machine_modes:
         #get info objects with the same modrm.reg bits
         infos = list(filter(lambda info: mode in info.mode, info_list))
         if len(infos) == 0:
@@ -668,8 +669,10 @@ def gen_l1_bymode_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
     opcode = info_list[0].opcode
     ildutil.ild_warn('generating by mode fun_dict for opcode %s map %s' %
                           (opcode, insn_map))
-    fun_dict = _gen_bymode_fun_dict(info_list, nt_dict, is_conflict_fun,
-                        gen_l2_fn_fun)
+    machine_modes = agi.common.get_state_space_values('MODE')
+    fun_dict = _gen_bymode_fun_dict(machine_modes,
+                                    info_list, nt_dict, is_conflict_fun,
+                                    gen_l2_fn_fun)
     if not fun_dict:
         #it is not ild_err because we might have other conflict resolution
         #functions to try.
@@ -682,7 +685,7 @@ def gen_l1_bymode_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
     #if not all modrm.reg values have legal instructions defined, we don't
     #have full 0-7 dict for modrm.reg here, and we can't generate the interval
     #dict
-    if len(list(fun_dict.keys())) == len(ildutil.mode_space):
+    if len(list(fun_dict.keys())) == len(machine_modes):
         int_dict = _gen_intervals_dict(fun_dict)
     else:
         int_dict = None

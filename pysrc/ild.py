@@ -248,6 +248,7 @@ def get_patterns(agi, eosz_nts, easz_nts,
     This function generates the pattern_t objects that have all the necessary
     information for the ILD. Returns these objects as a list.
     """
+    machine_modes = agi.common.get_state_space_values('MODE')
     patterns = []
     pattern_t.map_info_g = agi.map_info
     for g in agi.generator_list:
@@ -256,7 +257,7 @@ def get_patterns(agi, eosz_nts, easz_nts,
             for ii in g.parser_output.instructions:
                 ptrn = pattern_t(ii, eosz_nts,
                                  easz_nts, imm_nts, disp_nts, brdisp_nts,
-                                 ildutil.mode_space, all_state_space)
+                                 machine_modes, all_state_space)
                 patterns.append(ptrn)
                 if ptrn.incomplete_opcode:
                     expanded_ptrns = ptrn.expand_partial_opcode()
@@ -437,14 +438,13 @@ class pattern_t(object):
                 if bit_info.test == 'eq':
                     self.mode = [bit_info.requirement]
                 else:
-                    mod_space = copy.deepcopy(mode_space)
-                    mod_space.remove(bit_info.requirement)
-                    self.mode = mod_space
+                    reduced_mode_space = copy.deepcopy(mode_space)
+                    reduced_mode_space.remove(bit_info.requirement)
+                    self.mode = reduced_mode_space
                 return
-        #FIXME: when MODE is not mentioned, we assume that any value is
+        #when MODE is not mentioned, we assume that any value is
         #legal, it should not mess the conflict resolution.
-        #But maybe None is better
-        self.mode = ildutil.mode_space
+        self.mode = mode_space
 
     def parse_opcode(self, op_str):
         # has side effects of settting self.missing_bits and self.incomplete
