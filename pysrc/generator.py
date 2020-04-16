@@ -64,6 +64,7 @@ import copy
 import glob
 import re
 import optparse
+import collections
 
 def find_dir(d):
     directory = os.getcwd()
@@ -608,8 +609,7 @@ def compute_state_space(state_dict):
    """Figure out all the values for each token, return a dictionary
    indexed by token name"""
 
-   # a dictionary of the values of a each operand_decider
-   state_values = {}
+   state_values = collections.defaultdict(set)
    
    for k in state_dict.keys():
       vals = state_dict[k]
@@ -619,16 +619,8 @@ def compute_state_space(state_dict):
             (token,test,requirement) = m.groups([0,1,2])
             if requirement == 'XED_ERROR_GENERAL_ERROR':
                 continue
-            #if type(requirement) == types.IntType:
-            #    die("Already an integer")
             requirement_base10 = make_numeric(requirement,wrd)
-            #msge("STATE RESTRICTION PATTERN " + token + " :  " + 
-            #     str(requirement) + " -> " + str(requirement_base10))
-            if token in state_values:
-               if requirement_base10 not in state_values[token]:
-                  state_values[token].append(requirement_base10)
-            else:
-               state_values[token] = [ requirement_base10 ]
+            state_values[token].add(requirement_base10)
          elif formal_binary_pattern.match(wrd):
             pass # ignore these
          elif nonterminal_pattern.match(wrd):
@@ -637,8 +629,11 @@ def compute_state_space(state_dict):
             pass # ignore these
          else:
             die("Unhandled state pattern: %s" % wrd)
-                              
-   return state_values
+
+   output = {}
+   for k,v in state_values.items():
+       output[k]=list(v)
+   return output
          
 
 ############################################################################
@@ -4865,7 +4860,10 @@ class generator_common_t(object):
 
       self.inst_table_file_names = []
 
-   
+   def get_state_space_values(self,od_token):
+       '''return the list of values associated with this token'''
+       return self.state_space[od_token]
+      
    def open_file(self,fn, arg_shell_file=False, start=True):
       'open and record the file pointers'
 
