@@ -577,23 +577,6 @@ def pad_pattern(pattern):
       pattern +=  '-' * rem
    return pattern
 
-def read_dict_spec(fn): # FIXME: 2019-10-18: no longer used
-    """Read a file with expected format of a form
-    {KEY VALUE\n}, return a dict of dict[KEY] == VALUE """
-    res_dict = {}
-    if not os.path.exists(fn):
-      die("Could not read file: " + fn)
-    lines = open(fn,'r').readlines()
-    lines = map(no_comments, lines)
-    lines = list(filter(genutil.blank_line, lines))
-    for line in lines:
-        wrds = line.split()
-        key = wrds[0]
-        value = wrds[1]
-        #convert straight to int
-        res_dict[key] = int(value)
-    return res_dict
-
 
 
 def read_state_spec(fn):
