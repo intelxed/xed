@@ -280,7 +280,6 @@ def gen_l1_functions_and_lookup(agi, instr_by_map_opcode, imm_dict):
             #this will happen for opcodes like 0F in 0F map - totally illegal
             #opcodes, that should never be looked up in runtime.
             elif len(info_list) == 0:
-                #l1_fn = '(%s)0' % (ildutil.l1_ptr_typename) # FIXME:2019-10-31 this needs an "empty" fn option like ild_disp.py
                 l1_fn = _imm0_fn
             else:
                 #there are no conflicts, we can use L2 function as L1
