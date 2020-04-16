@@ -473,12 +473,6 @@ class pattern_t(object):
 
         return val
 
-    def err(self, msg):
-        self.legal = False
-        genutil.warn("ILD_PARSER PATTERN ERROR: {}\n\nPattern:\n{}\n".format(msg, self))
-        genutil.msgb("ILD_PARSER ERROR", msg)
-        genutil.msgb("ILD_PARSER", "ABORTED ILD generation")
-        #genutil.die('dying...')
 
     #if opcode is incomplete, than we have 0's in all the missing bits and
     #need to create copies of the pattern_t that have all other possible
