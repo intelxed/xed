@@ -213,7 +213,7 @@ def work(agi):
         #get ild_storage_t object - the main data structure for ILD
         #essentially a 2D dictionary:
         #ild_tbl[map][opcode] == [ ild_info_t ]
-        #the ild_info_t objects are obtained the grammar
+        #the ild_info_t objects are obtained from the grammar
         priority = 0
         ild_tbl = _get_info_storage(agi, ild_patterns, priority)
 
@@ -241,51 +241,6 @@ def work(agi):
         gen_xed3(agi, ild_info, ild_patterns, 
                  all_state_space, ild_gendir, all_ops_widths)
 
-def dump_header_with_header(agi, fname, header_dict):  # FIXME: 2019-10-18 no longer used
-    """ emit the header fname.
-        add the header in header_dict with the maximal id.
-        
-        this mechanism is used in order to choose header 
-        files in the build time,
-        different build configuration use different header files.
-        e.g. when building without AVX512 we are using the basic getters.
-             when building with AVX512 the header that is used comes 
-             from avx512 layer.
-             
-             FIXME: when all avx512 will move into the base layer 
-                    we can removed this 
-                    mechanism and use C defines. """
-    
-    _msg("HEADER DICT: %s" % header_dict)
-    
-    xeddir = os.path.abspath(agi.common.options.xeddir)
-    gendir = mbuild.join(agi.common.options.gendir,'include-private')
-    if header_dict:
-        header = max(header_dict, key=header_dict.get)
-        header = os.path.normcase(header)
-
-        header_basename = os.path.basename(header)
-
-        _msg("HEADER: %s" %header)
-        if os.path.exists(header):
-            _msg("HEADER EXISTS: %s" %header)
-        else:
-            _msg("BADNESS - HEADER DOES NOT EXIST: %s" %header)
-        try:
-            shutil.copyfile(header, os.path.join(gendir, header_basename))
-        except:
-            ildutil.ild_err("Failed to copyfile src=%s dst=%s"%
-                              (header,
-                               os.path.join(gendir, header_basename)))
-    else:
-        header_basename = None
-    h_file = codegen.xed_file_emitter_t(xeddir,gendir,
-                                fname, shell_file=False,
-                                is_private= True)
-    if header_basename:
-        h_file.add_header(header_basename)
-    h_file.start()
-    h_file.close()
 
 def get_patterns(agi, eosz_nts, easz_nts,
                  imm_nts, disp_nts, brdisp_nts, all_state_space):
