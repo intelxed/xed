@@ -216,7 +216,6 @@ def gen_l1_functions_and_lookup(agi, instr_by_map_opcode, disp_dict):
                 #illegal opcodes, that should never be looked up in runtime.
                 #We define NULL pointer for such map-opcodes
                 
-                #l1_fn = '(%s)0' % (ildutil.l1_ptr_typename) # FIXME:2019-10-31: remove this
                 l1_fn = _empty_fn
             else:
                 #there are no conflicts, we can use L2 function as L1
