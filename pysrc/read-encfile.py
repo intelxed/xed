@@ -120,7 +120,7 @@ def remove_file(fn):
        os.unlink(fn)
 
 class blot_t(object):
-    """A blot_t is   a fragment of a decoder pattern"""
+    """A blot_t is  make a fragment of a decoder pattern"""
     def __init__(self,type=None):
         self.type = type  # 'bits', 'letters', 'nt', "od" (operand decider)
         self.nt = None    # name of a nonterminal
@@ -1072,7 +1072,8 @@ class rule_t(object):
                 
 class iform_t(object):
     """One form of an instruction"""
-    def __init__(self, iclass, enc_conditions, enc_actions, modal_patterns, uname=None):
+    def __init__(self, map_info,
+                 iclass, enc_conditions, enc_actions, modal_patterns, uname=None):
         self.iclass = iclass
         self.uname = uname
         self.enc_conditions = enc_conditions # [ operand_t ]
@@ -1087,8 +1088,38 @@ class iform_t(object):
         self.fb_ptrn = None
         
         self._fixup_vex_conditions()
+        self._find_legacy_map(map_info)
         self.rule = self.make_rule()
-        
+
+    def _find_legacy_map(self, map_info):
+        """Set self.legacy_map to the map_info_t record that best matches"""
+        if self.encspace == 0:
+            s = []
+            self.legacy_map = None
+            for act in self.enc_actions:
+                if act.type == 'bits':
+                    s.append(act.value)
+            if s:
+                found = False
+                default_map = None
+                for m in map_info:
+                    if m.space == 'legacy':
+                        if m.legacy_escape == 'N/A':  # 1B map (map 0)
+                            default_map = m
+                        elif m.legacy_escape_int == s[0]:
+                            if m.legacy_opcode == 'N/A':   # 2B maps (map-1 like)
+                                found = True
+                                self.legacy_map = m
+                                break
+                            elif len(s)>=2 and m.legacy_opcode_int == s[1]:   # 3B maps
+                                self.legacy_map = m
+                                found = True
+                                break
+                if not found:
+                    self.legacy_map = default_map
+            if not self.legacy_map:
+                genutil.die("Could not set legacy map.")
+            
     def _fixup_vex_conditions(self):
         """if action has VEXVALID=1, add modal_pattern MUST_USE_AVX512=0. 
            The modal_patterns become conditions later on."""
@@ -2203,13 +2234,14 @@ class encoder_configuration_t(object):
             die("No iclass for " + operands)
         # the encode conditions are the decode operands (as [ operand_t ])
         # the encode actions are the decode patterns    (as [ blot_t ])
+        # the modal_patterns are things that should become encode conditions
         (conditions, actions, modal_patterns) = \
                       self.parse_one_decode_rule(iclass, operands, ipattern)
         if vfinalize():
             self.print_iclass_info(iclass, operands, ipattern, conditions, 
                                    actions, modal_patterns)
         # FIXME do something with the operand/conditions and patterns/actions
-        iform = iform_t(iclass, conditions, actions, modal_patterns, uname)
+        iform = iform_t(self.map_info, iclass, conditions, actions, modal_patterns, uname)
 
         if uname == 'NOP0F1F':
             # We have many fat NOPS, 0F1F is the preferred one so we
@@ -3020,8 +3052,7 @@ class encoder_configuration_t(object):
         fe.add_header('xed-ild-enum.h')        
         fe.start()
         
-        ptrn = ("/*(%4d)%20s*/  {%4d, %4d, %4s," +
-                " XED_STATIC_CAST(xed_uint8_t,%15s), %4d}")
+        ptrn = ("/*(%4d)%20s*/  {%4d, %4d, %4s, %4d}")
         iform_definitions = []
         for iform in self.all_iforms:#iforms:
             iform_init = ptrn % (iform.rule.iform_id,
@@ -3029,16 +3060,12 @@ class encoder_configuration_t(object):
                                  iform.bind_func_index,
                                  iform.emit_func_index,
                                  hex(iform.nominal_opcode),
-                                 iform.map,
                                  iform.fb_index)
             iform_definitions.append(iform_init)
         
         self._emit_functions_lu_table(fe, 'xed_encoder_iform_t', 
                                       iform_definitions, 'xed_encode_iform_db', 
                                       'XED_ENCODE_MAX_IFORMS')
-        
-        
-        
         fe.close()
         output_file_emitters.append(fe)
             

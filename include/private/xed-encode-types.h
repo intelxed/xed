@@ -39,7 +39,6 @@ typedef struct xed_encoder_iform_s{
     xed_uint8_t _emit_ptrn_index;
     
     xed_uint8_t _nom_opcode;
-    xed_uint8_t _legacy_map;
     
     //start index of the field values in xed_encode_fb_values_table
     xed_uint16_t _fb_values_index;    
