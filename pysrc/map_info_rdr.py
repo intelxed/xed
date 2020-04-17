@@ -144,6 +144,14 @@ def _parse_map_line(s):
         setattr(mi,fld,t[i])
     # this gets used in function names so must only be legal characters
     mi.map_name = re.sub('-', '_', mi.map_name)
+    if mi.space == 'legacy':
+        if mi.legacy_escape != 'N/A':
+            mi.legacy_escape_int  = int(mi.legacy_escape,16)
+            if mi.legacy_opcode != 'N/A':
+                mi.legacy_opcode_int = int(mi.legacy_opcode,16)
+            else:
+                mi.legacy_opcode_int = None
+        
     mi.map_id_fixup=False
     
     if mi.space not in ['legacy','vex','evex', 'xop']:

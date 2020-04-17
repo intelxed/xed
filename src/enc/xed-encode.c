@@ -33,50 +33,6 @@ END_LEGAL */
 
 
 
-// Emitting the legacy map bytes.
-// Need to convert from xed_ild_map_enum_t to the actual bytes.
-// called from generated code (in OBJDIR/xed-enc-patterns.c)
-void xed_encoder_request_emit_legacy_map(xed_encoder_request_t* q)
-{
-    xed_uint8_t bits;
-    xed_uint16_t value;
-    xed_ild_map_enum_t map;
-    map = XED_STATIC_CAST(xed_ild_map_enum_t,xed_encoder_get_map(q));
-
-    switch(map) {
-    case XED_ILD_LEGACY_MAP0:
-      // FIXME: this case is also used to avoid emitting anything for VEX/EVEX/XOP maps
-      return;
-      
-    case XED_ILD_LEGACY_MAP1:
-      value = 0x0F;
-      bits = 8;
-      break;
-      
-    case XED_ILD_LEGACY_MAP2:
-      value = 0x380F; //need to convert big to little endian
-      bits = 16;
-      break;
-      
-    case XED_ILD_LEGACY_MAP3:
-      value = 0x3A0F; //need to convert big to little endian
-      bits = 16;
-      break;
-#if defined(XED_AMD_ENABLED)      
-    case XED_ILD_AMD_3DNOW:
-      value = 0x0F0F;
-      bits = 16;
-      break;
-#endif
-      
-    default:
-      xed3_operand_set_error(q,XED_ERROR_GENERAL_ERROR);
-      return;
-    
-    } 
-    xed_encoder_request_emit_bytes(q,bits,value);
-}
-
 void xed_encoder_request_emit_bytes(xed_encoder_request_t* q,
                                    const xed_uint8_t bits,
                                    const xed_uint64_t value){

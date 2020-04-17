@@ -115,8 +115,6 @@ xed_encoder_get_encoder_iform(const xed_encoder_request_t* r){
     return xed_encode_iform_db + iform_index;
 }
 
-void
-xed_encoder_request_emit_legacy_map(xed_encoder_request_t* q);
 
 void
 xed_encoder_request_emit_bytes(xed_encoder_request_t* q,
@@ -150,12 +148,6 @@ xed_encoder_get_nominal_opcode(const xed_encoder_request_t* p){
     return enc_iform->_nom_opcode;
 }
 
-static XED_INLINE xed_uint8_t
-xed_encoder_get_map(const xed_encoder_request_t* p){
-    //FIXME:2019-10-03 Misnamed. really legacy map. Used for emitting legacy escape/map
-    const xed_encoder_iform_t* enc_iform =  xed_encoder_get_encoder_iform(p);
-    return enc_iform->_legacy_map;
-}
 
 static XED_INLINE xed_uint16_t
 xed_encoder_get_fb_values_index(const xed_encoder_request_t* p){
