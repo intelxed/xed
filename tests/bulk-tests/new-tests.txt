@@ -54,8 +54,6 @@ DEC                  ; BUILDDIR/xed -chip-check TREMONT -d 0f1c00
 ENC                  ; BUILDDIR/xed -set CLDEMOTE 1 -e CLDEMOTE MEM:eax
 ENC                  ; BUILDDIR/xed -set CLDEMOTE 1 -e CLDEMOTE MEM1:eax
 ENC                  ; BUILDDIR/xed -chip-check TREMONT -e CLDEMOTE MEM1:eax
-DEC AVX              ; BUILDDIR/xed -32 -d 67 36 36 36 36 36 67 67 67 C4 E6 71 4F B6 7F
-DEC AVX              ; BUILDDIR/xed -32 -d 67 26 67 64 26 26 67 67 2E 3E 36 C4 E6 72 57
 DEC AVX              ; BUILDDIR/xed -64 -d 64 67 67 65 65 2e 36 26 64 2e c4
 DEC AVX              ; BUILDDIR/xed -64 -d 67 64 67 3e 2e 67 67 2e 67 2e c4
 DEC AVX              ; BUILDDIR/xed -64 -d 67 67 67 67 67 2e 67 67 67 67 c4 fe fe fe
