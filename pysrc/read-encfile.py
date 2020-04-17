@@ -1092,9 +1092,13 @@ class iform_t(object):
     def _fixup_vex_conditions(self):
         """if action has VEXVALID=1, add modal_pattern MUST_USE_AVX512=0. 
            The modal_patterns become conditions later on."""
+        self.encspace=0 # legacy 
         for act in self.enc_actions:
-            if act.field_name == 'VEXVALID' and act.value == 1:
-                self.modal_patterns.append( "MUST_USE_EVEX=0" )
+            if act.field_name == 'VEXVALID':
+                self.encspace=act.value
+                if act.value == 1:
+                    self.modal_patterns.append( "MUST_USE_EVEX=0" )
+
     
     def make_operand_name_list(self):
         """Make an ordered list of operand storage field names that

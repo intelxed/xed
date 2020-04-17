@@ -292,12 +292,12 @@ class instruction_codegen_t(object):
             # _identify_map_and_nominal_opcode() ) to avoid emitting
             # any escape/map bytes at runtime.
 
-            # FIXME: We could avoid ths call to emit legacy map for
-            # non-legacy stuff and speed up encoder slightly.
             if action.field_name and action.field_name == 'MAP':
-                emit_map = 'xed_encoder_request_emit_legacy_map'
-                code = "    %s(%s)" % (emit_map,obj_str)
-                fo.add_code_eol(code)
+                # FIXME: could directly emit the legacy escapes (0F,0F38,0F3A,0F0F)
+                if iform.encspace == 0: # legacy
+                    emit_map = 'xed_encoder_request_emit_legacy_map'
+                    code = "    %s(%s)" % (emit_map,obj_str)
+                    fo.add_code_eol(code)
                     
             elif action.field_name and action.field_name == 'NOM_OPCODE':
                 code = ''
@@ -452,22 +452,7 @@ class instruction_codegen_t(object):
     
         return fo_list
 
-    def _compute_map(self, first_byte, second_byte=None):
-        if first_byte != 0x0F:    #FIXME: Genericize
-            return 'XED_ILD_LEGACY_MAP0'
-        else:
-            if second_byte == None:
-                return 'XED_ILD_LEGACY_MAP1'
-            if second_byte == 0x38:
-                return 'XED_ILD_LEGACY_MAP2'
-            if second_byte == 0x3A:
-                return 'XED_ILD_LEGACY_MAP3'
-            if second_byte == 0x0F and self.amd_enabled:
-                return 'XED_ILD_AMD_3DNOW'
 
-        die("Unhandled escape {} / map {} bytes".format(first_byte, second_byte))
-    
-    
     def _identify_map_and_nominal_opcode(self,iform):
         ''' scan the list of actions and identify the nominal opcode and 
             the legacy map.
@@ -523,7 +508,7 @@ class instruction_codegen_t(object):
             #this action represents the opcode
             iform.nominal_opcode = first.int_value
             iform.nom_opcode_bits = first.nbits
-            iform.map = 'XED_ILD_LEGACY_MAP0' # this is used to avoid emitting legacy escapes
+            iform.map = 'XED_ILD_LEGACY_MAP0' # MASSIVE HACK used to avoid emitting legacy escapes
             # see above "disabled" comment
             if 0:
                 if mapno < 8:
@@ -535,7 +520,7 @@ class instruction_codegen_t(object):
             #this action represents the opcode
             iform.nominal_opcode = first.int_value
             iform.nom_opcode_bits = first.nbits
-            iform.map = self._compute_map(first.int_value)
+            iform.map = 'XED_ILD_LEGACY_MAP0'
             iform.rule.actions[i] = actions.dummy_emit(first,'NOM_OPCODE') # replace opcode
         
         else: #first byte == 0x0F and we are legacy space
@@ -554,7 +539,7 @@ class instruction_codegen_t(object):
                 amd3dnow_opcode_action = iform.rule.actions[-1]
                 iform.nominal_opcode = amd3dnow_opcode_action.int_value
                 iform.nom_opcode_bits = 8
-                iform.map = self._compute_map(first.int_value, second.int_value)
+                iform.map = 'XED_ILD_AMD_3DNOW'
                 iform.rule.actions[-1] = actions.dummy_emit(amd3dnow_opcode_action,
                                                             'NOM_OPCODE')
                 iform.rule.actions[i] = actions.dummy_emit(first,'MAP')  # replace first 0xF
@@ -572,7 +557,10 @@ class instruction_codegen_t(object):
                 
                 iform.nominal_opcode = third.int_value
                 iform.nom_opcode_bits = third.nbits
-                iform.map = self._compute_map(first.int_value, second.int_value)
+                if second.int_value==0x38:
+                    iform.map = 'XED_ILD_LEGACY_MAP2'
+                else:
+                    iform.map = 'XED_ILD_LEGACY_MAP3'
                 iform.rule.actions[i+1] = actions.dummy_emit(second,'MAP') # replace the 0x38 or 0x3A
                 iform.rule.actions[i+2] = actions.dummy_emit(third,
                                                              'NOM_OPCODE')  # replace opcode
@@ -581,7 +569,7 @@ class instruction_codegen_t(object):
             else: # legacy map1 0f prefix only, 2nd byte is opcode
                 iform.nominal_opcode = second.int_value 
                 iform.nom_opcode_bits = second.nbits
-                iform.map = self._compute_map(first.int_value)
+                iform.map = 'XED_ILD_LEGACY_MAP1'
                 iform.rule.actions[i] = actions.dummy_emit(first,'MAP') # replace 0x0F
                 iform.rule.actions[i+1] = actions.dummy_emit(second,    # replace opcode
                                                              'NOM_OPCODE')
