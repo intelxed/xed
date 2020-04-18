@@ -29,13 +29,47 @@ END_LEGAL */
 #include "xed-examples-util.h"
 
 
-//static xed_bool_t check_property_of_mnemonic(const char *mnem, xed_bool_t test_fn(const xed_inst_t* p));
 static xed_bool_t test_has_relbr(const xed_inst_t* p);
 static xed_bool_t has_relbr(xed_iclass_enum_t iclass);
 
-static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
-                         int* verbose) {
-    const char* usage = "Usage: %s [-16|-32|-64] [-v|-q] <assembly line>\n";
+static void delete_string_list(xed_str_list_t* h) {
+    // clean up memory allocated
+    xed_str_list_t* p=h;
+    while(p) {
+        xed_str_list_t* t=0;
+        free(p->s); // free the string content
+        t = p->next;
+        free(p);  // free the node itself
+        p = t;
+    }
+}
+    
+
+static char* duplicate(char const* const s) {
+    return xed_strdup(s);
+}
+
+static xed_str_list_t* split_string(const char* p)
+{
+    xed_str_list_t* q = xed_tokenize(p,";");
+    // the strings returned from xed_tokenize are all part of the original
+    // string. we duplicate them for easier cleanup later
+    xed_str_list_t* a = q;
+    while(a) {
+        a->s = duplicate(a->s);
+        a = a->next;
+    }
+    return q;
+}
+    
+static xed_str_list_t* process_args(int argc, char** argv,
+                                    xed_uint_t* mode,
+                                    int* verbose)
+{
+    const char* usage = "Usage: %s [-16|-32|-64] [-v|-q] <assembly line>\n" 
+                        "\tThe assembly line can have semicolon separators " 
+                        "to allow for multiple instructions\n\n";
+    xed_str_list_t* string_list;
     int i = 0;
     unsigned int len = 0;
     char* s = 0;
@@ -48,7 +82,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
         asp_error_printf(usage, argv[0]);
         exit(1);
     }
-    v->mode = 32;
+    *mode = 32;
     while(keep_going) {
         keep_going = 0;
         if (first_arg >= argc)
@@ -60,7 +94,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
             }
             mode_found = 1;
             keep_going = 1;
-            v->mode = 32;
+            *mode = 32;
             first_arg++;
         }
         else if (strcmp("-16",argv[first_arg])==0) {
@@ -70,7 +104,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
             }
             mode_found = 1;
             keep_going = 1;
-            v->mode = 16;
+            *mode = 16;
             first_arg++;
         }
         else if (strcmp("-64",argv[first_arg])==0) {
@@ -80,7 +114,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
             }
             mode_found = 1;
             keep_going = 1;
-            v->mode = 64;
+            *mode = 64;
             first_arg++;
         }
         else if (strcmp("-v",argv[first_arg])==0) {
@@ -104,6 +138,7 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
         exit(1);
     }
 
+    
     p = s = (char*) malloc(len);
     assert(p!=0);
     for(i=first_arg;i<argc;i++) {
@@ -114,7 +149,10 @@ static void process_args(int argc, char** argv, xed_enc_line_parsed_t* v,
             *p++ = *q++;
     }
     *p = 0;  // null terminate
-    v->input = s;
+
+    string_list = split_string(s);
+    free(s);
+    return string_list;
 }
 
 static void set_state(xed_state_t* dstate, xed_enc_line_parsed_t* v) {
@@ -772,7 +810,12 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     xed_encoder_operand_t operand_array[XED_ENCODER_OPERANDS_MAX];
     opnd_list_t* q=0;
     xed_uint_t has_imm0 = 0;
-    
+
+    if (v->iclass_str == 0) {
+        asp_error_printf("Did not find an instruction\n");
+        exit(1);
+    }
+
     process_prefixes(v, &inst);
 
     /* Instruction's mnemonic is not always unambiguous;
@@ -859,22 +902,42 @@ static void setup(void) {
 int main(int argc, char** argv)
 {
     int verbose  = 1;
-    xed_enc_line_parsed_t* v = 0;
+    xed_str_list_t* string_list = 0;
+    xed_str_list_t* p = 0;
+    xed_uint_t mode=0;
     
     setup();
     xed_tables_init();
 
-    v = asp_get_xed_enc_node();
-
-    process_args(argc, argv, v, &verbose);
+    p = string_list = process_args(argc, argv, &mode, &verbose);
     asp_set_verbosity(verbose);
-    asp_parse_line(v);
 
-    if (verbose > 1)
-        asp_print_parsed_line(v);
+    while(p) {
+        xed_enc_line_parsed_t* v = 0;
 
-    encode_with_xed(v);
+        v = asp_get_xed_enc_node();
+        v->mode = mode;
+        
+        // we duplicate because the asp_delete_xed_enc_line_parsed_line_t
+        // will delete the string if still present when we call it.
+        v->input = duplicate(p->s);
+        
+        printf("Assembling [%s]\n",v->input);
 
-    asp_delete_xed_enc_line_parsed_t(v);
+        asp_parse_line(v);
+
+        if (verbose > 1)
+            asp_print_parsed_line(v);
+
+        encode_with_xed(v);
+
+        asp_delete_xed_enc_line_parsed_t(v);
+        v = 0;
+        p = p->next;
+    }
+
+    delete_string_list(string_list);
+    string_list = 0;
+    
     return 0;
 }
