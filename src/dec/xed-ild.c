@@ -435,26 +435,22 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       xed3_operand_set_map(d,c4byte1.s.map);
 
       eff_map = c4byte1.s.map;
-      if (xed_ild_map_valid_vex(eff_map) == 0) {
-          bad_map(d);
-          return; 
-      }
-
-#if 0
+//#define XED_MAP_MASKING
+#if defined(XED_MAP_MASKING)
       // FIXME: 2017-03-03 this masking of the VEX map with 0x3 an attempt
       // at matching an undocumented implementation convention that can and
       // most likely will change as architectural map usage evolves.
       eff_map = c4byte1.s.map & 0x3; //FIXME: genericize
-      if (eff_map == XED_ILD_LEGACY_MAP0 || c4byte1.s.map > XED_MAX_MAP_VEX) {
+#endif
+      if (xed_ild_map_valid_vex(eff_map) == 0) {
           bad_map(d);
           return; 
       }
-      else if (eff_map == XED_ILD_EVEX_MAP3)
-          xed3_operand_set_imm_width(d, bytes2bits(1));
-#endif
+#if 000
+      //FIXME:2020-04-17 I think I can remove this due to "downstream"
       if (xed_ild_has_imm_vex(eff_map) == 1)
           xed3_operand_set_imm_width(d, bytes2bits(1));
-      
+#endif      
       // this is a success indicator for downstreaam decoding
       xed3_operand_set_vexvalid(d, 1); // AVX1/2
 
@@ -611,15 +607,24 @@ static void xop_scanner(xed_decoded_inst_t* d)
       map = xop_byte1.s.map;
       if (map == 0x9) { 
           xed3_operand_set_map(d,XED_ILD_AMD_XOP9);
+#if 000
+          //FIXME:2020-04-17 I think I can remove this due to "downstream"
           xed3_operand_set_imm_width(d, 0); //bits
+#endif
       }
       else if (map == 0x8){
           xed3_operand_set_map(d,XED_ILD_AMD_XOP8);
+#if 000
+          //FIXME:2020-04-17 I think I can remove this due to "downstream"
           xed3_operand_set_imm_width(d, bytes2bits(1));
+#endif
       }
       else if (map == 0xA){
           xed3_operand_set_map(d,XED_ILD_AMD_XOPA);
+#if 000
+          //FIXME:2020-04-17 I think I can remove this due to "downstream"
           xed3_operand_set_imm_width(d, bytes2bits(4));
+#endif
       }
       else 
           bad_map(d);
@@ -1033,6 +1038,7 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
 static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
     xed_uint_t mapno = xed3_operand_get_map(d);
 
+    // copy the codes from the map_info_t tables for later procsssing
     xed_ild_set_has_modrm(d, xed_ild_has_modrm(vv,mapno));
     xed_ild_set_has_disp(d,  xed_ild_has_disp(vv,mapno));
     xed_ild_set_has_imm(d,  xed_ild_has_imm(vv,mapno));
@@ -1189,7 +1195,6 @@ typedef union{  // AVX512 only
     xed_uint32_t u32;
 } xed_avx512_payload3_t;
 
-
 static void evex_scanner(xed_decoded_inst_t* d)
 {
      /* assumption: length < max_bytes  
@@ -1264,21 +1269,21 @@ static void evex_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
 
             eff_map = evex1.s.map;
+#if defined(XED_MAP_MASKING)
+            // see previous use of XED_MAP_MASKING for more info.
+            eff_map = evex1.s.map & 3; //FIXME: genericize
+#endif
             if (xed_ild_map_valid_evex(eff_map) == 0) {
                 bad_map(d);
                 return; 
             }
-#if 0
-            eff_map = evex1.s.map & 3; //FIXME: genericize
-            if (eff_map == XED_ILD_LEGACY_MAP0 || evex1.s.map >  XED_MAX_MAP_EVEX)  {
-                bad_map(d);
-                return;
-            }
-            else if (eff_map == XED_ILD_EVEX_MAP3)
-                xed3_operand_set_imm_width(d, bytes2bits(1));
-#endif
+
+
+#if 000
+            //FIXME:2020-04-17 I think I can remove this due to "downstream"
             if (xed_ild_has_imm_evex(eff_map) == 1)
                 xed3_operand_set_imm_width(d, bytes2bits(1));
+#endif
       
             if (evex2.s.ubit)  // AVX512 only (Not KNC)
             {
@@ -1549,4 +1554,3 @@ xed_ild_cvt_mode(xed_machine_mode_enum_t mmode) {
     }
     return result;
 }
-
