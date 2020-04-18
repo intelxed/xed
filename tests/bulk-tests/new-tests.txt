@@ -34,7 +34,7 @@ DEC ENC              ; BUILDDIR/xed -64 -de e31e
 DEC                  ; BUILDDIR/xed -64 -d e31e
 DEC AVX              ; BUILDDIR/xed -d C4C3F916E0F8
 DEC AVX              ; BUILDDIR/xed -64 -d C4C3F916E0F8
-DEC AVX              ; BUILDDIR/xed -64 -d 6464262E6426C4EB791D05ED830A00
+DEC AVX   DISABLED           ; BUILDDIR/xed -64 -d 6464262E6426C4EB791D05ED830A00
 ENC                  ; BUILDDIR/xed -64 -e rdfsbase/64 rax
 ENC                  ; BUILDDIR/xed -64 -e rdfsbase eax
 DEC                  ; BUILDDIR/xed -64 -d 66 f3 0f ae c0
@@ -56,5 +56,5 @@ ENC                  ; BUILDDIR/xed -set CLDEMOTE 1 -e CLDEMOTE MEM1:eax
 ENC                  ; BUILDDIR/xed -chip-check TREMONT -e CLDEMOTE MEM1:eax
 DEC AVX              ; BUILDDIR/xed -64 -d 64 67 67 65 65 2e 36 26 64 2e c4
 DEC AVX              ; BUILDDIR/xed -64 -d 67 64 67 3e 2e 67 67 2e 67 2e c4
-DEC AVX              ; BUILDDIR/xed -64 -d 67 67 67 67 67 2e 67 67 67 67 c4 fe fe fe
-DEC                  ; BUILDDIR/xed -32 -d f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 0f 3e 51 c0
+DEC AVX  DISABLED            ; BUILDDIR/xed -64 -d 67 67 67 67 67 2e 67 67 67 67 c4 fe fe fe
+DEC DISABLED                  ; BUILDDIR/xed -32 -d f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 f0 0f 3e 51 c0
