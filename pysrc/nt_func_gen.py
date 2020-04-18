@@ -42,6 +42,7 @@ _width_bits = {'BRDISP_WIDTH' :6,
                 'IMM_WIDTH'   :7,
                }
 
+#FIXME:2020-04-18 (not used, see below variable references)
 _vexpfx_vals = [0xc4, 0xc5, 0x62]
 _vexpfx_bits = 8
 
@@ -332,6 +333,7 @@ class nt_function_gen_t(object):
                         #this field is in use by the encoder
                         continue    
                 elif 'VEXPFX_OP' == field:
+                    # FIXME: 2020-04-18 NOT USED -- remove...
                     op_space[field] = _vexpfx_vals
                     op_width[field] = _vexpfx_bits
                 elif field in ['DISP','BRDISP','UIMM0']:
