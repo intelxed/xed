@@ -28,6 +28,7 @@ END_LEGAL */
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
 
+static xed_uint_t intel_asm_emits=0;
 
 static xed_bool_t test_has_relbr(const xed_inst_t* p);
 static xed_bool_t has_relbr(xed_iclass_enum_t iclass);
@@ -66,9 +67,15 @@ static xed_str_list_t* process_args(int argc, char** argv,
                                     xed_uint_t* mode,
                                     int* verbose)
 {
-    const char* usage = "Usage: %s [-16|-32|-64] [-v|-q] <assembly line>\n" 
+    // sets mode, verbose and fills in a linked list of strings as the
+    // return value.  Also sets intel_asm_emits.
+    
+    const char* usage = "Usage: %s [-16|-32|-64] [--emit] [-v|-q] <assembly line>\n" 
                         "\tThe assembly line can have semicolon separators " 
-                        "to allow for multiple instructions\n\n";
+                        "to allow for multiple instructions.\n"
+                        "\tThe --emit option changes output to Intel compiler __emit lines.\n"
+                        "\n\n";
+    
     xed_str_list_t* string_list;
     int i = 0;
     unsigned int len = 0;
@@ -127,6 +134,12 @@ static xed_str_list_t* process_args(int argc, char** argv,
             *verbose = 0;
             first_arg++;
         }
+        else if (strcmp("--emit", argv[first_arg])== 0) {
+            intel_asm_emits=1;
+            keep_going = 1;
+            first_arg++;
+        }
+
     }
     for(i=first_arg;i<argc;i++) {
         // add one for trailing space or null at end
@@ -381,7 +394,7 @@ static void set_eosz(xed_reg_enum_t reg,
             *eosz = 32;
         }
     else if (rc == XED_REG_CLASS_GPR64) {
-        asp_printf("SET EOSZ 64\n");
+        asp_dbg_printf("#SET EOSZ 64\n");
         *eosz=64;
     }
 }
@@ -626,7 +639,9 @@ static void process_operand(xed_enc_line_parsed_t* v,
     *noperand = i;
 }
 
-static void encode(xed_encoder_instruction_t* inst)
+
+
+static xed_uint_t encode(xed_encoder_instruction_t* inst)
 {
     xed_error_enum_t xed_error = XED_ERROR_NONE;
     xed_bool_t convert_ok = 0;
@@ -634,7 +649,7 @@ static void encode(xed_encoder_instruction_t* inst)
     xed_uint8_t itext[XED_MAX_INSTRUCTION_BYTES];
     unsigned int ilen = XED_MAX_INSTRUCTION_BYTES;
     unsigned int olen = 0;
-    xed_uint_t j=0;
+
 
     xed_encoder_request_zero_set_mode(&enc_req, &(inst->mode));
     convert_ok = xed_convert_to_encoder_request(&enc_req, inst);
@@ -648,10 +663,12 @@ static void encode(xed_encoder_instruction_t* inst)
                 xed_error_enum_t2str(xed_error));
         exit(1);
     }
-    asp_printf("Result: ");
-    for(j=0;j<olen-1;j++) 
-        printf("%02x ", itext[j]);
-    printf("%02x\n", itext[olen-1]);
+
+    if (intel_asm_emits)
+        xed_print_intel_asm_emit(itext,olen);
+    else 
+        xed_print_bytes_pseudo_op(itext,olen);
+    return olen;
 }
 
 static void process_other_decorator(char const* s,
@@ -706,46 +723,100 @@ static void process_other_decorator(char const* s,
 
 }
 
-/* Change result to alias mnemonic that is accepted by xed, return true
-   Otherwise keep it unchanged and return false */
-static xed_bool_t find_jcc_alias(char* result, int maxlen) {
-    typedef struct {
-        const char *from;
-        const char *to;
-    } jcc_aliases_t;
+typedef struct {
+    const char *from;
+    const char *to;
+} iclass_name_aliases_t;
 
+
+static const iclass_name_aliases_t cmovcc_aliases[] = {
+       {"CMOVNAE" , "CMOVB"},
+       {"CMOVC"   , "CMOVB"},
+       {"CMOVNA"  , "CMOVBE"},
+       {"CMOVNGE" , "CMOVL"},
+       {"CMOVNG"  , "CMOVLE"},
+       {"CMOVAE"  , "CMOVNB"},
+       {"CMOVNC"  , "CMOVNB"},
+       {"CMOVA"   , "CMOVNBE"},
+       {"CMOVGE"  , "CMOVNL"},
+       {"CMOVG"   , "CMOVNLE"},
+       {"CMOVPO"  , "CMOVNP"},
+       {"CMOVNE"  , "CMOVNZ"},
+       {"CMOVPE"  , "CMOVP"},
+       {"CMOVE"   , "CMOVZ"},
+};
+static const iclass_name_aliases_t setcc_aliases[] = {
+       {"SETNAE" , "SETB"},
+       {"SETC"   , "SETB"},
+       {"SETNA"  , "SETBE"},
+       {"SETNGE" , "SETL"},
+       {"SETNG"  , "SETLE"},
+       {"SETAE"  , "SETNB"},
+       {"SETNC"  , "SETNB"},
+       {"SETA"   , "SETNBE"},
+       {"SETGE"  , "SETNL"},
+       {"SETG"   , "SETNLE"},
+       {"SETPO"  , "SETNP"},
+       {"SETNE"  , "SETNZ"},
+       {"SETPE"  , "SETP"},
+       {"SETE"   , "SETZ"},
+};
+
+static const iclass_name_aliases_t jcc_aliases[] = {
+       {"JNAE" , "JB"},
+       {"JC"   , "JB"},
+       {"JNA"  , "JBE"},
+       {"JNGE" , "JL"},
+       {"JNG"  , "JLE"},
+       {"JAE"  , "JNB"},
+       {"JNC"  , "JNB"},
+       {"JA"   , "JNBE"},
+       {"JGE"  , "JNL"},
+       {"JG"   , "JNLE"},
+       {"JPO"  , "JNP"},
+       {"JNE"  , "JNZ"},
+       {"JPE"  , "JP"},
+       {"JE"   , "JZ"},
+};
+
+static xed_bool_t find_alias(const char* orig,
+                             char* result,
+                             int maxlen,
+                             iclass_name_aliases_t const* const aliases,
+                             size_t n_aliases) 
+{
     /* Internally, xed uses only one variant per each alias,
        others have to be converted to it */
-    const jcc_aliases_t aliases[] = {
-       {"JNAE", "JB"},
-       {"JC", "JB"},
-       {"JNA", "JBE"},
-       {"JNGE", "JL"},
-       {"JNG", "JLE"},
-       {"JAE", "JNB"},
-       {"JNC", "JNB"},
-       {"JA", "JNBE"},
-       {"JGE", "JNL"},
-       {"JG", "JNLE"},
-       {"JPO", "JNP"},
-       {"JNE", "JNZ"},
-       {"JPE", "JP"},
-       {"JE", "JZ"},
-    };
-    const size_t n_aliases = sizeof(aliases) / sizeof(aliases[0]);
 
-    /* Resolve conditional jumps aliases */
     size_t i = 0;
     for (i = 0; i < n_aliases; i++) {
         const char *from = aliases[i].from;
         const char *to = aliases[i].to;
-        if (!strncmp(result, from, maxlen)) {
+        if (!strncmp(orig, from, maxlen)) {
             xed_strncpy(result, to, maxlen);
             return 1;
         }
     }
     return 0;
 }
+
+/* Change result to alias mnemonic that is accepted by xed, return true
+   Otherwise keep it unchanged and return false */
+/* Internally, xed uses only one variant per each alias,
+   others have to be converted to it */
+static xed_bool_t find_jcc_alias(const char* orig, char* result, int maxlen) {
+    const size_t n_aliases = sizeof(jcc_aliases) / sizeof(jcc_aliases[0]);
+    return find_alias(orig, result, maxlen, jcc_aliases, n_aliases);
+}
+static xed_bool_t find_cmovcc_alias(const char* orig, char* result, int maxlen) {
+    const size_t n_aliases = sizeof(cmovcc_aliases) / sizeof(cmovcc_aliases[0]);
+    return find_alias(orig, result, maxlen, cmovcc_aliases, n_aliases);
+}
+static xed_bool_t find_setcc_alias(const char* orig, char* result, int maxlen) {
+    const size_t n_aliases = sizeof(setcc_aliases) / sizeof(setcc_aliases[0]);
+    return find_alias(orig, result, maxlen, setcc_aliases, n_aliases);
+}
+
 
 /* Try all known suffixes and prefixes with the original mnemonic if 
    certain operands or prefixes were seen.
@@ -762,7 +833,13 @@ static void revise_mnemonic(xed_enc_line_parsed_t *v, char* result, int maxlen) 
         return;
     }
     /* all aliases for conditional jumps start with 'J' */
-    if (orig[0] == 'J' && find_jcc_alias(result, maxlen)) {
+    if (orig[0] == 'J' && find_jcc_alias(orig,result, maxlen)) {
+        return;
+    }
+    if (strncmp(orig,"CMOV",4)==0 && find_cmovcc_alias(orig,result, maxlen)) {
+        return;
+    }
+    if (strncmp(orig,"SET",3)==0 && find_setcc_alias(orig,result, maxlen)) {
         return;
     }
 
@@ -801,7 +878,7 @@ static void revise_mnemonic(xed_enc_line_parsed_t *v, char* result, int maxlen) 
     xed_strncpy(result, orig, maxlen);
 }
 
-static void encode_with_xed(xed_enc_line_parsed_t* v)
+static xed_uint_t encode_with_xed(xed_enc_line_parsed_t* v)
 {
     xed_encoder_instruction_t inst;
     xed_state_t dstate;
@@ -853,19 +930,19 @@ static void encode_with_xed(xed_enc_line_parsed_t* v)
     }
     if (eosz == 0) {
         eosz = 32;
-        asp_printf("Guessing 32b EOSZ\n");
+        asp_dbg_printf("#Guessing 32b EOSZ\n");
     }
 
     if (eosz == 64) {
         if (v->mode != 64) {
-            asp_printf("Changing to 64b mode\n");
+            asp_dbg_printf("#Changing to 64b mode\n");
         }
         v->mode = 64;
     }
-    asp_printf("MODE=%d, EOSZ=%d\n", v->mode, eosz);
+    asp_dbg_printf("#MODE=%d, EOSZ=%d\n", v->mode, eosz);
     set_state(&dstate, v);
     xed_inst(&inst, dstate, v->iclass_e, eosz, noperand, operand_array);
-    encode(&inst);
+    return encode(&inst);
 }
 
 /* Return true if the instruction accepts relative branch as an operand */
@@ -905,6 +982,7 @@ int main(int argc, char** argv)
     xed_str_list_t* string_list = 0;
     xed_str_list_t* p = 0;
     xed_uint_t mode=0;
+    xed_uint_t length = 0;
     
     setup();
     xed_tables_init();
@@ -913,6 +991,7 @@ int main(int argc, char** argv)
     asp_set_verbosity(verbose);
 
     while(p) {
+        xed_uint_t olen = 0;
         xed_enc_line_parsed_t* v = 0;
 
         v = asp_get_xed_enc_node();
@@ -923,22 +1002,26 @@ int main(int argc, char** argv)
         v->input = duplicate(p->s);
 
         if (verbose > 0)
-            printf("Assembling [%s]\n",v->input);
+            printf("#Assembling [%s]\n",v->input);
 
         asp_parse_line(v);
 
         if (verbose > 1)
             asp_print_parsed_line(v);
 
-        encode_with_xed(v);
+        olen = encode_with_xed(v);
+        length += olen;
 
         asp_delete_xed_enc_line_parsed_t(v);
         v = 0;
         p = p->next;
     }
+    
+    if (verbose > 0) 
+        printf("#nbytes = %d\n",length);
 
     delete_string_list(string_list);
     string_list = 0;
-    
+
     return 0;
 }
