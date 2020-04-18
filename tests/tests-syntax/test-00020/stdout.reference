@@ -1,1 +1,1 @@
-f2 a6
+.byte 0xf2,0xa6

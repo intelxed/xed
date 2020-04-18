@@ -1,1 +1,1 @@
-ff d0
+.byte 0xff,0xd0
