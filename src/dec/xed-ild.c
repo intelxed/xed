@@ -446,11 +446,6 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
           bad_map(d);
           return; 
       }
-#if 000
-      //FIXME:2020-04-17 I think I can remove this due to "downstream"
-      if (xed_ild_has_imm_vex(eff_map) == 1)
-          xed3_operand_set_imm_width(d, bytes2bits(1));
-#endif      
       // this is a success indicator for downstreaam decoding
       xed3_operand_set_vexvalid(d, 1); // AVX1/2
 
@@ -607,24 +602,12 @@ static void xop_scanner(xed_decoded_inst_t* d)
       map = xop_byte1.s.map;
       if (map == 0x9) { 
           xed3_operand_set_map(d,XED_ILD_AMD_XOP9);
-#if 000
-          //FIXME:2020-04-17 I think I can remove this due to "downstream"
-          xed3_operand_set_imm_width(d, 0); //bits
-#endif
       }
       else if (map == 0x8){
           xed3_operand_set_map(d,XED_ILD_AMD_XOP8);
-#if 000
-          //FIXME:2020-04-17 I think I can remove this due to "downstream"
-          xed3_operand_set_imm_width(d, bytes2bits(1));
-#endif
       }
       else if (map == 0xA){
           xed3_operand_set_map(d,XED_ILD_AMD_XOPA);
-#if 000
-          //FIXME:2020-04-17 I think I can remove this due to "downstream"
-          xed3_operand_set_imm_width(d, bytes2bits(4));
-#endif
       }
       else 
           bad_map(d);
