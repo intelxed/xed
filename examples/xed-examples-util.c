@@ -1653,3 +1653,19 @@ xed_uint_t xed_str_list_size(xed_str_list_t* p) { //count chunks
     return c;
 }
 
+void xed_print_bytes_pseudo_op(const xed_uint8_t* array, unsigned int olen) {
+    unsigned int i;
+    printf(".byte ");
+    for(i=0;i<olen;i++) {
+        if (i>0)
+            printf(",");
+        printf("0x%02x",(xed_uint32_t)(array[i]));
+    }
+    printf("\n");
+}
+
+void xed_print_intel_asm_emit(const xed_uint8_t* array, unsigned int olen) {
+    unsigned int i;
+    for(i=0;i<olen;i++) 
+        printf("     __emit 0x%02x\n",(xed_uint32_t)(array[i]));
+}

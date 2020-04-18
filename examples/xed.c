@@ -98,21 +98,6 @@ fopen_portable(char const* const file_name,
 
 
 #if defined(XED_ENCODER)
-static void print_bytes_pseudo_op(const xed_uint8_t* array, unsigned int olen) {
-    unsigned int i;
-    printf(".byte ");
-    for(i=0;i<olen;i++) {
-        if (i>0)
-            printf(",");
-        printf("0x%02x",(xed_uint32_t)(array[i]));
-    }
-    printf("\n");
-}
-static void print_intel_asm_emit(const xed_uint8_t* array, unsigned int olen) {
-    unsigned int i;
-    for(i=0;i<olen;i++) 
-        printf("     __emit 0x%02x\n",(xed_uint32_t)(array[i]));
-}
 
 static unsigned int disas_encode(const xed_state_t* dstate,
                                  const char* encode_text,
@@ -148,9 +133,9 @@ static unsigned int disas_encode(const xed_state_t* dstate,
         xed_print_hex_line(buf2,array, olen,XED_HEX_BUFLEN);
         printf("Encodable! %s\n", buf2);
         if (intel_asm_emit) 
-            print_intel_asm_emit(array,olen);
+            xed_print_intel_asm_emit(array,olen);
         else
-            print_bytes_pseudo_op(array,olen);
+            xed_print_bytes_pseudo_op(array,olen);
     }
     return olen;
 }
