@@ -510,6 +510,8 @@ class instruction_codegen_t(object):
             genutil.die("This should not happen")
 
         first =  iform.rule.actions[first_naked_bits_index]
+        ### FIXME:2020-04-17 rewrite the rest of this to be generic
+        ### and use dyanmic map information to guide execution.
         if vv:
             # all VEX/EVEX/XOP instr have an explicit map
             
