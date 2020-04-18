@@ -1,1 +1,1 @@
-eb 70
+.byte 0xeb,0x70

@@ -1,1 +1,1 @@
-d8 f1
+.byte 0xd8,0xf1
