@@ -119,7 +119,7 @@ static xed_str_list_t* process_args(int argc, char** argv,
         }
         else if (strcmp("-v",argv[first_arg])==0) {
             keep_going = 1;
-            *verbose = 2;
+            (*verbose)++;
             first_arg++;
         }
         else if (strcmp("-q", argv[first_arg])== 0) {
@@ -921,8 +921,9 @@ int main(int argc, char** argv)
         // we duplicate because the asp_delete_xed_enc_line_parsed_line_t
         // will delete the string if still present when we call it.
         v->input = duplicate(p->s);
-        
-        printf("Assembling [%s]\n",v->input);
+
+        if (verbose > 0)
+            printf("Assembling [%s]\n",v->input);
 
         asp_parse_line(v);
 
