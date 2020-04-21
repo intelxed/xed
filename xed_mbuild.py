@@ -2681,6 +2681,7 @@ def verify_args(env):
         env['icl'] = False
         env['tgl'] = False
         env['spr'] = False
+        env['cet'] = False
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:
