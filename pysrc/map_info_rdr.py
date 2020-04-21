@@ -154,7 +154,7 @@ def _parse_map_line(s):
         
     mi.map_id_fixup=False
     
-    if mi.space not in ['legacy','vex','evex', 'xop']:
+    if mi.space not in ['legacy','vex','evex', 'xop','knc']:
         _die("Bad map description encoding space [{}]".format(s))
     if mi.space == 'legacy':
         if genutil.is_hex(mi.legacy_escape):

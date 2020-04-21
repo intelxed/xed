@@ -1256,11 +1256,12 @@ static void evex_scanner(xed_decoded_inst_t* d)
             // see previous use of XED_MAP_MASKING for more info.
             eff_map = evex1.s.map & 3; //FIXME: genericize
 #endif
+#if defined(XED_SUPPORTS_AVX512)
             if (xed_ild_map_valid_evex(eff_map) == 0) {
                 bad_map(d);
                 return; 
             }
-
+#endif
 
 #if 000
             //FIXME:2020-04-17 I think I can remove this due to "downstream"
