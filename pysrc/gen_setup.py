@@ -22,6 +22,7 @@ import argparse
 import os
 import sys
 import read_xed_db
+import chipmodel
 
 def die(s):
     sys.stdout.write("ERROR: {0}\n".format(s))
@@ -65,6 +66,10 @@ def read_db(args):
                                      args.map_descriptions)
     return xeddb
 
+def read_chips(args):
+    chips, chip_db = chipmodel.read_database(args.chip_filename)
+    return chips, chip_db
+    
     
 def parse(parser):
 
