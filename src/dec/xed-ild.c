@@ -544,7 +544,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
 }
 
 
-#if defined(XED_AMD_ENABLED)
+#if defined(XED_EXTENSION_XOP_DEFINED)
 
 static XED_INLINE xed_uint_t get_modrm_reg_field(xed_uint8_t b) {
   return (b & 0x38) >> 3;
@@ -647,17 +647,29 @@ static void xop_scanner(xed_decoded_inst_t* d)
 #endif
 #endif     
 
-#if defined(XED_AVX)
+#if defined(XED_AVX) // for vex_scanner
 
-#  if defined(XED_AMD_ENABLED) 
-static XED_INLINE xed_uint_t chip_is_intel_specific(xed_decoded_inst_t* d)
+
+#if defined(XED_EXTENSION_XOP_DEFINED)
+
+static xed_uint8_t could_support_xop_instr[XED_CHIP_LAST];
+static void xed_ild_chip_init(void) {
+    // used to quickly check for the AMD (0x8F) XOP extension
+    xed_uint_t i;
+    for(i=0;i<XED_CHIP_LAST;i++) {
+        could_support_xop_instr[i]=0;
+    }
+    could_support_xop_instr[XED_CHIP_INVALID]=1;
+    could_support_xop_instr[XED_CHIP_ALL]=1;
+    could_support_xop_instr[XED_CHIP_AMD_BULLDOZER]=1;
+}
+
+static XED_INLINE xed_uint_t chip_could_support_xop(xed_decoded_inst_t* d)
 {
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
-    if (chip == XED_CHIP_INVALID ||
-        chip == XED_CHIP_ALL     ||
-        chip == XED_CHIP_AMD)
-        return 0;
-    return 1;
+    if (chip < XED_CHIP_LAST)
+        return could_support_xop_instr[chip];
+    return 0;
 }
 #  endif
 
@@ -678,8 +690,8 @@ static void vex_scanner(xed_decoded_inst_t* d)
             vex_c4_scanner(d);
         return;
     }
-#if defined(XED_AMD_ENABLED) 
-    else if (b == 0x8f && chip_is_intel_specific(d)==0 )  {
+#if defined(XED_EXTENSION_XOP_DEFINED) 
+    else if (b == 0x8f && chip_could_support_xop(d) )  {
         if (!xed3_operand_get_out_of_bytes(d)) 
             xop_scanner(d);   
         return;
@@ -1112,9 +1124,11 @@ static void opcode_scanner(xed_decoded_inst_t* d)
                 length++; /* eat the secondary map byte */
                 xed3_operand_set_map(d, m->map_id);
                 xed_decoded_inst_set_length(d, length);
+#if defined(XED_EXTENSION_3DNOW_DEFINED)
                 if (m->opc_pos == -1) 
                     xed3_operand_set_amd3dnow(d, m->opc_pos == -1);
                 else
+#endif
                     get_next_as_opcode(d);
                 set_downstream_info(d,0);
                 return;
@@ -1334,7 +1348,7 @@ static void imm_scanner(xed_decoded_inst_t* d)
   // Figure out how many imm bytes we need to collect, if any
   set_imm_bytes(d);
     
-#if defined(XED_AMD_ENABLED)
+#if defined(XED_CATEGORY_3DNOW_DEFINED)
   if (xed3_operand_get_amd3dnow(d)) {
       if (length < max_bytes) {
           /*opcode is in immediate*/
@@ -1438,9 +1452,13 @@ void xed_ild_lookup_init(void) {
 
 }
 
+
 void xed_ild_init(void) {
     init_prefix_table();
     xed_ild_lookup_init();
+#if defined(XED_EXTENSION_XOP_DEFINED) 
+    xed_ild_chip_init();
+#endif
 }
 
 
