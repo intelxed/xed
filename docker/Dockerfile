@@ -4,6 +4,7 @@ FROM ubuntu:18.04
 RUN apt-get update && \
     apt-get -y install gcc g++ gcc-multilib \
                        doxygen  \
+		       git wget curl \
                        linux-tools-common linux-tools-generic \
                        build-essential  \
                        libbz2-dev libxml2-dev  \
