@@ -2671,7 +2671,8 @@ def verify_args(env):
         env['future'] = False
         
     if env['knc']: 
-        mbuild.warn("Disabling AVX512, FUTURE, for KNC build\n\n\n")
+        mbuild.warn("Disabling AMD, AVX512, FUTURE, for KNC build\n\n\n")
+        env['amd_enabled']=False
         env['knl'] = False
         env['knm'] = False
         env['skx'] = False
