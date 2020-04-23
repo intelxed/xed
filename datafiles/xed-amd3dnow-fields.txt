@@ -1,0 +1,40 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2020 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+# @file xed-fields.txt
+
+
+# visibilities are one of [EXPLICIT|IMPLICIT|SUPPRESSED]
+
+# Major properties of the fields are determined by the columns with
+#  the content {EI,EO} or {DI,DO,DS}. EI is encoder inputs and EO is
+#  for encoder outputs.  DI is decoder inputs, DO is decoder
+#  outputs. And DS means "decoder skip" and is used for fields that
+#  show up in instruction pattern constraints but should be completely
+#  ignored by the decoder.
+
+
+# INTERNAL means that the field is excluded from the instructions'
+#  operands array template.
+
+
+
+# ====  ======   ====   =========     ========== 
+#       scalar                         default
+# name  array    type   bit-width     visibility  
+# ====  ======   ====   =========     ==========  
+AMD3DNOW       SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
