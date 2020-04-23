@@ -1029,10 +1029,25 @@ xed_operand_values_dump(    const xed_operand_values_t* ov,
                           }
                           break;
                       }
-                      default:
-                        blen = xed_strncat(buf,"NOT HANDLING CTYPE ",blen);
-                        blen = xed_strncat(buf, xed_operand_ctype_enum_t2str(ctype),blen);
-                        xed_assert(0);
+#if defined(XED_OPERAND_ELEMENT_TYPE_ENUM_T_DEFINED) // used by KNC
+                      case XED_OPERAND_ELEMENT_TYPE_ENUM_T: {
+                          xed_operand_element_type_enum_t etype = xed3_operand_get_type(ov);
+                          if (etype){
+                              blen = xed_strncpy(tmp_buf, xed_operand_element_type_enum_t2str(etype),blen);
+                              need_to_emit = 1;
+                          }
+                          break;
+                      }
+#endif
+                      default: {
+                        xed_bits_t b;
+                        xed3_get_generic_operand(ov,i,&b);
+                        if (b) {   
+                            blen = xed_strncat(buf,"NOT HANDLING CTYPE ",blen);
+                            blen = xed_strncat(buf, xed_operand_ctype_enum_t2str(ctype),blen);
+                            xed_assert(0);
+                        }
+                      }
                     } /* inner switch */
                     /* only print nonzero generic stuff */
                     if (need_to_emit){
