@@ -17,7 +17,6 @@
 #END_LEGAL
 
 ICELAKE: ALL_OF(SKYLAKE_SERVER)  RDPID  \
-         CLWB \
          SHA \
          AVX512_IFMA_128 \
          AVX512_IFMA_256 \
@@ -53,6 +52,7 @@ ICELAKE: ALL_OF(SKYLAKE_SERVER)  RDPID  \
 
 
 ICELAKE_SERVER: ALL_OF(ICELAKE) \
+         CLWB \
          SGX_ENCLV \
          PCONFIG \
          WBNOINVD
