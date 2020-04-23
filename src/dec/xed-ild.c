@@ -1234,7 +1234,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
             xed_avx512_payload2_t evex2;
             xed_uint_t eff_map;
 
-
             evex1.u32 = xed_decoded_inst_get_byte(d, length+1);
             evex2.u32 = xed_decoded_inst_get_byte(d, length+2);
 
@@ -1269,20 +1268,19 @@ static void evex_scanner(xed_decoded_inst_t* d)
 #if defined(XED_MAP_MASKING)
             // see previous use of XED_MAP_MASKING for more info.
             eff_map = evex1.s.map & 3; //FIXME: genericize
-#endif
-#if defined(XED_SUPPORTS_AVX512)
+#endif 
+#if defined(XED_SUPPORTS_AVX512) 
             if (xed_ild_map_valid_evex(eff_map) == 0) {
+                bad_map(d);
+                return; 
+            }
+#elif defined(XED_SUPPORTS_KNC)
+            if (xed_ild_map_valid_knc(eff_map) == 0) {
                 bad_map(d);
                 return; 
             }
 #endif
 
-#if 000
-            //FIXME:2020-04-17 I think I can remove this due to "downstream"
-            if (xed_ild_has_imm_evex(eff_map) == 1)
-                xed3_operand_set_imm_width(d, bytes2bits(1));
-#endif
-      
             if (evex2.s.ubit)  // AVX512 only (Not KNC)
             {
 #if defined(XED_SUPPORTS_AVX512)                
