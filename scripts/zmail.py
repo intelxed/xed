@@ -71,9 +71,9 @@ def check_smtp_host_env_var():
    servers = []
    if 'SMTP_HOST' in os.environ:
       servers.append(os.environ['SMTP_HOST'])
-      
-   servers.append('ecsmtp.hd.intel.com')
-   servers.append('ecsmtp.iil.intel.com')
+   else:
+       servers.append('ecsmtp.hd.intel.com')
+       servers.append('ecsmtp.iil.intel.com')
    return servers
 
 
