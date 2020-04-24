@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2020 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -435,13 +435,6 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       xed3_operand_set_map(d,c4byte1.s.map);
 
       eff_map = c4byte1.s.map;
-//#define XED_MAP_MASKING
-#if defined(XED_MAP_MASKING)
-      // FIXME: 2017-03-03 this masking of the VEX map with 0x3 an attempt
-      // at matching an undocumented implementation convention that can and
-      // most likely will change as architectural map usage evolves.
-      eff_map = c4byte1.s.map & 0x3; //FIXME: genericize
-#endif
       if (xed_ild_map_valid_vex(eff_map) == 0) {
           bad_map(d);
           return; 
@@ -1265,10 +1258,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
 
             eff_map = evex1.s.map;
-#if defined(XED_MAP_MASKING)
-            // see previous use of XED_MAP_MASKING for more info.
-            eff_map = evex1.s.map & 3; //FIXME: genericize
-#endif 
 #if defined(XED_SUPPORTS_AVX512) 
             if (xed_ild_map_valid_evex(eff_map) == 0) {
                 bad_map(d);
