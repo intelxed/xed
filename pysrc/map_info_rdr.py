@@ -23,6 +23,7 @@ import os
 import re
 import shlex
 import collections
+import math
 
 import genutil
 import enumer
@@ -243,10 +244,15 @@ def emit_map_info_tables(agi):
     field_to_cvt = { 'modrm': cvt_yes_no_var,
                      'disp' : cvt_yes_no_var,
                      'imm'  : cvt_imm }
+
+    bits_per_chunk = 64
     
+    # The field width in bits must be a power of 2 for current design,
+    # otherwise the bits of interest can span the 64b chunks we are
+    # using to store the values.
     field_to_bits = { 'modrm': 2,
                       'disp' : 2,
-                      'imm'  : 3 }
+                      'imm'  : 4 }
     
     def collect_codes(field, space_maps):
         '''cvt is dict converting strings to integers. the codes are indexed by map id.'''
@@ -260,24 +266,35 @@ def emit_map_info_tables(agi):
         return codes_as_list
 
     def convert_list_to_integer(lst, bits_per_field):
+        '''return an integer or a list of integer if more than 64b'''
+        integers = []
         tot = 0
         shift = 0
         for v in lst:
             if shift >= 64:
-                # if more than 64 bits, then we need an array of
-                # constants and an array indexing step. future work.
-                _die("Too many maps for a uint64")
+                integers.append(tot)
+                tot = 0
+                shift = 0
             tot = tot + (v << shift)
             shift = shift + bits_per_field
-        return tot
+        integers.append(tot)
+
+        if len(integers) == 1:
+            return integers[0]
+        return integers
 
 
     for space_id in _encoding_space_range():
+
         space = _space_id_to_name[space_id]
         space_maps = [ mi for mi in sorted_list if mi.space == space ]
 
         for field in fields:
             bits_per_field = field_to_bits[field]
+            total_bits = max_map_id * bits_per_field
+            required_chunks = math.ceil(total_bits / bits_per_chunk)
+            values_per_chunk = bits_per_chunk // bits_per_field
+            ilog2_values_per_chunk = int(math.log2(values_per_chunk))
             mask = (1<<bits_per_field)-1
             
             f = codegen.function_object_t('xed_ild_has_{}_{}'.format(field,space),
@@ -295,15 +312,30 @@ def emit_map_info_tables(agi):
                 f.add_code_eol('return 0')
                 f.add_code_eol('(void)m')
             else:
-                f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
-                f.add_code_eol('return (xed_bool_t)((data_const >> ({}*m)) & {})'.format(bits_per_field,
-                                                                                         mask))
+                if required_chunks == 1:
+                    f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
+                    f.add_code_eol('return (xed_bool_t)((data_const >> ({}*m)) & {})'.format(
+                        bits_per_field, mask))
+                else:
+                    f.add_code('const xed_uint64_t data_const[{}] = {'.format(required_chunks))
+                    for c in constant:
+                        f.add_code_eol('0x{:x}ULL, '.format(c))
+                    f.add_code_eol('}')
+                    f.add_code_eol('const xed_uint64_t chunkno = m >> {}'.format(ilog2_values_per_chunk))
+                    f.add_code_eol('const xed_uint64_t offset = m & ({}-1)'.format(values_per_chunk))
+                    f.add_code_eol('return (xed_bool_t)((data_const[chunkno] >> ({}*offset))) & {})'.format(
+                        bits_per_field, mask))
+                    
             hfe.write(f.emit())  # emit the inline function in the header
 
 
     # emit a function that covers all spaces
     for field in fields:
         bits_per_field = field_to_bits[field]
+        total_bits = max_map_id * bits_per_field
+        required_chunks = math.ceil(total_bits / bits_per_chunk)
+        values_per_chunk = bits_per_chunk // bits_per_field
+        ilog2_values_per_chunk = int(math.log2(values_per_chunk))
         mask = (1<<bits_per_field)-1
 
         f = codegen.function_object_t('xed_ild_has_{}'.format(field),
@@ -311,7 +343,11 @@ def emit_map_info_tables(agi):
                                       static=True, inline=True)
         f.add_arg('xed_uint_t vv')
         f.add_arg('xed_uint_t m')
-        f.add_code('const xed_uint64_t data_const[{}] = {{'.format(max_space_id+1))
+        if required_chunks == 1:
+            f.add_code('const xed_uint64_t data_const[{}] = {{'.format(max_space_id+1))
+        else:
+            f.add_code('const xed_uint64_t data_const[{}][{}] = {{'.format(max_space_id+1,
+                                                                           required_chunks))
 
         for space_id in _encoding_space_range():
             space = _space_id_to_name[space_id]
@@ -322,18 +358,33 @@ def emit_map_info_tables(agi):
             else:
                 codes = [0]
                 constant = 0
-            f.add_code('/* {} {} */'.format(codes,space))
-            f.add_code(' 0x{:x}ULL,'.format(constant))
-            
+            f.add_code('/* {} {} */'.format(codes,space))                
+            if required_chunks == 1:
+                f.add_code(' 0x{:x}ULL,'.format(constant))
+            else:
+                f.add_code('{')
+                for c in constant:
+                    f.add_code('0x{;x}ULL, '.format(c))
+                f.add_code_eol('},')
+                
         f.add_code_eol('}')
         f.add_code_eol('xed_assert(vv < {})'.format(max_space_id+1))
-        f.add_code_eol('return (xed_bool_t)((data_const[vv] >> ({}*m)) & {})'.format(bits_per_field,
-                                                                                     mask))
+        if required_chunks == 1:
+            f.add_code_eol('return (xed_bool_t)((data_const[vv] >> ({}*m)) & {})'.format(bits_per_field,
+                                                                                         mask))
+        else:
+            f.add_code_eol('const xed_uint64_t chunkno = m >> {}'.format(ilog2_values_per_chunk))
+            f.add_code_eol('const xed_uint64_t offset = m & ({}-1)'.format(values_per_chunk))
+            f.add_code_eol('return (xed_bool_t)((data_const[vv][chunkno] >> ({}*offset)) & {})'.format(
+                bits_per_field, mask))
+            
         hfe.write(f.emit())  # emit the inline function in the header
 
 
             
     # emit a set of functions for determining the valid maps in each encoding space
+    if max_map_id > 64:
+        genutil.die("Need to make this work with multiple chunks of u64")
     for space_id in _encoding_space_range():
         space = _space_id_to_name[space_id]
 
