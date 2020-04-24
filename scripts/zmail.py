@@ -1,7 +1,7 @@
 #BEGIN_LEGAL
 #INTEL CONFIDENTIAL
 #
-#Copyright (c) 2009-2010, Intel Corporation. All rights reserved.
+#Copyright (c) 2020, Intel Corporation. All rights reserved.
 #
 #The source code contained or described herein and all documents
 #related to the source code ("Material") are owned by Intel Corporation
@@ -27,13 +27,14 @@ import re
 import os
 import smtplib
 import sys
-import find_dir
-sys.path = [ find_dir.find_dir('mbuild') ] + sys.path
-import mbuild
 
 def msg(s):
    sys.stdout.write(s  + "\n")
-
+def msgb(s, t=''):
+   sys.stdout.write('[{}] {}\n'.format(s, t))
+def die(s):
+   msgb('FAILING',s)
+   sys.exit(1)
 def warn(m):
    msg("[WARNING] " + m)
 
@@ -82,7 +83,7 @@ def check_reply_to_env_var():
    sender = _check_muttrc()
    if sender:
       return sender
-   mbuild.die("Please either set your REPLYTO environment variable " +
+   die("Please either set your REPLYTO environment variable " +
               "to your @intel.com\n " +
               "email address or have a\n\tset " +
               "from=YOUR-EMAIL-ADDRESS@intel.com\n"  +
@@ -108,7 +109,7 @@ def _send_email(recipients_list,
     attachment_name)"""
     
     if verbose>50:
-       mbuild.msgb('email 0.0')
+       msgb('email 0.0')
     all_recipients = recipients_list + cc_recipients_list
     #recipients = ", ".join(all_recipients)
     recipients = ", ".join(recipients_list)
@@ -120,32 +121,32 @@ def _send_email(recipients_list,
     outer['Cc'] = cc_recipients
     outer['From'] = sender
     if verbose:
-       mbuild.msgb("FROM", sender)
-       mbuild.msgb("TO", recipients)
-       mbuild.msgb("CC", cc_recipients)
+       msgb("FROM", sender)
+       msgb("TO", recipients)
+       msgb("CC", cc_recipients)
     outer.preamble = 'You will not see this in a MIME-aware mail reader.\n'
     if verbose > 50:
-       mbuild.msgb('email 0.5')
+       msgb('email 0.5')
     msg = MIMEText(body, _subtype='plain')
     msg.add_header('Content-Disposition', 'inline')
     outer.attach(msg)
     if verbose  > 50:
-       mbuild.msgb('email 1.0')
+       msgb('email 1.0')
     for (real_name,attachment_name) in attachments_list:
        if verbose > 50:
-          mbuild.msgb('email 2.0', real_name + " " + attachment_name      )
+          msgb('email 2.0', real_name + " " + attachment_name      )
        if not os.path.exists(real_name):
-          mbuild.die("Cannot read attachment named: " + real_name)
+          die("Cannot read attachment named: " + real_name)
        fp = open(real_name,'r')
        msg = MIMEText(fp.read(), _subtype='plain')
        fp.close()
        if verbose > 50:
-          mbuild.msgb('3.0')
+          msgb('3.0')
        msg.add_header('Content-Disposition', 'attachment',
                       filename=attachment_name)
        outer.attach(msg)
     if verbose > 50:
-       mbuild.msgb('4.0')
+       msgb('4.0')
     # Now send or store the message
     composed = outer.as_string()
     s = smtplib.SMTP()
@@ -157,7 +158,7 @@ def _send_email(recipients_list,
     connected = False
     for outgoing_mail_server in mail_server_list:
         try:
-           mbuild.msgb("MAIL SERVER", outgoing_mail_server)
+           msgb("MAIL SERVER", outgoing_mail_server)
            s.connect(outgoing_mail_server)
            connected = True
            break
@@ -170,7 +171,7 @@ def _send_email(recipients_list,
     rdict = s.sendmail(sender, all_recipients, composed)
     s.quit()
     if rdict and len(rdict) > 0:
-       mbuild.die("MAIL FAILED FOR " + str(rdict))
+       die("MAIL FAILED FOR " + str(rdict))
 
 
 def mail(note,
@@ -182,7 +183,7 @@ def mail(note,
          verbosity = 0):
    """mail note to the to_recipient and the cc_recipient"""
    if verbosity  > 1:
-      mbuild.msgb("SENDING EMAIL")
+      msgb("SENDING EMAIL")
    note = [x.rstrip() for x in note]
    body = '\n'.join(note)
    att = []
@@ -197,5 +198,5 @@ def mail(note,
                   cc_recipients,
                   verbosity)
    except:
-      mbuild.die("Sending email failed")
+      die("Sending email failed")
 
