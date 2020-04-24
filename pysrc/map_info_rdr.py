@@ -230,8 +230,11 @@ def emit_map_info_tables(agi):
 
     spaces = list(set([ mi.space for mi in sorted_list ]))
     sorted_spaces = sorted(spaces, key=lambda x: encoding_space_to_vexvalid(x))
-    max_space_id = _encoding_space_max()
+    max_space_id = _encoding_space_max() # legacy,vex,evex,xop,knc
     #max_space_id = encoding_space_to_vexvalid(sorted_spaces[-1])
+    
+    max_map_id = max([mi.map_id for mi in agi.map_info]) #0...31
+    
     fields = ['modrm', 'disp', 'imm']
 
     cvt_yes_no_var = { 'yes':1, 'no':0, 'var':2 }
@@ -246,16 +249,14 @@ def emit_map_info_tables(agi):
                       'imm'  : 3 }
     
     def collect_codes(field, space_maps):
-        '''cvt is dict converting strings to integers'''
+        '''cvt is dict converting strings to integers. the codes are indexed by map id.'''
         cvt = field_to_cvt[field]
-        max_id = _encoding_space_max()
-        #max_id = max( [mi.map_id for mi in space_maps ] )
-        codes = { key:0 for key in range(0,max_id+1) }
+        codes = { key:0 for key in range(0,max_map_id+1) }
         
         for mi in space_maps:
             codes[mi.map_id] = cvt[getattr(mi,field)]
             
-        codes_as_list = [ codes[i] for i in range(0,max_id+1) ]
+        codes_as_list = [ codes[i] for i in range(0,max_map_id+1) ]
         return codes_as_list
 
     def convert_list_to_integer(lst, bits_per_field):
@@ -274,6 +275,7 @@ def emit_map_info_tables(agi):
     for space_id in _encoding_space_range():
         space = _space_id_to_name[space_id]
         space_maps = [ mi for mi in sorted_list if mi.space == space ]
+
         for field in fields:
             bits_per_field = field_to_bits[field]
             mask = (1<<bits_per_field)-1
