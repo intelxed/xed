@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2020 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,9 +31,15 @@ import codegen
 
 # dict space name -> numerical space id
 _space_id = {'legacy':0, 'vex':1, 'evex':2, 'xop':3, 'knc':4}
+_space_id_to_name = {v: k for k,v in _space_id.items()}
 
 # list ordered by numerical space id
 _space_id_sorted  = sorted(_space_id.keys(), key=lambda x: _space_id[x])
+def _encoding_space_max():
+    return max(_space_id.values())
+def _encoding_space_range():
+    #Could make this dynamic based on what spaces are enabled
+    return range(0, _encoding_space_max()+1)
 
 def vexvalid_to_encoding_space(vv):
     """Input number, output string"""
@@ -224,7 +230,8 @@ def emit_map_info_tables(agi):
 
     spaces = list(set([ mi.space for mi in sorted_list ]))
     sorted_spaces = sorted(spaces, key=lambda x: encoding_space_to_vexvalid(x))
-    max_space_id = encoding_space_to_vexvalid(sorted_spaces[-1])
+    max_space_id = _encoding_space_max()
+    #max_space_id = encoding_space_to_vexvalid(sorted_spaces[-1])
     fields = ['modrm', 'disp', 'imm']
 
     cvt_yes_no_var = { 'yes':1, 'no':0, 'var':2 }
@@ -241,7 +248,8 @@ def emit_map_info_tables(agi):
     def collect_codes(field, space_maps):
         '''cvt is dict converting strings to integers'''
         cvt = field_to_cvt[field]
-        max_id = max( [mi.map_id for mi in space_maps ] )
+        max_id = _encoding_space_max()
+        #max_id = max( [mi.map_id for mi in space_maps ] )
         codes = { key:0 for key in range(0,max_id+1) }
         
         for mi in space_maps:
@@ -261,10 +269,11 @@ def emit_map_info_tables(agi):
             tot = tot + (v << shift)
             shift = shift + bits_per_field
         return tot
-    
-    for space in spaces:
+
+
+    for space_id in _encoding_space_range():
+        space = _space_id_to_name[space_id]
         space_maps = [ mi for mi in sorted_list if mi.space == space ]
-        
         for field in fields:
             bits_per_field = field_to_bits[field]
             mask = (1<<bits_per_field)-1
@@ -273,8 +282,12 @@ def emit_map_info_tables(agi):
                                           'xed_bool_t',
                                           static=True, inline=True)
             f.add_arg('xed_uint_t m')
-            codes = collect_codes(field, space_maps)
-            constant = convert_list_to_integer(codes,bits_per_field)
+            if space_maps:
+                codes = collect_codes(field, space_maps)
+                constant = convert_list_to_integer(codes,bits_per_field)
+            else:
+                codes = [0]
+                constant = 0
             f.add_code('/* {} */'.format(codes))
             if set(codes) == {0}:  # all zero values...
                 f.add_code_eol('return 0')
@@ -298,10 +311,15 @@ def emit_map_info_tables(agi):
         f.add_arg('xed_uint_t m')
         f.add_code('const xed_uint64_t data_const[{}] = {{'.format(max_space_id+1))
 
-        for space in sorted_spaces:
+        for space_id in _encoding_space_range():
+            space = _space_id_to_name[space_id]
             space_maps = [ mi for mi in sorted_list if mi.space == space ]
-            codes = collect_codes(field, space_maps)
-            constant = convert_list_to_integer(codes,bits_per_field)
+            if space_maps:
+                codes = collect_codes(field, space_maps)
+                constant = convert_list_to_integer(codes,bits_per_field)
+            else:
+                codes = [0]
+                constant = 0
             f.add_code('/* {} {} */'.format(codes,space))
             f.add_code(' 0x{:x}ULL,'.format(constant))
             
@@ -314,14 +332,16 @@ def emit_map_info_tables(agi):
 
             
     # emit a set of functions for determining the valid maps in each encoding space
-    for space in spaces:
+    for space_id in _encoding_space_range():
+        space = _space_id_to_name[space_id]
+
         space_maps = [ mi for mi in sorted_list if mi.space == space ]
         f = codegen.function_object_t('xed_ild_map_valid_{}'.format(space),
                                       'xed_bool_t',
                                       static=True, inline=True)
         f.add_arg('xed_uint_t m')
-        
-        max_id = max( [mi.map_id for mi in space_maps ] )
+        max_id = _encoding_space_max()
+        #max_id = max( [mi.map_id for mi in space_maps ] )
         codes_dict = { key:0 for key in range(0,max_id+1) }
         for mi in space_maps:
             codes_dict[mi.map_id] = 1
