@@ -312,18 +312,18 @@ def emit_map_info_tables(agi):
                 f.add_code_eol('return 0')
                 f.add_code_eol('(void)m')
             else:
-                if required_chunks == 1:
+                if required_chunks <= 1:
                     f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))
                     f.add_code_eol('return (xed_bool_t)((data_const >> ({}*m)) & {})'.format(
                         bits_per_field, mask))
                 else:
-                    f.add_code('const xed_uint64_t data_const[{}] = {'.format(required_chunks))
-                    for c in constant:
-                        f.add_code_eol('0x{:x}ULL, '.format(c))
-                    f.add_code_eol('}')
+                    f.add_code('const xed_uint64_t data_const[{}] = {{'.format(required_chunks))
+                    ln = ['0x{:x}ULL'.format(c) for c in constant]
+                    f.add_code_eol(' {} }}'.format(", ".join(ln)))
+
                     f.add_code_eol('const xed_uint64_t chunkno = m >> {}'.format(ilog2_values_per_chunk))
                     f.add_code_eol('const xed_uint64_t offset = m & ({}-1)'.format(values_per_chunk))
-                    f.add_code_eol('return (xed_bool_t)((data_const[chunkno] >> ({}*offset))) & {})'.format(
+                    f.add_code_eol('return (xed_bool_t)((data_const[chunkno] >> ({}*offset)) & {})'.format(
                         bits_per_field, mask))
                     
             hfe.write(f.emit())  # emit the inline function in the header
@@ -343,7 +343,7 @@ def emit_map_info_tables(agi):
                                       static=True, inline=True)
         f.add_arg('xed_uint_t vv')
         f.add_arg('xed_uint_t m')
-        if required_chunks == 1:
+        if required_chunks <= 1:
             f.add_code('const xed_uint64_t data_const[{}] = {{'.format(max_space_id+1))
         else:
             f.add_code('const xed_uint64_t data_const[{}][{}] = {{'.format(max_space_id+1,
@@ -356,20 +356,22 @@ def emit_map_info_tables(agi):
                 codes = collect_codes(field, space_maps)
                 constant = convert_list_to_integer(codes,bits_per_field)
             else:
-                codes = [0]
-                constant = 0
+                codes = [0]*required_chunks
+                if required_chunks <= 1:
+                    constant = 0
+                else:
+                    constant = [0]*required_chunks
+                    
             f.add_code('/* {} {} */'.format(codes,space))                
-            if required_chunks == 1:
+            if required_chunks <= 1:
                 f.add_code(' 0x{:x}ULL,'.format(constant))
             else:
-                f.add_code('{')
-                for c in constant:
-                    f.add_code('0x{;x}ULL, '.format(c))
-                f.add_code_eol('},')
+                ln = ['0x{:x}ULL'.format(c) for c in constant]
+                f.add_code('{{ {} }},'.format(", ".join(ln)))
                 
         f.add_code_eol('}')
         f.add_code_eol('xed_assert(vv < {})'.format(max_space_id+1))
-        if required_chunks == 1:
+        if required_chunks <= 1:
             f.add_code_eol('return (xed_bool_t)((data_const[vv] >> ({}*m)) & {})'.format(bits_per_field,
                                                                                          mask))
         else:
@@ -395,10 +397,10 @@ def emit_map_info_tables(agi):
         f.add_arg('xed_uint_t m')
         max_id = _encoding_space_max()
         #max_id = max( [mi.map_id for mi in space_maps ] )
-        codes_dict = { key:0 for key in range(0,max_id+1) }
+        codes_dict = { key:0 for key in range(0,max_map_id+1) }
         for mi in space_maps:
             codes_dict[mi.map_id] = 1
-        codes = [ codes_dict[i] for i in range(0,max_id+1) ]
+        codes = [ codes_dict[i] for i in range(0,max_map_id+1) ]
         
         f.add_code('/* {} */'.format(codes))
         constant = convert_list_to_integer(codes,1)
