@@ -2,7 +2,8 @@
 
 build:
   #image: ubuntu:18.04
-  image: xed-testing-container
+  #image: xed-testing-container
+  image:  amr-registry-pre.caas.intel.com/xed/xed-testing-container 
   stage: build
   script:
     - python3 ci-internal.py
