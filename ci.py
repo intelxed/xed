@@ -13,28 +13,30 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#  
+#
 #END_LEGAL
-import os
+'''Run CI checks on github'''
 import platform
 import subprocess
 
+
 def get_python_cmds():
+    '''find python verions. return tuples of (name, command)'''
     if platform.system() == 'Windows':
-        return [ (x,'C:/python{}/python'.format(x)) for x in ['37'] ]
-    elif platform.system() in ['Darwin','Linux']:
+        return [(x, 'C:/python{}/python'.format(x)) for x in ['37']]
+    if platform.system() in ['Darwin', 'Linux']:
         # The file .travis.yml installs python3 on linux. Already present on mac
-        return [ ('3.x','python3')]
-    return [('dfltpython','python')]
-        
-    
-for pyver,pycmd in get_python_cmds():
+        return [('3.x', 'python3')]
+    return [('dfltpython', 'python')]
+
+for pyver, pycmd in get_python_cmds():
     cmd = '{} -m pip install --user https://github.com/intelxed/mbuild/zipball/master'.format(pycmd)
     print(cmd)
     subprocess.check_call(cmd, shell=True)
-    for size in ['ia32','x86-64']:
-        for linkkind,link in [('dfltlink',''),('dynamic','--shared')]:
+    for size in ['ia32', 'x86-64']:
+        for linkkind, link in [('dfltlink', ''), ('dynamic', '--shared')]:
             build_dir = '{}-{}-{}'.format(pyver, size, linkkind)
-            cmd = '{} mfile.py --build-dir=build-{} host_cpu={} {} test'.format(pycmd,build_dir,size,link)
+            cmd = '{} mfile.py --build-dir=build-{} host_cpu={} {} test'.format(
+                pycmd, build_dir, size, link)
             print(cmd)
             subprocess.check_call(cmd, shell=True)
