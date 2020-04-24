@@ -25,13 +25,14 @@ import send_sms
 
 def success():
     '''send success SMS'''
-    send_sms.send("Success", recipients=['mjc'])
+    sys.stdout.write("FINAL STATUS: Success\n")
+    #send_sms.send("Success", recipients=['mjc'])
     sys.exit(0)
 
 def fail(s):
     '''send failing SMS'''
-    send_sms.send(s, recipients=['mjc'])
-    sys.stderr.write(s+'\n')
+    sys.stderr.write('FINAL STATUS: {}\n'.format(s))
+    #send_sms.send(s, recipients=['mjc'])
     sys.exit(1)
 
 def ensure_string(x):
