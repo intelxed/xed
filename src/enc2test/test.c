@@ -49,17 +49,11 @@ static int enable_emit_byte=0;
 static int enable_emit_main=0;
 static int enable_emit_gnu_asm=0;
 
-static void dump(xed_uint8_t* buf, xed_uint32_t len) {
-    xed_uint_t i;
-    for(i=0;i<len;i++) {
-        printf("%02x ",buf[i]);
-    }
-}
 static void dump_comment(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
     printf("// ");
     for(i=0;i<len;i++) {
-        printf("%02x",buf[i]);
+        printf("%02x ",buf[i]);
     }
     printf("\n");
 }
@@ -118,10 +112,8 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
     // that we can do more validation about the iclass and operands.
     
     if (enclen > XED_MAX_INSTRUCTION_BYTES) {
-        printf("\ttest id %d ERROR: %s (%s)\n", test_id, "ENCODE TOO LONG", fn_name);
-        printf("\t");
-        dump(output_buffer,enclen);
-        printf("\n");
+        printf("//\ttest id %d ERROR: %s (%s)\n", test_id, "ENCODE TOO LONG", fn_name);
+        dump_comment(output_buffer,enclen);
         return 1;
     }
     
@@ -136,13 +128,11 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
         xed_iclass_enum_t observed_iclass = xed_decoded_inst_get_iclass(&xedd);
         xed_uint_t declen = xed_decoded_inst_get_length(&xedd);
         if (enclen != xed_decoded_inst_get_length(&xedd)) {
-               printf("\ttest id %d LENGTH MISMATCH: encode: %d decode: %d iclass: %s (%s)\n", test_id,
+               printf("//\ttest id %d LENGTH MISMATCH: encode: %d decode: %d iclass: %s (%s)\n", test_id,
                       enclen, declen,
                       xed_iclass_enum_t2str( observed_iclass ),
                       fn_name);
-               printf("\t");
-               dump(output_buffer,enclen);
-               printf("\n");
+               dump_comment(output_buffer,enclen);
                return 1;
         }
         else if (observed_iclass == XED_ICLASS_NOP &&
@@ -151,13 +141,11 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
             // allow variants of 0x90 to masquerade as NOPs
         }
         else if (observed_iclass != ref_iclass) {
-            printf("\ttest id %d ICLASS MISMATCH: observed: %s expected: %s (%s)\n", test_id,
+            printf("//\ttest id %d ICLASS MISMATCH: observed: %s expected: %s (%s)\n", test_id,
                    xed_iclass_enum_t2str( observed_iclass ),
                    xed_iclass_enum_t2str( ref_iclass ),
                    fn_name);
-            printf("\t");
-            dump(output_buffer,enclen);
-            printf("\n");
+            dump_comment(output_buffer,enclen);
             return 1;
         }
 
@@ -169,10 +157,8 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
         }
     }
     else {
-        printf("\ttest id %d ERROR: %s (%s)\n", test_id, xed_error_enum_t2str(err), fn_name);
-        printf("\t");
-        dump(output_buffer,enclen);
-        printf("\n");
+        printf("//\ttest id %d ERROR: %s (%s)\n", test_id, xed_error_enum_t2str(err), fn_name);
+        dump_comment(output_buffer,enclen);
         return 1;
     }
 
@@ -191,7 +177,7 @@ int test_all(test_func_t* base, const char** str_table, const xed_iclass_enum_t*
         char const* fn_name = str_table[test_id];
         const xed_iclass_enum_t ref_iclass = iclass_table[test_id];
         if (execute_test(test_id, base, fn_name, ref_iclass)) {
-            printf("test %d failed\n", test_id);
+            printf("//test %d failed\n", test_id);
             errors++;
         }
         p++;
@@ -285,11 +271,11 @@ int main(int argc, char** argv) {
             char const* fn_name = str_table[test_id];
             xed_iclass_enum_t ref_iclass = iclass_table[test_id];
             if (execute_test(test_id, base, fn_name, ref_iclass)) {
-                printf("test id %d failed\n", test_id);
+                printf("//test id %d failed\n", test_id);
                 errors++;
             }
             else {
-                printf("test id %d success\n", test_id);
+                printf("//test id %d success\n", test_id);
             }
         }
     }
