@@ -750,7 +750,7 @@ def emit_required_legacy_map_escapes(ii,fo):
     elif ii.map == 3:
         fo.add_code_eol('emit(r,0x0F)', 'escape map 3')
         fo.add_code_eol('emit(r,0x3A)', 'escape map 3')
-    elif ii.map == 'AMD3DNOW':
+    elif ii.amd_3dnow_opcode:
         fo.add_code_eol('emit(r,0x0F)', 'escape map 3dNOW')
         fo.add_code_eol('emit(r,0x0F)', 'escape map 3dNOW')
 
