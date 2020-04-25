@@ -468,8 +468,10 @@ class xed_reader_t(object):
                         opcode = pattern[mi.opcpos]
                         break
                     elif mi.legacy_opcode == pattern[1]:
-                        if mi.map_id == 'AMD3DNOW':
-                            mapno = mi.map_id
+                        if mi.map_name == 'amd-3dnow':
+                            mapno = 'AMD3DNOW'
+                        #elif mi.map_id == 'AMD3DNOW':
+                        #    mapno = mi.map_id
                         else:
                             mapno = int(mi.map_id)
                         opcode = pattern[mi.opcpos] 
