@@ -322,7 +322,7 @@ DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 71 49 fe 0f
 DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 83 f1 48 fe 0f
 DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 f1 49 7e 0f 00
 DEC AVX XOP          ; BUILDDIR/xed -64 -d c4 03 71 49 7e 7f ff
-DEC AVX              ; BUILDDIR/xed -64 -d c4 dc 9b c3 72 d7 68 3e
+DEC AVX DISABLED     ; BUILDDIR/xed -64 -d c4 dc 9b c3 72 d7 68 3e
 DEC AVX DISABLED     ; BUILDDIR/xed -64 -d 4d c4 12 bd 79 f2 45
 DEC                  ; BUILDDIR/xed -64 -d a0 11 22 33 44 55 66 77 88
 DEC                  ; BUILDDIR/xed -64 -d 65 66 41 0F

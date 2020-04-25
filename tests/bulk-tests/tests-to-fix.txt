@@ -1,0 +1,2 @@
+DEC AVX              ; BUILDDIR/xed -32 -d 67 36 36 36 36 36 67 67 67 C4 E6 71 4F B6 7F
+DEC AVX              ; BUILDDIR/xed -32 -d 67 26 67 64 26 26 67 67 2E 3E 36 C4 E6 72 57
