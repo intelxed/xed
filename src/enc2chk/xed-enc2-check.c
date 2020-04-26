@@ -20,6 +20,7 @@ END_LEGAL */
 #include "xed/xed-encode-check.h"
 #include "xed/xed-encode-direct.h"
 #include "xed-enc2-private.h"
+#include "xed-enc2-check.h"
 
 /// Check functions
 
