@@ -391,7 +391,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
         xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
         /* in 16/32b modes, the MODRM.MOD field MUST be 0b11 */
         if ((n&0xC0) == 0xC0)    {
-            length++; /* eat the c4/c5 */
+            length++; /* eat the c4 */
         }
         else   {
             /* A little optimization:
@@ -409,26 +409,27 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
     /* pointing at first payload byte. we want to make sure, that we have
      * additional 2 bytes available for reading - for 2nd vex c4 payload
      * byte and opcode */
-    if (length + 2 < max_bytes) {
+    
+    if (length + 2 <= max_bytes) {
       xed_avx_c4_payload1_t c4byte1;
       xed_avx_c4_payload2_t c4byte2;
       xed_uint_t eff_map;
 
       c4byte1.u32 = xed_decoded_inst_get_byte(d, length);
       c4byte2.u32 = xed_decoded_inst_get_byte(d, length + 1);
+      length += 2; /* eat the 2B payload */
+      xed_decoded_inst_set_length(d, length);
 
       // these 2 are guaranteed to be 1 in 16/32b mode by above check
       xed3_operand_set_rexr(d, ~c4byte1.s.r_inv&1);
       xed3_operand_set_rexx(d, ~c4byte1.s.x_inv&1);
-
       xed3_operand_set_rexb(d, (xed3_mode_64b(d) & ~c4byte1.s.b_inv)&1);
-
       xed3_operand_set_rexw(d, c4byte2.s.w);
 
       xed3_operand_set_vexdest3(d,   c4byte2.s.v3);
       xed3_operand_set_vexdest210(d, c4byte2.s.vvv210);
 
-      set_vl(d,   c4byte2.s.l);
+      set_vl(d, c4byte2.s.l);
 
       xed3_operand_set_vex_prefix(d, vex_prefix_recoding[c4byte2.s.pp]);
 
@@ -441,10 +442,6 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       }
       // this is a success indicator for downstreaam decoding
       xed3_operand_set_vexvalid(d, 1); // AVX1/2
-
-      length += 2; /* eat the c4 vex 2B payload */
-      xed_decoded_inst_set_length(d, length);
-
       evex_vex_opcode_scanner(d);
       return;
     }
@@ -472,7 +469,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
     unsigned char length  = xed_decoded_inst_get_length(d);
     if (xed3_mode_64b(d))
     {
-        length++; /* eat the c4/c5 */
+        length++; /* eat the c5 */
     }
     else if (length + 1 < max_bytes)
     {
