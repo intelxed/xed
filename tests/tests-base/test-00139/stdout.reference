@@ -1,2 +1,2 @@
 F000C0
-ERROR: BAD_LOCK_PREFIX Could not decode at offset: 0x0 PC: 0x0: [F000C0000000000000000000000000]
+ERROR: BAD_LOCK_PREFIX Could not decode at offset: 0x0 len: 3 PC: 0x0: [F000C0]
