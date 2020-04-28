@@ -401,7 +401,8 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
         }
     }
     else  {   /* don't have enough bytes to check if it's vex prefix,
-           * we are out of bytes */
+               * we are out of bytes */
+        xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
         return ;
     }
@@ -410,7 +411,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
      * additional 2 bytes available for reading - for 2nd vex c4 payload
      * byte and opcode */
     
-    if (length + 2 <= max_bytes) {
+    if (length + 2 < max_bytes) {
       xed_avx_c4_payload1_t c4byte1;
       xed_avx_c4_payload2_t c4byte2;
       xed_uint_t eff_map;
@@ -450,7 +451,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
        * need to read them - for 2 vex payload bytes and opcode byte,
        * hence we are out of bytes.
        */
-        xed_decoded_inst_set_length(d, length);
+        xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
         return;
     }
@@ -490,14 +491,14 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
     else 
     {   /* don't have enough bytes to check if it's vex prefix,
          * we are out of bytes */
+        xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
         return ;
     }
 
 
     /* pointing at vex c5 payload byte. we want to make sure, that we have
-     * additional 2 bytes available for reading - for vex payload byte and
-     * opcode */
+     * additional 1 bytes available for reading - the opcode */
     if (length + 1 < max_bytes) {
         xed_avx_c5_payload_t c5byte1;
         c5byte1.u32 = xed_decoded_inst_get_byte(d, length);
@@ -527,7 +528,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
          * them - for vex payload byte and opcode bytes, hence we are out
          * of bytes.
          */
-        xed_decoded_inst_set_length(d, length);
+        xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
         return ;
     }
@@ -588,7 +589,9 @@ static void xop_scanner(xed_decoded_inst_t* d)
       xed_uint8_t map;
       xop_byte1.u32 = xed_decoded_inst_get_byte(d, length);
       xop_byte2.u32 = xed_decoded_inst_get_byte(d, length + 1);
-
+      length += 2; /* eat the 8f xop 2B payload */
+      xed_decoded_inst_set_length(d, length);
+      
       map = xop_byte1.s.map;
       if (map == 0x9) { 
           xed3_operand_set_map(d,XED_ILD_AMD_XOP9);
@@ -617,10 +620,9 @@ static void xop_scanner(xed_decoded_inst_t* d)
       
       xed3_operand_set_vexvalid(d, 3);
 
-      length += 2; /* eat the 8f xop 2B payload */
-      /* FIXME: too hardcoded? maybe define graph data structure?*/
+
       /* using the VEX opcode scanner for xop opcodes too. */
-      xed_decoded_inst_set_length(d, length);
+
       evex_vex_opcode_scanner(d);
       return;
     }
@@ -629,7 +631,7 @@ static void xop_scanner(xed_decoded_inst_t* d)
        * need to read them - for 2 vex payload bytes and opcode byte,
        * hence we are out of bytes.
        */
-        xed_decoded_inst_set_length(d, length);
+        xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
       return;
     }
@@ -1211,6 +1213,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 }
             }
             else {
+                xed_decoded_inst_set_length(d, max_bytes);
                 too_short(d);
                 return;
             }
@@ -1257,11 +1260,13 @@ static void evex_scanner(xed_decoded_inst_t* d)
             eff_map = evex1.s.map;
 #if defined(XED_SUPPORTS_AVX512) 
             if (xed_ild_map_valid_evex(eff_map) == 0) {
+                xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
                 bad_map(d);
                 return; 
             }
 #elif defined(XED_SUPPORTS_KNC)
             if (xed_ild_map_valid_knc(eff_map) == 0) {
+                xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
                 bad_map(d);
                 return; 
             }
@@ -1314,6 +1319,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
         }
         else {
             /*there is no enough bytes, hence we are out of bytes */
+            xed_decoded_inst_set_length(d, max_bytes);    // we saw 62 0b11xx.xxxx        
             too_short(d);
         }
     }
