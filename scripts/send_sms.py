@@ -35,23 +35,28 @@ def _getenv_phone():
     sys.stderr.write("No phone number in SMS_PHONE env var\n")
     return None
 
-def _send_email_gateway(message, recipients):
+def _send_email_gateway(message, recipients, verbosity=0):
     sender = recipients[0]
-    zmail.mail([message], sender, recipients)
+    zmail.mail([message], sender, recipients, verbosity=verbosity)
 
 def _setup():
     parser = argparse.ArgumentParser()
     parser.add_argument('message', help='message')
+    parser.add_argument('-v', dest='verbosity', type=int, default=0,
+                        help='message')
     args = parser.parse_args()
     return args
 
-def _main(args):
+def send(message,verbosity=0):
     recipient = _getenv_phone()
     if recipient:
-        _send_email_gateway(args.message,[recipient])
+        _send_email_gateway(message,[recipient], verbosity=verbosity)
         return 0
     return 1
 
+def _main(args):
+    return send(args.message, args.verbosity)
+    
 if __name__ == '__main__':
     args = _setup()
     r = _main(args)
