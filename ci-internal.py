@@ -53,6 +53,8 @@ class jobs_status_t:
         self.successes += 1
         self.addjob(retval, cmd)
 
+    def pass_rate_fraction(self):
+        return '{}/{}'.format(self.successes, self.jobs)
 
 
 def success(status):
@@ -60,7 +62,8 @@ def success(status):
     sys.stdout.write("FINAL STATUS: PASS\n")
     sys.stdout.write(str(status))
     sys.stdout.flush()
-    #send_sms.send("Success", recipients=['mjc'])
+    #send_sms.send("XED CI: Passed ({} passing)".format(
+    #    status.pass_rate_fraction()))
     sys.exit(0)
 
 def fail(status):
@@ -68,7 +71,8 @@ def fail(status):
     sys.stdout.write("FINAL STATUS: FAIL\n")
     sys.stdout.write(str(status))
     sys.stdout.flush()
-    #send_sms.send(s, recipients=['mjc'])
+    #send_sms.send("XED CI: Failed ({} passing)".format(
+    #    status.pass_rate_fraction()))
     sys.exit(1)
 
 def ensure_string(x):
@@ -192,8 +196,8 @@ def main():
 
 def test():
     status = jobs_status_t()
-    status.success(1,'foo')
-    status.success(1,'bar')
+    status.success(1, 'foo')
+    status.success(1, 'bar')
     fail(status)
 if __name__ == "__main__":
     #test()

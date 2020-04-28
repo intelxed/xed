@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #BEGIN_LEGAL
 #INTEL CONFIDENTIAL
 #
@@ -27,6 +28,7 @@ import re
 import os
 import smtplib
 import sys
+import argparse
 
 def msg(s):
    sys.stdout.write(s  + "\n")
@@ -199,4 +201,37 @@ def mail(note,
                   verbosity)
    except:
       die("Sending email failed")
+   return 0
 
+def getargs():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-m", 
+                        dest="message",
+                        default=[],
+                        action="append",
+                        help="Message to send")
+    parser.add_argument("-f", 
+                        dest="sender",
+                        help="Sender")
+    parser.add_argument("-t", 
+                        dest="recipients",
+                        action="append",
+                        default=[],
+                        help="Recipient")
+    parser.add_argument("-v", 
+                        dest="verbosity",
+                        default=0,
+                        type=int,
+                        help="Verbosity")
+    args = parser.parse_args()
+    return args
+
+def main():
+    args = getargs()
+    r = mail(args.message, args.sender, args.recipients,
+             verbosity=args.verbosity)
+    return r
+
+if __name__ == '__main__':
+    r = main()
+    sys.exit(r)
