@@ -55,6 +55,7 @@ AMD_ZEN2: ALL_OF(AMD_ZENPLUS) \
 
 # Guessing
 AMD_FUTURE: ALL_OF(AMD_ZEN2) \
-    SNP
+    SNP \
+    AMD_INVLPGB
 
 
