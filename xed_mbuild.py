@@ -1286,7 +1286,7 @@ def _configure_libxed_extensions(env):
         newstuff.append( env['default_isa'] )
         
     if env['via_enabled']:
-        newstuff.append( env.src_dir_join(mbuild.join('datafiles',
+        newstuff.append( env.src_dir_join(mbuild.join('datafiles', 'via',
                                                       'files-via-padlock.cfg')))
 
     # add AMD stuff under knob control
