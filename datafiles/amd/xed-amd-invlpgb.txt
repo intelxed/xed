@@ -23,8 +23,13 @@ CPL       : 0
 CATEGORY  : SYSTEM
 EXTENSION : AMD_INVLPGB
 ATTRIBUTES: AMDONLY
-PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b111] RM[0b110] no_refining_prefix
+COMMENT   : Is this 64b mode only?
+PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b111] RM[0b110] no_refining_prefix eamode32
 OPERANDS  : REG0=XED_REG_EAX:r:IMPL \
+            REG1=XED_REG_EDX:r:IMPL \
+            REG2=XED_REG_ECX:r:IMPL 
+PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b111] RM[0b110] no_refining_prefix eamode64
+OPERANDS  : REG0=XED_REG_RAX:r:IMPL \
             REG1=XED_REG_EDX:r:IMPL \
             REG2=XED_REG_ECX:r:IMPL 
 }
