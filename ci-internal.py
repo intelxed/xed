@@ -134,6 +134,13 @@ def main():
         cmd = 'git clone {} xedext'.format(xedext_git)
         run(status, cmd, required=True)
 
+        archval_repo = os.getenv('ARCHVAL_REPO')
+        if archval_repo:
+            archval_git = git_base + archval_repo
+            short_name = os.path.splitext(archval_repo)[0]
+            cmd = 'git clone {} {}'.format(archval_git, short_name)
+            run(status, cmd, required=True)
+
         cmd = '{} -m pip install --user ./mbuild'.format(pycmd)
         run(status, cmd, required=True)
 
@@ -171,12 +178,11 @@ def main():
                     run(status, cmd)
 
         # arch val test
-        # FIXME: add other required knobs
         size = 'x86-64'
         linkkind = 'static'
         build_dir = 'obj-archval-{}-{}-{}'.format(pyver, size, linkkind)
         cwd = os.path.abspath(os.curdir)
-        flags = '--kind architectural-val'
+        flags = '--kind architectural-val ' + os.getenv('ARCHVAL_OPTIONS')
         cmd = '{} xedext/xed_build.py --xed-dir {} {} --build-dir={} host_cpu={}'.format(
             pycmd, cwd, flags, build_dir, size)
         run(status, cmd)
