@@ -579,7 +579,11 @@ int main(int argc, char** argv) {
     printf("iclass-max-iform-dispatch %u\n",
            xed_iform_max_per_iclass(xed_decoded_inst_get_iclass(&xedd)));
 
-
+    printf("Nominal opcode position %u\n",
+           xed3_operand_get_pos_nominal_opcode(&xedd));
+    printf("Nominal opcode 0x%02x\n",
+           xed3_operand_get_nominal_opcode(&xedd));
+    
     // operands
     print_operands(&xedd);
     
