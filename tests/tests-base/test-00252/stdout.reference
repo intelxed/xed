@@ -8,6 +8,8 @@ stack-address-width 64
 iform-enum-name CALL_FAR_MEMp2
 iform-enum-name-dispatch (zero based) 0
 iclass-max-iform-dispatch 2
+Nominal opcode position 1
+Nominal opcode 0xff
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

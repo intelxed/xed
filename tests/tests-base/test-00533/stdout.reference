@@ -1,0 +1,24 @@
+Attempting to decode: 0f 38 00 ff 
+iclass PSHUFB	category MMX	ISA-extension SSSE3	ISA-set SSSE3MMX
+instruction-length 4
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name PSHUFB_MMXq_MMXq
+iform-enum-name-dispatch (zero based) 1
+iclass-max-iform-dispatch 4
+Nominal opcode position 2
+Nominal opcode 0x00
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=MM7   EXPLICIT  RW         Q   64     8     1     64        INT        MMX
+1   REG1              REG1=MM7   EXPLICIT   R         Q   64     8     1     64        INT        MMX
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: NOTSX 
+EXCEPTION TYPE: MMX_MEM
+ISA SET: [SSSE3MMX]
+0	CPUID BIT NAME: [SSSE3]
+	Leaf 0x00000001, subleaf 0x00000000, ECX[9]

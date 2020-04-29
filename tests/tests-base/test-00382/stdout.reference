@@ -8,6 +8,8 @@ stack-address-width 32
 iform-enum-name PUSHFD
 iform-enum-name-dispatch (zero based) 0
 iclass-max-iform-dispatch 1
+Nominal opcode position 0
+Nominal opcode 0x9c
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
