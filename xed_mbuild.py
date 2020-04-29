@@ -1291,10 +1291,10 @@ def _configure_libxed_extensions(env):
 
     # add AMD stuff under knob control
     if env['amd_enabled']:
-        newstuff.append( env.src_dir_join(mbuild.join('datafiles',
+        newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
                                                       'files-amd.cfg')))
         if env['avx']:
-            newstuff.append( env.src_dir_join(mbuild.join('datafiles',
+            newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
                                                          'amdxop',
                                                          'files.cfg')))
 
