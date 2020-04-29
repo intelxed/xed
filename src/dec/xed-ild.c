@@ -1102,9 +1102,9 @@ static void opcode_scanner(xed_decoded_inst_t* d)
         // if no secondary map, or we match the secondary map, we are set.
         if (m->legacy_escape == 0x0F) {
             if (m->has_legacy_opcode==0) {
-                length++; /* eat the 2nd  opcode byte */
                 xed3_operand_set_nominal_opcode(d, b);
                 xed3_operand_set_pos_nominal_opcode(d, length);
+                length++; /* eat the 2nd  opcode byte */
                 xed3_operand_set_map(d, m->map_id);
                 xed_decoded_inst_set_length(d, length);
                 //set SRM (partial opcode instructions need it)
@@ -1342,6 +1342,8 @@ static void imm_scanner(xed_decoded_inst_t* d)
   if (xed3_operand_get_amd3dnow(d)) {
       if (length < max_bytes) {
           /*opcode is in immediate*/
+          xed3_operand_set_pos_nominal_opcode(d, length);
+
           xed3_operand_set_nominal_opcode(d, 
                                           xed_decoded_inst_get_byte(d, length));
           /*count the pseudo immediate byte, which is opcode*/
