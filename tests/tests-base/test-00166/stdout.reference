@@ -8,6 +8,8 @@ stack-address-width 32
 iform-enum-name PEXTRW_SSE4_GPR32_XMMdq_IMMb
 iform-enum-name-dispatch (zero based) 0
 iclass-max-iform-dispatch 2
+Nominal opcode position 3
+Nominal opcode 0x15
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

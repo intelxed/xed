@@ -8,6 +8,8 @@ stack-address-width 64
 iform-enum-name ROL_MEMb_ONE
 iform-enum-name-dispatch (zero based) 8
 iclass-max-iform-dispatch 12
+Nominal opcode position 10
+Nominal opcode 0xd0
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

@@ -1,0 +1,22 @@
+Attempting to decode: 0f 0f 30 0c 
+iclass PI2FW	category 3DNOW	ISA-extension 3DNOW	ISA-set 3DNOW
+instruction-length 4
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name PI2FW_MMXq_MEMq
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 2
+Nominal opcode position 3
+Nominal opcode 0x0c
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=MM6   EXPLICIT  RW         Q   64     8     1     64        INT        MMX
+1   MEM0           (see below)   EXPLICIT   R         Q   64     8     1     64        INT    INVALID
+Memory Operands
+  0    read SEG= DS BASE= EAX/GPR  ASZ0=32
+  MemopBytes = 8
+ATTRIBUTES: AMDONLY 
+ISA SET: [3DNOW]

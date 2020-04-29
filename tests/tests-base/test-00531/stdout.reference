@@ -1,0 +1,28 @@
+Attempting to decode: 01 00 
+iclass ADD	category BINARY	ISA-extension BASE	ISA-set I86
+instruction-length 2
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name ADD_MEMv_GPRv
+iform-enum-name-dispatch (zero based) 14
+iclass-max-iform-dispatch 18
+Nominal opcode position 0
+Nominal opcode 0x01
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below)   EXPLICIT  RW         V   32     4     1     32        INT    INVALID
+1   REG0              REG0=EAX   EXPLICIT   R         V   32     4     1     32        INT        GPR
+2   REG1           REG1=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  0    read written SEG= DS BASE= EAX/GPR  ASZ0=32
+  MemopBytes = 4
+FLAGS:
+  must-write-rflags of-mod sf-mod zf-mod af-mod pf-mod cf-mod 
+       read:                                mask=0x0
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                                mask=0x0
+ATTRIBUTES: LOCKABLE SCALABLE 
+ISA SET: [I86]

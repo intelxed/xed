@@ -8,6 +8,8 @@ stack-address-width 32
 iform-enum-name MOV_CR_GPR32_CR
 iform-enum-name-dispatch (zero based) 2
 iclass-max-iform-dispatch 4
+Nominal opcode position 1
+Nominal opcode 0x20
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

@@ -9,6 +9,8 @@ stack-address-width 32
 iform-enum-name PREFETCHW_0F0Dr1
 iform-enum-name-dispatch (zero based) 0
 iclass-max-iform-dispatch 2
+Nominal opcode position 1
+Nominal opcode 0x0d
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

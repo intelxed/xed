@@ -8,6 +8,8 @@ stack-address-width 64
 iform-enum-name CVTTSS2SI_GPR32d_MEMss
 iform-enum-name-dispatch (zero based) 0
 iclass-max-iform-dispatch 4
+Nominal opcode position 12
+Nominal opcode 0x2c
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

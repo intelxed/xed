@@ -8,6 +8,8 @@ stack-address-width 32
 iform-enum-name MOVDDUP_XMMdq_XMMq
 iform-enum-name-dispatch (zero based) 1
 iclass-max-iform-dispatch 2
+Nominal opcode position 2
+Nominal opcode 0x12
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========

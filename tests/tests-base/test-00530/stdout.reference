@@ -1,0 +1,26 @@
+Attempting to decode: cc 
+iclass INT3	category INTERRUPT	ISA-extension BASE	ISA-set I86
+instruction-length 1
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name INT3
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Nominal opcode position 0
+Nominal opcode 0xcc
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=EIP SUPPRESSED   W         Y   32     4     1     32        INT         IP
+1   REG1           REG1=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
+Memory Operands
+  MemopBytes = 0
+FLAGS:
+   reads-rflags vif-mod ac-mod vm-tst vm-mod rf-0 nt-mod iopl-tst if-mod tf-0 
+       read:                       iopl vm  mask=0x23000
+    written:         vif if ac vm rf nt tf  mask=0xf4300
+  undefined:                                mask=0x0
+ATTRIBUTES: NOTSX 
+ISA SET: [I86]
