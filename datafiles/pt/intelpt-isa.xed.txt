@@ -21,8 +21,9 @@ INSTRUCTIONS()::
 {
 ICLASS    : PTWRITE
 CPL       : 3
-CATEGORY  : PT
-EXTENSION : PT
+CATEGORY  : PTWRITE
+EXTENSION : PTWRITE
+ISA_SET   : PTWRITE
 PATTERN   : 0x0F 0xAE MOD[0b11] MOD=3 REG[0b100]  RM[nnn] f3_refining_prefix  no66_prefix
 OPERANDS  : REG0=GPRy_B():r
 PATTERN   : 0x0F 0xAE MOD[mm]   MOD!=3 REG[0b100] RM[nnn] f3_refining_prefix no66_prefix MODRM()

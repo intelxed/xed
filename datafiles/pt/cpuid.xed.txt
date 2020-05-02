@@ -16,4 +16,4 @@
 #  
 #END_LEGAL
 
-XED_ISA_SET_PT:              intelpt.7.0.ebx.25 ptwrite.14.0.ebx.4
+XED_ISA_SET_PTWRITE:        intelpt.7.0.ebx.25 ptwrite.14.0.ebx.4

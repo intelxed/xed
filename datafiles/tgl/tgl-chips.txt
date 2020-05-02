@@ -16,9 +16,12 @@
 #  
 #END_LEGAL
 
-TGL: ALL_OF(ICELAKE_SERVER) CET MOVDIR \
-     AVX512_VP2INTERSECT_128  \
-     AVX512_VP2INTERSECT_256  \
+TIGER_LAKE:                  \
+     ALL_OF(ICE_LAKE_SERVER) \
+     CET                     \
+     MOVDIR                  \
+     AVX512_VP2INTERSECT_128 \
+     AVX512_VP2INTERSECT_256 \
      AVX512_VP2INTERSECT_512  
 
 

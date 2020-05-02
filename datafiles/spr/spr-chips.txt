@@ -17,14 +17,15 @@
 #END_LEGAL
 
 
-SPR: ALL_OF(TGL) \
-     PT \
-     ENQCMD \
-     SERIALIZE \
-     TSX_LDTRK \
-     WAITPKG \
-     AVX512_BF16_128 \
-     AVX512_BF16_256 \
+SAPPHIRE_RAPIDS:        \
+     ALL_OF(TIGER_LAKE) \
+     PTWRITE            \
+     ENQCMD             \
+     SERIALIZE          \
+     TSX_LDTRK          \
+     WAITPKG            \
+     AVX512_BF16_128    \
+     AVX512_BF16_256    \
      AVX512_BF16_512 
 
 
