@@ -16,43 +16,49 @@
 #  
 #END_LEGAL
 
-ICELAKE: ALL_OF(SKYLAKE_SERVER)  RDPID  \
-         SHA \
-         AVX512_IFMA_128 \
-         AVX512_IFMA_256 \
-         AVX512_IFMA_512 \
-         AVX512_VBMI_128 \
-         AVX512_VBMI_256 \
-         AVX512_VBMI_512 \
-         AVX512_VBMI2_128 \
-         AVX512_VBMI2_256 \
-         AVX512_VBMI2_512 \
-         AVX512_BITALG_512 \
-         AVX512_BITALG_256 \
-         AVX512_BITALG_128 \
-         AVX512_VPOPCNTDQ_128 \
-         AVX512_VPOPCNTDQ_256 \
-         AVX512_VPOPCNTDQ_512 \
-         AVX512_GFNI_128 \
-         AVX512_GFNI_256 \
-         AVX512_GFNI_512 \
-         AVX_GFNI \
-         GFNI \
-         AVX512_VAES_128 \
-         AVX512_VAES_256 \
-         AVX512_VAES_512 \
-         VAES \
-         AVX512_VPCLMULQDQ_128 \
-         AVX512_VPCLMULQDQ_256 \
-         AVX512_VPCLMULQDQ_512 \
-         VPCLMULQDQ \
-         AVX512_VNNI_128 \
-         AVX512_VNNI_256 \
+# NOT(HLE) but no HLE instr support.
+ICE_LAKE: \
+         ALL_OF(SKYLAKE_SERVER) \
+         NOT(CLWB)              \
+         NOT(MPX)               \
+         RDPID                  \
+         SHA                    \
+         AVX512_IFMA_128        \
+         AVX512_IFMA_256        \
+         AVX512_IFMA_512        \
+         AVX512_VBMI_128        \
+         AVX512_VBMI_256        \
+         AVX512_VBMI_512        \
+         AVX512_VBMI2_128       \
+         AVX512_VBMI2_256       \
+         AVX512_VBMI2_512       \
+         AVX512_BITALG_512      \
+         AVX512_BITALG_256      \
+         AVX512_BITALG_128      \
+         AVX512_VPOPCNTDQ_128   \
+         AVX512_VPOPCNTDQ_256   \
+         AVX512_VPOPCNTDQ_512   \
+         AVX512_GFNI_128        \
+         AVX512_GFNI_256        \
+         AVX512_GFNI_512        \
+         AVX_GFNI               \
+         GFNI                   \
+         AVX512_VAES_128        \
+         AVX512_VAES_256        \
+         AVX512_VAES_512        \
+         VAES                   \
+         AVX512_VPCLMULQDQ_128  \
+         AVX512_VPCLMULQDQ_256  \
+         AVX512_VPCLMULQDQ_512  \
+         VPCLMULQDQ             \
+         AVX512_VNNI_128        \
+         AVX512_VNNI_256        \
          AVX512_VNNI_512 
 
 
-ICELAKE_SERVER: ALL_OF(ICELAKE) \
-         CLWB \
-         SGX_ENCLV \
-         PCONFIG \
+ICE_LAKE_SERVER:          \
+         ALL_OF(ICE_LAKE) \
+         CLWB             \
+         SGX_ENCLV        \
+         PCONFIG          \
          WBNOINVD
