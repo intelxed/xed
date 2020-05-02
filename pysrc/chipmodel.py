@@ -47,69 +47,6 @@ def uniquify_list(l):
         d[a]=True
     return list(d.keys())
 
-def expand_common_subset(d):
-    """return true to keep going, false otherwise"""
-    found = False
-    for chip,ext_list in d.items():
-        newexts = []
-        for ext in ext_list:
-            m = common_subset_pattern.match(ext)
-            if m:
-                found = True
-                chip1 = m.group('chip1')
-                chip2 = m.group('chip2')
-                exts1 = set(d[chip1])
-                exts2 = set(d[chip2])
-                common = exts1.intersection(exts2)
-                newexts.extend(list(common))
-            else:
-                newexts.append(ext)
-        d[chip]  = uniquify_list(newexts)
-                
-    return found
-
-
-def expand_all_of_once(d):
-    """return true to keep going, false otherwise"""
-    found = False
-    for chip,ext_list in d.items():
-        newexts = []
-        for ext in ext_list:
-            m = all_of_pattern.match(ext)
-            if m:
-                found = True
-                other_chip = m.group('chip')
-                newexts.extend(d[other_chip])
-
-            else:
-                newexts.append(ext)
-        d[chip]  = uniquify_list(newexts)
-    return found
-
-def expand_macro(d,expander):
-    found = True
-    while found:
-        found = expander(d)
-
-def expand_macro_not(d):
-    for chip,ext_list in d.items():
-        to_remove = []
-        positive_exts = []
-        for ext in ext_list:
-            m = not_pattern.match(ext)
-            if m:
-                to_remove.append( m.group('ext'))
-            else:
-                positive_exts.append(ext)
-        
-        for r in to_remove:
-            try:
-                positive_exts.remove(r)
-            except:
-                _die("Could not remove %s from %s for chip %s" % 
-                                     ( r, " ".join(positive_exts), chip))
-                                 
-        d[chip]  = uniquify_list(positive_exts)
 
 def  parse_lines(input_file_name, lines): # returns a dictionary
     """Return a list of chips and a dictionary indexed by chip containing
@@ -146,6 +83,63 @@ def _feature_index(all_features, f):
 
 
 
+def expand_chip(chip, d):
+    new_ext = []
+    
+    # ALL_OF(chip)
+    for ext in d[chip]:
+        all_of_match = all_of_pattern.match(ext)
+        if all_of_match:
+            sub_chip = all_of_match.group('chip')
+            expand_chip(sub_chip, d)
+            new_ext.extend(d[sub_chip])
+
+    # COMMON_SUBSET(chip1,chip2)
+    for ext in d[chip]:
+        common_subset_match = common_subset_pattern.match(ext)
+        if common_subset_match: 
+            sub_chip1 = common_subset_match.group('chip1')
+            sub_chip2 = common_subset_match.group('chip2')
+            expand_chip(sub_chip1, d)
+            expand_chip(sub_chip2, d)
+            exts1 = set(d[sub_chip1])
+            exts2 = set(d[sub_chip2])
+            common = exts1.intersection(exts2)
+            new_ext.extend(list(common))
+            
+    # NOT(ext)
+    for ext in d[chip]:
+        not_ext_match = not_pattern.match(ext)
+        if not_ext_match: 
+            ext = not_ext_match.group('ext')
+            while ext in new_ext:
+                new_ext.remove(ext)  # remove from the incoming stuff
+
+    # add all the conventional extensions
+    for ext in d[chip]:
+        if (all_of_pattern.match(ext) or
+            common_subset_pattern.match(ext) or
+            not_pattern.match(ext) ):
+            pass
+        else:
+            new_ext.append(ext)
+            
+    d[chip] = uniquify_list(new_ext)
+        
+        
+def recursive_expand(d):
+    '''d is a dict of lists.  The lists contain extension names, and 3
+       operators: ALL_OF(chip), NOT(extension), and
+       COMMON_SUBSET(chip1,chip2). Before inserting the extensions
+       from an ALL_OF(x) reference we must remove the all of the
+       NOT(y) in the extensions of x. This is because chip z might
+       re-add y and we don't want the NOT(y) from x to mess that up.
+    '''
+
+    for chip in d.keys():
+        expand_chip(chip,d)
+            
+
 def read_database(filename):
     lines = open(filename,'r').readlines()
     lines = filter_comments(lines)
@@ -153,9 +147,7 @@ def read_database(filename):
     # returns a list and a dictionary
     (chips,chip_features_dict) = parse_lines(filename,lines) 
 
-    expand_macro(chip_features_dict,expand_all_of_once)
-    expand_macro(chip_features_dict,expand_common_subset)
-    expand_macro_not(chip_features_dict)
+    recursive_expand(chip_features_dict)
 
     return (chips,chip_features_dict)
 
@@ -302,4 +294,3 @@ if __name__ == '__main__':
     files_created,chips,isa_set = work(arg)
     print("Created files: %s" % (" ".join(files_created)))
     sys.exit(0)
-
