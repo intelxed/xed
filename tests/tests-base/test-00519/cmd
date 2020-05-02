@@ -1,1 +1,1 @@
- BUILDDIR/xed -chip-check ICELAKE -d 66 0fae 30
+ BUILDDIR/xed -chip-check ICE_LAKE_SERVER -d 66 0fae 30
