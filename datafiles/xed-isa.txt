@@ -11433,13 +11433,13 @@ CATEGORY  : CONVERT
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x2A f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() norexw_prefix MODRM()
-OPERANDS  : REG0=XMM_R():w:ss:f32 MEM0:r:d:i32
+OPERANDS  : REG0=XMM_R():rw:ss:f32 MEM0:r:d:i32
 PATTERN   : 0x0F 0x2A f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66() norexw_prefix
-OPERANDS  : REG0=XMM_R():w:ss:f32 REG1=GPR32_B():r:d:i32
+OPERANDS  : REG0=XMM_R():rw:ss:f32 REG1=GPR32_B():r:d:i32
 PATTERN   : 0x0F 0x2A f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() rexw_prefix MODRM()
-OPERANDS  : REG0=XMM_R():w:ss:f32 MEM0:r:q:i32
+OPERANDS  : REG0=XMM_R():rw:ss:f32 MEM0:r:q:i32
 PATTERN   : 0x0F 0x2A f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66() rexw_prefix
-OPERANDS  : REG0=XMM_R():w:ss:f32 REG1=GPR64_B():r:q:i32
+OPERANDS  : REG0=XMM_R():rw:ss:f32 REG1=GPR64_B():r:q:i32
 }
 {
 ICLASS    : CVTTSS2SI
@@ -11574,13 +11574,13 @@ CATEGORY  : CONVERT
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x2A f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() norexw_prefix MODRM()
-OPERANDS  : REG0=XMM_R():w:sd:f64 MEM0:r:d:i32
+OPERANDS  : REG0=XMM_R():rw:sd:f64 MEM0:r:d:i32
 PATTERN   : 0x0F 0x2A f2_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66() norexw_prefix
-OPERANDS  : REG0=XMM_R():w:sd:f64 REG1=GPR32_B():r:d:i32
+OPERANDS  : REG0=XMM_R():rw:sd:f64 REG1=GPR32_B():r:d:i32
 PATTERN   : 0x0F 0x2A f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() rexw_prefix MODRM()
-OPERANDS  : REG0=XMM_R():w:sd:f64 MEM0:r:q:i64
+OPERANDS  : REG0=XMM_R():rw:sd:f64 MEM0:r:q:i64
 PATTERN   : 0x0F 0x2A f2_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66() rexw_prefix
-OPERANDS  : REG0=XMM_R():w:sd:f64 REG1=GPR64_B():r:q:i64
+OPERANDS  : REG0=XMM_R():rw:sd:f64 REG1=GPR64_B():r:q:i64
 }
 {
 ICLASS    : CVTTSD2SI
