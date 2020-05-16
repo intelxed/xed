@@ -1244,17 +1244,19 @@ static void evex_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_vexdest3(d,  evex2.s.vexdest3);
             xed3_operand_set_vexdest210(d, evex2.s.vexdest210);
             xed3_operand_set_ubit(d, evex2.s.ubit);
-            if (evex2.s.ubit) 
-                xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
-            else
-            {
+
 #if defined(XED_SUPPORTS_KNC)
+            if (evex2.s.ubit==0)
                 xed3_operand_set_vexvalid(d, 4); // KNC EVEX U=0 req'd
+            else
+                xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
 #else
+            // 2020-05-15: when not supporting KNC, we put KNC (EVEX.U=0)
+            // stuff in vv=2(EVEX) and let the UBIT error tank it later.
+            xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
+            if (evex2.s.ubit==0) 
                 xed3_operand_set_error(d,XED_ERROR_BAD_EVEX_UBIT);
 #endif
-            }
-            
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
 
             eff_map = evex1.s.map;
