@@ -1,1 +1,1 @@
- BUILDDIR/xed -chip-check TREMONT -d 0f1c00
+ BUILDDIR/xed -chip-check SNOW_RIDGE -d 0f1c00
