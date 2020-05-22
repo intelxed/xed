@@ -1145,6 +1145,13 @@ typedef union { // Common KNC & AVX512
         xed_uint32_t r_inv:1;
         xed_uint32_t pad:24; 
     } s;
+    struct {
+        xed_uint32_t map:4;
+        xed_uint32_t rr_inv:1;
+        xed_uint32_t b_inv:1;
+        xed_uint32_t rx_inv:2;  
+        xed_uint32_t pad:24; 
+    } coarse;
     xed_uint32_t u32;
 } xed_avx512_payload1_t;
 
@@ -1199,35 +1206,40 @@ static void evex_scanner(xed_decoded_inst_t* d)
 
     if (b == 0x62)
     {
+        xed_avx512_payload1_t evex1;
+        
         /*first check that it is not a BOUND instruction */
-        if (!xed3_mode_64b(d)) {
-            /*make sure we can read one additional byte */
-            if (length + 1 < max_bytes) {
-                xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
-                if ((n&0xC0) != 0xC0) {
-                    /*this is a BOUND instruction */
-                    /* FIXME: could have set opcode here and call
-                     * modrm_scanner but that would be a code
-                     * duplication */
-                    return;
-                }
-            }
-            else {
-                xed_decoded_inst_set_length(d, max_bytes);
-                too_short(d);
+        /*make sure we can read one additional byte */
+        if (length + 1 < max_bytes) {
+            evex1.u32 = xed_decoded_inst_get_byte(d, length+1);
+            if (!xed3_mode_64b(d) && evex1.coarse.rx_inv != 3) {
+                /*this is a BOUND instruction */
+                /* FIXME: could have set opcode here and call
+                 * modrm_scanner but that would be a code
+                 * duplication */
                 return;
             }
         }
+        else {
+            xed_decoded_inst_set_length(d, max_bytes);
+            too_short(d);
+            return;
+        }
+
+        if (evex1.coarse.map == 0) {
+            xed_decoded_inst_set_length(d, length+2);
+            bad_map(d);
+            return; 
+        }
+
         /*Unlike the vex and xop prefix scanners, here length is pointing
         at the evex prefix byte.  We want to ensure that we have enough
         bytes available to read 4 bytes for evex prefix and 1 byte for an
         opcode */
         if (length + 4 < max_bytes) {
-            xed_avx512_payload1_t evex1;
             xed_avx512_payload2_t evex2;
             xed_uint_t eff_map;
 
-            evex1.u32 = xed_decoded_inst_get_byte(d, length+1);
             evex2.u32 = xed_decoded_inst_get_byte(d, length+2);
 
             // above check guarantees that r and x are 1 in 16/32b mode.
