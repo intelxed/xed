@@ -18,40 +18,6 @@ END_LEGAL */
 /// @file xed-ild.c
 /// instruction length decoder
 
-/*
-  FIXME:
-
-  need these opcode/mode/prefix based tables:
-    has_modrm (boolean)
-    disp_bytes = 1,2,4,8 bytes
-    imm_bytes = 1,2,4,8 bytes
-    
-    >90% instructions have MODRM.
-
-        Key on the MOD pattern prebinding
-    
-    >90% of the displacements come from the MODRM.MOD byte processing.
-
-        Some come from the pattern:
-        Nonterminals: BRDISP8, BRDISP32, MEMDISPv, BRDISPz
-    
-    >90% of the are 1B and come from using map3.
-    
-        xed grammar has UIMM32, UIMM16, UIMM8,UIMM8_1, SIMM8, SIMMz. The
-        signed/unsigned should move to an attribute or the xed_inst_t.  The
-        UIMM32 is used on AMD XOP instructions.
-     
-        uimm16: opcodes 9A, C2, C8, CA, EA
-
- */
-
-    /* FIXME:we might have invalid map (TNI maps) - in this case
-     * we should check for it before looking up in tables for
-     * modrm/imm/disp/static decoding
-     * Also invalid map value cannot be 0xFF - we allocate 3 bits
-     * for MAP operand in key for static lookup.
-     */
-
 #include "xed-internal-header.h"
 #include "xed-ild.h"
 #include "xed-util-private.h"
@@ -340,6 +306,12 @@ typedef union { // C4 payload 1
         xed_uint32_t r_inv:1;
         xed_uint32_t pad:24; 
     } s;
+    struct {
+        xed_uint32_t map:5;
+        xed_uint32_t b_inv:1;
+        xed_uint32_t rx_inv:2;
+        xed_uint32_t pad:24; 
+    } coarse;
     xed_uint32_t u32;
 } xed_avx_c4_payload1_t;
 
@@ -364,6 +336,13 @@ typedef union { // C5 payload 1
         xed_uint32_t r_inv:1;
         xed_uint32_t pad:24; 
     } s;
+    struct {
+        xed_uint32_t pp:2;
+        xed_uint32_t l:1;
+        xed_uint32_t vvv210:3;
+        xed_uint32_t rv3_inv:2;
+        xed_uint32_t pad:24; 
+    } coarse;
     xed_uint32_t u32;
 } xed_avx_c5_payload_t;
 
@@ -375,53 +354,39 @@ static void set_vl(xed_decoded_inst_t* d, xed_uint_t vl) {
 
 static void vex_c4_scanner(xed_decoded_inst_t* d)
 {
-    /* assumption: length < max_bytes  
-     * This is checked in prefix_scanner.
-     * If any other scanner is added before vex_scanner, this condition 
-     * should be preserved.
-     * FIXME: check length < max_bytes here anyway? This will be less
-     * error-prone, but that's an additional non-necessary branch.
-     */
+    // assumption: length < max_bytes. This is checked in prefix_scanner.
+    // c4 is  the byte at 'length'
     xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
     unsigned char length  = xed_decoded_inst_get_length(d);
-    if (xed3_mode_64b(d))   {
-        length++; /* eat the c4/c5 */
-    }
-    else if (length+1 < max_bytes)   {
-        xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
-        /* in 16/32b modes, the MODRM.MOD field MUST be 0b11 */
-        if ((n&0xC0) == 0xC0)    {
-            length++; /* eat the c4 */
-        }
-        else   {
-            /* A little optimization:
-             * this is not a vex prefix, we can proceed to
-             * next scanner */
+    xed_avx_c4_payload1_t c4byte1;    
+    if (length+1 <= max_bytes)   {
+        length++;
+        c4byte1.u32 = xed_decoded_inst_get_byte(d, length);
+        // in 16/32b modes, the MODRM.MOD field MUST be 0b11
+        if (!xed3_mode_64b(d) && c4byte1.coarse.rx_inv != 3) {
+            // this is not a vex prefix, go to next scanner
             return;
         }
     }
-    else  {   /* don't have enough bytes to check if it's vex prefix,
-               * we are out of bytes */
+    else {
+        // not enough bytes to check vex prefix validity
         xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
         return ;
     }
 
-    /* pointing at first payload byte. we want to make sure, that we have
-     * additional 2 bytes available for reading - for 2nd vex c4 payload
-     * byte and opcode */
-    
-    if (length + 2 < max_bytes) {
-      xed_avx_c4_payload1_t c4byte1;
+    //      c4  xx yy opc
+    //          ^          
+    // length is set to the position of the first payload byte.
+    // we need 2 more: 2nd payload byte and opcode.
+    if (length + 2 <= max_bytes) {
       xed_avx_c4_payload2_t c4byte2;
       xed_uint_t eff_map;
 
-      c4byte1.u32 = xed_decoded_inst_get_byte(d, length);
-      c4byte2.u32 = xed_decoded_inst_get_byte(d, length + 1);
-      length += 2; /* eat the 2B payload */
-      xed_decoded_inst_set_length(d, length);
+      c4byte2.u32 = xed_decoded_inst_get_byte(d, length+1);
+      length += 2;
+      xed_decoded_inst_set_length(d, length); // now point at opcode
 
-      // these 2 are guaranteed to be 1 in 16/32b mode by above check
       xed3_operand_set_rexr(d, ~c4byte1.s.r_inv&1);
       xed3_operand_set_rexx(d, ~c4byte1.s.x_inv&1);
       xed3_operand_set_rexb(d, (xed3_mode_64b(d) & ~c4byte1.s.b_inv)&1);
@@ -459,49 +424,31 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
 
 static void vex_c5_scanner(xed_decoded_inst_t* d)
 {
-    /* assumption: length < max_bytes  
-     * This is checked in prefix_scanner.
-     * If any other scanner is added before vex_scanner, this condition 
-     * should be preserved.
-     * FIXME: check length < max_bytes here anyway? This will be less
-     * error-prone, but that's an additional non-necessary branch.
-     */
+    // assumption: length < max_bytes. This is checked in prefix_scanner.
+    // c5 is  the byte at 'length'
     xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
     unsigned char length  = xed_decoded_inst_get_length(d);
-    if (xed3_mode_64b(d))
-    {
-        length++; /* eat the c5 */
-    }
-    else if (length + 1 < max_bytes)
-    {
-        xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
-        /* in 16/32b modes, the MODRM.MOD field MUST be 0b11 */
-        if ((n&0xC0) == 0xC0) 
-        {
-            length++; /* eat the c4/c5 */
-        }
-        else
-        {
-            /* A little optimization:
-             * this is not a vex prefix, we can proceed to
-             * next scanner */
+    xed_avx_c5_payload_t c5byte1;
+    if (length+1 <= max_bytes)   {
+        length++;
+        c5byte1.u32 = xed_decoded_inst_get_byte(d, length);
+        // in 16/32b modes, the MODRM.MOD field MUST be 0b11
+        if (!xed3_mode_64b(d) && c5byte1.coarse.rv3_inv != 3) {
+            // this is not a vex prefix, go to next scanner
             return;
         }
     }
-    else 
-    {   /* don't have enough bytes to check if it's vex prefix,
-         * we are out of bytes */
+    else {
+        // not enough bytes to check vex prefix validity
         xed_decoded_inst_set_length(d, max_bytes);
         too_short(d);
         return ;
     }
-
-
-    /* pointing at vex c5 payload byte. we want to make sure, that we have
-     * additional 1 bytes available for reading - the opcode */
-    if (length + 1 < max_bytes) {
-        xed_avx_c5_payload_t c5byte1;
-        c5byte1.u32 = xed_decoded_inst_get_byte(d, length);
+    //      c5  xx  opc
+    //          ^          
+    // length is set to the position of the first payload byte.
+    // we need 1 more: opcode.
+    if (length + 1 <= max_bytes) {
 
         xed3_operand_set_rexr(d, ~c5byte1.s.r_inv&1);
         xed3_operand_set_vexdest3(d,   c5byte1.s.v3);
@@ -543,17 +490,7 @@ static XED_INLINE xed_uint_t get_modrm_reg_field(xed_uint8_t b) {
 
 static void xop_scanner(xed_decoded_inst_t* d)
 {
-    /* assumption: length < max_bytes  
-     * This is checked in prefix_scanner.
-     * If any other scanner is added before vex_scanner, this condition 
-     * should be preserved.
-     * FIXME: check length < max_bytes here anyway? This will be less
-     * error-prone, but that's an additional non-necessary branch.
-     */
-  
-    /* we don't need to check (d->length < d->max_bytes) because
-     * it was already checked in previous scanner (prefix_scanner).
-     */
+    // assumption: length < max_bytes. This is checked in prefix_scanner.
     xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
     unsigned char length = xed_decoded_inst_get_length(d);
     
@@ -620,9 +557,7 @@ static void xop_scanner(xed_decoded_inst_t* d)
       
       xed3_operand_set_vexvalid(d, 3);
 
-
       /* using the VEX opcode scanner for xop opcodes too. */
-
       evex_vex_opcode_scanner(d);
       return;
     }
@@ -899,8 +834,6 @@ static void sib_scanner(xed_decoded_inst_t* d)
       }
   }
 }
-
-
 
 /*probably this table should be generated. Leaving it here for now.
   Maybe in one of the following commits it will be moved to auto generated
@@ -1207,16 +1140,11 @@ static void evex_scanner(xed_decoded_inst_t* d)
     if (b == 0x62)
     {
         xed_avx512_payload1_t evex1;
-        
-        /*first check that it is not a BOUND instruction */
-        /*make sure we can read one additional byte */
-        if (length + 1 < max_bytes) {
+        // check that it is not a BOUND instruction
+        if (length + 1 <= max_bytes) {
             evex1.u32 = xed_decoded_inst_get_byte(d, length+1);
             if (!xed3_mode_64b(d) && evex1.coarse.rx_inv != 3) {
                 /*this is a BOUND instruction */
-                /* FIXME: could have set opcode here and call
-                 * modrm_scanner but that would be a code
-                 * duplication */
                 return;
             }
         }
@@ -1233,9 +1161,9 @@ static void evex_scanner(xed_decoded_inst_t* d)
         }
 
         /*Unlike the vex and xop prefix scanners, here length is pointing
-        at the evex prefix byte.  We want to ensure that we have enough
-        bytes available to read 4 bytes for evex prefix and 1 byte for an
-        opcode */
+        at the evex 0x62 prefix byte.  We want to ensure that we have
+        enough bytes available to read 4 bytes for evex prefix and 1 byte
+        for an opcode */
         if (length + 4 < max_bytes) {
             xed_avx512_payload2_t evex2;
             xed_uint_t eff_map;
