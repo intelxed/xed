@@ -359,7 +359,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
     xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
     unsigned char length  = xed_decoded_inst_get_length(d);
     xed_avx_c4_payload1_t c4byte1;    
-    if (length+1 <= max_bytes)   {
+    if (length+1 < max_bytes)   {
         length++;
         c4byte1.u32 = xed_decoded_inst_get_byte(d, length);
         // in 16/32b modes, the MODRM.MOD field MUST be 0b11
@@ -1141,7 +1141,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
     {
         xed_avx512_payload1_t evex1;
         // check that it is not a BOUND instruction
-        if (length + 1 <= max_bytes) {
+        if (length + 1 < max_bytes) {
             evex1.u32 = xed_decoded_inst_get_byte(d, length+1);
             if (!xed3_mode_64b(d) && evex1.coarse.rx_inv != 3) {
                 /*this is a BOUND instruction */
