@@ -64,3 +64,6 @@ DEC               ; BUILDDIR/xed-ex1 0f a8
 DEC               ; BUILDDIR/xed-ex1 0f 38 00 ff
 DEC               ; BUILDDIR/xed-ex1 0f 3a 0f ff ff
 DEC AMD           ; BUILDDIR/xed-ex1 0f 0f 30 0c
+DEC               ; BUILDDIR/xed -64 -d 62
+DEC               ; BUILDDIR/xed -64 -d c4
+DEC               ; BUILDDIR/xed -64 -d c5
