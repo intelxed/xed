@@ -82,12 +82,15 @@ static void check_avx512_gathers(xed_decoded_inst_t* xds) {
 #endif
 #if defined(XED_ATTRIBUTE_NO_SRC_DEST_MATCH_DEFINED)
 static void check_src2_dest_match(xed_decoded_inst_t* xds) {
-    // this does not use reg-id's so this is looking for exact matches.
+    xed_reg_enum_t srcx; 
     xed_reg_enum_t dest = xed3_operand_get_reg0(xds);
-    xed_reg_enum_t src1 = xed3_operand_get_reg1(xds);
-    // src2 might be invalid for memory source version. that's ok.
-    xed_reg_enum_t src2 = xed3_operand_get_reg2(xds); 
-    if (dest == src1 || dest == src2)
+    xed_reg_enum_t srcy = xed3_operand_get_reg2(xds);
+    if (xed_decoded_inst_get_attribute(xds, XED_ATTRIBUTE_MASKOP_EVEX)) 
+        srcx = xed3_operand_get_reg3(xds); 
+    else 
+        srcx = xed3_operand_get_reg1(xds);
+    // works fine if 2nd src is a memop
+    if (dest == srcx || dest == srcy)
         xed3_operand_set_error(xds,XED_ERROR_BAD_REG_MATCH);
 }
 #endif
