@@ -189,14 +189,14 @@ def gen_l2_func_list(agi, target_nt_dict, arg_nt_dict,
                      ild_t_member):
     """generate L2 functions"""
     l2_func_list = []
-    for (nt_name,array) in target_nt_dict.items():
+    for (nt_name,array) in sorted(target_nt_dict.items()):
         target_opname = array.get_target_opname()
         if array.is_const_lookup_fun():
             fo = gen_const_l2_function(agi, nt_name,
                                 target_opname, ild_t_member)
             l2_func_list.append(fo)
         else:
-            for arg_nt_seq,arg_arr in arg_nt_dict.items():
+            for arg_nt_seq,arg_arr in sorted(arg_nt_dict.items()):
                 fo = gen_scalable_l2_function(agi, nt_name,
                      target_opname, ild_t_member, arg_arr, list(arg_nt_seq))
                 l2_func_list.append(fo)

@@ -199,10 +199,11 @@ def work(agi, united_lookup, eosz_nts, ild_gendir, debug):
             return None
         nt_seq_arrays[tuple(nt_seq)] = array
     #init function calls all single init functions for the created tables
-    init_f = ild_nt.gen_init_function(list(nt_seq_arrays.values()), 
+    nt_seq_values = [v for (k,v) in sorted(nt_seq_arrays.items())]
+    init_f = ild_nt.gen_init_function(nt_seq_values, 
                                       'xed_ild_eosz_init')
     #dump init and lookup functions for EOSZ sequences
-    ild_nt.dump_lu_arrays(agi, list(nt_seq_arrays.values()), _eosz_c_fn,
+    ild_nt.dump_lu_arrays(agi, nt_seq_values, _eosz_c_fn,
                           mbuild.join('include-private', _eosz_header_fn),
                           init_f)
     #generate EOSZ getter functions - they get xed_decoded_inst_t*

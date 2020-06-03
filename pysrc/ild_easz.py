@@ -165,9 +165,10 @@ def work(agi, united_lookup, easz_nts, ild_gendir, debug):
             return
         nt_seq_arrays[tuple(nt_seq)] = array
     #init function calls all single init functions for the created tables
-    init_f = ild_nt.gen_init_function(list(nt_seq_arrays.values()),
+    nt_seq_values = [v for (k,v) in sorted(nt_seq_arrays.items())]
+    init_f = ild_nt.gen_init_function(nt_seq_values,
                                        'xed_ild_easz_init')
-    ild_nt.dump_lu_arrays(agi, list(nt_seq_arrays.values()), _easz_c_fn, 
+    ild_nt.dump_lu_arrays(agi, nt_seq_values, _easz_c_fn, 
                           mbuild.join('include-private', _easz_header_fn),
                           init_f)
     getter_fos = []

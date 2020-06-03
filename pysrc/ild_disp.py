@@ -325,7 +325,8 @@ def work(agi, instr_by_map_opcode,  disp_nts, brdisp_nts, ild_gendir,
     brdisp_dict = _gen_l3_array_dict(agi, brdisp_nts, _brdisp_token)
     disp_dict   = _gen_l3_array_dict(agi, disp_nts,   _disp_token)
     
-    nt_arr_list = list(brdisp_dict.values()) + list(disp_dict.values())
+    nt_arr_list = ([v for (k,v) in sorted(brdisp_dict.items())] +
+                   [v for (k,v) in sorted(disp_dict.items())])
     #create function that calls all initialization functions
     init_f = ild_nt.gen_init_function(nt_arr_list, 'xed_ild_disp_l3_init')
     
@@ -341,7 +342,7 @@ def work(agi, instr_by_map_opcode,  disp_nts, brdisp_nts, ild_gendir,
     l2_functions = []
     eosz_op = ild_eosz.get_target_opname()
     easz_op = ild_easz.get_target_opname()
-    for nt_name,array in list(disp_dict.items()) + list(brdisp_dict.items()):
+    for nt_name,array in sorted(disp_dict.items()) + sorted(brdisp_dict.items()):
         #Some DISP NTs depend on EOSZ, others on EASZ, we need to know
         #that when we generate L2 functions
         if eosz_op in array.get_arg_names():
