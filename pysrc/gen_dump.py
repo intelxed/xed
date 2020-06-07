@@ -44,9 +44,8 @@ def work(args):  # main function
     for r in xeddb.recs:
         for fld in sorted(r.__dict__.keys()):
             print("{}: {}".format(fld,getattr(r,fld)))
+        print("EOSZ_LIST: {}".format(r.get_eosz_list()))
         print("\n\n")
-
-
     return 0
 
 if __name__ == "__main__":
