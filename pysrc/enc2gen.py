@@ -1369,7 +1369,10 @@ def scalable_implicit_operands(ii):
     return False
 
 def create_legacy_zero_operands_scalable(env,ii):
-    if ii.iclass in ['IN','OUT']:
+    # FIXME 2020-06-06: IN and OUT are the only two instr with OeAX()
+    # operands. I should write more general code for realizing that
+    # only 16/32 are accessible.
+    if ii.iclass in ['IN','OUT']:  
         osz_list = [16,32]
         
     for osz in osz_list:
