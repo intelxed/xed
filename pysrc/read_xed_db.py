@@ -43,8 +43,25 @@ class inst_t(object):
         for fld in sorted(self.__dict__.keys()):
             s.append("{}: {}".format(fld,getattr(self,fld)))
         return "\n".join(s) + '\n'
-    
-
+    def get_eosz_list(self):
+        if hasattr(self,'attributes'):
+            if 'BYTEOP' in self.attributes:
+                return [8]
+        if hasattr(self,'eosz'):
+            if self.eosz == 'oszall':
+                return [16,32,64]
+            if self.eosz == 'osznot16':
+                return [32,64]
+            if self.eosz == 'osznot64':
+                return [16,32]
+            if self.eosz == 'o16':
+                return [16]
+            if self.eosz == 'o32':
+                return [32]
+            if self.eosz == 'o64':
+                return [64]
+            die("Could not handle eosz {}".format(self.eosz))
+        die("Did not find eosz for {}".format(self.iclass))
 
 class width_info_t(object):
     def __init__(self, name, dtype, widths):
@@ -136,6 +153,8 @@ def _set_eosz(v):
                     eosz = 'o64'
                 elif v.rexw_prefix == '1':
                     eosz = 'o64'
+                elif 'FORCE64' in v.pattern:
+                    eosz = 'o64'
                 elif v.osz_required and 'IMMUNE66' not in v.pattern:
                     eosz = 'o16'
                 else:
@@ -179,6 +198,7 @@ class xed_reader_t(object):
         self._parse_operands()
         self._generate_operands()
         self._generate_memop_rw_field()
+        self._generate_missing_iforms()
         self._summarize_operands()
         self._summarize_vsib()
         
@@ -291,7 +311,7 @@ class xed_reader_t(object):
                     continue
                 s = op.name
             else:
-                msgb("UNHANDLED","{}".format(op))
+                msbg("UNHANDLED","{}".format(op))
                 
             if s:
                 if op.visibility in ['IMPLICIT','SUPPRESSED']:
@@ -300,8 +320,6 @@ class xed_reader_t(object):
                     expl_operand_list.append(s)
 
         return expl_operand_list, impl_operand_list
-        
-
     
     def _generate_operands(self):
         for v in self.recs:
@@ -313,6 +331,63 @@ class xed_reader_t(object):
                 v.explicit_operands = ['none']
             if not v.implicit_operands:
                 v.implicit_operands = ['none']
+
+    def _generate_one_iform(self,v):
+        # This must match the logic from generator.py's compute_iform()
+        tokens = []
+        for op in v.parsed_operands:
+            if op.visibility in ['IMPLICIT', 'EXPLICIT', 'DEFAULT']:
+                s = None
+                if op.name in ['MEM0','MEM1']:
+                    s = 'MEM'
+                    if op.oc2:
+                        s += op.oc2
+                elif op.name in ['IMM0','IMM1']:
+                    s = 'IMM'
+                    if op.oc2:
+                        s += op.oc2
+                    
+                elif op.type == 'nt_lookup_fn':
+                    #msgb("NTLUF: {}".format(op.lookupfn_name))
+                    s = op.lookupfn_name
+                    s = re.sub(r'[()]*','',s)
+                    s = re.sub(r'_[RBN].*','',s)
+                    s = re.sub(r'_S[RBE]','',s)
+                    s = re.sub(r'FINAL_.*','',s)
+                    if op.oc2 and s not in ['X87']:
+                        if op.oc2 == 'v' and s[-1] == 'v': 
+                            pass # avoid duplicate v's
+                        else:
+                            s += op.oc2
+                            
+                elif op.type == 'reg':
+                    s = op.bits.upper()
+                    #msgb("REG: {}".format(s))
+                    s = re.sub(r'XED_REG_','',s)
+                    if op.oc2 and op.oc2 not in ['f80']:
+                        s += op.oc2
+                                
+                elif op.type == 'imm_const':
+                    if op.name in ['BCAST','SCALE']:
+                        continue
+                    s = op.name
+                    if op.oc2:
+                        s += op.oc2
+                else:
+                    msgb("IFORM SKIPPING ","{} for {}".format(op, v.iclass))
+                if s:
+                    tokens.append(s)
+                    
+        iform = v.iclass
+        if tokens:
+            iform += '_' + "_".join(tokens)
+        return iform
+
+        
+    def _generate_missing_iforms(self):
+        for v in self.recs:
+            if v.iform == '' or  not hasattr(v,'iform'):
+                v.iform = self._generate_one_iform(v)
                 
     def _generate_memop_rw_field(self):
         for v in self.recs:
@@ -628,6 +703,7 @@ class xed_reader_t(object):
                 easz = 'a32'
             elif 'EASZ=3' in v.pattern:
                 easz =  'a64'
+                v.mode_restriction = 2
             elif 'EASZ!=1' in v.pattern:
                 easz = 'asznot16'
             v.easz = easz
@@ -833,18 +909,20 @@ class xed_reader_t(object):
                 value = value.strip()
                 if value.startswith(':'):
                     die("Double colon error {}".format(line))
+                if key == 'PATTERN':
+                    # Since some patterns/operand sequences have
+                    # iforms and others do not, we can avoid tripping
+                    # ourselves up by always adding an iform when we
+                    # see the PATTERN token. And if do we see an IFORM
+                    # token, we can replace the last one in the list.
+                    d['IFORM'].append('')
                 if key == 'IFORM':
-                    # fill in missing iforms with empty strings
-                    x = len(d['PATTERN']) - 1
-                    y = len(d['IFORM'])
-                    # if we have more patterns than iforms, add some
-                    # blank iforms
-                    while y < x:
-                        d['IFORM'].append('')
-                        y = y + 1
-
-                d[key].append(value)
-
+                    # Replace the last one in the list which was added
+                    # when we encountered the PATTERN token.
+                    d[key][-1] = value
+                else:
+                    # for normal tokens we just append them
+                    d[key].append(value)
             else:
                 die("Unexpected: [{0}]".format(line))
         sys.stderr.write("\n")
