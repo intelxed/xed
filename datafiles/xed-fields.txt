@@ -138,12 +138,13 @@ BASE0          SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   PUBLIC   DO 
 INDEX          SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   INTERNAL   DO EI   
 SCALE          SCALAR     xed_bits_t 4              EXPLICIT    PRINT   INTERNAL   DO EI #1/2/4/8
 
-#  SCALE is used by the user. SIBSCALE is internal
+# NEED_SIB is variable used by encoder to control emitting fa sib byte. not used by decoder
+NEED_SIB       SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT INTERNAL DO EO 
 
-SIB            SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
-SIBSCALE       SCALAR     xed_bits_t 2              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
-SIBBASE        SCALAR     xed_bits_t 3              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
-SIBINDEX       SCALAR     xed_bits_t 3              SUPPRESSED  NOPRINT INTERNAL DO EO # ENCODER INTERNAL
+# raw values of the SIB fields:
+SIBSCALE       SCALAR     xed_bits_t 2              SUPPRESSED  NOPRINT INTERNAL DO EO
+SIBBASE        SCALAR     xed_bits_t 3              SUPPRESSED  NOPRINT INTERNAL DO EO
+SIBINDEX       SCALAR     xed_bits_t 3              SUPPRESSED  NOPRINT INTERNAL DO EO
 
 #  For the string ops:
 SEG1           SCALAR     xed_reg_enum_t 16     EXPLICIT    PRINT   INTERNAL   DO EI   

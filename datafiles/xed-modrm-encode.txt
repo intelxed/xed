@@ -79,28 +79,28 @@ otherwise                  -> no_seg_prefix # was "nothing" 2007-0x08-0x14
 
 
 SIB_REQUIRED_ENCODE()::
-eamode32 INDEX=GPR32e()  -> SIB=1 
-eamode64 INDEX=GPR64e()  -> SIB=1 
+eamode32 INDEX=GPR32e()  -> NEED_SIB=1 
+eamode64 INDEX=GPR64e()  -> NEED_SIB=1 
 #   base-less memop in 64b mode requires a SIB
 
-eamode64 BASE0=@ DISP_WIDTH=32 ->  SIB=1
-eamode32 mode64 BASE0=@ DISP_WIDTH=32 ->  SIB=1
+eamode64 BASE0=@ DISP_WIDTH=32 ->  NEED_SIB=1
+eamode32 mode64 BASE0=@ DISP_WIDTH=32 ->  NEED_SIB=1
 eamode32 mode16 -> nothing
 eamode32 mode32 -> nothing
 
 #   Denote the need of a SIB byte if base is rSP or r12
-eanot16 BASE0=ArSP()  -> SIB=1
-eanot16 BASE0=Ar12()  -> SIB=1
+eanot16 BASE0=ArSP()  -> NEED_SIB=1
+eanot16 BASE0=Ar12()  -> NEED_SIB=1
 
 #  When the displacement is omitted, we supply one for these r13 and rBP.
-#eanot16 BASE0=ArBP() DISP_WIDTH=0 -> SIB=1
-#eanot16 BASE0=Ar13() DISP_WIDTH=0 -> SIB=1
+#eanot16 BASE0=ArBP() DISP_WIDTH=0 -> NEED_SIB=1
+#eanot16 BASE0=Ar13() DISP_WIDTH=0 -> NEED_SIB=1
 
-otherwise -> nothing # FIXME: could set SIB=0
+otherwise -> nothing # FIXME: could set NEED_SIB=0
 
 SIBBASE_ENCODE()::
-SIB=0     -> nothing
-SIB=1     -> SIBBASE_ENCODE_SIB1()
+NEED_SIB=0     -> nothing
+NEED_SIB=1     -> SIBBASE_ENCODE_SIB1()
 
 SIBBASE_ENCODE_SIB1()::
 BASE0=ArAX()  -> SIBBASE=0 REXB=0
@@ -116,12 +116,12 @@ BASE0=Ar12()  -> SIBBASE=4 REXB=1
 
 # The mod values are really gotten by the MOD rule, only requiring one
 # addition.  
-## BAD MODIFIES DISP! SIB=1 BASE0=@      DISP_WIDTH=8 -> SIBBASE=5 REXB=0 DISP_WIDTH=32 # MOD=0
+## BAD MODIFIES DISP! NEED_SIB=1 BASE0=@      DISP_WIDTH=8 -> SIBBASE=5 REXB=0 DISP_WIDTH=32 # MOD=0
 BASE0=@      -> DISP_WIDTH_32() SIBBASE=5 REXB=0 # MOD=0
 # The MOD rule handles the DISP arg modification for rBP and r13
 BASE0=ArBP() -> DISP_WIDTH_0_8_32() SIBBASE=5 REXB=0 # MOD=1 # ARG MODIFICATION LATER IN MOD RULE
 
-# SIB=1 BASE0=@      DISP_WIDTH=32 -> SIBBASE=5 REXB=0 # MOD=0  redundant with the above
+# NEED_SIB=1 BASE0=@      DISP_WIDTH=32 -> SIBBASE=5 REXB=0 # MOD=0  redundant with the above
 # The MOD rule handles the DISP arg modification for rBP and r13
 BASE0=Ar13() -> DISP_WIDTH_0_8_32() SIBBASE=5 REXB=1 # MOD=1 # ARG MODIFICATION LATER IN MOD RULE
 
@@ -132,8 +132,8 @@ BASE0=Ar15() -> SIBBASE=7 REXB=1
 otherwise    -> error             # BASE0 was some other register
 
 SIBINDEX_ENCODE()::
-SIB=0 -> nothing
-SIB=1 -> SIBINDEX_ENCODE_SIB1()
+NEED_SIB=0 -> nothing
+NEED_SIB=1 -> SIBINDEX_ENCODE_SIB1()
 
 SIBINDEX_ENCODE_SIB1()::    
 INDEX=ArAX() -> SIBINDEX=0 REXX=0
@@ -156,12 +156,12 @@ otherwise    -> error             # INDEX was some other register
 
 
 SIBSCALE_ENCODE()::
-SIB=0         -> nothing
-SIB=1 SCALE=0 -> SIBSCALE=0 # this allows for default unset scales
-SIB=1 SCALE=1 -> SIBSCALE=0
-SIB=1 SCALE=2 -> SIBSCALE=1
-SIB=1 SCALE=4 -> SIBSCALE=2
-SIB=1 SCALE=8 -> SIBSCALE=3
+NEED_SIB=0         -> nothing
+NEED_SIB=1 SCALE=0 -> SIBSCALE=0 # this allows for default unset scales
+NEED_SIB=1 SCALE=1 -> SIBSCALE=0
+NEED_SIB=1 SCALE=2 -> SIBSCALE=1
+NEED_SIB=1 SCALE=4 -> SIBSCALE=2
+NEED_SIB=1 SCALE=8 -> SIBSCALE=3
 otherwise    -> error             # SCALE was some other value
 
 ##############################################################################
@@ -256,7 +256,7 @@ MODRM_MOD_EA32_DISP8()::
 otherwise                      -> MOD=1  # might use SIB
 
 MODRM_MOD_EA32_DISP32()::
-BASE0=@                    -> MOD=0 #no base (handles SIB=1 case)
+BASE0=@                    -> MOD=0 #no base (handles NEED_SIB=1 case)
 BASE0=GPR32e()             -> MOD=2 #some base, not RIP, might use SIB
 BASE0=rIPa() mode64        -> MOD=0
 
@@ -289,7 +289,7 @@ MODRM_MOD_EA64_DISP8()::
 BASE0=GPR64e()             -> MOD=1
 
 MODRM_MOD_EA64_DISP32()::
-BASE0=@              -> MOD=0 #no base, SIB=1 required (provided elsewhere)
+BASE0=@              -> MOD=0 #no base, NEED_SIB=1 required (provided elsewhere)
 BASE0=XED_REG_EIP    -> MOD=0 #base eip
 BASE0=XED_REG_RIP    -> MOD=0 #base rip
 BASE0=XED_REG_RAX    -> MOD=2 
@@ -298,13 +298,13 @@ BASE0=XED_REG_RCX    -> MOD=2
 BASE0=XED_REG_RDX    -> MOD=2 
 BASE0=XED_REG_RSI    -> MOD=2 
 BASE0=XED_REG_RDI    -> MOD=2 
-BASE0=XED_REG_RSP    -> MOD=2 # SIB=1 required (and is provided elsewhere)
+BASE0=XED_REG_RSP    -> MOD=2 # NEED_SIB=1 required (and is provided elsewhere)
 BASE0=XED_REG_RBP    -> MOD=2 
 BASE0=XED_REG_R8     -> MOD=2 
 BASE0=XED_REG_R9     -> MOD=2 
 BASE0=XED_REG_R10    -> MOD=2 
 BASE0=XED_REG_R11    -> MOD=2 
-BASE0=XED_REG_R12    -> MOD=2 # SIB=1 required (and is provided elsewhere)
+BASE0=XED_REG_R12    -> MOD=2 # NEED_SIB=1 required (and is provided elsewhere)
 BASE0=XED_REG_R13    -> MOD=2 
 BASE0=XED_REG_R14    -> MOD=2 
 BASE0=XED_REG_R15    -> MOD=2 
@@ -314,10 +314,10 @@ BASE0=XED_REG_R15    -> MOD=2
 #If we didn't already encode the base in the SIB!
 MODRM_RM_ENCODE()::
 
-eamode16  SIB=0 -> MODRM_RM_ENCODE_EA16_SIB0()
-eamode32  SIB=0 -> MODRM_RM_ENCODE_EA32_SIB0()
-eamode64  SIB=0 -> MODRM_RM_ENCODE_EA64_SIB0()
-eanot16   SIB=1 -> MODRM_RM_ENCODE_EANOT16_SIB1()
+eamode16  NEED_SIB=0 -> MODRM_RM_ENCODE_EA16_SIB0()
+eamode32  NEED_SIB=0 -> MODRM_RM_ENCODE_EA32_SIB0()
+eamode64  NEED_SIB=0 -> MODRM_RM_ENCODE_EA64_SIB0()
+eanot16   NEED_SIB=1 -> MODRM_RM_ENCODE_EANOT16_SIB1()
 
 #############################################
 
@@ -413,8 +413,8 @@ otherwise -> RM=4 # SIB will specify the REXB etc.
 #FIXME: handle "nothing" option
 
 ## SIB_EMIT()::
-## SIB=1 SIBBASE[bbb]=* SIBSCALE[ss]=* SIBINDEX[iii]=* -> ss_iii_bbb
-## SIB=0                                               -> nothing
+## NEED_SIB=1 SIBBASE[bbb]=* SIBSCALE[ss]=* SIBINDEX[iii]=* -> ss_iii_bbb
+## NEED_SIB=0                                               -> nothing
 ## 
 ## MODRM_EMIT()::
 ## MODRM=1 MOD[xx]=* REG[rrr]=* RM[mmm]=* -> xx_rrr_mmm
@@ -423,8 +423,8 @@ otherwise -> RM=4 # SIB will specify the REXB etc.
 # ... OR ...
 
 SIB_NT()::
-SIB=1 SIBBASE[bbb] SIBSCALE[ss] SIBINDEX[iii] -> ss_iii_bbb
-SIB=0                                         -> nothing
+NEED_SIB=1 SIBBASE[bbb] SIBSCALE[ss] SIBINDEX[iii] -> ss_iii_bbb
+NEED_SIB=0                                         -> nothing
 
 
 

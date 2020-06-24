@@ -245,7 +245,7 @@ xed_operand_values_has_modrm_byte(const xed_operand_values_t* p) {
 }
 xed_bool_t 
 xed_operand_values_has_sib_byte(const xed_operand_values_t* p) {
-    return xed3_operand_get_sib(p);
+    return xed3_operand_get_has_sib(p);
 }
 
 xed_bool_t
