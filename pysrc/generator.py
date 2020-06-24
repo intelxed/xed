@@ -3634,13 +3634,7 @@ def compute_iform(options,ii, operand_storage_dict):
             msge("IFORM SKIPPING SUPPRESSED %s" % (operand.name))
 
       elif operand.type == 'nt_lookup_fn':
-         s = operand.lookupfn_name # .upper()
-         s = re.sub(r'_SB','',s) 
-         s = re.sub(r'_SR','',s) 
-         s = re.sub(r'_EB','',s) # order counts _EB before _B
-         s = re.sub(r'_[RBNEI].*','',s)
-         s = re.sub(r'_DREX','',s) # AMD SSE5
-         s = re.sub(r'_SE','',s)
+         s = operand.lookupfn_name_base 
          if operand.oc2 and s not in ['X87'] :
             if operand.oc2 == 'v' and s[-1] == 'v': 
                pass # avoid duplicate v's

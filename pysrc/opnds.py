@@ -69,6 +69,7 @@ class operand_info_t(object):
 
       # for lookup-functions this is the name of that function
       self.lookupfn_name = lookupfn_name
+      self.lookupfn_name_base = self._strip_ntluf_name()
 
       self.rw = rw # r,w,rw, cw (conditional write, may write)
 
@@ -122,6 +123,17 @@ class operand_info_t(object):
       if self.type == 'nt_lookup_fn':
          return True
       return False
+
+   def _strip_ntluf_name(self):
+       if self.is_ntluf():
+           s = self.lookupfn_name
+           s = re.sub(r'[()]*','',s)
+           s = re.sub(r'_S[RBE]','',s)
+           s = re.sub(r'_[RBNEI].*','',s)
+           s = re.sub(r'FINAL_.*','',s)
+           return s
+       return None
+
 
    def get_cvt(self, i):
        cvt = None

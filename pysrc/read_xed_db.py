@@ -43,25 +43,31 @@ class inst_t(object):
         for fld in sorted(self.__dict__.keys()):
             s.append("{}: {}".format(fld,getattr(self,fld)))
         return "\n".join(s) + '\n'
+
+
     def get_eosz_list(self):
-        if hasattr(self,'attributes'):
-            if 'BYTEOP' in self.attributes:
-                return [8]
-        if hasattr(self,'eosz'):
-            if self.eosz == 'oszall':
-                return [16,32,64]
-            if self.eosz == 'osznot16':
-                return [32,64]
-            if self.eosz == 'osznot64':
-                return [16,32]
-            if self.eosz == 'o16':
-                return [16]
-            if self.eosz == 'o32':
-                return [32]
-            if self.eosz == 'o64':
-                return [64]
-            die("Could not handle eosz {}".format(self.eosz))
-        die("Did not find eosz for {}".format(self.iclass))
+        if self.space == 'legacy':
+            if hasattr(self,'attributes'):
+                if 'BYTEOP' in self.attributes:
+                    return [8]
+            if hasattr(self,'eosz'):
+                if self.eosz == 'oszall':
+                    return [16,32,64]
+                if self.eosz == 'osznot16':
+                    return [32,64]
+                if self.eosz == 'osznot64':
+                    return [16,32]
+                if self.eosz == 'o16':
+                    return [16]
+                if self.eosz == 'o32':
+                    return [32]
+                if self.eosz == 'o64':
+                    return [64]
+                die("Could not handle eosz {}".format(self.eosz))
+            die("Did not find eosz for {}".format(self.iclass))
+        else: #  vex, evex, xop
+            return None
+            
 
 class width_info_t(object):
     def __init__(self, name, dtype, widths):
@@ -299,10 +305,7 @@ class xed_reader_t(object):
             elif op.name in ['IMM0','IMM1']:
                 s = 'IMM'
             elif op.type == 'nt_lookup_fn':
-                s = op.lookupfn_name
-                s = re.sub(r'[()]*','',s)
-                s = re.sub(r'_[RBN].*','',s)
-                s = re.sub(r'FINAL_.*','',s)
+                s = op.lookupfn_name_base
             elif op.type == 'reg':
                 s = op.bits
                 s = re.sub(r'XED_REG_','',s)
@@ -349,11 +352,7 @@ class xed_reader_t(object):
                     
                 elif op.type == 'nt_lookup_fn':
                     #msgb("NTLUF: {}".format(op.lookupfn_name))
-                    s = op.lookupfn_name
-                    s = re.sub(r'[()]*','',s)
-                    s = re.sub(r'_[RBN].*','',s)
-                    s = re.sub(r'_S[RBE]','',s)
-                    s = re.sub(r'FINAL_.*','',s)
+                    s = op.lookupfn_name_base
                     if op.oc2 and s not in ['X87']:
                         if op.oc2 == 'v' and s[-1] == 'v': 
                             pass # avoid duplicate v's
