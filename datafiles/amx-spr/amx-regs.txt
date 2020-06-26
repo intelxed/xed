@@ -16,19 +16,16 @@
 #  
 #END_LEGAL
 
+# 1KB = 8192 bits
 
-SAPPHIRE_RAPIDS:        \
-     ALL_OF(TIGER_LAKE) \
-     PTWRITE            \
-     ENQCMD             \
-     SERIALIZE          \
-     TSX_LDTRK          \
-     WAITPKG            \
-     AVX512_BF16_128    \
-     AVX512_BF16_256    \
-     AVX512_BF16_512    \
-     AMX_TILE           \
-     AMX_INT8           \
-     AMX_BF16
+TMM0  treg 8192 TMM0  0
+TMM1  treg 8192 TMM1  1
+TMM2  treg 8192 TMM2  2
+TMM3  treg 8192 TMM3  3
+TMM4  treg 8192 TMM4  4
+TMM5  treg 8192 TMM5  5
+TMM6  treg 8192 TMM6  6
+TMM7  treg 8192 TMM7  7
 
-     
+
+TILECONFIG  pseudo 512

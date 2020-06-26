@@ -15,20 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+#
+#code      XTYPE     width16 width32 width64 (if only one width is presented, it is for all widths)
+#
 
+ptr         u8      0
+tmemrow     u8      0
+tmemcol     u8      0
 
-SAPPHIRE_RAPIDS:        \
-     ALL_OF(TIGER_LAKE) \
-     PTWRITE            \
-     ENQCMD             \
-     SERIALIZE          \
-     TSX_LDTRK          \
-     WAITPKG            \
-     AVX512_BF16_128    \
-     AVX512_BF16_256    \
-     AVX512_BF16_512    \
-     AMX_TILE           \
-     AMX_INT8           \
-     AMX_BF16
-
-     
+# tiles are variable width based on palette so hard to really specify an overall width.
+tv          u8      0 
