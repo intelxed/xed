@@ -130,6 +130,15 @@ void print_misc(xed_decoded_inst_t* xedd) {
 
 }
 
+void print_branch_hints(xed_decoded_inst_t* xedd) {
+    if (xed_operand_values_branch_not_taken_hint(xedd)) 
+        printf("HINT: NOT TAKEN\n");
+    else if (xed_operand_values_branch_taken_hint(xedd)) 
+        printf("HINT: TAKEN\n");
+    else if (xed3_operand_get_hint(xedd)==5) 
+        printf("CET NO-TRACK\n");
+}
+
 void print_attributes(xed_decoded_inst_t* xedd) {
     /* Walk the attributes. Generally, you'll know the one you want to
      * query and just access that one directly. */
@@ -599,5 +608,7 @@ int main(int argc, char** argv) {
 
     // misc
     print_misc(&xedd);
+    print_branch_hints(&xedd);
+    
     return 0;
 }

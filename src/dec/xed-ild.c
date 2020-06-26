@@ -40,17 +40,20 @@ static void init_eamode_table(void);
 static void init_has_sib_table(void);
 static void set_has_modrm(xed_decoded_inst_t* d);
 
-static void set_hint(xed_uint8_t b,  xed_decoded_inst_t* d){
-    switch(b){
-    case 0x2e:
-        xed3_operand_set_hint(d, 1);
-        return;
-    case 0x3e:
-        xed3_operand_set_hint(d, 2);
-        return;
-    default:
-        xed_assert(0);
-    }
+// We set the hints to the values {1,2} here but later move the values to
+// {3,4} if the prefixes are actually used for a Jcc branch.  If 3e is used
+// as a CET no-track indicator, it remains as the value 2.
+static  XED_INLINE void set_hint_3e(xed_decoded_inst_t* d) {
+    xed3_operand_set_hint(d,2);
+}
+static  XED_INLINE void set_hint_2e(xed_decoded_inst_t* d) {
+    xed3_operand_set_hint(d,1);
+}
+static  XED_INLINE xed_bool_t get_hint_3e(xed_decoded_inst_t const* d) {
+    return xed3_operand_get_hint(d)==2;
+}
+static  XED_INLINE void clear_hint(xed_decoded_inst_t* d) {
+    xed3_operand_set_hint(d,0);
 }
 
 // conservative filter table for fast prefix checking
@@ -172,24 +175,58 @@ static void prefix_scanner(xed_decoded_inst_t* d)
             break;
             
           /* segment prefixes */
-          case 0x2E:
-          case 0x3E: 
-            set_hint(b,d);
-            //INTENTIONAL FALLTHROUGH
-          case 0x26:
-          case 0x36:
-            if (xed3_mode_64b(d)==0) 
+          case 0x2E: //CS
+            if (xed3_mode_64b(d)==0)  { // 16/32b  mode
+                set_hint_2e(d);
                 xed3_operand_set_ild_seg(d, b);
+            }
+            else if (get_hint_3e(d)==0)  {
+                // only set 2e hint in 64b mode  if no prior 3e hint (CET's new rule)
+                set_hint_2e(d);
+            }
             nseg_prefixes++;
             /*ignore possible REX prefix encountered earlier */
             rex = 0;
-
             break;
-          case 0x64:
-          case 0x65:
+            
+          case 0x3E: //DS (& CET no-track on indirect call/jmp)
+
+            if (xed3_mode_64b(d)==0) { //16/32b mode
+                set_hint_3e(d);                
+                xed3_operand_set_ild_seg(d, b);
+            }
+            else //64b mode
+            {
+                //CET's new rule...
+                if (xed3_operand_get_ild_seg(d) != 0x64 &&
+                    xed3_operand_get_ild_seg(d) != 0x65 )
+                {
+                    set_hint_3e(d);
+                }
+            }
+            nseg_prefixes++;
+            /*ignore possible REX prefix encountered earlier */
+            rex = 0;
+            break;
+            
+          case 0x26: //ES
+          case 0x36: //SS
+            if (xed3_mode_64b(d)==0)  {
+                xed3_operand_set_ild_seg(d, b);
+                clear_hint(d);
+            }
+
+            nseg_prefixes++;
+            /*ignore possible REX prefix encountered earlier */
+            rex = 0;
+            break;
+            
+          case 0x64: //FS
+          case 0x65: //GS
             //for 64b mode we are ignoring non valid segment prefixes
             //only FS=0x64 and GS=0x64 are valid for 64b mode
             xed3_operand_set_ild_seg(d, b);
+            clear_hint(d);
             
             nseg_prefixes++;
             /*ignore possible REX prefix encountered earlier */
