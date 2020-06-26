@@ -30,7 +30,7 @@ class jobs_status_t:
         self.fails = 0
         self.successes = 0
         self.commands = [] # list of  tuples of (retval, command)
-        
+
     def __str__(self):
         s = []
         s.append("JOBS: {}, SUCCESSES: {}, FAILS: {}".format(
@@ -120,26 +120,89 @@ def get_python_cmds():
         return [('3.x', 'python3')]
     return [('dfltpython', 'python')]
 
+
+
+def all_instr(pyver, pycmd, status, kind):
+    size = 'x86-64'
+    linkkind = 'static'
+    build_dir = 'obj-{}-{}-{}-{}'.format(kind, pyver, size, linkkind)
+    cwd = os.path.abspath(os.curdir)
+    flags = '--kind {} --enc2-test-checked'.format(kind)
+    cmd = '{} xedext/xed_build.py --xed-dir {} {}  --build-dir={} host_cpu={}'.format(
+        pycmd, cwd, flags, build_dir, size)
+    ok = run(status, cmd)
+
+    if ok:
+        cmd = '{}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'.format(
+            build_dir)
+        ok = run(status, cmd)
+
+        if 1: # FIXME: ignore error code for now.
+            cmd = 'gcc a.c'
+            run(status, cmd)
+
+            if ok:
+                cmd = '{}/wkit/bin/xed -i a.out > all.dis'.format(build_dir)
+                run(status, cmd)
+
+def archval(pyver, pycmd, status):
+    size = 'x86-64'
+    linkkind = 'static'
+    build_dir = 'obj-archval-{}-{}-{}'.format(pyver, size, linkkind)
+    cwd = os.path.abspath(os.curdir)
+    flags = '--kind architectural-val ' + os.getenv('ARCHVAL_OPTIONS')
+    cmd = '{} xedext/xed_build.py --xed-dir {} {} --build-dir={} host_cpu={}'.format(
+        pycmd, cwd, flags, build_dir, size)
+    run(status, cmd)
+            
 def main():
     status = jobs_status_t()
     # FIXME: add knob for local use
     # git_base = 'ssh://git@gitlab.devtools.intel.com/xed-group/'
     git_base = 'https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.devtools.intel.com/xed-group/'
+
+    mbuild_git = git_base + 'mbuild.git'
+    cmd = 'git clone --depth 1 {} mbuild'.format(mbuild_git)
+    run(status, cmd, required=True)
+
+    # IPLDT scan XED and MBUILD
+    if 0: # disabled until get  right branch
+        # obtain IPLDT scanner tool
+        bintools_git = git_base + 'binary-tools.git'
+        cmd = 'git clone --depth 1 {} binary-tools'.format(bintools_git)
+        run(status, cmd, required=True)
+        
+        # clone another copy of xed sources just for IPLDT scanning
+        # FIXME: need to get the branch we are testing!
+        xed_git = git_base + 'xed.git'
+        cmd = 'git clone --depth 1 {} xed'.format(xed_git)
+        run(status, cmd, required=True)
+        
+        cmd = 'binary-tools/lin/ipldt3 -i xed -r ipldt-results-xed'
+        run(status, cmd, required=False)
+        cmd = 'cat ipldt-results-xed/ipldt_results.txt'
+        run(status, cmd, required=True)
+        
+        cmd = 'binary-tools/lin/ipldt3 -i mbuild -r ipldt-results-mbuild'
+        run(status, cmd, required=False)
+        cmd = 'cat ipldt-results-mbuild/ipldt_results.txt'
+        run(status, cmd, required=True)
+    
+    xedext_git = git_base + 'xedext.git'
+    cmd = 'git clone --depth 1 {} xedext'.format(xedext_git)
+    run(status, cmd, required=True)
+    # FIXME: add support for changing to non-defalt branch of xedext. Read a file
+    # with branch name from xed...
+    
+    
+    archval_repo = os.getenv('ARCHVAL_REPO')
+    if archval_repo:
+        archval_git = git_base + archval_repo
+        short_name = os.path.splitext(archval_repo)[0]
+        cmd = 'git clone {} {}'.format(archval_git, short_name)
+        run(status, cmd, required=True)
+
     for pyver, pycmd in get_python_cmds():
-        mbuild_git = git_base + 'mbuild.git'
-        cmd = 'git clone {} mbuild'.format(mbuild_git)
-        run(status, cmd, required=True)
-
-        xedext_git = git_base + 'xedext.git'
-        cmd = 'git clone {} xedext'.format(xedext_git)
-        run(status, cmd, required=True)
-
-        archval_repo = os.getenv('ARCHVAL_REPO')
-        if archval_repo:
-            archval_git = git_base + archval_repo
-            short_name = os.path.splitext(archval_repo)[0]
-            cmd = 'git clone {} {}'.format(archval_git, short_name)
-            run(status, cmd, required=True)
 
         cmd = '{} -m pip install --user ./mbuild'.format(pycmd)
         run(status, cmd, required=True)
@@ -154,38 +217,13 @@ def main():
                                                                               link)
                 run(status, cmd)
 
-        # all instr test with internal-conf
-        size = 'x86-64'
-        linkkind = 'static'
-        build_dir = 'obj-conf-{}-{}-{}'.format(pyver, size, linkkind)
-        cwd = os.path.abspath(os.curdir)
-        flags = '--kind internal-conf --enc2-test-checked'
-        cmd = '{} xedext/xed_build.py --xed-dir {} {}  --build-dir={} host_cpu={}'.format(
-            pycmd, cwd, flags, build_dir, size)
-        ok = run(status, cmd)
-
-        if ok:
-            cmd = '{}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'.format(
-                build_dir)
-            ok = run(status, cmd)
-
-            if 1: # FIXME: ignore error code for now.
-                cmd = 'gcc a.c'
-                run(status, cmd)
-
-                if ok:
-                    cmd = '{}/wkit/bin/xed -i a.out > all.dis'.format(build_dir)
-                    run(status, cmd)
-
+        # all instr tests
+        all_instr(pyver, pycmd, status, 'internal-conf')
+        all_instr(pyver, pycmd, status, 'external')
+        
         # arch val test
-        size = 'x86-64'
-        linkkind = 'static'
-        build_dir = 'obj-archval-{}-{}-{}'.format(pyver, size, linkkind)
-        cwd = os.path.abspath(os.curdir)
-        flags = '--kind architectural-val ' + os.getenv('ARCHVAL_OPTIONS')
-        cmd = '{} xedext/xed_build.py --xed-dir {} {} --build-dir={} host_cpu={}'.format(
-            pycmd, cwd, flags, build_dir, size)
-        run(status, cmd)
+        archval(pyver, pycmd, status)
+
 
         # knc test
         if 0:
