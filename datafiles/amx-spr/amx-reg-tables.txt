@@ -1,0 +1,47 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2020 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+xed_reg_enum_t TMM_R()::
+REXR=0 REG=0 | OUTREG=XED_REG_TMM0
+REXR=0 REG=1 | OUTREG=XED_REG_TMM1
+REXR=0 REG=2 | OUTREG=XED_REG_TMM2
+REXR=0 REG=3 | OUTREG=XED_REG_TMM3
+REXR=0 REG=4 | OUTREG=XED_REG_TMM4
+REXR=0 REG=5 | OUTREG=XED_REG_TMM5
+REXR=0 REG=6 | OUTREG=XED_REG_TMM6
+REXR=0 REG=7 | OUTREG=XED_REG_TMM7
+
+xed_reg_enum_t TMM_B()::
+REXB=0 RM=0 | OUTREG=XED_REG_TMM0
+REXB=0 RM=1 | OUTREG=XED_REG_TMM1
+REXB=0 RM=2 | OUTREG=XED_REG_TMM2
+REXB=0 RM=3 | OUTREG=XED_REG_TMM3
+REXB=0 RM=4 | OUTREG=XED_REG_TMM4
+REXB=0 RM=5 | OUTREG=XED_REG_TMM5
+REXB=0 RM=6 | OUTREG=XED_REG_TMM6
+REXB=0 RM=7 | OUTREG=XED_REG_TMM7
+
+
+xed_reg_enum_t TMM_N()::
+VEXDEST3=1 VEXDEST210=7 | OUTREG=XED_REG_TMM0
+VEXDEST3=1 VEXDEST210=6 | OUTREG=XED_REG_TMM1
+VEXDEST3=1 VEXDEST210=5 | OUTREG=XED_REG_TMM2
+VEXDEST3=1 VEXDEST210=4 | OUTREG=XED_REG_TMM3
+VEXDEST3=1 VEXDEST210=3 | OUTREG=XED_REG_TMM4
+VEXDEST3=1 VEXDEST210=2 | OUTREG=XED_REG_TMM5
+VEXDEST3=1 VEXDEST210=1 | OUTREG=XED_REG_TMM6
+VEXDEST3=1 VEXDEST210=0 | OUTREG=XED_REG_TMM7

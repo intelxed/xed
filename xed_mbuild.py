@@ -1410,7 +1410,8 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'vp2intersect')
         if env['spr']:
             _add_normal_ext(env,'spr')
-            _add_normal_ext(env,'pt')
+            _add_normal_ext(env,'spr')
+            _add_normal_ext(env,'amx-spr')
             _add_normal_ext(env,'waitpkg')
             _add_normal_ext(env,'bf16')
             _add_normal_ext(env,'enqcmd')
