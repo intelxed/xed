@@ -140,11 +140,13 @@ gs_prefix                  -> 0x65 no_return
 ####################################################
 mode64 HINT=3              -> 0x2e no_return
 mode64 HINT=4              -> 0x3e no_return
+mode64 HINT=5              -> 0x3e no_return # CET NO-TRACK
 #####################################################
 not64 cs_prefix            -> 0x2e no_return
 not64 HINT=3               -> 0x2e no_return
 not64 ds_prefix            -> 0x3e no_return
 not64 HINT=4               -> 0x3e no_return
+not64 HINT=5               -> 0x3e no_return # CET NO-TRACK
 not64 es_prefix            -> 0x26 no_return
 not64 ss_prefix            -> 0x36 no_return
 otherwise                  -> nothing
@@ -232,6 +234,9 @@ otherwise -> DF64=1 EOSZ=3
 
 # the prefix encoder does all the required work.
 BRANCH_HINT()::
+otherwise  -> nothing
+# the prefix encoder does all the required work.
+CET_NO_TRACK()::
 otherwise  -> nothing
 
 # end of xed-prefixes-encode.txt
