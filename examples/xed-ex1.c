@@ -135,7 +135,7 @@ void print_branch_hints(xed_decoded_inst_t* xedd) {
         printf("HINT: NOT TAKEN\n");
     else if (xed_operand_values_branch_taken_hint(xedd)) 
         printf("HINT: TAKEN\n");
-    else if (xed3_operand_get_hint(xedd)==5) 
+    else if (xed_operand_values_cet_no_track(xedd)) 
         printf("CET NO-TRACK\n");
 }
 
