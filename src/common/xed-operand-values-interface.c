@@ -417,6 +417,14 @@ xed_operand_values_branch_taken_hint(const xed_operand_values_t* p)
     return 0;
 }
 
+xed_bool_t
+xed_operand_values_cet_no_track(const xed_operand_values_t* p)
+{
+    if (xed3_operand_get_hint(p)==5)
+        return 1;
+    return 0;
+}
+
     
 
 xed_bool_t
