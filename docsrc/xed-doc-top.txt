@@ -24,7 +24,7 @@
 @mainpage X86 Encoder Decoder User Guide
 by Mark Charney
 
-2019-08-09
+2020-06-29
 
 @section INTRO Introduction
 
@@ -383,11 +383,19 @@ that hold the memory operation information. The memory operation information is 
 There are several important things to note:
       <ul>
       <li> There can only be two memory operations, MEM0 and MEM1.
-      <li> MEM0 could also be an AGEN -- a special operand that uses memory information 
-         but does not actually read memory. This is only used for the LEA instruction.
-      <li> There can only be an index and displacement associated with MEM0.
-      <li> There is just one displacement associated with the common fields. It could 
-         be associated with either the AGEN/MEM0 or with a branch or call instruction.
+      
+      <li> MEM0 could also be an AGEN, which stands for "Address
+         Generation". AGEN is a special operand that uses memory
+         information but does not actually read memory. This is only
+         used for the LEA instruction.
+         
+      <li> There can only be an index and displacement associated with
+         MEM0 (or AGEN).
+      
+      <li> There is just one displacement associated with the common
+         fields. It could be associated with either the AGEN/MEM0 or
+         with a branch or call instruction.
+         
       </ul>
 
 @subsection AVX512_OPERANDS Intel&reg; AVX512 Operands
