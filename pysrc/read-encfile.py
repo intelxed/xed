@@ -1718,13 +1718,17 @@ class encoder_configuration_t(object):
                 continue
             line = slash_expand.expand_all_slashes(line)
 
-            p =  ntluf_pattern.match(line)
+            p = ntluf_pattern.match(line)
             if p:
                 nt_name =  p.group('ntname')
                 ret_type = p.group('rettype')
                 # create a new nonterminal to use
-                nt = nonterminal_t(nt_name, ret_type)
-                ntlufs[nt_name] = nt
+                if nt_name in ntlufs:
+                    # reuse an existing NTLUF, extending it.
+                    nt = ntlufs[nt_name] 
+                else:
+                    nt = nonterminal_t(nt_name, ret_type)
+                    ntlufs[nt_name] = nt
                 continue
             
             p = nt_pattern.match(line)
@@ -2755,7 +2759,7 @@ class encoder_configuration_t(object):
 
         # writes self.sequences and self.nonterminals
         self.read_encoder_files()
-        # writes self.deocoder_nonterminals and self.decoder_ntlufs
+        # writes self.decoder_nonterminals and self.decoder_ntlufs
         self.read_decoder_files()
 
         if vdumpinput():
