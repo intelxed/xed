@@ -54,6 +54,11 @@ uname_pattern = re.compile(r'^UNAME\s*[:]\s*(?P<uname>[A-Za-z0-9_]+)')
 ipattern_pattern = re.compile(r'^PATTERN\s*[:]\s*(?P<ipattern>.+)')
 operand_pattern = re.compile(r'^OPERANDS\s*[:]\s*(?P<operands>.+)')
 no_operand_pattern = re.compile(r'^OPERANDS\s*[:]\s*$')
+real_opcode_pattern = re.compile(r'^REAL_OPCODE\s*[:]\s*(?P<yesno>[A-Za-z0-9_]+)')
+extension_pattern = re.compile(r'^EXTENSION\s*[:]\s*(?P<ext>[A-Za-z0-9_]+)')
+isa_set_pattern = re.compile(r'^ISA_SET\s*[:]\s*(?P<isaset>[A-Za-z0-9_]+)')
+
+
 equals_pattern = re.compile(r'(?P<lhs>[^!]+)=(?P<rhs>.+)')
 return_pattern = re.compile(r'return[ ]+(?P<retval>[^ ]+)')
 not_equals_pattern = re.compile(r'(?P<lhs>[^!]+)!=(?P<rhs>.+)')

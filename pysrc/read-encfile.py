@@ -1073,7 +1073,9 @@ class rule_t(object):
 class iform_t(object):
     """One form of an instruction"""
     def __init__(self, map_info,
-                 iclass, enc_conditions, enc_actions, modal_patterns, uname=None):
+                 iclass, enc_conditions, enc_actions, modal_patterns, uname=None,
+                 real_opcode=True,
+                 isa_set=None):
         self.iclass = iclass
         self.uname = uname
         self.enc_conditions = enc_conditions # [ operand_t ]
@@ -1722,11 +1724,13 @@ class encoder_configuration_t(object):
             if p:
                 nt_name =  p.group('ntname')
                 ret_type = p.group('rettype')
-                # create a new nonterminal to use
                 if nt_name in ntlufs:
                     # reuse an existing NTLUF, extending it.
-                    nt = ntlufs[nt_name] 
+                    # FIXME: confirm same ret_type
+                    nt = ntlufs[nt_name]
                 else:
+                    # create a new nonterminal to use
+
                     nt = nonterminal_t(nt_name, ret_type)
                     ntlufs[nt_name] = nt
                 continue
@@ -1734,10 +1738,13 @@ class encoder_configuration_t(object):
             p = nt_pattern.match(line)
             if p:
                 nt_name =  p.group('ntname')
-                
-                # create a new nonterminal to use
-                nt = nonterminal_t(nt_name)
-                nts[nt_name] = nt
+                if nt_name in nts:
+                    # reuse an existing NTLUF, extending it.
+                    nt = nts[nt_name]
+                else:
+                    # create a new nonterminal to use
+                    nt = nonterminal_t(nt_name)
+                    nts[nt_name] = nt
                 continue
             
             p = decode_rule_pattern.match(line)
@@ -2230,7 +2237,9 @@ class encoder_configuration_t(object):
         for a in modal_patterns:
             msg("\t" +  str(a))
     
-    def finalize_decode_conversion(self,iclass, operands, ipattern, uname=None):
+    def finalize_decode_conversion(self,iclass, operands, ipattern, uname=None,
+                                   real_opcode=True,
+                                   isa_set=None):
         if ipattern  == None:
             die("No ipattern for iclass %s and operands: %s" % 
                 (str(iclass), operands ))
@@ -2245,7 +2254,8 @@ class encoder_configuration_t(object):
             self.print_iclass_info(iclass, operands, ipattern, conditions, 
                                    actions, modal_patterns)
         # FIXME do something with the operand/conditions and patterns/actions
-        iform = iform_t(self.map_info, iclass, conditions, actions, modal_patterns, uname)
+        iform = iform_t(self.map_info, iclass, conditions, actions, modal_patterns, uname,
+                        real_opcode, isa_set)
 
         if uname == 'NOP0F1F':
             # We have many fat NOPS, 0F1F is the preferred one so we
@@ -2286,6 +2296,10 @@ class encoder_configuration_t(object):
         unamed = None
         ipattern = None
         started = False
+        real_opcode = True
+        extension = None # used  if no isa_set found/present
+        isa_set = None
+        
         while len(lines) > 0:
             line = lines.pop(0)
             line = comment_pattern.sub("",line)
@@ -2345,6 +2359,20 @@ class encoder_configuration_t(object):
             if un:
                 uname = un.group('uname')
                 continue
+
+            realop = real_opcode_pattern.match(line)
+            if realop:
+                realop_str = realop.group('yesno')
+                if realop_str != 'Y':
+                    real_opcode=False
+                
+            extp = extension_pattern.match(line)
+            if extp:
+                extension = extp.group('ext')
+                
+            isasetp = isa_set_pattern.match(line)
+            if isasetp:
+                isa_set = isasetp.group('isaset')
             
             ip = ipattern_pattern.match(line)
             if ip:
@@ -2352,15 +2380,21 @@ class encoder_configuration_t(object):
                 continue
             
             if no_operand_pattern.match(line):
+                if not isa_set:
+                    isa_set = extension
                 self.finalize_decode_conversion(iclass,'', 
-                                                ipattern, uname)
+                                                ipattern, uname,
+                                                real_opcode, isa_set)
                 continue
 
             op = operand_pattern.match(line)
             if op:
                 operands = op.group('operands')
+                if not isa_set:
+                    isa_set = extension
                 self.finalize_decode_conversion(iclass, operands, 
-                                                ipattern, uname)
+                                                ipattern, uname,
+                                                real_opcode, isa_set)
                 continue
 
         return
