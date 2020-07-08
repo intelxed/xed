@@ -203,7 +203,11 @@ xed_operand_values_has_lock_prefix(const xed_operand_values_t* p) {
 #if defined(XED_DECODER)
 xed_bool_t
 xed_operand_values_get_atomic(const xed_operand_values_t* p) {
-    return xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_LOCKED);
+    return xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_LOCKED)
+#if defined(XED_ATTRIBUTE_ATOMIC_DEFINED)
+        || xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_ATOMIC)
+#endif
+        ;
 }
 
 
