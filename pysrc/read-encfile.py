@@ -3,7 +3,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2020 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -822,6 +822,9 @@ class rule_t(object):
         # 1.
         lines.extend( self.conditions.emit_code() )
         lines.append( "if (conditions_satisfied) {")
+        real_opcodes = group.get_ith_field(ith_rule, 'real_opcode')
+        isa_sets     = group.get_ith_field(ith_rule, 'isa_set')
+        lines.append( " // real_opcode {} isa_set {}".format(real_opcodes, isa_sets))
         lines.append( "    okay=1;")
         
         # 2.
@@ -1081,6 +1084,8 @@ class iform_t(object):
         self.enc_conditions = enc_conditions # [ operand_t ]
         self.enc_actions = enc_actions  # [ blot_t ]
         self.modal_patterns = modal_patterns # [ string ]
+        self.real_opcode = real_opcode
+        self.isa_set = isa_set
 
         # the emit phase action pattern is a comma separated string of
         # strings describing emit activity, created by ins_emit.py.
@@ -2341,6 +2346,10 @@ class encoder_configuration_t(object):
                 started = True
                 iclass = None
                 uname = None
+                real_opcode = True
+                extension = None # used  if no isa_set found/present
+                isa_set = None
+
                 continue
             
             if right_curly_pattern.match(line):
@@ -2471,11 +2480,11 @@ class encoder_configuration_t(object):
         self.decoder_ntlufs.update(ntlufs)
 
     def make_isa_encode_group(self, group_index, ins_group):
-        """Make the function object for encoding one group.  The generated
-        function tests operand order and type, then more detailed
-        conditions. Once conditions_satisfied is true, we attempt to
-        do more detailed bindings operations for the nonterminals in
-        the pattern.
+        """Make the function object for encoding one (ins_emit.py) ins_group_t
+        group.  The generated function tests operand order and type,
+        then more detailed conditions. Once conditions_satisfied is
+        true, we attempt to do more detailed bindings operations for
+        the nonterminals in the pattern.
 
         @rtype: function_object_t
         @returns: an encoder function object that encodes group
@@ -2489,8 +2498,12 @@ class encoder_configuration_t(object):
         fo.add_code_eol( "xed_bool_t okay=1")
         fo.add_code_eol( "xed_bool_t conditions_satisfied=0" )
         fo.add_code_eol( "xed_ptrn_func_ptr_t fb_ptrn_function" )
+
+        #import pdb; pdb.set_trace()
+
+        ins_group.sort() # call before emitting group code
         
-        iform_ids_table = ins_group.get_iform_ids_table()
+        iform_ids_table = ins_group.get_iform_ids_table() 
         iclasses_number = len(ins_group.get_iclasses())
         iforms_number = len(ins_group.iforms)
         table_type = 'static const xed_uint16_t '
@@ -2506,13 +2519,8 @@ class encoder_configuration_t(object):
         obj_name = encutil.enc_strings['obj_str']
         code = 'xed_uint8_t iclass_index = %s(%s)' % (get_iclass_index,obj_name)
         fo.add_code_eol(code)
-        # FIXME: 2014-04-17: copy to sorted_iforms still sorts ins_group.iforms
-        sorted_iforms = ins_group.iforms
-        sorted_iforms.sort(key=ins_emit.key_iform_by_bind_ptrn)
-        sorted_iforms.sort(key=ins_emit.key_rule_length)
-        sorted_iforms.sort(key=ins_emit.key_priority)
         
-        for i,iform in enumerate(sorted_iforms):
+        for i,iform in enumerate(ins_group.iforms):
             # FIXME:2007-07-05 emit the iform.operand_order check of
             # the xed_encode_order[][] array
 
@@ -2536,8 +2544,7 @@ class encoder_configuration_t(object):
 
 
             try:
-                operand_order =\
-                        self.all_operand_name_list_dict[iform.operand_order_key]
+                operand_order = self.all_operand_name_list_dict[iform.operand_order_key]
             except:
                 operand_order = None
             cond1 = None

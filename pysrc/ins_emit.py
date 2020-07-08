@@ -176,20 +176,28 @@ class instructions_group_t(object):
                 d[iclass] = i
         
         return d
-        
+
+def iforms_sort(lst):
+    lst.sort(key=key_iform_by_bind_ptrn)
+    lst.sort(key=key_rule_length)
+    lst.sort(key=key_priority)
+
+    
 class ins_group_t(object):
     ''' This class represents one group.
         it holds the list of iclasses that have the same bind patterns.   
     '''
     
     def __init__(self):
-        ''' params:
-            1. iclass2iforms: mapping from iclass to a list of iforms
-            2.iforms: list of iform_t objects  
-        '''
         
+        # iclass2iforms is a mapping from iclass string to a list of iform_t
         self.iclass2iforms = {}
+        
+        #  the iforms field is really the iforms of the first iclass
+        #  to be added to the group.
         self.iforms = []
+        
+        self.iclasses = None # instantiated when we call sort()
         
     def add_iclass(self,iclass,iforms):
         ''' add the iclass and iforms list to the group '''
@@ -200,7 +208,31 @@ class ins_group_t(object):
         
     def get_iclasses(self):
         ''' return a list of iclasses in the group'''
-        return list(self.iclass2iforms.keys())     
+        return list(self.iclass2iforms.keys())
+
+    def get_ith_iforms(self, i):
+        '''return  the ith iform in for each iclass'''
+        lst = []
+        for ifl in self.iclass2iforms.values():
+            lst.append(ifl[i])
+        return lst
+    
+    def get_ith_field(self, i, field):
+        '''return a list of the specified field from each iform'''
+        lst = []
+        for ifl in self.iclass2iforms.values():
+            lst.append(getattr(ifl[i],field))
+        return lst
+
+
+    def sort(self):
+        '''call this before generating code to make sure all agree on order'''
+        self.iclasses = sorted(self.get_iclasses())
+        for iclass in self.iclasses:
+            iforms_sort( self.iclass2iforms[iclass] )
+        # this should be sorted by one of the above since it is just a
+        # ref to the first list in group...
+        # iforms_sort(self.iforms)
     
     def get_iform_ids_table(self):
         ''' generate C style table of iform Id's.
@@ -208,20 +240,11 @@ class ins_group_t(object):
             the columns are the different iform Ids '''
         
         table = []
-        iclasses = sorted(self.get_iclasses())
-        for iclass in iclasses:
+        for iclass in self.iclasses:
             values = ''
-            iforms_sorted_by_length = self.iclass2iforms[iclass]
-
-            # This determines the order in which encoding options are
-            # evaluated by the encoder.
-            iforms_sorted_by_length.sort(key=key_iform_by_bind_ptrn)
-            iforms_sorted_by_length.sort(key=key_rule_length)
-            iforms_sorted_by_length.sort(key=key_priority)
-            
-            for iform in iforms_sorted_by_length:
+            for iform in self.iclass2iforms[iclass]:
                 values += '{:4},'.format(iform.rule.iform_id)
-            line = "/*{:14}*/    {{{}}},".format(iclass,values)
+            line = "/*{:14} {:10}*/    {{{}}},".format(iclass,iform.isa_set,values)
             table.extend([ line ])
             
         return table
