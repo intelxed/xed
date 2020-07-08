@@ -241,10 +241,10 @@ class ins_group_t(object):
         
         table = []
         for iclass in self.iclasses:
-            values = ''
+            values = []
             for iform in self.iclass2iforms[iclass]:
-                values += '{:4},'.format(iform.rule.iform_id)
-            line = "/*{:14} {:10}*/    {{{}}},".format(iclass,iform.isa_set,values)
+                values.append('{:4}'.format(iform.rule.iform_id))
+            line = "/*{:14}*/ {{{}}},".format(iclass, ",".join(values))
             table.extend([ line ])
             
         return table
