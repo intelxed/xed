@@ -230,8 +230,8 @@ def work(arg):
     hfe.start()
 
     
-    cfe.write("xed_uint64_t xed_chip_features[XED_CHIP_LAST][4];\n")
-    hfe.write("extern xed_uint64_t xed_chip_features[XED_CHIP_LAST][4];\n")
+    cfe.write("xed_uint64_t xed_chip_features[XED_CHIP_LAST][5];\n")
+    hfe.write("extern xed_uint64_t xed_chip_features[XED_CHIP_LAST][5];\n")
 
     fo = codegen.function_object_t('xed_init_chip_model_info', 'void')    
     fo.add_code_eol("const xed_uint64_t one=1")
@@ -242,6 +242,7 @@ def work(arg):
         s1 = ['0']
         s2 = ['0']
         s3 = ['0']
+        s4 = ['0']
         # loop over the features
         for f in  chip_features_dict[c]:
             feature_index = _feature_index(isa_set,f)
@@ -254,15 +255,18 @@ def work(arg):
                 s2.append('(one<<(XED_ISA_SET_%s-128))' % (f))
             elif feature_index < 256:
                 s3.append('(one<<(XED_ISA_SET_%s-192))' % (f))
+            elif feature_index < 320:
+                s4.append('(one<<(XED_ISA_SET_%s-256))' % (f))
             else:
-                _die("Feature index > 256. Need another features array")
+                _die("Feature index > 320. Need another features array")
 
         s0s = spacing.join(s0)
         s1s = spacing.join(s1)
         s2s = spacing.join(s2)
         s3s = spacing.join(s3)
+        s4s = spacing.join(s4)
         
-        for i,x in enumerate([s0s, s1s, s2s,s3s]):
+        for i,x in enumerate([s0s, s1s, s2s,s3s, s4s]):
             fo.add_code_eol("xed_chip_features[XED_CHIP_{}][{}] = {}".format(c,i,x) )
 
     cfe.write(fo.emit())

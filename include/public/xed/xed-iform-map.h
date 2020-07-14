@@ -37,7 +37,7 @@ typedef struct xed_iform_info_s {
     xed_uint32_t  category  :8; //xed_category_enum_t
     xed_uint32_t  extension :8; //xed_extension_enum_t
     
-    xed_uint32_t  isa_set   :8;//xed_isa_set_enum_t
+    xed_uint32_t  isa_set   :16; //xed_isa_set_enum_t
       /* if nonzero, index in to the disassembly string table */
     xed_uint32_t  string_table_idx:16;
 } xed_iform_info_t;

@@ -3194,7 +3194,7 @@ def write_quick_iform_map(agi,odir,idata_dict):
       qual_category = "XED_CATEGORY_%s" % (category.upper())
       qual_extension = "XED_EXTENSION_%s" % (extension.upper())
       qual_isa_set = "XED_ISA_SET_%s" % (isa_set.upper())
-      t = '/* %29s */ {  (xed_uint16_t) %25s, (xed_uint8_t) %22s, (xed_uint8_t)%20s, (xed_uint8_t)%25s, (xed_uint16_t)%4d }' % \
+      t = '/* %29s */ {  (xed_uint16_t) %25s, (xed_uint8_t) %22s, (xed_uint8_t)%20s, (xed_uint16_t)%25s, (xed_uint16_t)%4d }' % \
             (iform, 
              qual_iclass, 
              qual_category, 
