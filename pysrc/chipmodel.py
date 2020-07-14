@@ -255,7 +255,7 @@ def work(arg):
             elif feature_index < 256:
                 s3.append('(one<<(XED_ISA_SET_%s-192))' % (f))
             else:
-                _die("Feature index > 256. Need anotehr features array")
+                _die("Feature index > 256. Need another features array")
 
         s0s = spacing.join(s0)
         s1s = spacing.join(s1)
