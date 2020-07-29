@@ -16,7 +16,18 @@
 #  
 #END_LEGAL
 
-# VGPRy_N is used by AMD XOP only but the lower level stuff is used by HSW NI
+# VGPRy_N, VGPRy_B, and VGPRy_R are used by AMD XOP.
+# Only but the lower level stuff is used by HSW NI.
+
+xed_reg_enum_t VGPRy_R()::   
+EOSZ=1 | OUTREG=VGPR32_R() 
+EOSZ=2 | OUTREG=VGPR32_R()
+EOSZ=3 | OUTREG=VGPR64_R()
+
+xed_reg_enum_t VGPRy_B()::   
+EOSZ=1 | OUTREG=VGPR32_B() 
+EOSZ=2 | OUTREG=VGPR32_B()
+EOSZ=3 | OUTREG=VGPR64_B() 
 
 xed_reg_enum_t VGPRy_N()::   
 EOSZ=1 | OUTREG=VGPR32_N() 
