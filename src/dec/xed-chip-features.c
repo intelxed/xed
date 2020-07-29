@@ -27,17 +27,15 @@ xed_get_chip_features(xed_chip_features_t* p, xed_chip_enum_t chip)
     {
         if (chip < XED_CHIP_LAST)
         {
-            p->f[0] = xed_chip_features[chip][0];
-            p->f[1] = xed_chip_features[chip][1];
-            p->f[2] = xed_chip_features[chip][2];
-            p->f[3] = xed_chip_features[chip][3];
+            xed_uint_t i;
+            for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
+                p->f[i] = xed_chip_features[chip][i];
         }
         else
         {
-            p->f[0] = 0;
-            p->f[1] = 0;
-            p->f[2] = 0;
-            p->f[3] = 0;
+            xed_uint_t i;
+            for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
+                p->f[i] = 0;
         }
     }
 }
