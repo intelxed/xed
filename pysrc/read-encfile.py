@@ -261,8 +261,6 @@ class operand_t(object):
                 self.vis = 'ECOND'
             else:
                 die("unhandled default visibility: %s for %s" % (default_vis, self.var))
-
-
             
     def make_condition(self):
         """
@@ -436,7 +434,6 @@ class condition_t(object):
                     
             #msgerr("NON BINDING  %s" % (s)) # FIXME: what reaches here?
 
-
     def contains(self, s):
         if self.field_name == s:
             return True
@@ -529,9 +526,7 @@ class condition_t(object):
         
         
 class conditions_t(object):
-    """Two lists of condition_t's. One gets ANDed together and one gets
-    ORed together. The OR-output gets ANDed with the rest of the AND
-    terms."""
+    """list of condition_t objects that get ANDed together""" 
     def __init__(self):
         self.and_conditions = []
     def contains(self,s):
@@ -560,9 +555,6 @@ class conditions_t(object):
             s.append(' ')
         return ''.join(s)
 
-
-        
-    
     def _captures_from_list(self, clist):
         """
         @type clist: list of condition_t
@@ -649,9 +641,11 @@ class conditions_t(object):
         return [ ''.join(s) ]
     
 
-
-
 class iform_builder_t(object):
+    '''Remember nonterminal names. Emit a structure/type with a u32 for
+       each NT.  These x_WHATEVER fields are filled in during the
+       value-binding phase of encoding. They hold the result of
+       NT-table evaluation. '''
     def __init__(self):
         self.iforms = {}         
     def remember_iforms(self,ntname):
@@ -793,8 +787,6 @@ class rule_t(object):
             return True
         return False
     
-    
-
     def get_nt_in_cond_list(self):
         #returns the condition with nt, if exists
         nts = []
@@ -3086,9 +3078,6 @@ class encoder_configuration_t(object):
         fe.close()
         output_file_emitters.append(fe)
         
-        
-        
-        
     def emit_encoder_iform_table(self):
         filename = 'xed-encoder-iforms-init.c'
         fe = xed_file_emitter_t(self.xeddir, self.gendir, 
@@ -3114,7 +3103,6 @@ class encoder_configuration_t(object):
         fe.close()
         output_file_emitters.append(fe)
             
-        
     def emit_group_encode_functions(self):
         filename_prefix = 'xed-enc-groups'
         
