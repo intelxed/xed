@@ -577,23 +577,6 @@ class conditions_t(object):
         captures = self._captures_from_list(self.and_conditions) 
         return captures
 
-    def field_names_from_list(self,clist):
-        """Return a tuple of list of field names and list of  NTS"""
-        field_names = []
-        nt_names = []
-        for cond in clist:
-            if cond.field_name:
-                field_names.append(cond.field_name)
-            if cond.rvalue and cond.rvalue.nonterminal():
-                nt_names.append(cond.rvalue.value)
-                
-        return (field_names, nt_names)
-
-    def get_field_names(self):
-        """Return a tuple of list of field names and list of  NTS"""
-        and_field_names = self.field_names_from_list(self.and_conditions)
-        return ( and_field_names[0] , and_field_names[1])
-    
     def emit_code(self):
         if len(self.and_conditions) == 1:
             if self.and_conditions[0].is_otherwise():
@@ -645,7 +628,8 @@ class iform_builder_t(object):
     '''Remember nonterminal names. Emit a structure/type with a u32 for
        each NT.  These x_WHATEVER fields are filled in during the
        value-binding phase of encoding. They hold the result of
-       NT-table evaluation. '''
+       NT-table evaluation. For instructions, those become the encoder
+       iform numbers. But for everything else it is a misnomer.'''
     def __init__(self):
         self.iforms = {}         
     def remember_iforms(self,ntname):
