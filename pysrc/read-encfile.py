@@ -81,7 +81,7 @@ try:
     import operand_storage
     import nt_func_gen
     import map_info_rdr
-
+    import chipmodel
 except:
    sys.stderr.write("\nERROR(read-encfile.py): Could not find " + 
                     "the xed directory for python imports.\n\n")
@@ -119,6 +119,10 @@ def remove_file(fn):
        make_writable(fn)
        os.unlink(fn)
 
+    
+    
+
+       
 class blot_t(object):
     """A blot_t is  make a fragment of a decoder pattern"""
     def __init__(self,type=None):
@@ -367,13 +371,14 @@ class condition_t(object):
     n is a repeat count.  Can also be an 'otherwise' clause that is
     the final action for a nonterminal if no other rule applies.
     """
-    def __init__(self,s,lencode=None):
+    def __init__(self, s, lencode=None, chip_check=None):
         #_vmsgb("examining %s" % s)
         self.string = s
         self.bits = None # bound bits
         self.rvalue = None
         self.equals = None
         self.lencode = lencode # for memory operands
+        self.chip_check = chip_check
         
         b = bit_expand_pattern.search(s)
         if b:
@@ -467,7 +472,9 @@ class condition_t(object):
         
     def __str__(self):
         s = [ self.field_name ]
-        if self.memory_condition(): # MEM_WIDTH
+        if self.chip_check:
+            s.append(" (CHIPCHECK {})".format(self.chip_check))
+        elif self.memory_condition(): # MEM_WIDTH
             s.append(" (MEMOP %s)" % self.lencode)
         if self.bits:
             s.append( '[%s]' % (self.bits))
@@ -477,6 +484,9 @@ class condition_t(object):
             s.append('!=')
         s.append(str(self.rvalue))
         return ''.join(s)
+    
+    def is_chip_check(self): 
+        return self.chip_check != None
     
     def memory_condition(self): # MEM_WIDTH
         if self.lencode != None:
@@ -497,7 +507,9 @@ class condition_t(object):
         op_accessor = operand_storage.get_op_getter_full_func(self.field_name,
                                                         encutil.enc_strings)
         
-        if self.memory_condition(): # MEM_WIDTH
+        if self.is_chip_check(): 
+            s = 'xed_encoder_request_chip_check(xes,{})'.format(self.chip_check)
+        elif self.memory_condition(): # MEM_WIDTH
             s = 'xed_encoder_request__memop_compatible(xes,XED_OPERAND_WIDTH_%s)' % (self.lencode.upper())
         elif self.rvalue.nonterminal():
             s = 'xed_encode_ntluf_%s(xes,%s)' % (self.rvalue.value,op_accessor)
@@ -1505,6 +1517,7 @@ class encoder_input_files_t(object):
         self.state_bits_file = options.input_state
         self.instructions_file = options.isa_input_file
         self.map_info_file = options.map_descriptions_input_fn
+        self.chip_model_info_file = options.chip_models_input_fn
 
         # dict of operand_order_t indexed by special keys stored in iform.operand_order_key
         self.all_operand_name_list_dict = None
@@ -1531,12 +1544,18 @@ class encoder_configuration_t(object):
     #
     #    and finally, some operands get dropped entirely.
     
-    def __init__(self, encoder_input_files, amd_enabled=True):
+    def __init__(self, encoder_input_files, chip='ALL', amd_enabled=True):
         self.amd_enabled = amd_enabled
         self.files = encoder_input_files
         self.gendir = self.files.gendir
         self.xeddir = self.files.xeddir
-        
+
+        def _call_chip_model(fn):
+            chips, isa_set_db = chipmodel.read_database(fn)
+            chipmodel.add_all_chip(isa_set_db)
+            return isa_set_db
+        self.isa_set_db = _call_chip_model(encoder_input_files.chip_model_info_file)
+        self.chip = chip
         
         global storage_fields
         lines = open(self.files.storage_fields_file,'r')
@@ -2472,22 +2491,31 @@ class encoder_configuration_t(object):
         fo = function_object_t(fname,'xed_bool_t')
         fo.add_arg("%s* xes" % xed_encoder_request)
         fo.add_code_eol( "xed_bool_t okay=1")
-        fo.add_code_eol( "xed_bool_t conditions_satisfied=0" )
         fo.add_code_eol( "xed_ptrn_func_ptr_t fb_ptrn_function" )
 
         #import pdb; pdb.set_trace()
 
         ins_group.sort() # call before emitting group code
-        
-        iform_ids_table = ins_group.get_iform_ids_table() 
+
+        # iform initialization table
+        iform_ids_table = ins_group.gen_iform_ids_table()  # table initialization data
         iclasses_number = len(ins_group.get_iclasses())
         iforms_number = len(ins_group.iforms)
         table_type = 'static const xed_uint16_t '
         table_decl = 'iform_ids[%d][%d] = {' % (iclasses_number,
                                                 iforms_number)
-        table = table_type + table_decl  
-        fo.add_code(table)
+        fo.add_code(table_type + table_decl)
         for line in iform_ids_table:
+            fo.add_code(line)
+        fo.add_code_eol('}')
+
+        # isa-set initialization table
+        # set 1/0 values to help limit encode to producing the isa-sets present on self.chip.
+        isa_set_table = ins_group.gen_iform_isa_set_table( self.isa_set_db[self.chip] ) # get init data
+        table_type = 'static const xed_bool_t '
+        table_decl = 'isa_set[{}][{}] = {{'.format(iclasses_number, iforms_number)
+        fo.add_code(table_type + table_decl)
+        for line in isa_set_table:
             fo.add_code(line)
         fo.add_code_eol('}')
         
@@ -2495,7 +2523,9 @@ class encoder_configuration_t(object):
         obj_name = encutil.enc_strings['obj_str']
         code = 'xed_uint8_t iclass_index = %s(%s)' % (get_iclass_index,obj_name)
         fo.add_code_eol(code)
-        
+        pad4 = ' '*4
+        pad8 = ' '*8
+
         for i,iform in enumerate(ins_group.iforms):
             # FIXME:2007-07-05 emit the iform.operand_order check of
             # the xed_encode_order[][] array
@@ -2516,8 +2546,13 @@ class encoder_configuration_t(object):
             # encode. 2014-04-15: xed_encode_order_limit[] does not
             # currently show up in the generated code so the above
             # fixme is moot.
-                
 
+            
+            # This "if" is for encoder chip checking. if ENCODE_FORCE
+            # is set, we let everything encode.  Otherwise we use the
+            # isa_set array set using the specified --encoder-chip at
+            # comple time.
+            fo.add_code('if (xed3_operand_get_encode_force(xes) || isa_set[iclass_index][{}]) {{'.format(i))
 
             try:
                 operand_order = self.all_operand_name_list_dict[iform.operand_order_key]
@@ -2536,19 +2571,19 @@ class encoder_configuration_t(object):
                 cond1 = "xes->_n_operand_order == %d" % (nopnd)
                 if nopnd==0:
                     optimized = True
-                    fo.add_code("if (%s) {" % (cond1))
+                    fo.add_code(pad4 +  "if (%s) {" % (cond1))
                 elif nopnd ==1:
                     optimized = True
                     cond2 = "xes->_operand_order[0] == XED_OPERAND_%s"
                     cond2 = cond2 % (operand_order.lst[0])
-                    fo.add_code("if (%s && %s) {" % (cond1,cond2))
+                    fo.add_code(pad4 + "if (%s && %s) {" % (cond1,cond2))
                 elif nopnd ==2:
                     optimized = True
                     cond2 = "xes->_operand_order[0] == XED_OPERAND_%s" 
                     cond2 = cond2 % (operand_order.lst[0])
                     cond3 = "xes->_operand_order[1] == XED_OPERAND_%s"
                     cond3 = cond3 % (operand_order.lst[1])
-                    fo.add_code("if (%s && %s && %s) {" % (cond1,cond2,cond3))
+                    fo.add_code(pad4 + "if (%s && %s && %s) {" % (cond1,cond2,cond3))
 
             memcmp_type = 'xed_uint8_t' 
             if not optimized:
@@ -2566,9 +2601,10 @@ class encoder_configuration_t(object):
                             "xes->_operand_order, sizeof(%s)*%d)==0")
                     cond2 = cond2 % (iform.operand_order, memcmp_type, nopnd)
 
-                fo.add_code("if (%s && %s) {" % (cond1, cond2))
+                fo.add_code(pad4 + "if (%s && %s) {" % (cond1, cond2))
             if viform():
                 msgb("IFORM", str(iform))
+
             
             # For binding, this emits code that sets
             # conditions_satisfied based on some long expression and
@@ -2576,14 +2612,15 @@ class encoder_configuration_t(object):
             # emitting, it checks the iform and emits bits.
             captures = None
             lines = iform.rule.emit_isa_rule(i,ins_group)
-            fo.add_lines(lines)
+            fo.add_code_eol(pad8 + "xed_bool_t conditions_satisfied=0" )
+            for  line in lines:
+                fo.add_code(pad8 + line)
             
-            fo.add_code('  }')
-
+            fo.add_code(pad4 + '} // initial conditions')
+            fo.add_code('} // xed_enc_chip_check ')
         
         fo.add_code_eol('return 0')
         fo.add_code_eol("(void) okay")
-        fo.add_code_eol("(void) conditions_satisfied")
         fo.add_code_eol("(void) xes")
         return fo
     
@@ -3136,15 +3173,28 @@ def setup_arg_parser():
     arg_parser.add_option('--verbosity', '-v',
                       action='append', dest='verbosity', default=[],
                       help='list of verbosity tokens, repeatable.')
+    arg_parser.add_option('--chip-models',
+                          action='store', 
+                          dest='chip_models_input_fn', 
+                          default='',
+                          help='Chip models input file name')
+    arg_parser.add_option('--chip',
+                          action='store', 
+                          dest='chip', 
+                          default='ALL',
+                          help='''Name of the target chip. Default is ALL.  Setting the target chip
+                                limits what encode will produce to
+                                only those instructions valid for that
+                                chip.''')
     return arg_parser
 
 
 if __name__ == '__main__':
     arg_parser = setup_arg_parser()
-    (options, args ) = arg_parser.parse_args()
+    (options, args) = arg_parser.parse_args()
     set_verbosity_options(options.verbosity)
     enc_inputs = encoder_input_files_t(options)
-    enc = encoder_configuration_t(enc_inputs, options.amd_enabled)
+    enc = encoder_configuration_t(enc_inputs, options.chip, options.amd_enabled)
     enc.run()
     enc.look_for_encoder_inputs()      # exploratory stuff
     enc.emit_encode_defines()  # final stuff after all tables are sized

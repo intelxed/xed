@@ -83,7 +83,8 @@ def check_mbuild_file(mbuild_file, sig_file):
 class generator_inputs_t(object):
     def __init__(self, build_dir, 
                  amd_enabled=True,
-                 limit_strings=False):
+                 limit_strings=False,
+                 encoder_chip='ALL'):
         self.fields = ['dec-spine',
                        'dec-instructions',
                        'enc-instructions',
@@ -101,8 +102,9 @@ class generator_inputs_t(object):
                        'chip-models',
                        'conversion-table',
                        'cpuid',
-                       'map-descriptions'
+                       'map-descriptions',
                        ]
+        self.encoder_chip = encoder_chip
         self.files = {} # lists of input files per field type
         self.priority = {} # field type -> int
 
@@ -227,7 +229,7 @@ class generator_inputs_t(object):
             s.append(extra_args)
         return ' '.join(s)
 
-    def encode_command(self, xedsrc, extra_args=None, amd_enabled=True):
+    def encode_command(self, xedsrc, extra_args=None, amd_enabled=True, chip='ALL'):
         """Produce an encoder generator command"""
         s = []
         s.append( '%(pythonarg)s' )
@@ -241,6 +243,8 @@ class generator_inputs_t(object):
         s.append('--input-state %s' % aq(self.file_name['state']))
         s.append('--input-regs %s' % aq(self.file_name['registers']))
         s.append('--map-descriptions ' + aq(self.file_name['map-descriptions']))
+        s.append('--chip-models ' + aq(self.file_name['chip-models']))
+        s.append('--chip ' + aq(self.encoder_chip))
 
         if not amd_enabled:
             s.append('--no-amd')
@@ -343,7 +347,8 @@ def run_encode_generator(gc, env):
     gen_extra_args = "--gendir %s --xeddir %s" % (build_dir, xedsrc)
     cmd = env.expand(gc.encode_command(xedsrc,
                                        gen_extra_args,
-                                       env['amd_enabled']))
+                                       env['amd_enabled'],
+                                       env['encoder_chip']))
     if mbuild.verbose(2):
         mbuild.msgb("ENC-GEN", cmd)
     (retval, output, error_output) = mbuild.run_command(cmd,
@@ -614,6 +619,7 @@ def mkenv():
                                  kit_kind='base',
                                  win=False,
                                  amd_enabled=True,
+                                 encoder_chip='ALL',
                                  via_enabled=True,
                                  encoder=True,
                                  decoder=True,
@@ -948,7 +954,10 @@ def xed_args(env):
                           action="store_true",
                           dest="enc2_test_checked",
                           help="Build the enc2 fast encoder *tests*. Test the checked interface. Longer build.")
-
+    env.parser.add_option("--encoder-chip", 
+                          action="store",
+                          dest="encoder_chip",
+                          help="Specific encoder chip. Default is ALL")
     env.parse_args(env['xed_defaults'])
 
 def init_once(env):
@@ -1464,7 +1473,8 @@ def add_encoder_command(env, gc, gen_dag, prep):
                'pysrc/hashlin.py', 'pysrc/hashfks.py', 'pysrc/hashmul.py',
                'pysrc/func_gen.py', 'pysrc/refine_regs.py',
                'pysrc/slash_expand.py', 'pysrc/nt_func_gen.py',
-               'pysrc/scatter.py', 'pysrc/ins_emit.py']
+               'pysrc/scatter.py', 'pysrc/ins_emit.py',
+               'pysrc/chipmodel.py' ]
 
     enc_py = env.src_dir_join(enc_py)
     gc.enc_hash_file = env.build_dir_join('.mbuild.hash.xedencgen')
@@ -1601,7 +1611,8 @@ def build_libxed(env,work_queue):
     # create object that will assemble our command line.
     gc = generator_inputs_t(env['build_dir'], 
                             env['amd_enabled'],
-                            env['limit_strings'])
+                            env['limit_strings'],
+                            env['encoder_chip'])
 
     # add individual extension files
     for ext_files in env['ext']:

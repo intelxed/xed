@@ -102,7 +102,8 @@ fopen_portable(char const* const file_name,
 static unsigned int disas_encode(const xed_state_t* dstate,
                                  const char* encode_text,
                                  xed_operand_enum_t operand,
-                                 xed_uint32_t operand_value)
+                                 xed_uint32_t operand_value,
+                                 xed_bool_t encode_force)
 {
     char buf[5000];
     xed_uint8_t array[XED_MAX_INSTRUCTION_BYTES];
@@ -118,6 +119,8 @@ static unsigned int disas_encode(const xed_state_t* dstate,
 
     if (operand != XED_OPERAND_INVALID)
         xed3_set_generic_operand(&req, operand, operand_value);
+    
+    xed3_operand_set_encode_force(&req, encode_force);
 
     xed_encode_request_print(&req, buf, 5000);
     printf("Request: %s", buf);
@@ -225,6 +228,7 @@ static void usage(char* prog) {
 #if defined(XED_ENCODER)
       "\t-ide input_file           (decode/encode file)",
       "\t-e instruction            (encode, must be last)",
+      "\t-f                        (encode force, skip encoder chip check)",
       "\t-ie file-to-assemble      (assemble the contents of the file)",
       "\t-de hex-string            (decode-then-encode, must be last)",
 #endif
@@ -373,6 +377,7 @@ main(int argc, char** argv)
     char const* encode_text=0;
     xed_state_t dstate;
     xed_bool_t encode = 0;
+    xed_bool_t encode_force = 0;
     xed_uint_t ninst = 100*1000*1000; // FIXME: should use maxint...
     //perf_tail is for skipping first insts in performance measure mode
     unsigned int perf_tail = 0;         
@@ -525,7 +530,11 @@ main(int argc, char** argv)
             i++;
         }
 #if defined(XED_ENCODER)
-        else if (strcmp(argv[i],"-e") ==0)         {
+        else if (strcmp(argv[i],"-f") == 0) {
+            encode_force = 1;
+            continue;
+        }
+        else if (strcmp(argv[i],"-e") == 0) {
             encode = 1;
             test_argc(i,argc);
             // merge the rest of the args in to the encode_text string.
@@ -777,7 +786,7 @@ main(int argc, char** argv)
     decode_info.format_options   = format_options;
     decode_info.operand          = operand;
     decode_info.operand_value    = operand_value;
-    
+    decode_info.encode_force     = encode_force;
     
     if (dot)
     {
@@ -825,7 +834,8 @@ main(int argc, char** argv)
         obytes = disas_encode(&dstate,
                               encode_text,
                               operand,
-                              operand_value);
+                              operand_value,
+                              encode_force);
 #endif
     }
     else if (decode_text && strlen(decode_text) != 0)

@@ -705,6 +705,7 @@ disas_decode_encode_binary(xed_disas_info_t* di,
         xed_encoder_request_t* enc_req = xedd; 
         // convert decode structure to proper encode structure
         xed_encoder_request_init_from_decode(xedd);
+        xed3_operand_set_encode_force(enc_req, di->encode_force);
         
         // encode it again...
         et1 = xed_get_time();
@@ -1328,6 +1329,7 @@ void xed_disas_test(xed_disas_info_t* di)
                                                ilim,
                                                &xedd, 
                                                runtime_instruction_address);
+
             okay = (olen != 0);
             if (!okay)  {
                 errors++;

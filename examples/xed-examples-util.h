@@ -85,6 +85,7 @@ typedef struct {
     xed_format_options_t format_options;
     xed_operand_enum_t operand;
     xed_uint32_t operand_value;
+    xed_bool_t encode_force;
     
     xed_uint64_t errors;
     xed_uint64_t errors_chip_check;
