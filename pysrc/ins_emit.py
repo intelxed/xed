@@ -67,10 +67,9 @@ class instructions_group_t(object):
         '''
     
     def __init__(self,iarray,log_dir):
-        self.groups = []
         self.iclass2group = {}
         self.log_name = 'groups_log.txt'
-        self._join_iclasses_to_groups(iarray,log_dir)
+        self.groups = self._join_iclasses_to_groups(iarray,log_dir)
         
     def _group_good_for_iclass(self,group,iforms):
         ''' Check if the incoming group represents the list of iforms.
@@ -123,9 +122,10 @@ class instructions_group_t(object):
             1. dividing the iclasses into groups.
             2. creating a mapping from iclass to its group Id.
             3. generating a log
+
+            iarray is a dict[iclass] = [iform_t, ...]
             
             return: a list of ins_group_t objects '''
-        
         
         groups = []
         #1. generate the groups
@@ -153,7 +153,8 @@ class instructions_group_t(object):
                 df.write("\n\n")
 
             df.close()     
-        self.groups = groups
+        return groups
+        
     
     def get_groups(self):
         ''' return the groups list ''' 
@@ -234,7 +235,7 @@ class ins_group_t(object):
         # ref to the first list in group...
         # iforms_sort(self.iforms)
     
-    def get_iform_ids_table(self):
+    def gen_iform_ids_table(self):
         ''' generate C style table of iform Id's.
             the table is 2D. one row per iclass.
             the columns are the different iform Ids '''
@@ -248,13 +249,30 @@ class ins_group_t(object):
             table.extend([ line ])
             
         return table
+    
+    def gen_iform_isa_set_table(self, isa_set_db_for_chip):
+        ''' generate C style table of isa_set info.
+            The table is 2D. one row per iclass.
+            the columns are the isa_set for that iform. '''
+        
+        table = []
+        for iclass in self.iclasses:
+            values = []
+            for iform in self.iclass2iforms[iclass]:
+                #s = 'XED_ISA_SET_{}'.format(iform.isa_set.upper())
+                s = '1' if iform.isa_set.upper() in isa_set_db_for_chip else '0'
+                values.append(s)
+            line = "/*{:14}*/ {{{}}},".format(iclass, ",".join(values))
+            table.extend([ line ])
+            
+        return table
 
     
 class instruction_codegen_t(object):
     def __init__(self,iform_list,iarray,logs_dir, amd_enabled=True):
         self.amd_enabled = amd_enabled
         self.iform_list = iform_list
-        self.iarray = iarray
+        self.iarray = iarray # dictionary by iclass of [ iform_t ]
         self.logs_dir = logs_dir #directory for the log file
         
         #list of field binding function_object_t

@@ -171,6 +171,19 @@ def dump_chip_hierarchy(arg, chips, chip_features_dict):
         fe.write(s)
     fe.close()
     return fe.full_file_name
+
+def add_all_chip(d):
+    # the XED_ISA_SET_ enum
+    isa_set = set()
+    for vl in list(d.values()):
+        for v in vl:
+            isa_set.add(v.upper())
+    isa_set = list(isa_set)
+    isa_set.sort()
+
+    d['ALL'] = isa_set
+    isa_set = ['INVALID'] + isa_set
+    return isa_set
     
 def work(arg):
     (chips,chip_features_dict) = read_database(arg.input_file_name) 
@@ -189,18 +202,9 @@ def work(arg):
     chip_enum.run_enumer()
 
     # Add the "ALL" chip
-    
     # the XED_ISA_SET_ enum
-    isa_set = set()
-    for vl in list(chip_features_dict.values()):
-        for v in vl:
-            isa_set.add(v.upper())
-    isa_set = list(isa_set)
-    isa_set.sort()
-
-    chip_features_dict['ALL'] = isa_set
-
-    isa_set = ['INVALID'] + isa_set
+    isa_set = add_all_chip(chip_features_dict)
+    
     isa_set_enum =  enum_txt_writer.enum_info_t(isa_set, 
                                                 arg.xeddir, 
                                                 arg.gendir,
