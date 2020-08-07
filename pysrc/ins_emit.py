@@ -251,21 +251,28 @@ class ins_group_t(object):
         return table
     
     def gen_iform_isa_set_table(self, isa_set_db_for_chip):
-        ''' generate C style table of isa_set info.
-            The table is 2D. one row per iclass.
-            the columns are the isa_set for that iform. '''
+        '''generate C style table of isa_set info.  The table is 2D. one row
+            per iclass.  the columns are the isa_set for that
+            iform. The values all_ones and all_zeros are optimizations
+            to reduce the amount of encoder code. '''
         
         table = []
+        all_ones =  True
+        all_zeros = True
         for iclass in self.iclasses:
             values = []
             for iform in self.iclass2iforms[iclass]:
                 #s = 'XED_ISA_SET_{}'.format(iform.isa_set.upper())
                 s = '1' if iform.isa_set.upper() in isa_set_db_for_chip else '0'
+                if s == '0':
+                    all_ones = False
+                else:
+                    all_zeros = False
                 values.append(s)
             line = "/*{:14}*/ {{{}}},".format(iclass, ",".join(values))
             table.extend([ line ])
             
-        return table
+        return table, all_ones, all_zeros
 
     
 class instruction_codegen_t(object):

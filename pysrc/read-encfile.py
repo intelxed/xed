@@ -2509,15 +2509,19 @@ class encoder_configuration_t(object):
             fo.add_code(line)
         fo.add_code_eol('}')
 
-        # isa-set initialization table
-        # set 1/0 values to help limit encode to producing the isa-sets present on self.chip.
-        isa_set_table = ins_group.gen_iform_isa_set_table( self.isa_set_db[self.chip] ) # get init data
-        table_type = 'static const xed_bool_t '
-        table_decl = 'isa_set[{}][{}] = {{'.format(iclasses_number, iforms_number)
-        fo.add_code(table_type + table_decl)
-        for line in isa_set_table:
-            fo.add_code(line)
-        fo.add_code_eol('}')
+        # isa-set initialization table set 1/0 values to help limit
+        # encode to producing the isa-sets present on the specified
+        # self.chip.  The all_ones and all_zeros are Very frequently
+        # useful optimizations to reduce code size and speed up
+        # checking.
+        isa_set_table, all_ones, all_zeros = ins_group.gen_iform_isa_set_table( self.isa_set_db[self.chip] )
+        if  all_ones==False and all_zeros==False:
+            table_type = 'static const xed_bool_t '
+            table_decl = 'isa_set[{}][{}] = {{'.format(iclasses_number, iforms_number)
+            fo.add_code(table_type + table_decl)
+            for line in isa_set_table:
+                fo.add_code(line)
+            fo.add_code_eol('}')
         
         get_iclass_index = 'xed_encoder_get_iclasses_index_in_group'
         obj_name = encutil.enc_strings['obj_str']
@@ -2552,8 +2556,13 @@ class encoder_configuration_t(object):
             # is set, we let everything encode.  Otherwise we use the
             # isa_set array set using the specified --encoder-chip at
             # comple time.
-            fo.add_code('if (xed3_operand_get_encode_force(xes) || isa_set[iclass_index][{}]) {{'.format(i))
-
+            if  all_ones:
+                fo.add_code('if (1) { // ALL ONES')
+            elif all_zeros:
+                fo.add_code('if (xed3_operand_get_encode_force(xes)) { // ALL ZEROS')
+            else:
+                fo.add_code('if (xed3_operand_get_encode_force(xes) || isa_set[iclass_index][{}]) {{ // MIXED'.format(i))
+                
             try:
                 operand_order = self.all_operand_name_list_dict[iform.operand_order_key]
             except:
