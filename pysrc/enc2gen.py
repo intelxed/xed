@@ -992,6 +992,8 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
                 s.append('m32')
             elif op.oc2 == 'q':
                 s.append('m64')
+            elif op.oc2 == 'ptr':
+                s.append('mptr')
             #elif op.oc2 == 'dq': don't really want to start decorating the wider memops
             #    s.append('m128')
             elif op.oc2 == 'v' and using_width:
