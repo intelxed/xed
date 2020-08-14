@@ -168,13 +168,17 @@ arg_imm32 = 'xed_uint32_t ' + var_imm32
 var_imm64 = 'imm64'
 arg_imm64 = 'xed_uint64_t ' + var_imm64
 
+def special_index_cases(ii):
+    if ii.avx512_vsib or ii.avx_vsib or ii.sibmem:
+        return True
+    return False
 
 # if I wanted to prune the number of memory variants, I could set
 # index_vals to just [True]. 
 index_vals = [False,True]
 def get_index_vals(ii):
     global index_vals
-    if ii.avx512_vsib or ii.avx_vsib:
+    if special_index_cases(ii):
         return [True]
     return index_vals
 
@@ -322,6 +326,7 @@ def op_mem(op):
     if 'MEM' in op.name:
         return True
     return False
+
 def op_agen(op): # LEA
     if 'AGEN' in op.name:
         return True
@@ -992,7 +997,7 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
                 s.append('m32')
             elif op.oc2 == 'q':
                 s.append('m64')
-            elif op.oc2 == 'ptr':
+            elif op.oc2 == 'ptr': # sibmem
                 s.append('mptr')
             #elif op.oc2 == 'dq': don't really want to start decorating the wider memops
             #    s.append('m128')
@@ -2459,7 +2464,7 @@ def add_memop_args(env, ii, fo, use_index, dispsz, immw=0, reg=-1, osz=0):
     elif use_index:
         fo.add_arg(arg_index, gprv_index_names[env.asz])
         
-    if use_index or ii.avx_vsib or ii.avx512_vsib:
+    if use_index or special_index_cases(ii):
         if env.asz in [32,64]:
             fo.add_arg(arg_scale, 'scale')  # a32, a64
 
@@ -2909,8 +2914,8 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
         
     emit_opcode(ii,fo)
     emit_modrm(fo)
-    if ii.avx_vsib or ii.avx512_vsib:
-        fo.add_code_eol('emit_sib(r)', 'for vsib')
+    if special_index_cases(ii):
+        fo.add_code_eol('emit_sib(r)', 'for vsib/sibmem')
     else:
         fo.add_code('if (get_has_sib(r))')
         fo.add_code_eol('    emit_sib(r)')
@@ -4917,7 +4922,7 @@ def xed_mode_removal(env,ii):
     
 def create_enc_fn(env, ii):
     if env.asz == 16:
-        if ii.avx_vsib or ii.avx512_vsib:
+        if special_index_cases(ii):
             ii.encoder_skipped = True
             return
         
