@@ -207,6 +207,7 @@ class xed_reader_t(object):
         self._generate_missing_iforms()
         self._summarize_operands()
         self._summarize_vsib()
+        self._summarize_sibmem()
         
         self.cpuid_map = {}
         if cpuid_filename:
@@ -508,6 +509,13 @@ class xed_reader_t(object):
             elif 'VMODRM_YMM()' in v.pattern:
                 v.avx_vsib = 'ymm'
 
+    def _summarize_sibmem(self):
+        for v in self.recs:
+            v.sibmem = False
+            for op in v.parsed_operands:
+                if op.name == 'MEM0' and op.oc2 == 'ptr':
+                    v.sibmem=True
+                    break
 
     def _parse_operands(self):
         '''set v.parsed_operands with list of operand_info_t objects (see opnds.py).'''
