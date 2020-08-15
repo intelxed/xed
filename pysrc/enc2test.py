@@ -75,6 +75,8 @@ xmm_not64 = [ 'XMM{}'.format(i) for i in range(0,8)]
 ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
 zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
 
+tmm = [ 'TMM{}'.format(i) for i in range(0,8)]
+
 seg = 'ES CS SS DS FS GS'.split()
 seg_no_cs = 'ES SS DS FS GS'.split()
 cr_64 = 'CR0 CR2 CR3 CR4 CR8'.split()
@@ -109,6 +111,7 @@ def set_test_gen_counters(env):
         
         'xmm':  xmm_vex_m64 if env.mode==64 else xmm_not64,
         'ymm':  ymm_vex_m64 if env.mode==64 else ymm_not64,
+        'tmm':  tmm if env.mode==64 else [],
         
         'xmm_evex':  xmm_evex_m64 if env.mode==64 else xmm_not64,
         'ymm_evex':  ymm_evex_m64 if env.mode==64 else ymm_not64,
@@ -232,6 +235,9 @@ def  get_zmm(env, ii):
         return gen_reg_simd_unified(env,'zmm_evex', True)
     return gen_reg(env,'zmm_evex')
 
+def  get_tmm(env, ii):
+    return gen_reg(env,'tmm')
+
 def  get_kreg(env, ii):
     return gen_reg(env,'kreg')
 def  get_kreg_not0(env, ii):
@@ -311,6 +317,7 @@ arginfo2value_creator = {
      'xmm': get_xmm,
      'ymm': get_ymm,
      'zmm': get_zmm,
+     'tmm': get_tmm,
      'kreg': get_kreg,
      'kreg!0': get_kreg_not0,
      'x87': get_x87,

@@ -169,3 +169,15 @@ xed_bool_t xed_enc2_check_args = 1;
 void xed_enc2_set_check_args(xed_bool_t on) {
     xed_enc2_check_args = on;
 }
+
+
+#if defined(XED_REG_TREG_FIRST_DEFINED)
+void xed_enc2_invalid_tmm(xed_uint_t mode, xed_reg_enum_t reg,
+                          const char* argname, const char* pfn)
+{
+    if (reg < XED_REG_TREG_FIRST || reg > XED_REG_TREG_LAST) 
+        xed_enc2_error("Bad TMM reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+    if (mode != 64)
+        xed_enc2_error("Non-64b-mode TMM reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
+}
+#endif
