@@ -331,6 +331,11 @@ def op_agen(op): # LEA
     if 'AGEN' in op.name:
         return True
     return False
+def op_tmm(op):
+    if op.lookupfn_name:
+        if 'TMM' in op.lookupfn_name:
+            return True
+    return False
 def op_xmm(op):
     if op.lookupfn_name:
         if 'XMM' in op.lookupfn_name:
@@ -960,7 +965,9 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
         if op.name.startswith('INDEX'):
             continue
 
-        if op_xmm(op):
+        if op_tmm(op):
+            s.append('t')
+        elif op_xmm(op):
             s.append('x')
         elif op_ymm(op):
             s.append('y')
@@ -1009,7 +1016,9 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
                 s.append('m' + _translate_width_z(using_width))
             else:
                 osz = _convert_to_osz(using_width) if using_width else 0
-                if op.oc2 == 'vv':
+                if op.oc2 == 'tv' or op.oc2.startswith('tm'):
+                    bits =  'tv'
+                elif op.oc2 == 'vv':
                     # read_xed_db figures out the memop width for
                     # no-broadcast and broadcasting cases for EVEX
                     # memops. 
@@ -1856,6 +1865,8 @@ def get_opnd_types(env, ii, osz=0):
         elif op_implicit_specific_reg(op):
             pass # ignore
            
+        elif op_tmm(op):
+            s.append('tmm')
         elif op_xmm(op):
             s.append('xmm')
         elif op_ymm(op):
@@ -4098,7 +4109,196 @@ def create_vex_all_mask_reg(env,ii):
     if ii.has_imm8:
         cond_emit_imm8(ii,fo)
     add_enc_func(ii,fo)
+
+def vex_amx_mem(ii):
+    if 'AMX' in ii.isa_set:
+        for op in _gen_opnds(ii):
+            if op_mem(op):
+                return True
+    return False
+
+def vex_amx_reg(ii):
+    if 'AMX' in ii.isa_set:
+        for op in _gen_opnds(ii):
+            if op_mem(op):
+                return False
+        return True
+    return False
+
+def create_vex_amx_reg(env,ii): # FIXME: XXX
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_reg1,  var_reg1
+    global arg_reg2,  var_reg2
+    global arg_reg3,  var_reg3
+
+    nopnds = count_operands(ii) # not imm8
+    opnd_sig = make_opnd_signature(env,ii)
+    fname = "{}_{}_{}".format(enc_fn_prefix,
+                              ii.iclass.lower(),
+                              opnd_sig)
+
+    fo = make_function_object(env,ii,fname)
+    fo.add_comment("created by create_vex_amx_reg opnd_sig={} nopnds={}".format(opnd_sig,nopnds))
+    fo.add_arg(arg_request,'req')
+    print("WORKING ON  {}".format(ii.iclass))
+    opnd_types = get_opnd_types(env,ii)
+    if nopnds >= 1:
+        fo.add_arg(arg_reg0,opnd_types[0])
+    if nopnds >= 2:
+        fo.add_arg(arg_reg1, opnd_types[1])
+        if nopnds >= 3:
+            fo.add_arg(arg_reg2, opnd_types[2])
+            if nopnds >= 4:
+                fo.add_arg(arg_reg3, opnd_types[3])
+    cond_add_imm_args(ii,fo)
+
+    set_vex_pp(ii,fo)
+    fo.add_code_eol('set_map(r,{})'.format(ii.map))
+    
+    if ii.vl == '256': # ZERO INIT OPTIMIZATION
+        fo.add_code_eol('set_vexl(r,1)')
         
+    fo.add_code_eol('set_mod(r,3)')
+
+    vars = [var_reg0, var_reg1, var_reg2, var_reg3]
+
+    var_r, var_b, var_n, var_se = None, None, None, None
+    for i,op in enumerate(_gen_opnds(ii)):
+        if op.lookupfn_name:
+            if op.lookupfn_name.endswith('_R'):
+                var_r,sz_r = vars[i], get_type_size(op)
+            elif op.lookupfn_name.endswith('_B'):
+                var_b,sz_b = vars[i], get_type_size(op)
+            elif op.lookupfn_name.endswith('_N'):
+                var_n,sz_n = vars[i], get_type_size(op)
+            else:
+                die("SHOULD NOT REACH HERE")
+    if ii.rexw_prefix == '1':
+        fo.add_code_eol('set_rexw(r)')
+
+    if var_n:
+        fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(sz_n, var_n))
+    else:
+        fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+        
+    if var_r:
+        fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(sz_r, var_r))
+    elif ii.reg_required != 'unspecified':
+        if ii.reg_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+        
+    if var_b:
+        fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(sz_b, var_b))
+    elif ii.rm_required != 'unspecified':
+        if ii.rm_required: # ZERO INIT OPTIMIZATION
+            fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+        
+    emit_vex_prefix(env, ii,fo,register_only=True)
+    emit_opcode(ii,fo)
+    emit_modrm(fo)
+    if ii.has_imm8:
+        cond_emit_imm8(ii,fo)
+    elif var_se:
+        fo.add_code_eol('emit_se_imm8_reg(r)')
+    add_enc_func(ii,fo)
+    
+
+def create_vex_amx_mem(env,ii): # FIXME: XXX
+    global enc_fn_prefix, arg_request
+    global arg_reg0,  var_reg0
+    global arg_reg1,  var_reg1
+    global arg_reg2,  var_reg2
+    global arg_reg3,  var_reg3
+    global arg_imm8
+
+    nopnds = count_operands(ii) # skips imm8
+    op = first_opnd(ii)
+    width = op.oc2
+    opsig = make_opnd_signature(env,ii)
+    immw=0
+    if ii.has_imm8:
+        immw=8
+    dispsz_list = get_dispsz_list(env)
+    opnd_types_org = get_opnd_types(env,ii)
+    arg_regs = [ arg_reg0, arg_reg1, arg_reg2, arg_reg3 ]
+    var_regs = [ var_reg0, var_reg1, var_reg2, var_reg3 ]
+        
+    ispace = itertools.product(get_index_vals(ii), dispsz_list)
+    for use_index, dispsz  in ispace:
+        memaddrsig = get_memsig(env.asz, use_index, dispsz)
+
+        fname = "{}_{}_{}_{}".format(enc_fn_prefix,
+                                     ii.iclass.lower(),
+                                     opsig,
+                                     memaddrsig)
+
+        fo = make_function_object(env,ii,fname, asz=env.asz)
+        fo.add_comment("created by create_vex_amx_mem")
+        fo.add_arg(arg_request,'req')
+        opnd_types = copy.copy(opnd_types_org)
+
+        regn = 0
+        for i,optype in enumerate(opnd_types_org):
+            if optype in ['tmm','xmm','ymm','zmm', 'gpr32', 'gpr64', 'kreg']:
+                fo.add_arg(arg_regs[regn], opnd_types.pop(0))
+                regn += 1
+            elif optype in ['mem']:
+                add_memop_args(env, ii, fo, use_index, dispsz, immw=0)
+                opnd_types.pop(0)
+            elif optype in 'int8':
+                fo.add_arg(arg_imm8,'int8')
+                opnd_types.pop(0) # imm8 is last so we technically can skip this pop
+            else:
+                die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
+
+        set_vex_pp(ii,fo)
+        fo.add_code_eol('set_map(r,{})'.format(ii.map))
+
+        if ii.vl == '256': # Not setting VL=128 since that is ZERO OPTIMIZATION
+            fo.add_code_eol('set_vexl(r,1)')
+        
+        # FIXME REFACTOR function-ize this
+        var_r, var_b, var_n, var_se = None,None,None,None
+        sz_r,  sz_b,  sz_n,  sz_se  = None,None,None,None
+        for i,op in enumerate(_gen_opnds_nomem(ii)): # use no mem version to skip memop if a store-type op
+            if op.lookupfn_name:
+                if op.lookupfn_name.endswith('_R'):
+                    var_r,sz_r = var_regs[i],get_type_size(op)
+                elif op.lookupfn_name.endswith('_B'):
+                    var_b,sz_b = var_regs[i],get_type_size(op)
+                elif op.lookupfn_name.endswith('_N'):
+                    var_n,sz_n = var_regs[i],get_type_size(op)
+                else:
+                    die("SHOULD NOT REACH HERE")
+
+        if ii.rexw_prefix == '1':
+            fo.add_code_eol('set_rexw(r)')
+            
+        if var_n == None:
+            fo.add_code_eol('set_vvvv(r,0xF)',"must be 1111")
+        else:
+            fo.add_code_eol('enc_vvvv_reg_{}(r,{})'.format(sz_n, var_n))
+            
+        if var_r:
+            fo.add_code_eol('enc_modrm_reg_{}(r,{})'.format(sz_r, var_r))
+        elif ii.reg_required != 'unspecified':
+            if ii.reg_required: # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
+
+        if var_b:
+            fo.add_code_eol('enc_modrm_rm_{}(r,{})'.format(sz_b, var_b))
+        elif ii.rm_required != 'unspecified':
+            if ii.rm_required: # ZERO INIT OPTIMIZATION
+                fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+                
+        encode_mem_operand(env, ii, fo, use_index, dispsz)
+        emit_vex_prefix(env, ii,fo,register_only=False)
+        
+        finish_memop(env, ii, fo, dispsz, immw,  space='vex')
+        add_enc_func(ii,fo)
+
+    
 def _enc_vex(env,ii):
     if several_xymm_gpr_imm8(ii):
         create_vex_simd_reg(env,ii)
@@ -4108,9 +4308,13 @@ def _enc_vex(env,ii):
         create_vex_all_mask_reg(env,ii)
     elif vex_one_mask_reg_and_one_gpr(ii):
         create_vex_one_mask_reg_and_one_gpr(env,ii)
-        
     elif vex_vzero(ii):
         create_vex_vzero(env,ii)
+    elif vex_amx_reg(ii):
+        create_vex_amx_reg(env,ii)
+    elif vex_amx_mem(ii):
+        create_vex_amx_mem(env,ii)
+    
         
 def vex_vzero(ii):
     return ii.iclass.startswith('VZERO')
