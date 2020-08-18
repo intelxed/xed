@@ -39,6 +39,7 @@ xed_reg_enum_t xed_decoded_inst_get_reg(const xed_decoded_inst_t* p,
       case XED_OPERAND_REG6:  return xed3_operand_get_reg6(p);
       case XED_OPERAND_REG7:  return xed3_operand_get_reg7(p);
       case XED_OPERAND_REG8:  return xed3_operand_get_reg8(p);
+      case XED_OPERAND_REG9:  return xed3_operand_get_reg9(p);
       case XED_OPERAND_BASE0: return xed3_operand_get_base0(p);
       case XED_OPERAND_BASE1: return xed3_operand_get_base1(p);
       case XED_OPERAND_SEG0:  return xed3_operand_get_seg0(p);

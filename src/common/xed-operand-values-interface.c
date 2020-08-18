@@ -782,6 +782,7 @@ xed_operand_values_set_operand_reg(xed_operand_values_t* p,
     case XED_OPERAND_REG6: xed3_operand_set_reg6(p,reg_name); break;
     case XED_OPERAND_REG7: xed3_operand_set_reg7(p,reg_name); break;
     case XED_OPERAND_REG8: xed3_operand_set_reg8(p,reg_name); break;
+    case XED_OPERAND_REG9: xed3_operand_set_reg9(p,reg_name); break;
     case XED_OPERAND_BASE0: xed3_operand_set_base0(p,reg_name); break;
     case XED_OPERAND_BASE1: xed3_operand_set_base1(p,reg_name); break;
     case XED_OPERAND_INDEX: xed3_operand_set_index(p,reg_name); break;
