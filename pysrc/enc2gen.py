@@ -5412,8 +5412,11 @@ def work():
     args.prefix = os.path.join(args.gendir,'dgen')
     if args.output_file_list == None:
         args.output_file_list = os.path.join(args.gendir, 'enc2-list-of-files.txt')
-    
-    dbg_fn = os.path.join(args.gendir,'enc2out.txt')
+    def _mkstr(lst):
+        s = [str(x) for x in lst]
+        return  ":".join(s)
+    dbg_fn = os.path.join(args.gendir,'enc2out-m{}-a{}.txt'.format(_mkstr(args.modes),
+                                                                   _mkstr(args.asz_list)))
     msge("Writing {}".format(dbg_fn))
     set_dbg_output(open(dbg_fn,"w"))
     
