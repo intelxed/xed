@@ -475,7 +475,7 @@ static void xed_encode_precondition_vl(xed_encoder_request_t* req)
         set_vl(r,&vl);  
 
         // set VL based on REG any operands
-        for (i=XED_OPERAND_REG0;i<=XED_OPERAND_REG8;i++)
+        for (i=XED_OPERAND_REG0;i<=XED_OPERAND_REG9;i++)
         {
             xed3_get_generic_operand(req, i, &r);
             if (r == XED_REG_INVALID)

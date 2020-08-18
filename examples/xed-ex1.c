@@ -382,6 +382,7 @@ void print_operands(xed_decoded_inst_t* xedd) {
           case XED_OPERAND_REG6:
           case XED_OPERAND_REG7:
           case XED_OPERAND_REG8:
+          case XED_OPERAND_REG9:
           case XED_OPERAND_BASE0:
           case XED_OPERAND_BASE1:
             {

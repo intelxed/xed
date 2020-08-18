@@ -178,6 +178,7 @@ REG5           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO E
 REG6           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
 REG7           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
 REG8           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
+REG9           SCALAR     xed_reg_enum_t 16    EXPLICIT    PRINT   PUBLIC   DO EI
 
 OUTREG         SCALAR     xed_reg_enum_t 16    SUPPRESSED NOPRINT INTERNAL DO EI  #  output for lookup-functions
 ENCODER_PREFERRED SCALAR  xed_bits_t 1         SUPPRESSED NOPRINT INTERNAL DO EI # encoder preference when underdetermined.
