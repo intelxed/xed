@@ -56,8 +56,7 @@ except:
 ############################################################################
 
 def aq(s):
-    t = mbuild.cond_add_quotes(s)
-    return t
+    return mbuild.escape_string(s)
 
 def check_mbuild_file(mbuild_file, sig_file):
     if os.path.exists(sig_file):
@@ -305,8 +304,8 @@ def run_decode_generator(gc, env):
     if env == None:
         return (1, ['no env!'])
     
-    xedsrc = env.escape_string(env['src_dir'])
-    build_dir = env.escape_string(env['build_dir'])
+    xedsrc    = aq(env['src_dir'])
+    build_dir = aq(env['build_dir'])
     debug = ""
     other_args = " ".join(env['generator_options']) 
     gen_extra_args = "--gendir %s --xeddir %s %s %s" % (build_dir,
@@ -341,8 +340,8 @@ def run_encode_generator(gc, env):
     if env == None:
         return (1, ['no env!'])
     
-    xedsrc = env.escape_string(env['src_dir'])
-    build_dir = env.escape_string(env['build_dir'])
+    xedsrc    = aq(env['src_dir'])
+    build_dir = aq(env['build_dir'])
         
     gen_extra_args = "--gendir %s --xeddir %s" % (build_dir, xedsrc)
     cmd = env.expand(gc.encode_command(xedsrc,
@@ -384,9 +383,9 @@ def run_encode_generator2(args, env):
     if env == None:
         return (1, ['no env!'])
     
-    args.xeddir = env.escape_string(env['src_dir'])
+    args.xeddir = aq(env['src_dir'])
     # we append our own paths in the generator
-    args.gendir = env.escape_string(env['libxed_build_dir']) 
+    args.gendir = aq(env['libxed_build_dir']) 
         
     cmd = env.expand( _encode_command2(args) )
 
@@ -976,13 +975,11 @@ def init(env):
                 xbc.cdie("Cannot build with cygwin python. " +
                            "Please install win32 python")
             if mbuild.is_python3():
-                python_commands = [ 'c:/python37/python.exe',
-                                    'c:/python36/python.exe',
-                                    'c:/python35/python.exe' ]
+                vers = ['39', '38', '37', '36', '35']
+                python_commands = [ 'c:/python{}/python.exe'.format(x) for x in vers ]
             else:
-                python_commands = [ 'c:/python27/python.exe',
-                                    'c:/python26/python.exe',
-                                    'c:/python25/python.exe' ]
+                vers = ['27','26','25']
+                python_commands = [ 'c:/python{}/python.exe'.format(x) for x in vers ]
             python_command = None
             for p in python_commands:
                if os.path.exists(p):
@@ -992,7 +989,7 @@ def init(env):
                xbc.cdie("Could not find win32 python at these locations: %s" %
                           "\n\t" + "\n\t".join(python_commands))
                 
-    env['pythonarg'] = env.escape_string(python_command)
+    env['pythonarg'] = aq(python_command)
     if mbuild.verbose(2):
         mbuild.msgb("PYTHON", env['pythonarg'])
 
@@ -2543,7 +2540,7 @@ def _test_cmdline_decoder(env,osenv):
 def _run_canned_tests(env,osenv):
     """Run the tests from the tests subdirectory"""
     retval = 0 # success
-    env['test_dir'] = env.escape_string(mbuild.join(env['src_dir'],'tests'))
+    env['test_dir'] = aq(mbuild.join(env['src_dir'],'tests'))
     wkit = env['wkit']
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
@@ -2551,7 +2548,7 @@ def _run_canned_tests(env,osenv):
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
-        x  = env.escape_string(mbuild.join(env['test_dir'],d))
+        x  = aq(mbuild.join(env['test_dir'],d))
         cmd += " --tests %s " % (x)
 
     # add test restriction/subetting codes
