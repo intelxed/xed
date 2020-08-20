@@ -95,10 +95,10 @@ def run_subprocess(cmd, **kwargs):
     return sub.returncode, lines
 
 
-def run(status, cmd, required=False):
+def run(status, cmd, required=False, cwd=None):
     '''run subprocess, and record fails'''
     print(cmd)
-    retval, output = run_subprocess(cmd)
+    retval, output = run_subprocess(cmd, cwd=cwd)
     for line in output:
         sys.stdout.write(line)
     if retval == 0:
@@ -154,6 +154,25 @@ def archval(pyver, pycmd, status):
     cmd = '{} xedext/xed_build.py --xed-dir {} {} --build-dir={} host_cpu={}'.format(
         pycmd, cwd, flags, build_dir, size)
     run(status, cmd)
+
+def get_branches_from_file():
+    f = open("misc/ci-branches.txt","r")
+    lines =  f.readlines()
+    f.close()
+    d = {}
+    for  x in lines:
+        x = x.strip()
+        a = x.split()
+        repo=a[0]
+        branch=a[1]
+        print("READING REPO: {}  TO BRANCH: {}".format(repo, branch))
+        d[repo]=branch
+    return d
+
+def checkout_branches(status, branches):
+    for repo,branch in branches.items():
+        print("CHANGING REPO: {}  TO BRANCH: {}".format(repo, branch))
+        run(status, "git checkout {}".format(branch), cwd=repo)
             
 def main():
     status = jobs_status_t()
@@ -162,7 +181,7 @@ def main():
     git_base = 'https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.devtools.intel.com/xed-group/'
 
     mbuild_git = git_base + 'mbuild.git'
-    cmd = 'git clone --depth 1 {} mbuild'.format(mbuild_git)
+    cmd = 'git clone {} mbuild'.format(mbuild_git)
     run(status, cmd, required=True)
 
     # IPLDT scan XED and MBUILD
@@ -185,14 +204,15 @@ def main():
         
         cmd = 'binary-tools/lin/ipldt3 -i mbuild -r ipldt-results-mbuild'
         run(status, cmd, required=False)
-        cmd = 'cat ipldt-results-mbuild/ipldt_results.txt'
+        cmd = 'cat ipldt-results-mbuild/ipldt_resuplts.txt'
         run(status, cmd, required=True)
     
     xedext_git = git_base + 'xedext.git'
-    cmd = 'git clone --depth 1 {} xedext'.format(xedext_git)
+    cmd = 'git clone {} xedext'.format(xedext_git)
     run(status, cmd, required=True)
-    # FIXME: add support for changing to non-defalt branch of xedext. Read a file
-    # with branch name from xed...
+
+    branches = get_branches_from_file()
+    checkout_branches(status, branches)
     
     
     archval_repo = os.getenv('ARCHVAL_REPO')
