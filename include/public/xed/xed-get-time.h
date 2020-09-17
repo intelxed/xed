@@ -36,7 +36,9 @@ END_LEGAL */
 #         pragma intrinsic(__rdtsc)
 #      endif
 #      if defined(__GNUC__)
-#         include <x86intrin.h>
+#         if defined(__i386__) || defined(i386) || defined(i686) || defined(__x86_64__)
+#             include <x86intrin.h>
+#         endif
 #      endif
 #   endif
 
