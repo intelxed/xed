@@ -1,0 +1,192 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2020 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING AESDEC128KL (AESDEC128KL-N/A-1)
+{
+ICLASS:      AESDEC128KL
+CPL:         3
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xDD   f3_refining_prefix      MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:m384:u8
+IFORM:       AESDEC128KL_XMMu8_MEMu8
+}
+
+
+# EMITTING AESDEC256KL (AESDEC256KL-N/A-1)
+{
+ICLASS:      AESDEC256KL
+CPL:         3
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xDF  f3_refining_prefix      MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM() 
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:zd:u8
+IFORM:       AESDEC256KL_XMMu8_MEMu8
+}
+
+
+# EMITTING AESDECWIDE128KL (AESDECWIDE128KL-N/A-1)
+{
+ICLASS:      AESDECWIDE128KL
+CPL:         3
+CATEGORY:    KEYLOCKER_WIDE
+EXTENSION:   KEYLOCKER_WIDE
+ISA_SET:     KEYLOCKER_WIDE
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xD8 MOD[mm] MOD!=3 REG[0b001] RM[nnn]  MODRM()  f3_refining_prefix     
+OPERANDS:    MEM0:r:m384:u8 REG0=XED_REG_XMM0:rw:SUPP:dq:u8 REG1=XED_REG_XMM1:rw:SUPP:dq:u8 REG2=XED_REG_XMM2:rw:SUPP:dq:u8 REG3=XED_REG_XMM3:rw:SUPP:dq:u8 REG4=XED_REG_XMM4:rw:SUPP:dq:u8 REG5=XED_REG_XMM5:rw:SUPP:dq:u8 REG6=XED_REG_XMM6:rw:SUPP:dq:u8 REG7=XED_REG_XMM7:rw:SUPP:dq:u8
+IFORM:       AESDECWIDE128KL_MEMu8
+}
+
+
+# EMITTING AESDECWIDE256KL (AESDECWIDE256KL-N/A-1)
+{
+ICLASS:      AESDECWIDE256KL
+CPL:         3
+CATEGORY:    KEYLOCKER_WIDE
+EXTENSION:   KEYLOCKER_WIDE
+ISA_SET:     KEYLOCKER_WIDE
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xD8 MOD[mm] MOD!=3 REG[0b011] RM[nnn]  MODRM()  f3_refining_prefix     
+OPERANDS:    MEM0:r:zd:u8 REG0=XED_REG_XMM0:rw:SUPP:dq:u8 REG1=XED_REG_XMM1:rw:SUPP:dq:u8 REG2=XED_REG_XMM2:rw:SUPP:dq:u8 REG3=XED_REG_XMM3:rw:SUPP:dq:u8 REG4=XED_REG_XMM4:rw:SUPP:dq:u8 REG5=XED_REG_XMM5:rw:SUPP:dq:u8 REG6=XED_REG_XMM6:rw:SUPP:dq:u8 REG7=XED_REG_XMM7:rw:SUPP:dq:u8
+IFORM:       AESDECWIDE256KL_MEMu8
+}
+
+
+# EMITTING AESENC128KL (AESENC128KL-N/A-1)
+{
+ICLASS:      AESENC128KL
+CPL:         3
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xDC f3_refining_prefix      MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:m384:u8
+IFORM:       AESENC128KL_XMMu8_MEMu8
+}
+
+
+# EMITTING AESENC256KL (AESENC256KL-N/A-1)
+{
+ICLASS:      AESENC256KL
+CPL:         3
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xDE   f3_refining_prefix     MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
+OPERANDS:    REG0=XMM_R():rw:dq:u8 MEM0:r:zd:u8
+IFORM:       AESENC256KL_XMMu8_MEMu8
+}
+
+
+# EMITTING AESENCWIDE128KL (AESENCWIDE128KL-N/A-1)
+{
+ICLASS:      AESENCWIDE128KL
+CPL:         3
+CATEGORY:    KEYLOCKER_WIDE
+EXTENSION:   KEYLOCKER_WIDE
+ISA_SET:     KEYLOCKER_WIDE
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xD8 MOD[mm] MOD!=3 REG[0b000] RM[nnn]  MODRM()  f3_refining_prefix     
+OPERANDS:    MEM0:r:m384:u8 REG0=XED_REG_XMM0:rw:SUPP:dq:u8 REG1=XED_REG_XMM1:rw:SUPP:dq:u8 REG2=XED_REG_XMM2:rw:SUPP:dq:u8 REG3=XED_REG_XMM3:rw:SUPP:dq:u8 REG4=XED_REG_XMM4:rw:SUPP:dq:u8 REG5=XED_REG_XMM5:rw:SUPP:dq:u8 REG6=XED_REG_XMM6:rw:SUPP:dq:u8 REG7=XED_REG_XMM7:rw:SUPP:dq:u8
+IFORM:       AESENCWIDE128KL_MEMu8
+}
+
+
+# EMITTING AESENCWIDE256KL (AESENCWIDE256KL-N/A-1)
+{
+ICLASS:      AESENCWIDE256KL
+CPL:         3
+CATEGORY:    KEYLOCKER_WIDE
+EXTENSION:   KEYLOCKER_WIDE
+ISA_SET:     KEYLOCKER_WIDE
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xD8 MOD[mm] MOD!=3 REG[0b010] RM[nnn]  MODRM()  f3_refining_prefix     
+OPERANDS:    MEM0:r:zd:u8 REG0=XED_REG_XMM0:rw:SUPP:dq:u8 REG1=XED_REG_XMM1:rw:SUPP:dq:u8 REG2=XED_REG_XMM2:rw:SUPP:dq:u8 REG3=XED_REG_XMM3:rw:SUPP:dq:u8 REG4=XED_REG_XMM4:rw:SUPP:dq:u8 REG5=XED_REG_XMM5:rw:SUPP:dq:u8 REG6=XED_REG_XMM6:rw:SUPP:dq:u8 REG7=XED_REG_XMM7:rw:SUPP:dq:u8
+IFORM:       AESENCWIDE256KL_MEMu8
+}
+
+
+# EMITTING ENCODEKEY128 (ENCODEKEY128-N/A-1)
+{
+ICLASS:      ENCODEKEY128
+CPL:         3
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-0 of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xFA MOD[0b11] MOD=3  REG[rrr] RM[nnn]  f3_refining_prefix     
+OPERANDS:    REG0=GPR32_R():w:d:u8 REG1=GPR32_B():r:d:u8 REG2=XED_REG_XMM0:rw:SUPP:dq:u8 REG3=XED_REG_XMM1:w:SUPP:dq:u8 REG4=XED_REG_XMM2:w:SUPP:dq:u8 REG5=XED_REG_XMM4:w:SUPP:dq:u8 REG6=XED_REG_XMM5:w:SUPP:dq:u8 REG7=XED_REG_XMM6:w:SUPP:dq:u8
+IFORM:       ENCODEKEY128_GPR32u8_GPR32u8
+}
+
+
+# EMITTING ENCODEKEY256 (ENCODEKEY256-N/A-1)
+{
+ICLASS:      ENCODEKEY256
+CPL:         3
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-0 of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xFB MOD[0b11] MOD=3  REG[rrr] RM[nnn]  f3_refining_prefix     
+OPERANDS:    REG0=GPR32_R():w:d:u8 REG1=GPR32_B():r:d:u8 REG2=XED_REG_XMM0:rw:SUPP:dq:u8 REG3=XED_REG_XMM1:rw:SUPP:dq:u8 REG4=XED_REG_XMM2:w:SUPP:dq:u8 REG5=XED_REG_XMM3:w:SUPP:dq:u8 REG6=XED_REG_XMM4:w:SUPP:dq:u8 REG7=XED_REG_XMM5:w:SUPP:dq:u8 REG8=XED_REG_XMM6:w:SUPP:dq:u8
+IFORM:       ENCODEKEY256_GPR32u8_GPR32u8
+}
+
+
+# EMITTING LOADIWKEY (LOADIWKEY-N/A-1)
+{
+ICLASS:      LOADIWKEY
+CPL:         0
+CATEGORY:    KEYLOCKER
+EXTENSION:   KEYLOCKER
+ISA_SET:     KEYLOCKER
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
+PATTERN:    0x0F 0x38 0xDC f3_refining_prefix      MOD[0b11] MOD=3  REG[rrr] RM[nnn]  
+OPERANDS:    REG0=XMM_R():r:dq:u8 REG1=XMM_B():r:dq:u8 REG2=XED_REG_EAX:r:SUPP:d:u32 REG3=XED_REG_XMM0:r:SUPP:dq:u8
+IFORM:       LOADIWKEY_XMMu8_XMMu8
+}
+
+

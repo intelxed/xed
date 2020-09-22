@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2020 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,12 +15,27 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING HRESET (HRESET-N/A-1)
+{
+ICLASS:      HRESET
+CPL:         0
+CATEGORY:    HRESET
+EXTENSION:   HRESET
+ISA_SET:     HRESET
+REAL_OPCODE: Y
+PATTERN:    0x0F 0x3A 0xF0 MOD[0b11] MOD=3  REG[0b000] RM[0b000]  f3_refining_prefix     UIMM8() 
+OPERANDS:    IMM0:r:b REG0=XED_REG_EAX:r:SUPP:d:u32
+IFORM:       HRESET_IMM8
+}
 
-# This is intentionally *completely* inaccurate but Intel is not
-# saying which chips will have these instructions publicly at this
-# time and I had to put the new instructions on some chip so I made
-# somethign up. 
 
-FUTURE:                    \
-   ALL_OF(SAPPHIRE_RAPIDS) \
-   TDX

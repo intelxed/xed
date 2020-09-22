@@ -1,0 +1,105 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2020 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING SEAMCALL (SEAMCALL-N/A-1)
+{
+ICLASS:      SEAMCALL
+CPL:         0
+CATEGORY:    LEGACY
+EXTENSION:   TDX
+ISA_SET:     TDX
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod  cf-mod  pf-0  of-0  sf-0  af-0  ]
+ATTRIBUTES:  NOTSX 
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b111]  osz_refining_prefix      mode64 
+OPERANDS:    REG0=XED_REG_RAX:rw:SUPP:q:u64
+IFORM:       SEAMCALL
+}
+
+
+# EMITTING SEAMOPS (SEAMOPS-N/A-1)
+{
+ICLASS:      SEAMOPS
+CPL:         0
+CATEGORY:    LEGACY
+EXTENSION:   TDX
+ISA_SET:     TDX
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod  cf-mod  pf-0  of-0  sf-0  af-0  ]
+ATTRIBUTES:  NOTSX 
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b110]  osz_refining_prefix      mode64 
+OPERANDS:    REG0=XED_REG_RAX:rw:SUPP:q:u64
+IFORM:       SEAMOPS
+}
+
+
+# EMITTING SEAMRET (SEAMRET-N/A-1)
+{
+ICLASS:      SEAMRET
+CPL:         0
+CATEGORY:    LEGACY
+EXTENSION:   TDX
+ISA_SET:     TDX
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod  cf-mod  pf-0  of-0  sf-0  af-0  ]
+ATTRIBUTES:  NOTSX 
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b101]  osz_refining_prefix      mode64 
+OPERANDS:    
+IFORM:       SEAMRET
+}
+
+
+# EMITTING TDCALL (TDCALL-N/A-1)
+{
+ICLASS:      TDCALL
+CPL:         0
+CATEGORY:    LEGACY
+EXTENSION:   TDX
+ISA_SET:     TDX
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b100]  osz_refining_prefix      mode64 
+OPERANDS:    REG0=XED_REG_RCX:r:SUPP:q:u64
+IFORM:       TDCALL
+}
+
+
+# EMITTING TDCALL (TDCALL-N/A-2)
+{
+ICLASS:      TDCALL
+CPL:         0
+CATEGORY:    LEGACY
+EXTENSION:   TDX
+ISA_SET:     TDX
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b100]  osz_refining_prefix      not64 
+OPERANDS:    REG0=XED_REG_ECX:r:SUPP:d:u32
+IFORM:       TDCALL
+}
+
+

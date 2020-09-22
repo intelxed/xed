@@ -1,0 +1,251 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2020 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING VPDPBUSD (VPDPBUSD-128-2)
+{
+ICLASS:      VPDPBUSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x50 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 REG2=XMM_B():r:dq:u32
+IFORM:       VPDPBUSD_XMMi32_XMMu32_XMMu32
+}
+
+{
+ICLASS:      VPDPBUSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x50 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 MEM0:r:dq:u32
+IFORM:       VPDPBUSD_XMMi32_XMMu32_MEMu32
+}
+
+
+# EMITTING VPDPBUSD (VPDPBUSD-256-2)
+{
+ICLASS:      VPDPBUSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x50 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 REG2=YMM_B():r:qq:u32
+IFORM:       VPDPBUSD_YMMi32_YMMu32_YMMu32
+}
+
+{
+ICLASS:      VPDPBUSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x50 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 MEM0:r:qq:u32
+IFORM:       VPDPBUSD_YMMi32_YMMu32_MEMu32
+}
+
+
+# EMITTING VPDPBUSDS (VPDPBUSDS-128-2)
+{
+ICLASS:      VPDPBUSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x51 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 REG2=XMM_B():r:dq:u32
+IFORM:       VPDPBUSDS_XMMi32_XMMu32_XMMu32
+}
+
+{
+ICLASS:      VPDPBUSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x51 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 MEM0:r:dq:u32
+IFORM:       VPDPBUSDS_XMMi32_XMMu32_MEMu32
+}
+
+
+# EMITTING VPDPBUSDS (VPDPBUSDS-256-2)
+{
+ICLASS:      VPDPBUSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x51 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 REG2=YMM_B():r:qq:u32
+IFORM:       VPDPBUSDS_YMMi32_YMMu32_YMMu32
+}
+
+{
+ICLASS:      VPDPBUSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x51 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 MEM0:r:qq:u32
+IFORM:       VPDPBUSDS_YMMi32_YMMu32_MEMu32
+}
+
+
+# EMITTING VPDPWSSD (VPDPWSSD-128-2)
+{
+ICLASS:      VPDPWSSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x52 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 REG2=XMM_B():r:dq:u32
+IFORM:       VPDPWSSD_XMMi32_XMMu32_XMMu32
+}
+
+{
+ICLASS:      VPDPWSSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x52 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 MEM0:r:dq:u32
+IFORM:       VPDPWSSD_XMMi32_XMMu32_MEMu32
+}
+
+
+# EMITTING VPDPWSSD (VPDPWSSD-256-2)
+{
+ICLASS:      VPDPWSSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x52 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 REG2=YMM_B():r:qq:u32
+IFORM:       VPDPWSSD_YMMi32_YMMu32_YMMu32
+}
+
+{
+ICLASS:      VPDPWSSD
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x52 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 MEM0:r:qq:u32
+IFORM:       VPDPWSSD_YMMi32_YMMu32_MEMu32
+}
+
+
+# EMITTING VPDPWSSDS (VPDPWSSDS-128-2)
+{
+ICLASS:      VPDPWSSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x53 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 REG2=XMM_B():r:dq:u32
+IFORM:       VPDPWSSDS_XMMi32_XMMu32_XMMu32
+}
+
+{
+ICLASS:      VPDPWSSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x53 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0   
+OPERANDS:    REG0=XMM_R():rw:dq:i32 REG1=XMM_N():r:dq:u32 MEM0:r:dq:u32
+IFORM:       VPDPWSSDS_XMMi32_XMMu32_MEMu32
+}
+
+
+# EMITTING VPDPWSSDS (VPDPWSSDS-256-2)
+{
+ICLASS:      VPDPWSSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x53 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 REG2=YMM_B():r:qq:u32
+IFORM:       VPDPWSSDS_YMMi32_YMMu32_YMMu32
+}
+
+{
+ICLASS:      VPDPWSSDS
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   AVX_VNNI
+ISA_SET:     AVX_VNNI
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0x53 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W0   
+OPERANDS:    REG0=YMM_R():rw:qq:i32 REG1=YMM_N():r:qq:u32 MEM0:r:qq:u32
+IFORM:       VPDPWSSDS_YMMi32_YMMu32_MEMu32
+}
+
+

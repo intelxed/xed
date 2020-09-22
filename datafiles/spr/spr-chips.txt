@@ -17,18 +17,23 @@
 #END_LEGAL
 
 
-SAPPHIRE_RAPIDS:        \
-     ALL_OF(TIGER_LAKE) \
-     PTWRITE            \
-     ENQCMD             \
-     SERIALIZE          \
-     TSX_LDTRK          \
-     WAITPKG            \
-     AVX512_BF16_128    \
-     AVX512_BF16_256    \
-     AVX512_BF16_512    \
-     AMX_TILE           \
-     AMX_INT8           \
+SAPPHIRE_RAPIDS:         \
+     ALL_OF(TIGER_LAKE)  \
+     NOT(KEYLOCKER)      \
+     NOT(KEYLOCKER_WIDE) \
+     UINTR               \
+     PTWRITE             \
+     CLDEMOTE            \
+     ENQCMD              \
+     SERIALIZE           \
+     TSX_LDTRK           \
+     WAITPKG             \
+     AVX512_BF16_128     \
+     AVX512_BF16_256     \
+     AVX512_BF16_512     \
+     AVX_VNNI            \
+     AMX_TILE            \
+     AMX_INT8            \
      AMX_BF16
 
      

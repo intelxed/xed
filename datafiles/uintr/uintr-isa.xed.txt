@@ -1,0 +1,99 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2020 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING CLUI (CLUI-N/A-1)
+{
+ICLASS:      CLUI
+CPL:         3
+CATEGORY:    UINTR
+EXTENSION:   UINTR
+ISA_SET:     UINTR
+REAL_OPCODE: Y
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b110]  f3_refining_prefix      mode64 
+OPERANDS:    REG0=XED_REG_UIF:w:SUPP:i1
+IFORM:       CLUI
+}
+
+
+# EMITTING SENDUIPI (SENDUIPI-N/A-1)
+{
+ICLASS:      SENDUIPI
+CPL:         3
+CATEGORY:    UINTR
+EXTENSION:   UINTR
+ISA_SET:     UINTR
+REAL_OPCODE: Y
+PATTERN:    0x0F 0xC7 MOD[0b11] MOD=3  REG[0b110] RM[nnn]  f3_refining_prefix      mode64 
+OPERANDS:    REG0=GPR32_B():r:d:u32
+IFORM:       SENDUIPI_GPR32u32
+}
+
+
+# EMITTING STUI (STUI-N/A-1)
+{
+ICLASS:      STUI
+CPL:         3
+CATEGORY:    UINTR
+EXTENSION:   UINTR
+ISA_SET:     UINTR
+REAL_OPCODE: Y
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b111]  f3_refining_prefix      mode64 
+OPERANDS:    REG0=XED_REG_UIF:w:SUPP:i1
+IFORM:       STUI
+}
+
+
+# EMITTING TESTUI (TESTUI-N/A-1)
+{
+ICLASS:      TESTUI
+CPL:         3
+CATEGORY:    UINTR
+EXTENSION:   UINTR
+ISA_SET:     UINTR
+REAL_OPCODE: Y
+FLAGS:       MUST [  cf-mod  ]
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b101]  f3_refining_prefix      mode64 
+OPERANDS:    REG0=XED_REG_UIF:r:SUPP:i1
+IFORM:       TESTUI
+}
+
+
+# EMITTING UIRET (UIRET-N/A-1)
+{
+ICLASS:      UIRET
+CPL:         3
+CATEGORY:    UINTR
+EXTENSION:   UINTR
+ISA_SET:     UINTR
+REAL_OPCODE: Y
+FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
+PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b100]  f3_refining_prefix      mode64 
+OPERANDS:    REG0=rIP():w:SUPP REG1=XED_REG_STACKPOP:r:SUPP:spw
+IFORM:       UIRET
+}
+
+
