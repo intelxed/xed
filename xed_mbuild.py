@@ -606,6 +606,7 @@ def mkenv():
                                  cnl=True,
                                  icl=True,
                                  tgl=True,
+                                 adl=True,
                                  spr=True,
                                  future=True,
                                  knl=True,
@@ -812,6 +813,10 @@ def xed_args(env):
                           action="store_false", 
                           dest="tgl", 
                           help="Do not include TGL.")
+    env.parser.add_option("--no-adl",
+                          action="store_false", 
+                          dest="adl", 
+                          help="Do not include ADL.")
     env.parser.add_option("--no-spr",
                           action="store_false", 
                           dest="spr", 
@@ -1414,9 +1419,17 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'cet')
             _add_normal_ext(env,'movdir')
             _add_normal_ext(env,'vp2intersect')
+            _add_normal_ext(env,'keylocker')
+        if env['adl']:
+            _add_normal_ext(env,'adl')
+            _add_normal_ext(env,'hreset')
+            _add_normal_ext(env,'avx-vnni')
+            _add_normal_ext(env,'keylocker')
         if env['spr']:
             _add_normal_ext(env,'spr')
-            _add_normal_ext(env,'spr')
+            _add_normal_ext(env,'hreset')
+            _add_normal_ext(env,'cldemote')
+            _add_normal_ext(env,'avx-vnni')
             _add_normal_ext(env,'amx-spr')
             _add_normal_ext(env,'waitpkg')
             _add_normal_ext(env,'avx512-bf16')
@@ -1424,9 +1437,10 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'tsx-ldtrk')
             _add_normal_ext(env,'serialize')
             
-        if env['future']: # now based on ICL
+        if env['future']: 
             _add_normal_ext(env,'future')
-            _add_normal_ext(env,'cldemote')
+            _add_normal_ext(env,'tdx')
+
 
 
         
@@ -2618,7 +2632,7 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, SPR, KNL, KNM Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, ADL, SPR, KNL, KNM Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
@@ -2627,6 +2641,7 @@ def verify_args(env):
         env['clx'] = False
         env['cpx'] = False
         env['tgl'] = False
+        env['adl'] = False
         env['spr'] = False
         env['cnl'] = False
         env['icl'] = False
@@ -2688,6 +2703,7 @@ def verify_args(env):
         env['icl'] = False
         env['tgl'] = False
         env['spr'] = False
+        env['adl'] = False
         env['cet'] = False
         env['future'] = False
         
