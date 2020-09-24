@@ -2977,13 +2977,15 @@ def add_evex_displacement_var(fo):
     fo.add_code_eol('xed_int32_t use_displacement')
     
 def chose_evex_scaled_disp(fo, ii, dispsz, broadcasting=False): # WIP
-    if broadcasting:
+    disp_fix = '16' if dispsz == 16 else ''
+    
+    if ii.avx512_tuple == 'NO_SCALE':
+        memop_width_bytes = 1
+    elif broadcasting:
         memop_width_bytes = ii.element_size // 8
     else:
         memop_width_bytes = ii.memop_width // 8
 
-    disp_fix = '16' if dispsz == 16 else ''
-    
     fo.add_code_eol('use_displacement = xed_chose_evex_scaled_disp{}(r, disp{}, {})'.format(
         disp_fix,
         dispsz,
@@ -4141,7 +4143,6 @@ def create_vex_amx_reg(env,ii): # FIXME: XXX
     fo = make_function_object(env,ii,fname)
     fo.add_comment("created by create_vex_amx_reg opnd_sig={} nopnds={}".format(opnd_sig,nopnds))
     fo.add_arg(arg_request,'req')
-    print("WORKING ON  {}".format(ii.iclass))
     opnd_types = get_opnd_types(env,ii)
     if nopnds >= 1:
         fo.add_arg(arg_reg0,opnd_types[0])
