@@ -1428,6 +1428,7 @@ def _configure_libxed_extensions(env):
         if env['spr']:
             _add_normal_ext(env,'spr')
             _add_normal_ext(env,'hreset')
+            _add_normal_ext(env,'uintr')
             _add_normal_ext(env,'cldemote')
             _add_normal_ext(env,'avx-vnni')
             _add_normal_ext(env,'amx-spr')
