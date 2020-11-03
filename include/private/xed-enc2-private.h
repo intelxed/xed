@@ -106,7 +106,7 @@ static XED_INLINE xed_uint_t get_rm(xed_enc2_req_t* r) {
 static XED_INLINE void set_srm(xed_enc2_req_t* r, xed_uint_t v) {
     r->s.opcode_srm = v;
 }
-static XED_INLINE xed_uint_t get_opcode_srm(xed_enc2_req_t* r) {
+static XED_INLINE xed_uint_t get_srm(xed_enc2_req_t* r) {
     return r->s.opcode_srm;
 }
 

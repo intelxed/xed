@@ -902,7 +902,7 @@ def make_function_object(env, ii, fname, return_value='void', asz=None):
     return fo
 
 
-def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
+def make_opnd_signature(env, ii, using_width=None, broadcasting=False, special_xchg=False):
     '''This is the heart of the naming conventions for the encode
        functions. If using_width is present, it is used for GPRv and
        GPRy operations to specify a width.    '''
@@ -912,10 +912,17 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
         rax_names = { 16: 'ax', 32:'eax', 64:'rax' }
         osz = _translate_width_int(w)
         return rax_names[osz]
+    
     def _translate_eax_name(w):
         eax_names = { 16: 'ax', 32:'eax', 64:'eax' }
         osz = _translate_width_int(w)
         return eax_names[osz]
+    
+    def _translate_r8_name(w):
+        # uppercase to try to differentiate r8 (generic 8b reg) from R8 64b reg
+        r8_names = { 16: 'R8W', 32:'R8D', 64:'R8' }
+        osz = _translate_width_int(w)
+        return r8_names[osz]
 
     def _translate_width_int(w):
         if w in [8,16,32,64]:
@@ -988,7 +995,10 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False):
         elif op_gpr64(op):
             s.append('r64') #FIXME something else
         elif op_gprv(op):
-            s.append('r' + _translate_width(using_width))
+            if special_xchg:
+                s.append(_translate_r8_name(using_width))
+            else:
+                s.append('r' + _translate_width(using_width))
         elif op_gprz(op):
             s.append('r' + _translate_width_z(using_width))
         elif op_gpry(op):
@@ -1092,19 +1102,39 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
     for osz in osz_values:
         if env.mode != 64 and osz == 64:
             continue
+
+        special_xchg = False
+        if ii.partial_opcode: 
+            if ii.rm_required != 'unspecified':
+                if ii.iclass == 'XCHG':
+                    if env.mode != 64:
+                        continue
+                    # This is a strange XCHG that takes r8w, r8d or r8
+                    # depending on the EOSZ. REX.B is required & 64b  mode obviously.
+                    # And no register specifier is required.
+                    special_xchg = True
         
-        opsig = make_opnd_signature(env,ii,osz)
+        opsig = make_opnd_signature(env, ii, osz, special_xchg=special_xchg)
         fname = "{}_{}_{}".format(enc_fn_prefix,
                                     ii.iclass.lower(),
                                     opsig)
 
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_one_scalable_gpr")
+        if special_xchg:
+            fo.add_comment("special xchg using R8W/R8D/R8")
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_reg0, gprv_names[osz])
+        
+        if not special_xchg:
+            fo.add_arg(arg_reg0, gprv_names[osz])
         emit_required_legacy_prefixes(ii,fo)
         
-        rexw_forced = False
+        rex_forced = False
+
+        if special_xchg:
+            fo.add_code_eol('set_rexb(r,1)')
+            rex_forced  = True
+            
 
         if env.mode == 64 and osz == 16:
             if ii.eosz == 'osznot16':
@@ -1118,7 +1148,7 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
                 warn("SKIPPING 64b version for: {} / {}".format(ii.iclass, ii.iform))
                 continue # skip 64b version for this instruction
             fo.add_code_eol('set_rexw(r)')
-            rexw_forced = True
+            rex_forced = True
         elif env.mode == 32 and osz == 16:
             if ii.eosz == 'osznot16':
                 warn("SKIPPING 16b version for: {} / {}".format(ii.iclass, ii.iform))
@@ -1152,14 +1182,14 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
                     ii.encoder_skipped = True
                     return
             else:
-                # we have soem XCHG opcodes encoded as partia register
+                # we have some XCHG opcodes encoded as partial register
                 # instructions but have fixed RM fields.
-                fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
+                fo.add_code_eol('set_srm(r,{})'.format(ii.rm_required))
 
                 #dump_fields(ii)
                 #die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
 
-        emit_rex(env,fo,rexw_forced)
+        emit_rex(env, fo, rex_forced)
         emit_required_legacy_map_escapes(ii,fo)
                 
         if ii.partial_opcode:
@@ -1782,9 +1812,9 @@ def cond_add_imm_args(ii,fo):
         fo.add_arg(arg_imm8_2,'int8')    
     
 
-def emit_rex(env, fo, rexw_forced):
+def emit_rex(env, fo, rex_forced):
     if env.mode == 64:
-        if rexw_forced:
+        if rex_forced:
             fo.add_code_eol('emit_rex(r)')
         else:
             fo.add_code_eol('emit_rex_if_needed(r)')
@@ -2410,7 +2440,7 @@ def create_legacy_gprv_immv(env,ii,imm=False):
 
 def emit_partial_opcode_variable_srm(ii,fo):
     opcode = "0x{:02X}".format(ii.opcode_base10)
-    fo.add_code_eol('emit(r,{} | get_opcode_srm(r))'.format(opcode),
+    fo.add_code_eol('emit(r,{} | get_srm(r))'.format(opcode),
                     'partial opcode, variable srm')
 
 def emit_partial_opcode_fixed_srm(ii,fo):
@@ -3512,7 +3542,7 @@ def create_legacy_umonitor(env,ii):
             fo.add_code_eol('set_mod(r,{})'.format(ii.mod_required))
 
     emit_required_legacy_prefixes(ii,fo)
-    emit_rex(env,fo,rexw_forced=False)
+    emit_rex(env,fo,rex_forced=False)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -3570,7 +3600,7 @@ def create_legacy_ArAX_implicit(env,ii):
             fo.add_code_eol('set_mod(r,{})'.format(ii.mod_required))
 
     emit_required_legacy_prefixes(ii,fo)
-    #emit_rex(env,fo,rexw_forced=False)
+    #emit_rex(env,fo,rex_forced=False)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)

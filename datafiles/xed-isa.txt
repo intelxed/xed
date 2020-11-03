@@ -7130,6 +7130,7 @@ ISA_SET   : I86
 PATTERN   : 0b1001_0 SRM[rrr] SRM!=0
 OPERANDS  : REG0=GPRv_SB():rw REG1=OrAX():rw:IMPL
 
+# This is strange. REG0 is r8w, r8d or r8 depending on the EOSZ. mode64
 PATTERN   : 0b1001_0 SRM[rrr] SRM=0 not_refining_f3 rexb_prefix
 OPERANDS  : REG0=GPRv_SB():rw REG1=OrAX():rw:IMPL
 }
