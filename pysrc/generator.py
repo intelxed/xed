@@ -3083,18 +3083,21 @@ def collect_attributes(options, node,  master_list):
 
 
 idata_files = 0
-def write_instruction_data(odir,idata_dict):
+def write_instruction_data(agi, idata_dict):
    """Write a file containing the content of the idata_dict. The keys
    are iclass:extension the values are (iclass, extension, category). This
    appends to the file if we've already opened this."""
    global idata_files
-   fn = 'idata.txt'
-   if idata_files == 0:
-      open_mode = "w"
-   else:
-      open_mode = "a"
    idata_files += 1
-   f = open(os.path.join(odir,fn),open_mode)
+   if idata_files > 1:
+       die("Not handled: appending ot idata.txt file")
+           
+   fe = xed_file_emitter_t(agi.common.options.xeddir, 
+                           agi.common.options.gendir, 
+                           'idata.txt', 
+                           shell_file=True)
+   fe.start(full_header=False)
+   
    kys = list(idata_dict.keys())
    kys.sort()
    s = "#%-19s %-15s %-15s %-30s %-20s %s\n" % ("iclass", 
@@ -3103,7 +3106,7 @@ def write_instruction_data(odir,idata_dict):
                                                 "iform", 
                                                 "isa_set",
                                                 'attributes')
-   f.write(s)
+   fe.write(s)
    for iform in kys:
       (iclass,extension,category,isa_set, plist, 
                               iclass_string_index) = idata_dict[iform]
@@ -3117,8 +3120,8 @@ def write_instruction_data(odir,idata_dict):
                                                   iform, 
                                                   isa_set,
                                                   attributes)
-      f.write(s)
-   f.close()
+      fe.write(s)
+   fe.close()
    
 def attr_dict_keyfn(a):
     return a[0]
@@ -5517,7 +5520,7 @@ def gen_everything_else(agi):
     agi.isa_sets = collect_isa_sets(agi)
     
     # idata.txt file write
-    write_instruction_data(agi.common.options.gendir,agi.iform_info)
+    write_instruction_data(agi, agi.iform_info)
     write_quick_iform_map(agi,agi.common.options.gendir,agi.iform_info)
     
     print_resource_usage('everything.4b')
