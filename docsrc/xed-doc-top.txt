@@ -24,7 +24,7 @@
 @mainpage X86 Encoder Decoder User Guide
 by Mark Charney
 
-2020-06-29
+2020-11-13
 
 @section INTRO Introduction
 
