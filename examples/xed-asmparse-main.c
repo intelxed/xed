@@ -350,11 +350,19 @@ static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint
 }
 
 
-static xed_uint_t get_nbits_signed(xed_int64_t imm_disp_val) {
+static xed_uint_t get_nbits_signed(xed_int64_t imm_val) {
     xed_uint_t nbits = 0;
     xed_uint8_t legal_widths = 1|2|4|8;  // bytes
     xed_uint_t nbytes = 0;
-    nbytes = xed_shortest_width_signed(imm_disp_val, legal_widths); 
+    nbytes = xed_shortest_width_signed(imm_val, legal_widths);
+    nbits = 8 * nbytes;
+    return nbits;
+}
+static xed_uint_t get_nbits_unsigned(xed_uint64_t imm_val) {
+    xed_uint_t nbits = 0;
+    xed_uint8_t legal_widths = 1|2|4|8;  // bytes
+    xed_uint_t nbytes = 0;
+    nbytes = xed_shortest_width_unsigned(imm_val, legal_widths);
     nbits = 8 * nbytes;
     return nbits;
 }
@@ -449,6 +457,13 @@ static void set_mode_vec(xed_reg_enum_t reg,
     }
 }
 
+static xed_bool_t string_number_is_signed(const char* s)
+{
+    if (*s == '+' || *s == '-') 
+        return 1;
+    return 0;
+}
+
 /* Return true for e.g. strings "0x0123", "-0123"
    Return false if no padding zeroes */
 static xed_bool_t string_has_padding_zeroes(const char* s)
@@ -479,12 +494,11 @@ static char const*  const kmasks[] = { "{K0}","{K1}","{K2}","{K3}","{K4}","{K5}"
    an attempt to precisely control the width of the literal. Otherwise,
    choose a width that is just wide enough to fit the value */
 static int get_constant_width(char *text, int64_t val) {
-    if (string_has_padding_zeroes(text)) {
+    if (string_has_padding_zeroes(text)) 
         return 4 * count_nibbles(text);
-    }
-    else {
+    if (string_number_is_signed(text))
         return get_nbits_signed(val);
-    }
+    return get_nbits_unsigned((xed_uint64_t)val);
 }
 
 static void process_operand(xed_enc_line_parsed_t* v,
