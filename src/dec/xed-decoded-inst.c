@@ -887,6 +887,7 @@ xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
     return 0;
     (void)p; //pacify compiler
 }
+
 xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
     if (xed3_operand_get_mask(p) != 0)
@@ -916,6 +917,30 @@ xed_bool_t xed_decoded_inst_zeroing(const xed_decoded_inst_t* p) {
 #endif
     return 0;
     (void)p; //pacify compiler
+}
+
+xed_uint_t xed_decoded_inst_avx512_dest_elements(const xed_decoded_inst_t* p) {
+#if defined(XED_SUPPORTS_AVX512)
+    if (xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_SIMD_SCALAR))
+        return 1;
+    if (xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_MASKOP_EVEX)) {
+        const xed_inst_t* xi = xed_decoded_inst_inst(p);
+        const xed_operand_t* op = xed_inst_operand(xi,0); // 0'th operand.
+        if (xed_operand_width(op) == XED_OPERAND_WIDTH_MSKW) {
+            // need to use source vector or memop to find width (VFPCLASS, VCMP{PS,PD}
+            xed_uint_t vl_bits = xed_decoded_inst_vector_length_bits(p);
+            xed_uint_t source_operand_element_bits = xed_decoded_inst_operand_element_size_bits(p,2); // a bit of a hack
+            if (source_operand_element_bits)
+                return vl_bits / source_operand_element_bits;
+            return 0;
+        }
+        xed_uint_t vl_dest_bits = xed_decoded_inst_operand_length_bits(p,0);
+        xed_uint_t dest_element_bits = xed_decoded_inst_operand_element_size_bits(p,0);
+        if (dest_element_bits)
+            return vl_dest_bits / dest_element_bits;
+    }
+#endif
+    return 0;
 }
 
 xed_operand_action_enum_t
