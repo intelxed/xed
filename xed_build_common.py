@@ -218,6 +218,7 @@ def set_env_gnu(env):
     
     flags += ' -Wall'
     flags += ' -Wformat-security'
+    flags += ' -Wformat'
     # the windows compiler finds this stuff so flag it on other platforms
     flags += ' -Wunused' 
     
