@@ -217,6 +217,7 @@ def set_env_gnu(env):
     #env['LIBS'] += ' -lgcov'
     
     flags += ' -Wall'
+    flags += ' -Wformat'
     flags += ' -Wformat-security'
     # the windows compiler finds this stuff so flag it on other platforms
     flags += ' -Wunused' 
