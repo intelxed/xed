@@ -217,7 +217,6 @@ def set_env_gnu(env):
     #env['LIBS'] += ' -lgcov'
     
     flags += ' -Wall'
-    flags += ' -Wformat-security'
     # the windows compiler finds this stuff so flag it on other platforms
     flags += ' -Wunused' 
     
@@ -248,9 +247,14 @@ def set_env_gnu(env):
     #if env.on_mac():
     #    flags += ' -fno-common'
 
-    if env['build_os'] == 'win':
+    if env['build_os'] == 'win' or _greater_than_gcc(env,4,9,0):
+        flags += ' -Wformat-security'
+        flags += ' -Wformat'
+    else:
         # gcc3.4.4 on windows has problems with %x for xed_int32_t.
-        flags += ' -Wno-format' 
+        # gcc4.9.2 works well.
+        flags += ' -Wno-format'
+        flags += ' -Wno-format-security'
 
     if env['compiler'] != 'icc':
         # c99 is required for c++ style comments.
