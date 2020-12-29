@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2021 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ END_LEGAL */
 #include "xed-version.h"
 
 char const* const xed_copyright =
-  "Copyright (C) 2019, Intel Corporation. All rights reserved.";
+  "Copyright (C) 2021, Intel Corporation. All rights reserved.";
 
 /* need two levels of macros to expand and stringify the CPP macro arg. */
 #define XED_STR1(x) #x
