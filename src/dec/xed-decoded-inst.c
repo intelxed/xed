@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2020 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -614,10 +614,6 @@ xed_decoded_inst_operand_element_size_bits(
     }
     else if (xed_operand_template_is_register(o)) {
         return xed_decoded_inst_operand_length_bits_register(p, operand_index);
-    }
-    else { 
-        // catch all
-        xed_assert(0);
     }
     return element_size;
 }
