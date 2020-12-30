@@ -16,12 +16,15 @@
 #
 #END_LEGAL
 '''Run CI checks on github'''
+import os
 import platform
 import subprocess
 
 
 def get_python_cmds():
     '''find python verions. return tuples of (name, command)'''
+    if 'GITHUB_ACTIONS' in os.environ and os.environ['GITHUB_ACTIONS'] == 'true':
+        return [('3.x', 'python')]
     if platform.system() == 'Windows':
         return [(x, 'C:/python{}/python'.format(x)) for x in ['37']]
     if platform.system() in ['Darwin', 'Linux']:
