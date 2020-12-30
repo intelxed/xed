@@ -9,6 +9,7 @@ jobs:
     - name: Install prerequisites
       run: |
           python -m pip install --quiet --upgrade pip setuptools
+          sudo apt-get install -qq gcc-multilib
     - name: test
       run: |
           python ci.py
