@@ -340,7 +340,6 @@ def build_examples(env, work_queue):
     if env['decoder']:
 
         if env.on_linux() or env.on_freebsd() or env.on_netbsd():
-            xed_cmdline_files.append('xed-disas-elf.c')
             xed_cmdline_files.append('xed-disas-filter.c')
             xed_cmdline_files.append('xed-nm-symtab.c')
             
@@ -366,13 +365,23 @@ def build_examples(env, work_queue):
         
     if env.on_linux():
         xbc.cond_add_elf_dwarf(cenv)
-
+        
+    if env.on_linux() or env.on_freebsd() or env.on_netbsd():
+        src_elf = env.src_dir_join('xed-disas-elf.c')
+        if env['use_elf_dwarf_precompiled']:
+            cenv2 = copy.deepcopy(cenv)
+            # need to remove -pedantic because of redundant typedef Elf in dwarf header file
+            cenv2.remove_from_var('CCFLAGS','-pedantic')
+            xed_cmdline_obj += cenv2.compile(examples_dag, [src_elf])
+        else:
+            xed_cmdline_files.append(src_elf)
+            
     xed_cmdline_obj += cenv.compile(examples_dag, xed_cmdline_files)
-
     xed_cmdline = ex_compile_and_link(cenv, examples_dag,
                                       env.src_dir_join('xed.c'),
                                       xed_cmdline_obj + [link_libxed] +
                                       extra_libs)
+
     mbuild.msgb("CMDLINE", xed_cmdline)
     example_exes.append(xed_cmdline)
 
