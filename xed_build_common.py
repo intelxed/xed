@@ -546,6 +546,7 @@ def _use_elf_dwarf(env):
    env.add_define('XED_DWARF')
    env['LIBS'] += ' -ldwarf'
 
+
 def _add_elf_dwarf_precompiled(env):
    """Do not call this directly. See cond_add_elf_dwarf.  Set up to
    use our precompiled libelf/libdwarf. """
@@ -591,11 +592,11 @@ def cond_add_elf_dwarf(env):
    # set up the preprocessor define and linker requirements.
    _use_elf_dwarf(env)
 
-   if not env['use_elf_dwarf_precompiled']:
-      # presumably the user is supplying their own & setting rpaths, etc.
-      return
-   mbuild.msgb("ADDING ELF/DWARF PRECOMPILED")
-   _add_elf_dwarf_precompiled(env)
+   if env['use_elf_dwarf_precompiled']:
+      mbuild.msgb("ADDING ELF/DWARF PRECOMPILED")
+      _add_elf_dwarf_precompiled(env)
+   else:
+      env.add_include_dir('/usr/include/libdwarf')
 
 #    
 ###########################################################################
