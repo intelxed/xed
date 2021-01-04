@@ -410,6 +410,11 @@ def init_once(env):
 def init(env):
     # we make the python command contingent upon the mfile itself to catch
     # build changes.
+    
+    if 'init' in env and env['init']:
+        return
+    env['init']=True
+    
     env['mfile'] = env.src_dir_join('mfile.py')
     env['arch'] = get_arch(env)
     
