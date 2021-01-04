@@ -2034,11 +2034,12 @@ def _copy_dynamic_libs_to_kit(env,xkit):
     mbuild.cmkdir(xkit.extlib)
     executables = mbuild.glob(xkit.bin,'*')
 
-    if 'extern_lib_dir' not in env:
-        env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
-        
-    extra_ld_library_paths = (env['ld_library_path'] +
-                              [ env.expand('%(extern_lib_dir)s')])
+    extra_ld_library_paths = env['ld_library_path']    
+    if env['use_elf_dwarf_precompiled']:
+        if 'extern_lib_dir' not in env:
+            env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
+
+        extra_ld_library_paths.extend( env.expand('%(extern_lib_dir)s') )
 
     # run LDD to find the shared libs and do the copies
     okay = external_libs.copy_system_libraries(env,
@@ -2053,26 +2054,7 @@ def _copy_dynamic_libs_to_kit(env,xkit):
         env2 = copy.deepcopy(env)
         xbc.cond_add_elf_dwarf(env2)
         mbuild.copy_file(env2['libelf_license'], xkit.extlib)
-        
 
-def copy_ext_libs_to_kit(env,dest): # 2014-12-02: currently unused
-    if not env['use_elf_dwarf_precompiled']:
-       return
-
-    extlib = mbuild.join(dest,"extlib")
-    mbuild.cmkdir(extlib)
-
-    env2 = copy.deepcopy(env)
-    xbc.cond_add_elf_dwarf(env2)
- 
-    for f in env2['ext_libs']:
-        mbuild.copy_file(env2.expand(f),extlib)
-    existing_file_name = os.path.basename(env2['libelf'])
-    dest_path_and_link = mbuild.join(extlib,env2['libelf_symlink'])
-    if os.path.exists(dest_path_and_link):
-        mbuild.remove_file(dest_path_and_link)
-    mbuild.symlink(env, existing_file_name, dest_path_and_link)
-    mbuild.copy_file(env2['libelf_license'], extlib)
 
 def apply_legal_header2(fn, legal_header):
 
