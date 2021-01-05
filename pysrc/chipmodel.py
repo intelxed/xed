@@ -184,7 +184,33 @@ def add_all_chip(d):
     d['ALL'] = isa_set
     isa_set = ['INVALID'] + isa_set
     return isa_set
-    
+
+
+
+def _check_in_chip_hierarchy_not_instructions(isaset_ch, isaset_inst):
+    genutil.msgb("FROM CHIP MODEL", isaset_ch)
+    genutil.msgb("FROM INSTRUCTIONS ", isaset_inst)
+    missing = []
+    for v in isaset_ch: # stuff from the chip hierarchy model 
+        if v in ['INVALID']:
+            continue
+        if v not in isaset_inst: # stuff from the instructions
+            missing.append(v)
+            genutil.warn("isa_set referenced by chip model hierarchy, " +
+                         "but not used by any instructions: {}".format(v))
+    return missing
+
+def _check_in_instructions_not_chip_hierarchy(isaset_ch, isaset_inst):
+    missing = []
+    for v in isaset_inst: # stuff from the instructions
+        if v in ['INVALID']:
+            continue
+        if v not in isaset_ch: # stuff from the chip hierarchy model
+            missing.append(v)
+            genutil.warn("isa_set referenced by instructions, " +
+                         "but not part of any chip: {}".format(v))
+    return missing
+
 def work(arg):
     (chips,chip_features_dict) = read_database(arg.input_file_name) 
 
@@ -201,9 +227,30 @@ def work(arg):
     chip_enum.print_enum()
     chip_enum.run_enumer()
 
+
     # Add the "ALL" chip
     # the XED_ISA_SET_ enum
     isa_set = add_all_chip(chip_features_dict)
+
+    #  missing1 is extra stuff in chip model hierarchy that usually
+    #  needs to be deleted.
+    missing1=_check_in_chip_hierarchy_not_instructions(isa_set, arg.isa_sets_from_instr)
+    
+    # missing2 is extra stuff in the instructions, not in chip
+    # hierarchy that usually needs to be part of some chip.
+    missing2=_check_in_instructions_not_chip_hierarchy(isa_set, arg.isa_sets_from_instr)
+    if missing2:
+        if arg.add_orphans_to_future:
+
+            #  add missing2 to "FUTURE" and  "ALL" chips.
+            chip_features_dict['ALL'].extend(missing2)
+            if 'FUTURE' in chip_features_dict:
+                genutil.warn("Adding {} to FUTURE chip".format(missing2))
+                chip_features_dict['FUTURE'].extend(missing2)
+            isa_set.extend(missing2)
+        else:
+            _die("These need to be part of some chip: {}".format(missing2))
+            
     
     isa_set_enum =  enum_txt_writer.enum_info_t(isa_set, 
                                                 arg.xeddir, 
@@ -293,6 +340,8 @@ class args_t(object):
         self.input_file_name = None
         self.xeddir = None
         self.gendir = None
+        self.add_orphans_to_future = False
+        self.isa_sets_from_instr = None
 
 if __name__ == '__main__':
     arg = args_t()
