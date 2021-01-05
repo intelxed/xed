@@ -17,6 +17,7 @@
 #END_LEGAL
 
 
+# MKTME has no new instr
 ALDER_LAKE:             \
      ALL_OF(SNOW_RIDGE) \
      NOT(SGX_ENCLV)     \
@@ -26,7 +27,6 @@ ALDER_LAKE:             \
      CET                \
      PCONFIG            \
      INVPCID            \
-     MKTME              \
      SERIALIZE          \
      AVX                \
      AVX_VNNI           \
