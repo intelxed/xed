@@ -314,6 +314,8 @@ def run_decode_generator(gc, env):
     
     if env['compress_operands']:
         gen_extra_args += " --compress-operands" 
+    if env['add_orphan_inst_to_future_chip']:
+        gen_extra_args += " --add-orphan-inst-to-future-chip"
         
     cmd = env.expand(gc.decode_command(xedsrc, gen_extra_args))
 
@@ -636,6 +638,7 @@ def mkenv():
                                  pti_test=False,
                                  verbose = 0,
                                  compress_operands=False,
+                                 add_orphan_inst_to_future_chip=False,
                                  test_perf=False,
                                  example_linkflags='',
                                  example_flags='',
@@ -924,6 +927,10 @@ def xed_args(env):
                           dest="compress_operands",
                           help="use bit-fields to compress the "+
                           "operand storage.")
+    env.parser.add_option("--add-orphan-inst-to-future-chip", 
+                          action="store_true",
+                          dest="add_orphan_inst_to_future_chip",
+                          help="Add orphan isa-sets to future chip definition.")
     env.parser.add_option("--test-perf", 
                           action="store_true",
                           dest="test_perf",

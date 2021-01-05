@@ -263,6 +263,11 @@ def setup_arg_parser():
                           default=False,
                           help="use bit-fields to compress the "+
                           "operand storage.")
+    arg_parser.add_option("--add-orphan-inst-to-future-chip", 
+                          action="store_true",
+                          dest="add_orphan_inst_to_future_chip",
+                          default=False,
+                          help="Add orphan isa-sets to future chip definition.")
     return arg_parser
 
 #####################################################################
@@ -5631,24 +5636,19 @@ def call_chipmodel(agi):
     args.input_file_name = agi.common.options.chip_models_input_fn
     args.xeddir = agi.common.options.xeddir
     args.gendir = agi.common.options.gendir
-    # isaset is a list of the ISA_SETs mentioned in the chip hierarchy.
+    args.add_orphans_to_future = agi.common.options.add_orphan_inst_to_future_chip
+
+    args.isa_sets_from_instr = agi.isa_sets
+
+    # isaset_ch is a list of the ISA_SETs mentioned in the chip hierarchy.
     # we need to check that all of those are used/mentioned by some chip.
-    files_created,chips,isaset = chipmodel.work(args)
+    files_created,chips,isaset_ch = chipmodel.work(args)
+    
     agi.all_enums['xed_chip_enum_t'] = chips
-    agi.all_enums['xed_isa_set_enum_t'] = isaset
+    agi.all_enums['xed_isa_set_enum_t'] = isaset_ch
     print("Created files: %s" % (" ".join(files_created)))
     for f in files_created:
         agi.add_file_name(f,is_header(f))
-
-    genutil.msgb("FROM CHIP MODEL", isaset)
-    genutil.msgb("FROM INSTRUCTIONS ", agi.isa_sets)
-    for v in isaset: # stuff from the chip hierarchy model 
-        v = v.upper()
-        if v in ['INVALID']:
-            continue
-        if v not in agi.isa_sets: # stuff from the instructions
-            genutil.warn("isa_set referenced by chip model hierarchy, " +
-                         "but not used by any instructions: {}".format(v))
 
 ################################################
 def read_cpuid_mappings(fn):
