@@ -100,7 +100,7 @@ BONNELL:  ALL_OF(MEROM)     MOVBE  NOT(SMX)
 SALTWELL: ALL_OF(BONNELL)
 
 # PREFETCHW semantics added to PREFETCHW opcode but not subject
-# to chip-check because of prrior implementation as NOP.
+# to chip-check because of prior implementation as NOP.
 SILVERMONT:    ALL_OF(WESTMERE)  MOVBE RDRAND PREFETCHW VMFUNC
 
 
