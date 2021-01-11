@@ -11384,9 +11384,9 @@ CATEGORY  : CONVERT
 EXTENSION : SSE
 ATTRIBUTES : MXCSR MMX_EXCEPT NOTSX
 PATTERN   : 0x0F 0x2A no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():w:q:f32 MEM0:r:q:i32
+OPERANDS  : REG0=XMM_R():rw:q:f32 MEM0:r:q:i32
 PATTERN   : 0x0F 0x2A no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:q:f32 REG1=MMX_B():r:q:i32
+OPERANDS  : REG0=XMM_R():rw:q:f32 REG1=MMX_B():r:q:i32
 }
 {
 ICLASS    : MOVNTPS
@@ -11925,9 +11925,9 @@ CATEGORY  : CONVERT
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x5A f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:sd:f64 MEM0:r:ss:f32
+OPERANDS  : REG0=XMM_R():rw:sd:f64 MEM0:r:ss:f32
 PATTERN   : 0x0F 0x5A f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
-OPERANDS  : REG0=XMM_R():w:sd:f64 REG1=XMM_B():r:ss:f32
+OPERANDS  : REG0=XMM_R():rw:sd:f64 REG1=XMM_B():r:ss:f32
 }
 {
 ICLASS    : CVTTPS2DQ
@@ -12117,9 +12117,9 @@ CATEGORY  : CONVERT
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x5A f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:ss:f32 MEM0:r:sd:f64
+OPERANDS  : REG0=XMM_R():rw:ss:f32 MEM0:r:sd:f64
 PATTERN   : 0x0F 0x5A f2_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
-OPERANDS  : REG0=XMM_R():w:ss:f32 REG1=XMM_B():r:sd:f64
+OPERANDS  : REG0=XMM_R():rw:ss:f32 REG1=XMM_B():r:sd:f64
 }
 {
 ICLASS    : SUBSD
