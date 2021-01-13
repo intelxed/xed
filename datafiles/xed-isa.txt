@@ -8861,7 +8861,7 @@ ATTRIBUTES : SKIPLOW64  REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x15 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=XMM_R():rw:ps MEM0:r:dq
 PATTERN   : 0x0F 0x15 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():rw:ps REG1=XMM_B():r:dq
+OPERANDS  : REG0=XMM_R():rw:ps REG1=XMM_B():r:q
 }
 {
 ICLASS    : MOVHPS
