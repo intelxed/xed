@@ -8844,8 +8844,7 @@ CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_4
-ATTRIBUTES :  REQUIRES_ALIGNMENT
-COMMENT   : mem form only uses q portion of the dq load. See SDM.
+ATTRIBUTES : SKIPHIGH64 REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x14 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=XMM_R():rw:ps MEM0:r:dq
 PATTERN   : 0x0F 0x14 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -8957,8 +8956,7 @@ CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
-ATTRIBUTES :  REQUIRES_ALIGNMENT
-COMMENT   : mem form only uses q portion of the dq load. See SDM.
+ATTRIBUTES : SKIPHIGH64 REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x14 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:pd MEM0:r:dq
 PATTERN   : 0x0F 0x14 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
@@ -9609,8 +9607,7 @@ CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
-ATTRIBUTES :  REQUIRES_ALIGNMENT
-COMMENT   : mem form only uses q portion of the dq load. See SDM.
+ATTRIBUTES : SKIPHIGH64 REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x60 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x60 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
@@ -9622,8 +9619,7 @@ CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
-ATTRIBUTES :  REQUIRES_ALIGNMENT
-COMMENT   : mem form only uses q portion of the dq load. See SDM.
+ATTRIBUTES : SKIPHIGH64 REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x61 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x61 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
@@ -9635,8 +9631,7 @@ CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
-ATTRIBUTES :  REQUIRES_ALIGNMENT
-COMMENT   : mem form only uses q portion of the dq load. See SDM.
+ATTRIBUTES : SKIPHIGH64 REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x62 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x62 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
@@ -12422,8 +12417,7 @@ CPL       : 3
 CATEGORY  : SSE
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_4
-ATTRIBUTES :  REQUIRES_ALIGNMENT
-COMMENT   : mem form only uses q portion of the dq load. See SDM.
+ATTRIBUTES : SKIPHIGH64 REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x6C osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x6C osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
