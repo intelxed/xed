@@ -56,7 +56,7 @@ def cexit(r=0):
 
 def write_file(fn, stream):
     """Write stream to fn"""
-    mbuild.msgb("WRITING", fn)
+    mbuild.vmsgb(1, "WRITING", fn)
     f = open(fn,'w')
     f.writelines(stream)
     f.close()
@@ -530,8 +530,8 @@ def dump_lines(s,lines):
 
 
 def prep(env):
-    mbuild.msgb("PYTHON VERSION", "%d.%d.%d" %
-                (mbuild.get_python_version_tuple()))
+    mbuild.vmsgb(1, "PYTHON VERSION", "%d.%d.%d" %
+                 (mbuild.get_python_version_tuple()))
 
 
 ###########################################################################
