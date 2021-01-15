@@ -564,7 +564,7 @@ class xed_reader_t(object):
     def _find_opcodes(self):
         '''augment the records with information found by parsing the pattern'''
 
-        map_pattern = re.compile(r'MAP=(?P<map>[0-6])')
+        map_pattern = re.compile(r'MAP=(?P<map>[0-9]+)')
         vex_prefix  = re.compile(r'VEX_PREFIX=(?P<prefix>[0-9])')
         rep_prefix  = re.compile(r'REP=(?P<prefix>[0-3])')
         osz_prefix  = re.compile(r' OSZ=(?P<prefix>[01])')
