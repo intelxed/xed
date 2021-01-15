@@ -259,7 +259,7 @@ def init(env):
 
 def _wk_show_errors_only():
     #True means show errors only when building.
-    if mbuild.verbose(1):
+    if mbuild.verbose(2):
         return False # show output
     return True # show errors only.
 
@@ -447,9 +447,8 @@ def build_examples(env, work_queue):
                                                   examples_dag,
                                                   example,
                                                   env['xed_enc2_libs'] + [link_libxed]  ))
-        
-    if mbuild.verbose(3):
-        mbuild.msgb("ALL EXAMPLES", "\n\t".join(example_exes))
+
+    mbuild.vmsgb(4, "ALL EXAMPLES", "\n\t".join(example_exes))
 
     examples_to_build   = example_exes
     env['example_exes'] = example_exes
@@ -463,8 +462,7 @@ def build_examples(env, work_queue):
                             show_errors_only=_wk_show_errors_only())
     if not okay:
         xbc.cdie( "XED EXAMPLES build failed")
-    if mbuild.verbose(2):
-        mbuild.msgb("XED EXAMPLES", "build succeeded")
+    mbuild.vmsgb(3, "XED EXAMPLES", "build succeeded")
     return 0
 
 def verify_args(env):
