@@ -2047,7 +2047,7 @@ def _copy_dynamic_libs_to_kit(env,xkit):
         if 'extern_lib_dir' not in env:
             env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
 
-        extra_ld_library_paths.extend( env.expand('%(extern_lib_dir)s') )
+        extra_ld_library_paths.append( env.expand('%(extern_lib_dir)s') )
 
     # run LDD to find the shared libs and do the copies
     okay = external_libs.copy_system_libraries(env,
