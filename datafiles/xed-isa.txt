@@ -8974,7 +8974,7 @@ ATTRIBUTES : SKIPLOW64   REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x15 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:pd MEM0:r:dq
 PATTERN   : 0x0F 0x15 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:pd REG1=XMM_B():r:q
+OPERANDS  : REG0=XMM_R():rw:pd REG1=XMM_B():r:dq
 }
 {
 ICLASS    : MOVHPD
@@ -12378,7 +12378,7 @@ ATTRIBUTES : SKIPLOW64   REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x68 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x68 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:q
+OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:dq
 }
 {
 ICLASS    : PUNPCKHWD
@@ -12390,7 +12390,7 @@ ATTRIBUTES : SKIPLOW64   REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x69 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x69 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:q
+OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:dq
 }
 {
 ICLASS    : PUNPCKHDQ
@@ -12402,7 +12402,7 @@ ATTRIBUTES : SKIPLOW64   REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x6A osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x6A osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:q
+OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:dq
 }
 {
 ICLASS    : PACKSSDW
@@ -12439,7 +12439,7 @@ ATTRIBUTES : SKIPLOW64   REQUIRES_ALIGNMENT
 PATTERN   : 0x0F 0x6D osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : REG0=XMM_R():rw:dq MEM0:r:dq
 PATTERN   : 0x0F 0x6D osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
-OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:q
+OPERANDS  : REG0=XMM_R():rw:dq REG1=XMM_B():r:dq
 }
 {
 ICLASS    : MOVDQU
