@@ -3078,6 +3078,9 @@ def create_legacy_mov_without_modrm(env,ii):
         elif disp_width == 32 and  env.asz != 32:
             emit_67_prefix(fo)
 
+        rexw_forced = emit_legacy_osz(env,ii,fo,osz)
+        emit_rex(env, fo, rexw_forced)
+
         emit_opcode(ii,fo)
         emit_disp(fo,disp_width)
         add_enc_func(ii,fo)
