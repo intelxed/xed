@@ -48,6 +48,7 @@ static int enable_emit=0;
 static int enable_emit_byte=0;
 static int enable_emit_main=0;
 static int enable_emit_gnu_asm=0;
+static int enable_emit_test_name=0;
 
 static void dump_comment(xed_uint8_t* buf, xed_uint32_t len) {
     xed_uint_t i;
@@ -94,6 +95,9 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iclass
     xed_uint64_t t1, t2, delta;
     xed_uint_t i;
 
+    if (enable_emit_test_name)
+        printf("//\ttest id %d  iclass: %s (%s)\n",
+               test_id, xed_iclass_enum_t2str(ref_iclass), fn_name);
     for(i=0;i<reps;i++)    {
         t1 = xed_get_time();
         //printf("Calling test function %d\n",test_id);
@@ -254,9 +258,13 @@ int main(int argc, char** argv) {
             enable_emit_gnu_asm = 1;
             enable_emit_byte = 1;
         }
+        else if (strcmp(argv[i],"--info")==0) {
+            enable_emit_test_name = 1;
+            enable_emit_byte = 1;
+        }
         else if ( strcmp(argv[i],"-h")==0 ||
                   strcmp(argv[i],"--help")==0 )  {
-            fprintf(stderr,"%s [-h|--help] [--histo] [--byte|--emit] [--main] [--gnuasm] [--reps N] [test_id ...]\n",
+            fprintf(stderr,"%s [-h|--help] [--histo] [--info] [--byte|--emit] [--main] [--gnuasm] [--reps N] [test_id ...]\n",
                     argv[0]);
             exit(0);
         }
