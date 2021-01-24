@@ -46,6 +46,7 @@ xed_decoded_inst_zero_keep_mode_from_operands(
     xed_operand_values_init_keep_mode(p, operands);
     p->_decoded_length = 0;
     p->_inst = 0;
+    p->u.user_data = 0;
 }
 
 XED_DLL_EXPORT void
