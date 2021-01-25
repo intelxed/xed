@@ -320,9 +320,23 @@ def work(arg):
         for i,x in enumerate([s0s, s1s, s2s,s3s, s4s]):
             fo.add_code_eol("xed_chip_features[XED_CHIP_{}][{}] = {}".format(c,i,x) )
 
+
+    # figure out  which chips support  AVX512 for ILD evex processing
+    cfe.write("xed_bool_t xed_chip_supports_avx512[XED_CHIP_LAST];\n")
+    hfe.write("extern xed_bool_t xed_chip_supports_avx512[XED_CHIP_LAST];\n")
+    for c in chips:
+        supports_avx512=False
+        for f in  chip_features_dict[c]:
+            if 'AVX512' in f:
+                supports_avx512=True
+                break
+        v = '1' if supports_avx512 else '0'
+        fo.add_code_eol('xed_chip_supports_avx512[XED_CHIP_{}]={}'.
+                        format(c, v))
+                
     cfe.write(fo.emit())
-    cfe.close()
     hfe.write(fo.emit_header())
+    cfe.close()    
     hfe.close()
 
     return ( [ isa_set_per_chip_fn,
