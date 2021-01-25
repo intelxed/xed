@@ -29,6 +29,7 @@ END_LEGAL */
 #include "xed-operand-accessors.h"
 #include "xed-ild-enum.h"
 #include "xed-map-feature-tables.h"
+#include "xed-chip-features-table.h"
 
 
 static XED_INLINE int xed3_mode_64b(xed_decoded_inst_t* d) {
@@ -1161,6 +1162,17 @@ typedef union{  // AVX512 only
     xed_uint32_t u32;
 } xed_avx512_payload3_t;
 
+static XED_INLINE xed_bool_t chip_supports_avx512(xed_decoded_inst_t* d)
+{
+    xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
+    if (chip == XED_CHIP_INVALID)
+        chip = XED_CHIP_ALL;
+    if (chip < XED_CHIP_LAST)
+        return xed_chip_supports_avx512[chip];
+    return 0;
+}
+
+
 static void evex_scanner(xed_decoded_inst_t* d)
 {
      /* assumption: length < max_bytes  
@@ -1452,7 +1464,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
-    if (!xed3_operand_get_vexvalid(ild)) 
+    if (!xed3_operand_get_vexvalid(ild) && chip_supports_avx512(ild)) 
         evex_scanner(ild);
 #endif
 
