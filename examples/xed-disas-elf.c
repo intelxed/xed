@@ -24,11 +24,17 @@ END_LEGAL */
 
 
 #include "xed-disas-elf.h"
-#include <elf.h>
+#if defined(XED_PRECOMPILED_ELF_DWARF)
+# include <libelf.h>
+#else  // system version
+# include <elf.h>
+# if defined(XED_DWARF)
+#   include <libelf.h>
+# endif
+#endif
 #if defined(XED_DWARF)
-#  include <dwarf.h>
-#  include <libdwarf.h>
-#  include <libelf.h>
+# include <dwarf.h>
+# include <libdwarf.h>
 #endif
 
 #include "xed/xed-interface.h"

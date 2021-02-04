@@ -560,6 +560,8 @@ def _add_elf_dwarf_precompiled(env):
    env.add_include_dir('%(xed_dir)s/external/include')
    env.add_include_dir('%(xed_dir)s/external/include/libelf')
 
+   env.add_define('XED_PRECOMPILED_ELF_DWARF')
+   
    env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
 
    env['libdwarf'] = '%(extern_lib_dir)s/libdwarf.so'
