@@ -264,6 +264,7 @@ static void usage(char* prog) {
       "\t-isa-set      (Emit the XED \"ISA set\" in dissasembly)",
       "\t-xml          (XML formatting)",
       "\t-uc           (upper case hex formatting)",
+      "\t-pmd          (positive memory displacement formatting)",
       "\t-nwm          (Format AVX512 without curly braces for writemasks, include k0)",
       "\t-emit         (Output __emit statements for the Intel compiler)",
       "\t-S file       Read symbol table in \"nm\" format from file",
@@ -499,6 +500,9 @@ main(int argc, char** argv)
             format_options.xml_a = 1;
             format_options.xml_f = 1;
             xml_format = 1;
+        }
+        else if (strcmp(argv[i],"-pmd")==0)      {
+             format_options.positive_memory_displacements=1;
         }
         else if (strcmp(argv[i],"-uc")==0)      {
             format_options.lowercase_hex = 0; // use uppercase hex

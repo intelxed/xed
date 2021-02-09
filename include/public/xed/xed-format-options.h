@@ -51,6 +51,10 @@ typedef struct {
     
     /// lowercase hexadecimal
     xed_bool_t lowercase_hex;
+    
+    /// Show negative memory displacements as
+    /// positive numbers.
+    xed_bool_t positive_memory_displacements;
 
 } xed_format_options_t;
 
