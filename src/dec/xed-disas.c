@@ -1285,7 +1285,8 @@ xed_decoded_inst_dump_att_format_internal(
                                                  (index == XED_REG_INVALID);
                       xed_uint_t negative = (disp < 0) ? 1 : 0;
 
-                      if (negative)
+                      if (negative &&
+                          !pi->format_options.positive_memory_displacements)
                       {
                           if (no_base_index)  {
                               if (xed_operand_values_get_effective_address_width(ov) == 64)
