@@ -231,6 +231,7 @@ static xed_format_options_t xed_format_options = {
     0, /* no_sign_extend_signed_immediates */
     1, /* writemask with curly brackets, omit k0 */
     1, /* lowercase hexadecimal */
+    0, /* 0=allow negative memory displacements */
 };
 
 void xed_format_set_options(xed_format_options_t format_options) {
@@ -839,7 +840,8 @@ static void xed_print_operand( xed_print_info_t* pi )
                   xed_uint_t negative = (disp < 0) ? 1 : 0;
                   if (started)
                   {
-                      if (negative)
+                      if (negative &&
+                          !pi->format_options.positive_memory_displacements)
                       {
                           xed_pi_strcat(pi,"-");
                           disp = - disp;
