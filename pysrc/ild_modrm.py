@@ -19,6 +19,7 @@
 import ild_info
 import ild_codegen
 import ildutil
+import genutil
 
 _modrm_nt           = 'MODRM()'
 _vmodrm             = 'VMODRM'
@@ -41,6 +42,20 @@ _hasmodrm_defines = {
                      _has_modrm_undef  : 3,
                     }
 
+def _get_modrm_gap(insn_map, opcode):
+    v = None
+    m = ild_info.ild_gap_modrm(insn_map, opcode)
+
+    if m == 'yes':
+        v = _has_modrm_true
+    elif m == 'no':
+        v = _has_modrm_false
+    if v:
+        genutil.msgb("ild_modrm","providing ild gap data for map {} opcode 0x{:x} = {}".format(
+            insn_map, opcode, v))
+        return v
+    genutil.msgb("ild_modrm", "no gap data for map {} opcode 0x{:x}".format(insn_map, opcode))
+    return _has_modrm_undef
 
 #FIXME: do we want to check by NT names or do something similar to
 #EOSZ/EASZ - find all NTs that bind interesting operand and look
@@ -95,7 +110,41 @@ def _bool2has_modrm_str(val):
     if val:
         return _has_modrm_true
     return _has_modrm_false
+
+
+aliases_supplied = 0
+def _find_decoding_length_alias(instr_by_map_opcode, insn_map, opcode):
+    '''Look in legacy map 0 or 1 for information to fill in lengths for
+    evex/vex maps 0 and 1. This is non-architectural stuff used by
+    validation and allowed to change from chip to chip.'''
     
+    # counter  for how often this function provides useful data    
+    global aliases_supplied 
+    
+    legacy_map = None
+    genutil.msgb("ILD_MODRM", "alias search for map {} opcode 0x{:x}".format(insn_map, opcode))
+    
+    if insn_map in ['evex_map0', 'vex_map0']:
+        legacy_map = "legacy_map0"
+    if insn_map in ['evex_map1', 'vex_map1']:
+        legacy_map = "legacy_map1"
+    if legacy_map:
+        info_list = instr_by_map_opcode.get_info_list(legacy_map, hex(opcode))
+        info_list = ild_info.get_min_prio_list(info_list)
+        if len(info_list) == 0:
+            # no known legacy map 0/1 instr.  Go look in the fallback "gap filler" info
+            return _get_modrm_gap(legacy_map, opcode)
+        elif _is_modrm_conflict(info_list):
+            # should not occur for modrm.
+            genutil.die('ILD_MODRM', "Conflict in map {} opcode 0x{:x}".format(legacy_map,opcode))        
+        else:
+            aliases_supplied += 1
+            info = info_list[0]
+            genutil.msgb("ILD_MODRM", "\t\t --> supplied {}".format(info.has_modrm))
+
+            return info.has_modrm
+        
+    return _has_modrm_undef
 
 def _gen_modrm_lookup(agi, instr_by_map_opcode, debug):
     modrm_lookup = {}
@@ -106,7 +155,7 @@ def _gen_modrm_lookup(agi, instr_by_map_opcode, debug):
             info_list = ild_info.get_min_prio_list(info_list)
             if len(info_list) == 0:
                 #no infos in map-opcode, illegal opcode
-                has_modrm = _has_modrm_undef
+                has_modrm = _find_decoding_length_alias(instr_by_map_opcode, insn_map, opcode)
             elif _is_modrm_conflict(info_list):
                 #conflict in has_modrm value in map-opcode's info_list
                 #try to resolve
@@ -128,6 +177,7 @@ def _gen_modrm_lookup(agi, instr_by_map_opcode, debug):
 
 def work(agi, instr_by_map_opcode, debug):
     """dumps MODRM lookup tables to xed-ild-modrm.h"""
+    ild_info.init_ild_gap()
     modrm_lookup = _gen_modrm_lookup(agi, instr_by_map_opcode, debug)
     ild_codegen.dump_lookup_new(agi,
                                 modrm_lookup,
@@ -137,4 +187,6 @@ def work(agi, instr_by_map_opcode, debug):
                                 _has_modrm_typename,
                                 define_dict=_hasmodrm_defines)
 
+    global aliases_supplied
+    genutil.msgb("ILD_MODRM", "aliases supplied {}".format(aliases_supplied))
         

@@ -205,4 +205,32 @@ def get_min_prio_list(info_list):
             min_list.append(info)
     return min_list
 
-        
+
+###
+
+class ild_gap_fill_t:
+    """Data structure to fill in gaps in ILD info for MODRM/DISP/IMM length decoding."""
+    def __init__(self, modrm='no', disp='no', imm='no'):
+        self.modrm = modrm
+        self.disp = disp # currently unused
+        self.imm = imm # currently unused
+
+def init_ild_gap():
+    """Initialize ild_gaps with fall-back information."""
+    global ild_gaps
+    ild_gaps = {}
+    ild_gaps['legacy_map0'] = {}
+    ild_gaps['legacy_map1'] = {}        
+    for opcode in range(0, 256):
+        ild_gaps['legacy_map0'][opcode]=ild_gap_fill_t()
+        ild_gaps['legacy_map1'][opcode]=ild_gap_fill_t()
+
+
+# initialized by caller of init_ild_gap(); Used to fill in holes in
+# opcode space when we do not have instructions defined for specific
+# values of legacy map 0 and 1.
+ild_gaps = None
+
+def ild_gap_modrm(insn_map, opcode):
+    global ild_gaps
+    return ild_gaps[insn_map][opcode].modrm
