@@ -567,7 +567,7 @@ def _add_elf_dwarf_precompiled(env):
    env['libdwarf'] = '%(extern_lib_dir)s/libdwarf.so'
    env['libelf']   = env.expand('%(extern_lib_dir)s/libelf.so.0.8.13')
    env['libelf_symlink'] = 'libelf.so.0'
-   env['libelf_license'] = env.expand('%(extern_lib_dir)s/EXTLICENSE.txt')
+   env['libelf_license'] = env.expand('%(xed_dir)s/external/EXTLICENSE.txt')
    if env.on_freebsd():
       env['LINKFLAGS'] += " -Wl,-z,origin"
 
