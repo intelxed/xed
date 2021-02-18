@@ -26,7 +26,6 @@ class XedCommonConan(ConanFile):
     exports_sources = (
         "LICENSE",
         "README.md",
-        "VERSION",
         "datafiles/*",
         "examples/*",
         "include/*",
@@ -39,6 +38,9 @@ class XedCommonConan(ConanFile):
         "xed_mbuild.py",
     )
     no_copy_source = True
+
+    def export_sources(self):
+        tools.save(os.path.join(self.export_sources_folder, "VERSION"), self.version)
 
     def _mbuild(self, *targets, **mbuild_options):
         cmd = [os.path.join(self.source_folder, "mfile.py"), "--silent"]
