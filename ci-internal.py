@@ -237,6 +237,13 @@ def main():
                                                                               link)
                 run(status, cmd)
 
+        # do a build with asserts enabled
+        build_dir = 'obj-assert-{}-{}'.format(pyver, 'x86-64')
+        cmd = '{} mfile.py --asserts --build-dir={} host_cpu={} test'.format(pycmd,
+                                                                             build_dir,
+                                                                             'x86-64')
+        run(status, cmd)
+
         # all instr tests
         all_instr(pyver, pycmd, status, 'internal-conf')
         all_instr(pyver, pycmd, status, 'external')
