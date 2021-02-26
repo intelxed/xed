@@ -369,6 +369,7 @@ xed_decoded_inst_get_find_memop(const xed_decoded_inst_t* p,
         const xed_operand_t* o = xed_inst_operand(inst,i);
         const xed_operand_enum_t op_name = xed_operand_name(o);
         if ((memop_idx == 0 && op_name == XED_OPERAND_MEM0) ||
+            (memop_idx == 0 && op_name == XED_OPERAND_AGEN) ||
             (memop_idx == 1 && op_name == XED_OPERAND_MEM1))   {
             return i;
         }
