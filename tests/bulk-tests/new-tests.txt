@@ -67,3 +67,4 @@ DEC AMD           ; BUILDDIR/xed-ex1 0f 0f 30 0c
 DEC               ; BUILDDIR/xed -64 -d 62
 DEC               ; BUILDDIR/xed -64 -d c4
 DEC               ; BUILDDIR/xed -64 -d c5
+DEC AVX           ; BUILDDIR/xed -64 -d 67 67 c4 ff 79 62 e6 55 bc bc bc bc bc bc bc
