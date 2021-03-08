@@ -1459,7 +1459,8 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
 
     // evex scanner assumes it can read bytes so we must check for limit first.
-    if (xed3_operand_get_out_of_bytes(ild))
+    if (xed3_operand_get_out_of_bytes(ild) ||
+        xed3_operand_get_error(ild)     )
         return;
 
     // if we got a vex prefix (which also sucks down the opcode),
