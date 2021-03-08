@@ -22,7 +22,7 @@ ATTRIBUTES: REQUIRES_ALIGNMENT
 ANY 66 PREFIX
 EXCEPTION TYPE: SSE_TYPE_4
 SSE
-Vector length: 128 
+Vector length: 128
 Number of legacy prefixes: 1 
 ISA SET: [SSE4]
 0	CPUID BIT NAME: [SSE4]
