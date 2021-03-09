@@ -1,2 +1,2 @@
 66C5EC58CB
-ERROR: BAD_LEGACY_PREFIX Could not decode at offset: 0x0 len: 4 PC: 0x0: [66C5EC58]
+ERROR: BAD_LEGACY_PREFIX Could not decode at offset: 0x0 len: 5 PC: 0x0: [66C5EC58CB]

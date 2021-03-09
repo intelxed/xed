@@ -1031,7 +1031,6 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
     xed3_operand_set_nominal_opcode(d, b);
     xed3_operand_set_pos_nominal_opcode(d, length);
     xed_decoded_inst_inc_length(d);
-    catch_invalid_rex_or_legacy_prefixes(d);
     catch_invalid_mode(d);
     set_downstream_info(d,xed3_operand_get_vexvalid(d));
 }
@@ -1471,6 +1470,8 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 
     if (xed3_operand_get_out_of_bytes(ild))
         return;
+    if (xed3_operand_get_vexvalid(ild))
+        catch_invalid_rex_or_legacy_prefixes(ild);        
 #if defined(XED_AVX)
     // vex/xop prefixes also eat the vex/xop opcode
     if (!xed3_operand_get_vexvalid(ild) &&
