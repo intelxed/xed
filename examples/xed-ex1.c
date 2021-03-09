@@ -133,6 +133,15 @@ void print_misc(xed_decoded_inst_t* xedd) {
         }
     }
 
+    if (xed3_operand_get_sae(xedd))
+    {
+        static char const* rounding_modes[5] = { "", "rne-sae", "rd-sae", "ru-sae", "rz-sae"};
+        int t = xed3_operand_get_roundc(xedd);
+        printf("suppress-all-exceptions (SAE) set\n");
+        if (t>0 && t<5) 
+            printf("rounding mode override = %s\n", rounding_modes[t]);
+    }
+
 }
 
 void print_branch_hints(xed_decoded_inst_t* xedd) {
