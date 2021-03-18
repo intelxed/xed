@@ -210,6 +210,10 @@ def main():
     xedext_git = git_base + 'xedext.git'
     cmd = 'git clone {} xedext'.format(xedext_git)
     run(status, cmd, required=True)
+    
+    # check a few lines to make sure we have latest commits
+    cmd = 'git -C xedext log --oneline -5'
+    run(status, cmd, required=True)
 
     branches = get_branches_from_file()
     checkout_branches(status, branches)
