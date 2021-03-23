@@ -31,16 +31,23 @@ _modrm_header_fn    = 'xed-ild-modrm.h'
 _has_modrm_true     = 'XED_ILD_HASMODRM_TRUE'
 _has_modrm_false    = 'XED_ILD_HASMODRM_FALSE'
 _has_modrm_undef    = 'XED_ILD_HASMODRM_UNDEF'
+#  ud0 has two different lengths. Atom implmented it without a MODRM
+#  byte sequence.  As do processors before PENTIUM4. PENTIUM4 and
+#  later expect a full (normal) modrm byte sequence. We handle this
+#  MODRM conflict in the ILD code.
+_has_modrm_ud0      = 'XED_ILD_HASMODRM_UD0'
+
 #for MOV_DR and MOV_CR that ignore MODRM.MOD bits
 _has_modrm_ignore   = 'XED_ILD_HASMODRM_IGNORE_MOD'
 _has_modrm_typename = 'xed_uint8_t'
 
 _hasmodrm_defines = {
-                     _has_modrm_false  : 0,
-                     _has_modrm_true   : 1,
-                     _has_modrm_ignore : 2,
-                     _has_modrm_undef  : 3,
-                    }
+    _has_modrm_false  : 0,
+    _has_modrm_true   : 1,
+    _has_modrm_ignore : 2,
+    _has_modrm_undef  : 3,
+    _has_modrm_ud0    : 4,
+}
 
 def _get_modrm_gap(insn_map, opcode):
     v = None
@@ -136,7 +143,11 @@ def _find_decoding_length_alias(instr_by_map_opcode, insn_map, opcode):
             return _get_modrm_gap(legacy_map, opcode)
         elif _is_modrm_conflict(info_list):
             # should not occur for modrm.
-            genutil.die('ILD_MODRM', "Conflict in map {} opcode 0x{:x}".format(legacy_map,opcode))        
+            
+            if legacy_map == 'legacy_map1' and opcode == 0xFF: # UD0
+                return  _has_modrm_ud0
+
+            genutil.die('ILD_MODRM: Conflict in map {} opcode 0x{:x}'.format(legacy_map,opcode))
         else:
             aliases_supplied += 1
             info = info_list[0]
@@ -159,12 +170,16 @@ def _gen_modrm_lookup(agi, instr_by_map_opcode, debug):
             elif _is_modrm_conflict(info_list):
                 #conflict in has_modrm value in map-opcode's info_list
                 #try to resolve
-                info = _resolve_modrm_conflict(info_list)
-                if not info:
-                    ildutil.ild_err(
-                    'UNRESOLVED CONFLICT IN MODRM\n infos:\n%s\n' % 
-                        "\n".join([str(info) for info in info_list]))
-                has_modrm = info.has_modrm
+
+                if insn_map == 'legacy_map1' and opcode == 0xFF: # UD0
+                    has_modrm = _has_modrm_ud0
+                else:
+                    info = _resolve_modrm_conflict(info_list)
+                    if not info:
+                        ildutil.ild_err(
+                        'UNRESOLVED CONFLICT IN MODRM\n infos:\n%s\n' % 
+                            "\n".join([str(info) for info in info_list]))
+                    has_modrm = info.has_modrm
             else:
                 #several infos that agree on has_modrm property, we can choose
                 #any of them to get has_modrm

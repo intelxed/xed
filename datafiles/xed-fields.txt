@@ -112,6 +112,7 @@ LZCNT          SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC  
 TZCNT          SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EO
 
 MODE_FIRST_PREFIX SCALAR  xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EI
+MODE_SHORT_UD0    SCALAR  xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EI
 
 IMM0           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI # Indicator
 IMM1           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI # Indicator  ENTER instruction

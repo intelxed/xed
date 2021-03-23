@@ -961,7 +961,12 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
         xed_uint_t     map = xed3_operand_get_map(d);
         xed_uint8_t const* modrm_for_vv_map = xed_ild_has_modrm_table[vv][map];
         xed_assert(modrm_for_vv_map!=0);
-        xed3_operand_set_has_modrm(d,modrm_for_vv_map[opcode]);
+        xed_uint8_t has_modrm = modrm_for_vv_map[opcode];
+        if (has_modrm == XED_ILD_HASMODRM_UD0) {
+            has_modrm = !xed3_operand_get_mode_short_ud0(d);
+        }
+        xed3_operand_set_has_modrm(d,has_modrm);
+
     }
 }
 

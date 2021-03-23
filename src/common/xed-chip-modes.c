@@ -127,4 +127,10 @@ set_chip_modes(xed_decoded_inst_t* xedd,
 #endif
     (void) lzcnt; (void) tzcnt; //pacify compiler
 
+    if (chip != XED_CHIP_INVALID)  {
+        if ( xed_isa_set_is_valid_for_chip(XED_ISA_SET_PPRO_UD0_SHORT, chip)  ) {
+            xed3_operand_set_mode_short_ud0(xedd, 1);
+        }
+    }
+
 }

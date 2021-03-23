@@ -11324,12 +11324,23 @@ ICLASS    : UD0
 CPL       : 3
 CATEGORY  : MISC
 EXTENSION : BASE
-ISA_SET   : PPRO
+ISA_SET   : PPRO_UD0_SHORT
 ATTRIBUTES: NOTSX
-COMMENT   : Older processors (before NHM) did not take a MODRM byte sequence.
-PATTERN   : 0x0F 0xFF MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
+COMMENT   : Older processors (before NHM) did not take a MODRM byte sequence. Atom too.
+PATTERN   : 0x0F 0xFF MODE_SHORT_UD0=1 
+OPERANDS  : 
+}
+{
+ICLASS    : UD0
+CPL       : 3
+CATEGORY  : MISC
+EXTENSION : BASE
+ISA_SET   : PPRO_UD0_LONG
+ATTRIBUTES: NOTSX
+
+PATTERN   : 0x0F 0xFF  MODE_SHORT_UD0=0 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=GPR32_R():r MEM0:r:d
-PATTERN   : 0x0F 0xFF MOD[0b11] MOD=3 REG[rrr] RM[nnn]
+PATTERN   : 0x0F 0xFF  MODE_SHORT_UD0=0 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPR32_R():r REG1=GPR32_B():r 
 }
 {
