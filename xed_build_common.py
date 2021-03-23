@@ -555,19 +555,18 @@ def _use_elf_dwarf(env):
 def _add_elf_dwarf_precompiled(env):
    """Do not call this directly. See cond_add_elf_dwarf.  Set up to
    use our precompiled libelf/libdwarf. """
-
-   # not using src_dir here because examples have different src_dir
-   env.add_include_dir('%(xed_dir)s/external/include')
-   env.add_include_dir('%(xed_dir)s/external/include/libelf')
+   
+   env.add_include_dir('%(xedext_dir)s/external/include')
+   env.add_include_dir('%(xedext_dir)s/external/include/libelf')
 
    env.add_define('XED_PRECOMPILED_ELF_DWARF')
    
-   env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
+   env['extern_lib_dir']  = '%(xedext_dir)s/external/lin/lib%(arch)s'
 
    env['libdwarf'] = '%(extern_lib_dir)s/libdwarf.so'
    env['libelf']   = env.expand('%(extern_lib_dir)s/libelf.so.0.8.13')
    env['libelf_symlink'] = 'libelf.so.0'
-   env['libelf_license'] = env.expand('%(xed_dir)s/external/EXTLICENSE.txt')
+   env['libelf_license'] = env.expand('%(xedext_dir)s/external/EXTLICENSE.txt')
    if env.on_freebsd():
       env['LINKFLAGS'] += " -Wl,-z,origin"
 

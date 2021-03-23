@@ -2036,7 +2036,7 @@ def _copy_dynamic_libs_to_kit(env,xkit):
     extra_ld_library_paths = env['ld_library_path']    
     if env['use_elf_dwarf_precompiled']:
         if 'extern_lib_dir' not in env:
-            env['extern_lib_dir']  = '%(xed_dir)s/external/lin/lib%(arch)s'
+            env['extern_lib_dir']  = '%(xedext_dir)s/external/lin/lib%(arch)s'
 
         extra_ld_library_paths.append( env.expand('%(extern_lib_dir)s') )
 
