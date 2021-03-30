@@ -5155,6 +5155,12 @@ def xed_mode_removal(env,ii):
         return True
     if 'CET=0' in ii.pattern:
         return True
+    if env.short_ud0:
+        if 'MODE_SHORT_UD0=0' in ii.pattern: # long UD0
+            return True # skip
+    else: #  long ud0
+        if 'MODE_SHORT_UD0=1' in ii.pattern: # short UD0
+            return True # skip
     return False
 
     
@@ -5331,12 +5337,13 @@ def gather_stats(db):
 
 # object used for the env we pass to the generator
 class enc_env_t(object):
-    def __init__(self, mode, asz, width_info_dict, test_checked_interface=False):
+    def __init__(self, mode, asz, width_info_dict, test_checked_interface=False, short_ud0=False):
         self.mode = mode
         self.asz = asz
         self.function_names = {}
         self.test_checked_interface = test_checked_interface
         self.tests_per_form = 1
+        self.short_ud0 = short_ud0
         # dictionary by oc2 of the various memop bit widths. 
         self.width_info_dict = width_info_dict  
     def __str__(self):
@@ -5404,6 +5411,12 @@ def emit_encode_functions(args,
 def work():
     
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
+    arg_parser.add_argument('-short-ud0',
+                            help='Encode 2-byte UD0 (default is long UD0 as  implemented on modern Intel Core processors. Intel Atom processors implement short 2-byte UD0)',
+                            dest='short_ud0',
+                            action='store_true',
+                            default=False)
+
     arg_parser.add_argument('-m64',
                             help='64b mode (default)',
                             dest='modes', action='append_const', const=64)
@@ -5509,7 +5522,8 @@ def work():
     #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:
         for asz in prune_asz_list_for_mode(mode,args.asz_list):
-            env = enc_env_t(mode, asz, width_info_dict)
+            env = enc_env_t(mode, asz, width_info_dict,
+                            short_ud0=args.short_ud0)
             enc2test.set_test_gen_counters(env)
             env.tests_per_form = 1
             env.test_checked_interface = args.chk
