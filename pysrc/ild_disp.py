@@ -113,8 +113,9 @@ def get_l2_fn_from_info(info, disp_dict):
         arg_seq = info.easz_nt_seq
     
     if is_const:
+        argname = None
         arg_seq = []
-        arg_name = None
+
     l2_fn = ild_codegen.get_l2_fn(info.disp_nt_seq, disp_token, 
                                   arg_seq,
                                   argname,
