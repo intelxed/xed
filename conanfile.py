@@ -22,8 +22,8 @@ from conans import ConanFile, tools
 from conans.errors import ConanInvalidConfiguration
 
 
-class XedCommonConan(ConanFile):
-    name = "xed-common"
+class XedConan(ConanFile):
+    name = "xed"
     description = "The X86 Encoder Decoder (XED) library for encoding/decoding X86 instructions."
     url = "https://gitlab.devtools.intel.com/xed-group/xed"
     homepage = "https://intelxed.github.io/"
@@ -41,6 +41,7 @@ class XedCommonConan(ConanFile):
     }
 
     build_requires = "mbuild/1.0.0@xed/stable"
+
     exports_sources = (
         "LICENSE",
         "README.md",
@@ -84,8 +85,13 @@ class XedCommonConan(ConanFile):
     def build(self):
         self._mbuild()
 
+    @property
+    def _package_src_folder(self):
+        return os.path.join(self.package_folder, "src", self.name)
+
     def package(self):
         self._mbuild("install", install_dir=self.package_folder)
+        self.copy("*", src=self.source_folder, dst=self._package_src_folder)
         with tools.chdir(self.package_folder):
             for dir in "mbuild", "examples", "extlib", "doc", "misc":
                 tools.rmdir(dir)
@@ -93,5 +99,12 @@ class XedCommonConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.name = "XED"
-        self.cpp_info.components["xed"].libs = ["xed"]
-        self.cpp_info.components["xed-ild"].libs = ["xed-ild"]
+        self.cpp_info.components["libxed"].names["cmake_find_package"] = "xed"
+        self.cpp_info.components["libxed"].libs = ["xed"]
+        self.cpp_info.components["libxed-ild"].names["cmake_find_package"] = "xed-ild"
+        self.cpp_info.components["libxed-ild"].libs = ["xed-ild"]
+
+        self.user_info.ROOTPATH = self.package_folder
+
+        self.output.info(f"Appending PYTHONPATH environment var: {self._package_src_folder}")
+        self.env_info.PYTHONPATH.append(self._package_src_folder)

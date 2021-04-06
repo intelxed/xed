@@ -20,7 +20,7 @@ project(PackageTest CXX)
 
 set(CONAN_CMAKE_SILENT_OUTPUT TRUE)
 include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup(NO_OUTPUT_DIRS)
+conan_basic_setup(NO_OUTPUT_DIRS TARGETS)
 
 find_package(XED REQUIRED COMPONENTS xed xed-ild)
 

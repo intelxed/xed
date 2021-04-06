@@ -1,7 +1,7 @@
 # .gitlab-ci.yml
 
 variables:
-  PACKAGE_NAME: xed-common
+  PACKAGE_NAME: xed
 
 build:
   #image: ubuntu:18.04
