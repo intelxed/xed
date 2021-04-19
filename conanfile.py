@@ -26,7 +26,7 @@ class XedConan(ConanFile):
     name = "xed"
     description = "The X86 Encoder Decoder (XED) library for encoding/decoding X86 instructions."
     url = "https://gitlab.devtools.intel.com/xed-group/xed"
-    homepage = "https://intelxed.github.io/"
+    homepage = "http://mjc.intel.com/xeddoc/doc-build-internal"
     license = "Apache License 2.0"
     topics = ("intel", "xed", "encoder", "decoder", "x86")
 
