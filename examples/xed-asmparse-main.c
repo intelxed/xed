@@ -693,7 +693,7 @@ static void process_other_decorator(char const* s,
     // handle zeroing.
     // allow but ignore k-masks and broadcasts decorators.
     
-    // rounding/sae indicators are required to be indepdent operands (at
+    // rounding/sae indicators are required to be independent operands (at
     // least for now)
 
 #if defined(XED_SUPPORTS_AVX512)
