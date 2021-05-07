@@ -109,10 +109,21 @@ xed_error_enum_t xed_agen(xed_decoded_inst_t* xedd,
 
     if (addr_width == 64) {
         xed_int64_t base64 = base_value;
-        xed_int64_t index64 = index_value;
         xed_int64_t disp64 = displacement;
-        xed_int64_t ea64 = base64  + index64 * scale + disp64;
-        xed_int64_t lin64 = segment_base + ea64;
+        xed_int64_t lin64 = 0;
+        if  (base_reg == XED_REG_RIP) {
+            xed_int64_t inst_len =  xed_decoded_inst_get_length(xedd);
+            lin64 = base64 + inst_len  + displacement;
+            if (xed3_operand_get_asz(xedd)) {
+                // handle 67 address size prefix: truncate to 32b
+                lin64 = lin64 & ((1ULL<<32)-1);
+            }
+        }
+        else  {
+            xed_int64_t index64 = index_value;
+            xed_int64_t ea64 = base64  + index64 * scale + disp64;
+            lin64 = segment_base + ea64;
+        }
         out = lin64;
     }
     else if (addr_width == 32) {
@@ -138,8 +149,7 @@ xed_error_enum_t xed_agen(xed_decoded_inst_t* xedd,
             out = lin32;
     }
 
-    // RIP-rel 32b -- 67 prefixed rip-rel stuff in 64b mode. FIXME
-    
+
     if (out_address)
         *out_address = out;
     else

@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2021 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -38,14 +38,20 @@ xed_uint64_t register_callback(xed_reg_enum_t reg, void* context, xed_bool_t* er
     (void) context;   // pacify compiler
     (void) error;
 
-    /* these are all the registers you are going to have to provide values
-    for in this callback. Note that AL is required for the XLAT
-    instruction. That is the only byte reg needed. Also note, that for real
-    mode, raw segement selectors are returned by this function.  */
+    /* After we register this function (see xed_agen_register_callback in
+     * main()), this function is called as needed by xed_agen().  This
+     * function provides register values for xed_agen(). In a real usage,
+     * you would probably pass in a context (in your call to xed_agen())
+     * that contains the actual values.  */
 
-    /* in reality, you'd have to return valid valies for each case */
+    
+    /* Note that AL is required for the XLAT instruction. That is the only
+       byte reg needed. Also note, that for real mode, raw segement
+       selectors are returned by this function.  */
 
-   /* THIS IS JUST AN EXAMPLE FOR TESTING AND DOES NOT RETURN REAL DATA */
+    /* in reality, you'd have to return valid values for each case */
+
+    /* THIS IS JUST AN EXAMPLE FOR TESTING AND DOES NOT RETURN REAL DATA */
     
     switch(reg) {
       case XED_REG_RAX:
@@ -121,6 +127,8 @@ xed_uint64_t register_callback(xed_reg_enum_t reg, void* context, xed_bool_t* er
       case XED_REG_R15W:
         break;
       case XED_REG_RIP:
+        return 0x7990100020003000ULL;
+
       case XED_REG_EIP:
       case XED_REG_IP:
         break;
@@ -194,10 +202,13 @@ main(int argc, char** argv)
     xed_uint64_t out_addr = 0;
 
     xed_tables_init();
+
+    // register callbacks that provide actual values. These functions will
+    // be called by xed_agen() later on when values are needed.
     xed_agen_register_callback( register_callback, segment_callback);
 
     xed_state_zero(&dstate);
-    xed_set_verbosity( 99 );
+    //xed_set_verbosity( 99 );
 
     if (argcu > 2 && strcmp(argv[1], "-64") == 0) 
         long_mode = 1;
@@ -250,6 +261,8 @@ main(int argc, char** argv)
         printf("%02x ", XED_STATIC_CAST(unsigned int,itext[u]));
     printf("\n");
 
+    // call XED decode
+    
     xed_error = xed_decode(&xedd, 
                            XED_REINTERPRET_CAST(const xed_uint8_t*,itext),
                            bytes);
@@ -267,9 +280,12 @@ main(int argc, char** argv)
         fprintf(stderr,"Unhandled error code %s\n", xed_error_enum_t2str(xed_error));
         exit(1);
     }
-        
-    xed_decoded_inst_dump(&xedd,buffer, BUFLEN);
-    printf("%s\n",buffer);
+
+    // print the output a few different ways
+    printf("iclass: %s\n",
+           xed_iclass_enum_t2str(xed_decoded_inst_get_iclass(&xedd)));
+    printf("iform: %s\n", 
+           xed_iform_enum_t2str(xed_decoded_inst_get_iform_enum(&xedd)));
 
     for(isyntax=  XED_SYNTAX_XED; isyntax < XED_SYNTAX_LAST; isyntax++)    {
         syntax = XED_STATIC_CAST(xed_syntax_enum_t, isyntax);
@@ -280,16 +296,22 @@ main(int argc, char** argv)
             printf("Error disassembling %s syntax\n", xed_syntax_enum_t2str(syntax));
     }
 
-
     memops = xed_decoded_inst_number_of_memory_operands(&xedd);
     printf("\nNumber of memory operands: %d\n", (int)memops);
+
+    // call the address generation (agen) calculator for each memop.
+    //  It will  call the  callbacks you registered at top of main().
+    
     for(memop_index=0;memop_index<memops;memop_index++) {
-        xed_error = xed_agen(&xedd, memop_index, 0, &out_addr);
+        // The  "context" passed to your registered callbacks when they are asked
+        // to produce values. In this example we don't require a real context.
+        void* context = 0;
+        xed_error = xed_agen(&xedd, memop_index, context, &out_addr);
         if (xed_error != XED_ERROR_NONE) {
             fprintf(stderr,"Agen error code %s\n", xed_error_enum_t2str(xed_error));
             exit(1);
         }
-        printf("\tMemory agen%d: " XED_FMT_LX "\n", (int)memop_index, out_addr);
+        printf("\tMemory agen%d: 0x" XED_FMT_LX16 "\n", (int)memop_index, out_addr);
     }
     return 0;
 }
