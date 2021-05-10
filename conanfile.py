@@ -100,6 +100,7 @@ class XedConan(ConanFile):
     def package_info(self):
         self.cpp_info.name = "XED"
         self.cpp_info.components["libxed"].names["cmake_find_package"] = "xed"
+        self.cpp_info.components["libxed"].includedirs.append(os.path.join("include", "xed"))
         self.cpp_info.components["libxed"].libs = ["xed"]
         self.cpp_info.components["libxed-ild"].names["cmake_find_package"] = "xed-ild"
         self.cpp_info.components["libxed-ild"].libs = ["xed-ild"]

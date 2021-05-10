@@ -18,7 +18,7 @@ END_LEGAL */
 #include <iostream>
 
 extern "C" {
-#include <xed/xed-interface.h>
+#include <xed-interface.h>
 }
 
 int main() {
