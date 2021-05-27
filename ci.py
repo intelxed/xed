@@ -43,7 +43,7 @@ def get_python_cmds():
     return [('dfltpython', 'python')]
 
 for pyver, pycmd in get_python_cmds():
-    cmd = '{} -m pip install --user https://github.com/intelxed/mbuild/zipball/master'.format(pycmd)
+    cmd = '{} -m pip install --user https://github.com/intelxed/mbuild/zipball/main'.format(pycmd)
     print(cmd)
     subprocess.check_call(cmd, shell=True)
     for size in size_variants():
