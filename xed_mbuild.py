@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2021 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1442,6 +1442,9 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'enqcmd')
             _add_normal_ext(env,'tsx-ldtrk')
             _add_normal_ext(env,'serialize')
+            _add_normal_ext(env,'tdx')
+            _add_normal_ext(env,'avx512-fp16')
+            _add_normal_ext(env,'evex-map5-6')
             
         if env['future']: 
             _add_normal_ext(env,'future')

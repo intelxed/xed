@@ -18,3 +18,4 @@ logs/*
 .developer
 *.diff
 *.pylint
+.DS_Store
