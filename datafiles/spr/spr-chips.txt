@@ -34,6 +34,15 @@ SAPPHIRE_RAPIDS:         \
      AVX_VNNI            \
      AMX_TILE            \
      AMX_INT8            \
-     AMX_BF16
+     AMX_BF16            \
+     TDX                 \
+     AVX512_BF16_128     \
+     AVX512_BF16_256     \
+     AVX512_BF16_512     \
+     AVX512_FP16_128N    \
+     AVX512_FP16_128     \
+     AVX512_FP16_256     \
+     AVX512_FP16_512     \
+     AVX512_FP16_SCALAR 
 
      
