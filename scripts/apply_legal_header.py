@@ -39,7 +39,7 @@ def remove_existing_header(contents):
     "remove existing legal header, if any"
     retval = []
     skipping = False
-    start_pattern = re.compile(r"^(/[*]BEGIN_LEGAL)|(#BEGIN_LEGAL)")
+    start_pattern = re.compile(r"^(/[*][ ]*BEGIN_LEGAL)|(#[ ]*BEGIN_LEGAL)")
     stop_pattern = re.compile(r"^[ ]*(END_LEGAL[ ]?[*]/)|(#[ ]*END_LEGAL)")
     for line in contents:
         if start_pattern.match(line):
@@ -66,7 +66,7 @@ def apply_header_to_source_file(header, file):
     trimmed_contents = remove_existing_header(contents)
     newfile = file + ".new"
     o = open(newfile,"w")
-    o.write("/*BEGIN_LEGAL \n")
+    o.write("/* BEGIN_LEGAL \n")
     o.writelines(header)
     o.write("END_LEGAL */\n")
     o.writelines(trimmed_contents)
@@ -114,9 +114,9 @@ def split_script(lines):
 
 def write_script_header(o,lines):
     "Write the file header for a script"
-    o.write("#BEGIN_LEGAL\n")
+    o.write("# BEGIN_LEGAL\n")
     o.writelines(lines)
-    o.write("#END_LEGAL\n")
+    o.write("# END_LEGAL\n")
     
 def apply_header_to_data_file(header, file):
     "apply header to file using script comment style"
