@@ -16,6 +16,6 @@
 #  
 #END_LEGAL
 #  name     space   esc  mapopc mapno modrm disp  imm  opcpos pattern
-evex-map5    evex    N/A  N/A    5     yes   no   0    1      'MAP5' # not public
-evex-map6    evex    N/A  N/A    6     yes   no   0    1      'MAP6' # not public
+evex-map5    evex    N/A  N/A    5     yes   no   0    1      'MAP5' 
+evex-map6    evex    N/A  N/A    6     yes   no   0    1      'MAP6' 
 
