@@ -8,12 +8,6 @@ https://intelxed.github.io
 
 ## Bugs:
 
-### Intel internal employee users/developers:
-
-http://mjc.intel.com
-       
-### Everyone else:
-
 https://github.com/intelxed/xed/issues/new
        
 
