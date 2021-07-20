@@ -52,6 +52,7 @@ class XedConan(ConanFile):
         "pysrc/*",
         "scripts/*",
         "src/*",
+        "tests/*",
         "mfile.py",
         "xed_build_common.py",
         "xed_mbuild.py",
