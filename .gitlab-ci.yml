@@ -17,7 +17,7 @@ build-conan:
   script:
     - virtualenv --python="$(which python3)" ~/.syssim-virtualenv
     - source ~/.syssim-virtualenv/bin/activate
-    - pip install conan pylint astroid yapf
+    - pip install conan pylint astroid yapf flake8
     - conan config install https://gitlab.devtools.intel.com/syssim/conan-config.git
     - |-
         if [[ $CI_COMMIT_REF_NAME == main && $CI_COMMIT_TAG == v* ]]; then
