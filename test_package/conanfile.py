@@ -16,6 +16,8 @@
 #
 # END_LEGAL
 
+import os
+
 from conans import CMake, ConanFile
 
 
@@ -30,3 +32,5 @@ class TestPackageConan(ConanFile):
 
     def test(self):
         self.run("./test_package")
+        resdir = self.deps_user_info["xed"].RES_PATH
+        assert os.path.exists(os.path.join(resdir, "xed_mbuild.py"))

@@ -106,7 +106,7 @@ class XedConan(ConanFile):
         self.cpp_info.components["libxed-ild"].names["cmake_find_package"] = "xed-ild"
         self.cpp_info.components["libxed-ild"].libs = ["xed-ild"]
 
-        self.user_info.ROOTPATH = self.package_folder
+        self.user_info.RES_PATH = self._package_src_folder
 
         self.output.info(f"Appending PYTHONPATH environment var: {self._package_src_folder}")
         self.env_info.PYTHONPATH.append(self._package_src_folder)
