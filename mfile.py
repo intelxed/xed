@@ -75,7 +75,7 @@ def find_mbuild_import():
     # (enumer,codegen) can find mbuild.
     
     if 'PYTHONPATH' in os.environ:
-        sep = ':'
+        sep = os.pathsep
         os.environ['PYTHONPATH'] =  mbuild_install_path + sep +  \
                                     os.environ['PYTHONPATH']
     else:
