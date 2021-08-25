@@ -10,7 +10,7 @@ https://intelxed.github.io
 
 ### Intel internal employee users/developers:
 
-http://mjc.intel.com
+https://wiki.ith.intel.com/display/SDE/Bugs+and+SDE+Jira
        
 ### Everyone else:
 
