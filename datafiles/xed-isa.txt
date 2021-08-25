@@ -5006,7 +5006,7 @@ CATEGORY  : DATAXFER
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_7
 PATTERN   : 0x0F 0x12 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:q:f32 REG1=XMM_B():r:q:f32
+OPERANDS  : REG0=XMM_R():rw:q:f32 REG1=XMM_B():r:q:f32
 }
 {
 ICLASS    : MOVLPS
@@ -5016,7 +5016,7 @@ EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
 ATTRIBUTES : 
 PATTERN   : 0x0F 0x12 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():w:q:f32 MEM0:r:q:f32
+OPERANDS  : REG0=XMM_R():rw:q:f32 MEM0:r:q:f32
 }
 {
 ICLASS    : MOVLHPS
@@ -5025,7 +5025,7 @@ CATEGORY  : DATAXFER
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_7
 PATTERN   : 0x0F 0x16 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:q:f32 REG1=XMM_B():r:q:f32
+OPERANDS  : REG0=XMM_R():rw:q:f32 REG1=XMM_B():r:q:f32
 }
 {
 ICLASS    : MOVHPS
@@ -5035,7 +5035,7 @@ EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
 ATTRIBUTES : 
 PATTERN   : 0x0F 0x16 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
-OPERANDS  : REG0=XMM_R():w:q:f32 MEM0:r:q:f32
+OPERANDS  : REG0=XMM_R():rw:q:f32 MEM0:r:q:f32
 }
 {
 ICLASS    : ADD_LOCK
@@ -8947,7 +8947,7 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_5
 ATTRIBUTES : 
 PATTERN   : 0x0F 0x12 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : REG0=XMM_R():w:sd MEM0:r:q
+OPERANDS  : REG0=XMM_R():rw:sd MEM0:r:q
 PATTERN   : 0x0F 0x13 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : MEM0:w:q REG0=XMM_R():r:sd
 }
@@ -8984,7 +8984,7 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_5
 ATTRIBUTES : 
 PATTERN   : 0x0F 0x16 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : REG0=XMM_R():w:sd MEM0:r:q
+OPERANDS  : REG0=XMM_R():rw:sd MEM0:r:q
 PATTERN   : 0x0F 0x17 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
 OPERANDS  : MEM0:w:q REG0=XMM_R():r:sd
 }
