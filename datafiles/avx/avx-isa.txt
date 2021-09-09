@@ -4312,7 +4312,7 @@ CATEGORY  : AVX
 EXTENSION : AVX
 ATTRIBUTES : maskop fixed_base0 NOTSX NONTEMPORAL
 PATTERN : VV1 0xF7 V0F V66 VL128  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():r:dq:u8 REG1=XMM_B():r:dq:u8 MEM0:w:SUPP:dq:u8 BASE0=ArDI():r:SUPP SEG0=FINAL_DSEG():r:SUPP
+OPERANDS  : REG0=XMM_R():r:xub REG1=XMM_B():r:xub MEM0:w:SUPP:xub BASE0=ArDI():r:SUPP SEG0=FINAL_DSEG():r:SUPP
 }
 
 ####################################################################################
