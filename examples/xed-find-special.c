@@ -62,8 +62,12 @@ static void scan_inst(const xed_inst_t* p) {
     }
     if (xed_inst_get_attribute(p,XED_ATTRIBUTE_REP)) {
         char const* ics = xed_iclass_enum_t2str(ic);
+        char const* suf = suffix_name(ics);
         reptype_enum_t rt = get_reptype(ics);
-        printf("REP* %s  --> %s + %s\n", ics, reptype_enum_t2str(rt), suffix_name(ics));
+        if (suf)
+            printf("REP* %s  --> %s + %s\n", ics, reptype_enum_t2str(rt), suf);
+        else
+            printf("REP* %s  --> %s\n", ics, reptype_enum_t2str(rt));
     }
     if (cat == XED_CATEGORY_STRINGOP || cat == XED_CATEGORY_IOSTRINGOP) {
         char const* ics = xed_iclass_enum_t2str(ic);

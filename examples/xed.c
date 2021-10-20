@@ -85,6 +85,8 @@ fopen_portable(char const* const file_name,
                char const* const mode)
 {
     FILE* f = 0;
+    if ((file_name == 0) || (file_name[0] == 0))
+        return 0;
 #if defined(XED_WINDOWS) && !defined(PIN_CRT)
     errno_t error = fopen_s(&f, file_name, mode);
     if (error != 0)
@@ -161,7 +163,12 @@ static void xed_assemble(const xed_state_t* dstate,
 #define ASM_BUF_SIZE 1024
     const xed_int_t bsize = ASM_BUF_SIZE;
     char buf[ASM_BUF_SIZE];
-    FILE* f = fopen_portable(encode_file_name,"r");
+    FILE* f;
+    if ((encode_file_name == 0) || (encode_file_name[0] == 0)) {
+        printf("illegal 'encode_file_name' file name\n");
+        xedex_derror("Dying");
+    }
+    f = fopen_portable(encode_file_name, "r");
     if (!f) {
         printf("Could not open %s\n", encode_file_name);
         xedex_derror("Dying");
@@ -732,7 +739,7 @@ main(int argc, char** argv)
     }
 
 #if defined(XED_LINUX)
-    if (nm_symtab_fn) {
+    if ((nm_symtab_fn != 0) && (nm_symtab_fn[0] != 0)) {
         if (!filter) {
             printf("ERROR: -S only support with -F for now\n");
             exit(1);
@@ -791,6 +798,7 @@ main(int argc, char** argv)
     decode_info.operand          = operand;
     decode_info.operand_value    = operand_value;
     decode_info.encode_force     = encode_force;
+    decode_info.dot_graph_output = 0;
     
     if (dot)
     {
@@ -917,6 +925,10 @@ main(int argc, char** argv)
 
     if (retval_okay==0) 
         exit(1);
+    if (decode_info.dot_graph_output)
+        fclose(decode_info.dot_graph_output);
+    if (decode_text)
+        free((void*)decode_text);
     return 0;
     (void) obytes;
     (void) encode_text;
