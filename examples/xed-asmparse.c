@@ -829,12 +829,16 @@ static void parse_memref(char* s, opnd_list_t* onode)
         else if (stmp[i] == ':') { // can only end segment
             tbuf[p++]=0;
             p=0;
+            if (r.seg)
+                free(r.seg);
             r.seg = asp_strdup(tbuf);
         }
         else if (stmp[i] == '*') { // can end index
             tbuf[p++]=0;
             p=0;
             last_star=1;
+            if (r.index)
+                free(r.index);
             r.index=asp_strdup(tbuf);
             continue;  // skip loop bottom
         }

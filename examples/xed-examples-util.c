@@ -1365,6 +1365,7 @@ finish:
         if (graph_empty ==0 ) 
             xed_dot_graph_dump(di->dot_graph_output, gs);
         xed_dot_graph_supp_deallocate(gs);
+        free(gs);
     }
     
     di->errors += errors;

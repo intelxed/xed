@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2019-2021 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -929,6 +929,10 @@ main(int argc, char** argv)
         fclose(decode_info.dot_graph_output);
     if (decode_text)
         free((void*)decode_text);
+#if defined(XED_ENCODER)
+    if (encode_text)
+        free((void*)encode_text);
+#endif
     return 0;
     (void) obytes;
     (void) encode_text;

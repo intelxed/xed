@@ -61,6 +61,12 @@ BOOL CALLBACK dbg_help_client_t::enum_sym(
 
 dbg_help_client_t::dbg_help_client_t() {
     xed_symbol_table_init(&sym_tab);
+    error=0;
+    hProcess=INVALID_HANDLE_VALUE;
+    processId=0;
+    gBaseOfDll=0;
+    actual_base=0;
+    gModule=0;
     initialized=false;
 }
 
@@ -92,6 +98,7 @@ static char* append3(const char* s1, const char* s2, const char* s3) {
     if (s2)    n += xed_strlen(s2);
     if (s3)    n += xed_strlen(s3);
     p = (char*) malloc(sizeof(char)*n);
+    assert(p != 0);
     n=xed_strncpy(p,s1,n);
     if (s2) n=xed_strncat(p,s2,n);
     if (s3) n=xed_strncat(p,s3,n);
@@ -176,8 +183,12 @@ int dbg_help_client_t::init(char const* const path,
     if (_access_s(dbghelp,4) != 0)
 #endif
     {
+        free(dir);
+        free(dbghelp);
         return 0;
     }
+    free(dir);
+    free(dbghelp);
 
     SymSetOptions(SYMOPT_UNDNAME | SYMOPT_LOAD_LINES );
     hProcess = GetCurrentProcess();
@@ -314,6 +325,8 @@ xed_bool_t dbg_help_client_t::get_file_and_line(xed_uint64_t address,
         *column = dw_column;
         *line = imgline.LineNumber;
         *filename =(char*) malloc(len+1);
+        if (*filename == 0)
+            return 0; // failed, out of memory
         xed_strncpy(*filename, imgline.FileName, len+1);
         return 1; //success
     }
