@@ -96,13 +96,10 @@ def work():
         fatal("mbuild import failed")
     import xed_mbuild
     import xed_build_common
-    if 0:
+    try:
         retval = xed_mbuild.execute()
-    else:
-        try:
-            retval = xed_mbuild.execute()
-        except Exception as e:
-            xed_build_common.handle_exception_and_die(e)
+    except Exception as e:
+        xed_build_common.handle_exception_and_die(e)
     return retval
     
 if __name__ == "__main__":

@@ -936,6 +936,8 @@ xed_uint_t xed_decoded_inst_avx512_dest_elements(const xed_decoded_inst_t* p) {
         if (dest_element_bits)
             return vl_dest_bits / dest_element_bits;
     }
+#else
+    (void)p; // satisfy compiler
 #endif
     return 0;
 }
