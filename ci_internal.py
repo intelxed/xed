@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2021 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,8 +20,9 @@ import os
 import sys
 import platform
 import subprocess
+from datetime import datetime
+
 sys.path = ['scripts'] + sys.path
-import send_sms
 
 class jobs_status_t:
     '''record job status (success, failure and (retval,job) list'''
@@ -29,6 +30,7 @@ class jobs_status_t:
         self.jobs = 0
         self.fails = 0
         self.successes = 0
+        self.start_time = datetime.now()
         self.commands = [] # list of  tuples of (retval, command)
 
     def __str__(self):
@@ -59,8 +61,9 @@ class jobs_status_t:
 
 def success(status):
     '''send success SMS'''
-    sys.stdout.write("FINAL STATUS: PASS\n")
     sys.stdout.write(str(status))
+    sys.stdout.write('[ELAPSED TIME] {}'.format(status.start_time - datetime.now()))
+    sys.stdout.write("[FINAL STATUS] PASS\n")
     sys.stdout.flush()
     #send_sms.send("XED CI: Passed ({} passing)".format(
     #    status.pass_rate_fraction()))
@@ -68,8 +71,9 @@ def success(status):
 
 def fail(status):
     '''send failing SMS'''
-    sys.stdout.write("FINAL STATUS: FAIL\n")
     sys.stdout.write(str(status))
+    sys.stdout.write('[DURATION] {}'.format(datetime.now() - status.start_time))
+    sys.stdout.write("[FINAL STATUS] FAIL\n")
     sys.stdout.flush()
     #send_sms.send("XED CI: Failed ({} passing)".format(
     #    status.pass_rate_fraction()))
@@ -114,7 +118,10 @@ def run(status, cmd, required=False, cwd=None):
 def get_python_cmds():
     '''find python verions. return tuples of (name, command)'''
     if platform.system() == 'Windows':
-        return [(x, 'C:/python{}/python'.format(x)) for x in ['37']]
+        for x in ['37']:
+            p_path = 'C:/python{}/python'.format(x)
+            if os.path.exists(p_path):
+                return [(x, p_path)]
     if platform.system() in ['Darwin', 'Linux']:
         # The file .travis.yml installs python3 on linux. Already present on mac
         return [('3.x', 'python3')]

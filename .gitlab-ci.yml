@@ -9,7 +9,7 @@ build:
   image:  amr-registry-pre.caas.intel.com/xed/xed-testing-container 
   stage: build
   script:
-    - python3 ci-internal.py
+    - python3 ci_internal.py
 
 build-conan:
   image: amr-registry.caas.intel.com/syssim/teamcity-agent:2020.2.4-21ww31
