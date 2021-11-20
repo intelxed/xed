@@ -55,6 +55,13 @@ class jobs_status_t:
         self.successes += 1
         self.addjob(retval, cmd)
 
+    def merge(self, status):
+        """merge status object"""
+        self.jobs += status.jobs
+        self.fails += status.fails
+        self.successes += status.successes
+        self.commands.extend(status.commands)
+
     def pass_rate_fraction(self):
         return '{}/{}'.format(self.successes, self.jobs)
 
@@ -62,7 +69,7 @@ class jobs_status_t:
 def success(status):
     '''send success SMS'''
     sys.stdout.write(str(status))
-    sys.stdout.write('[ELAPSED TIME] {}'.format(status.start_time - datetime.now()))
+    sys.stdout.write('[ELAPSED TIME] {}\n'.format(datetime.now() - status.start_time))
     sys.stdout.write("[FINAL STATUS] PASS\n")
     sys.stdout.flush()
     #send_sms.send("XED CI: Passed ({} passing)".format(
@@ -72,7 +79,7 @@ def success(status):
 def fail(status):
     '''send failing SMS'''
     sys.stdout.write(str(status))
-    sys.stdout.write('[DURATION] {}'.format(datetime.now() - status.start_time))
+    sys.stdout.write('[ELAPSED TIME] {}\n'.format(datetime.now() - status.start_time))
     sys.stdout.write("[FINAL STATUS] FAIL\n")
     sys.stdout.flush()
     #send_sms.send("XED CI: Failed ({} passing)".format(
@@ -101,7 +108,7 @@ def run_subprocess(cmd, **kwargs):
 
 def run(status, cmd, required=False, cwd=None):
     '''run subprocess, and record fails'''
-    print(cmd)
+    print(cmd, flush=True)
     retval, output = run_subprocess(cmd, cwd=cwd)
     for line in output:
         sys.stdout.write(line)
