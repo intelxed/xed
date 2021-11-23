@@ -47,10 +47,13 @@ def work(agi):
     avx_isa_sets = set([])
     avx512_isa_sets = set([])
     avx512_kmask_op = set([])
+    amx_isa_sets = set([])
     for generator in agi.generator_list:
       for ii in generator.parser_output.instructions:
          if genutil.field_check(ii, 'iclass'):
-             if re.search('AVX512',ii.isa_set):
+             if re.search('AMX',ii.isa_set):
+                 amx_isa_sets.add(ii.isa_set)
+             elif re.search('AVX512',ii.isa_set):
                  avx512_isa_sets.add(ii.isa_set)
                  if re.search('KOP',ii.isa_set):
                      avx512_kmask_op.add(ii.isa_set)
@@ -69,6 +72,7 @@ def work(agi):
                      sse_isa_sets.add(ii.isa_set)
                  
     fe = agi.open_file('xed-classifiers.c') # xed_file_emitter_t
+    _emit_function(fe, amx_isa_sets, 'amx')
     _emit_function(fe, avx512_isa_sets, 'avx512')
     _emit_function(fe, avx512_kmask_op, 'avx512_maskop')
     _emit_function(fe, avx_isa_sets,    'avx')
