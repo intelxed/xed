@@ -17,4 +17,3 @@
 #END_LEGAL
 
 m384 struct  48 # bytes
-m512 struct  64 # bytes
