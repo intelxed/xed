@@ -1,0 +1,52 @@
+name: Conan flow
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
+  release:
+    types:
+      - published
+
+  workflow_dispatch:
+env:
+  PACKAGE_NAME: xed
+  PACKAGE_REF: xed/${{github.sha}}@xed/ci
+jobs:
+  conan:
+    runs-on: self-hosted
+    name: Conan
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:0.0.6
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Checkout conan config
+        uses: actions/checkout@v2
+        with:
+          repository: intel-innersource/applications.simulators.cpu.keiko.conan-config
+          path: conan-config-dir
+          token: ${{ secrets.PAT }}
+      - name: Get tag or branch => build PACKAGE_REF
+        uses: tj-actions/branch-names@v5
+        id: branch-names
+        with:
+          strip_tag_prefix: v
+      - name: Update Package ref if tag and default branch
+        if: steps.branch-names.outputs.is_tag == 'true' && steps.branch-names.outputs.is_default == 'true'
+        run: echo "$PACKAGE_NAME/${{ steps.branch-names.outputs.tag }}@xed/stable" >> $PACKAGE_REF
+      - name: Conan package
+        run: |
+          conan config install conan-config-dir
+          conan create . $PACKAGE_REF --build=missing --profile=gcc9-native
+      - name: Upload conan
+        if: ${{ github.workflow.event == 'published' }}
+        run: |
+          conan user -r syssim-public "$CONAN_USERNAME" -p "$CONAN_PASSWORD"
+          conan upload $PACKAGE_REF -r syssim-public --force
+          LATEST_REF=$PACKAGE_NAME/latest@xed/ci
+          conan alias $LATEST_REF $PACKAGE_REF
+          conan upload $LATEST_REF -r syssim-public --force

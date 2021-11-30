@@ -1,38 +1,43 @@
-on: [push, pull_request]
+name: Test
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - main
 
 jobs:
-  linux:
-    runs-on: ubuntu-20.04
+  test:
+    env:
+      ARCHVAL_OPTIONS: pppe=1 psmi=1 xed_top_secret=xed-topsecret
+    runs-on:
+      - self-hosted
+      - xed-runners
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:0.0.6
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-    - name: Install prerequisites
-      run: |
-          python -m pip install --quiet --upgrade pip setuptools
-          sudo apt-get install -qq gcc-multilib
+    - name: Checkout
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Checkout mbuild
+      uses: actions/checkout@v2
+      with:
+        repository: intel-innersource/libraries.isa.xed.mbuild
+        path: mbuild
+        token: ${{ secrets.PAT }}
+    - name: Checkout xedext
+      uses: actions/checkout@v2
+      with:
+        repository: intel-restricted/libraries.isa.xed.xedext
+        path: xedext
+        token: ${{ secrets.PAT }}
+    - name: Checkout xed-topsecret
+      uses: actions/checkout@v2
+      with:
+        repository: intel-restricted/libraries.isa.xed.xed-topsecret
+        path: xed-topsecret
+        token: ${{ secrets.PAT }}
     - name: test
       run: |
-          python ci.py
-  macos:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-    - name: Install prerequisites
-      run: |
-          python -m pip install --quiet --upgrade pip setuptools
-    - name: test
-      run: |
-          python ci.py
-
-  windows:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-    - name: Install prerequisites
-      run: |
-          python -m pip install --quiet --upgrade pip setuptools
-    - name: test
-      run: |
-          python ci.py
+          python3 ci_internal.py
