@@ -1,4 +1,0 @@
-build: off
-
-test_script:
-    - C:\Python37\python ci.py
