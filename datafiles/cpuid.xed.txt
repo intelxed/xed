@@ -38,7 +38,7 @@ XED_ISA_SET_LONGMODE:        intel64.80000001.0.edx.29
 XED_ISA_SET_MOVBE:           movebe.1.0.ecx.22       
 XED_ISA_SET_PAUSE:           n/a              
 XED_ISA_SET_PCLMULQDQ:       pclmulqdq.1.0.ecx.1        
-XED_ISA_SET_PENTIUMMMX:      n/a              
+XED_ISA_SET_PENTIUMMMX:      mmx.1.0.edx.23
 XED_ISA_SET_PENTIUMREAL:     n/a              
 
 XED_ISA_SET_POPCNT:          popcnt.1.0.ecx.23       
@@ -52,16 +52,16 @@ XED_ISA_SET_RDTSCP:          rdtscp.80000001.0.edx.27
 XED_ISA_SET_SMX:             smx.1.0.ecx.6        
 XED_ISA_SET_SSE:             sse.1.0.edx.25       
 XED_ISA_SET_SSE2:            sse2.1.0.edx.26
-XED_ISA_SET_SSE2MMX:            sse2.1.0.edx.26       
+XED_ISA_SET_SSE2MMX:         sse2.1.0.edx.26   mmx.1.0.edx.23
 XED_ISA_SET_SSE3:            sse3.1.0.ecx.0
-XED_ISA_SET_SSE3X87:            sse3.1.0.ecx.0
-XED_ISA_SET_MONITOR:          monitor.1.0.ecx.3        
+XED_ISA_SET_SSE3X87:         sse3.1.0.ecx.0
+XED_ISA_SET_MONITOR:         monitor.1.0.ecx.3
 XED_ISA_SET_SSE4:            sse4.1.0.ecx.19       
 XED_ISA_SET_SSE42:           sse42.1.0.ecx.20       
 
 XED_ISA_SET_SSEMXCSR:        sse.1.0.edx.25       
 XED_ISA_SET_SSSE3:           ssse3.1.0.ecx.9
-XED_ISA_SET_SSSE3MMX:           ssse3.1.0.ecx.9        
+XED_ISA_SET_SSSE3MMX:        ssse3.1.0.ecx.9   mmx.1.0.edx.23
 
 
 XED_ISA_SET_VTX:             vmx.1.0.ecx.5        
