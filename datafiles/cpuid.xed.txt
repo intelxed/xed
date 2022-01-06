@@ -66,3 +66,8 @@ XED_ISA_SET_SSSE3MMX:           ssse3.1.0.ecx.9
 
 XED_ISA_SET_VTX:             vmx.1.0.ecx.5        
 XED_ISA_SET_X87:             n/a              
+
+XED_ISA_SET_CMOV:            cmov.1.0.edx.15
+XED_ISA_SET_FCMOV:           cmov.1.0.edx.15 fpu.1.0.edx.0
+XED_ISA_SET_FCOMI:           cmov.1.0.edx.15 fpu.1.0.edx.0
+

@@ -27,3 +27,7 @@ FLAGS:
   undefined:                   fc0 fc2 fc3  mask=0xd0000000
 ATTRIBUTES: NOTSX 
 ISA SET: [FCMOV]
+0	CPUID BIT NAME: [CMOV]
+	Leaf 0x00000001, subleaf 0x00000000, EDX[15]
+1	CPUID BIT NAME: [FPU]
+	Leaf 0x00000001, subleaf 0x00000000, EDX[0]
