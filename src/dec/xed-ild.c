@@ -1310,6 +1310,11 @@ static void evex_scanner(xed_decoded_inst_t* d)
              * one byte as nominal opcode, this is exactly what we want for 
              * evex*/
             evex_vex_opcode_scanner(d);
+            
+            /* identify the instruction as EVEX (will be used in the encoder to force
+             * re-encoding in the EVEX space).
+             * This will prevent cases where EVEX input will be re-encoded to VEX space */
+            xed3_operand_set_must_use_evex(d, 1);
         }
         else {
             /*there is no enough bytes, hence we are out of bytes */
