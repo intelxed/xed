@@ -15,8 +15,10 @@ env:
   PACKAGE_REF: xed/${{github.sha}}@xed/ci
 jobs:
   conan:
-    runs-on: self-hosted
     name: Conan
+    runs-on:
+      - self-hosted
+      - xed-runners
     container:
       image: ger-is-registry.caas.intel.com/bit/xed:0.0.6
     steps:
