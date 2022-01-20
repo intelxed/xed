@@ -218,3 +218,7 @@ MODRM_BYTE     SCALAR     xed_bits_t      8    SUPPRESSED NOPRINT INTERNAL DO EI
 ESRC           SCALAR     xed_bits_t      4    SUPPRESSED NOPRINT INTERNAL DO EO
 VEXVALID       SCALAR     xed_bits_t      3    SUPPRESSED NOPRINT INTERNAL DO EO
 DUMMY          SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
+
+# Disable decoder VEX/EVEX space
+NO_EVEX        SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DI EO
+NO_VEX         SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DI EO

@@ -1168,6 +1168,8 @@ typedef union{  // AVX512 only
 static XED_INLINE xed_bool_t chip_supports_avx512(xed_decoded_inst_t* d)
 {
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
+    if (xed3_operand_get_no_vex(d) || xed3_operand_get_no_evex(d))
+        return 0;
     if (chip == XED_CHIP_INVALID)
         chip = XED_CHIP_ALL;
     if (chip < XED_CHIP_LAST)
@@ -1460,9 +1462,10 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 {
     prefix_scanner(ild);
 #if defined(XED_AVX) 
-    if (xed3_operand_get_out_of_bytes(ild)) 
+    if (xed3_operand_get_out_of_bytes(ild))
         return;
-    vex_scanner(ild);
+    if (!xed3_operand_get_no_vex(ild))
+        vex_scanner(ild);
 #endif
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
 
@@ -1486,7 +1489,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 #if defined(XED_AVX)
     // vex/xop prefixes also eat the vex/xop opcode
     if (!xed3_operand_get_vexvalid(ild) &&
-        !xed3_operand_get_error(ild)     )
+        !xed3_operand_get_error(ild))
         opcode_scanner(ild);
 #else
     opcode_scanner(ild);
