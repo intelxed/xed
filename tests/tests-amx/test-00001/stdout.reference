@@ -1,0 +1,10 @@
+C4E2784900
+ICLASS:     LDTILECFG
+CATEGORY:   AMX_TILE
+EXTENSION:  AMX_TILE
+IFORM:      LDTILECFG_MEM
+ISA_SET:    AMX_TILE
+ATTRIBUTES: NOTSX 
+SHORT:      ldtilecfg zmmword ptr [rax]
+Encodable! C4E2784900
+Identical re-encoding

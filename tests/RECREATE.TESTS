@@ -3,6 +3,8 @@
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-avx512   -b bulk-tests/avx512x-bulk-tests.txt
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-avx512pf -b bulk-tests/avx512pf-bulk-tests.txt 
 
+./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-amx   -b bulk-tests/amx-bulk-tests.txt
+
 ./run-cmd.py --build-dir ../obj-knc/wkit/bin --otests tests-knc  -b bulk-tests/knc-bulk-tests.txt 
 
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-xop  -b bulk-tests/amd-xop-bulk-tests.txt

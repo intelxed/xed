@@ -1445,8 +1445,8 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'tdx')
             _add_normal_ext(env,'avx512-fp16')
             _add_normal_ext(env,'evex-map5-6')
-            
-        if env['future']: 
+
+        if env['future']:
             _add_normal_ext(env,'future')
             _add_normal_ext(env,'tdx')
 
@@ -2541,7 +2541,7 @@ def _run_canned_tests(env,osenv):
     wkit = env['wkit']
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
-    dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
+    dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2560,6 +2560,8 @@ def _run_canned_tests(env,osenv):
         codes.append('KNC')
     if env['skx']:
         codes.append('AVX512X')
+    if env['spr']:
+        codes.append('AMX')
     if env['knm'] or env['knl']:
         codes.append('AVX512PF')
     if env['hsw']: 
