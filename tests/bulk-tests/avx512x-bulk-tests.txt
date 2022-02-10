@@ -23,3 +23,6 @@ DEC AVX512X          ; BUILDDIR/xed -64 -d 62 C1 DF 68 58 E5
 DEC AVX512X          ; BUILDDIR/xed -d f3 67 2e f0 f3 f3 65 67 62 f1 5d 8e d0 8e e7
 DEC AVX512X          ; BUILDDIR/xed -64 -d 62 61 fa 48 7a f7
 DEC ENC AVX512X      ; BUILDDIR/xed -de 62 f1 7e 08 2c 55 04
+DEC ENC AVX512X      ; BUILDDIR/xed -32 -de 62 f5 7e 08 79 c0
+DEC AVX512X          ; BUILDDIR/xed -set NO_VEX 1 -d C4E1FB93D8
+DEC AVX512X          ; BUILDDIR/xed -set NO_EVEX 1 -d  62 F2 7D 48 13 C0

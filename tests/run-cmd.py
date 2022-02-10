@@ -51,11 +51,9 @@ import mbuild
 
 def write_file(fn,lines):
     print("[EMIT] %s" % (fn))
-    # write the file in binary mode to prevent LF -> CR LF expansion on Windows
-    f = open(fn,"wb")
-    if lines:
-        for line in lines:
-            f.write(line.replace('\r', '')) # gobble CR symbols if any
+    f = open(fn, 'w')
+    for line in lines:
+        f.write(line)
     f.close()
 
 
@@ -73,7 +71,7 @@ def create_reference(env, test_dir, codes_and_cmd, make_new=True):
 
     # abspath required for windoze
     build_dir = mbuild.posix_slashes(os.path.abspath(env['build_dir']))
-    cmd2 = re.sub('BUILDDIR',build_dir,cmd)
+    cmd2 = re.sub('BUILDDIR',build_dir,cmd).strip()
     print(cmd2)
 
     (retcode, stdout,stderr) = mbuild.run_command(cmd2,separate_stderr=True)
