@@ -289,6 +289,7 @@ def set_env_gnu(env):
 
 def set_env_clang(env):
    set_env_gnu(env)
+   env['CCFLAGS'] += ' -Wno-language-extension-token'
         
 def set_env_ms(env):
     """Set up the MSVS environment for compilation"""
