@@ -824,6 +824,14 @@ def xed_args(env):
                           action="store_false", 
                           dest="future", 
                           help="Do not include future NI.")
+    env.parser.add_option("--no-amd",
+                          action="store_false",
+                          dest="amd_enabled",
+                          help="Disable AMD public instructions")
+    env.parser.add_option("--no-via",
+                          action="store_false",
+                          dest="via_enabled",
+                          help="Disable VIA public instructions")
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -846,14 +854,6 @@ def xed_args(env):
                           action="store",
                           help="Kit version string.  " +
                           "The default is 'base'")
-    env.parser.add_option("--no-amd", 
-                          action="store_false",
-                          dest="amd_enabled",
-                          help="Disable AMD public instructions")
-    env.parser.add_option("--no-via", 
-                          action="store_false",
-                          dest="via_enabled",
-                          help="Disable VIA public instructions")
     env.parser.add_option("--limit-strings", 
                           action="store_true",
                           dest="limit_strings",

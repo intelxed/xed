@@ -40,4 +40,4 @@ jobs:
         token: ${{ secrets.PAT }}
     - name: test
       run: |
-          python3 ci_internal.py
+          python3 .github/scripts/ci_internal.py

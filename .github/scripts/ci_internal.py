@@ -15,7 +15,7 @@
 #  limitations under the License.
 #
 # END_LEGAL
-'''run CI checks on gitlab'''
+""" run CI checks """
 import os
 import platform
 import subprocess
@@ -171,7 +171,7 @@ def archval(pyver, pycmd, status):
 
 
 def get_branches_from_file() -> Dict[str, str]:
-    f = open("misc/ci-branches.txt", "r")
+    f = open("../../misc/ci-branches.txt", "r")
     lines = f.readlines()
     f.close()
     d = {}
@@ -193,9 +193,6 @@ def checkout_branches(status, branches):
 
 def main():
     status = JobStatus()
-    # FIXME: add knob for local use
-    # git_base = 'ssh://git@gitlab.devtools.intel.com/xed-group/'
-
 
     # IPLDT scan XED and MBUILD
     if 0:  # disabled until get  right branch
