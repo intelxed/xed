@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- python -*-
-# Mark Charney <mark.charney@intel.com>
 # Enumeration support
 #BEGIN_LEGAL
 #

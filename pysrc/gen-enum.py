@@ -3,7 +3,6 @@
 ########################################################
 # THIS IS NOT DONE YET... IGNORE FOR NOW
 ########################################################
-# Mark Charney
 #BEGIN_LEGAL
 #
 #Copyright (c) 2019 Intel Corporation

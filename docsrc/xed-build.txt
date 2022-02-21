@@ -26,7 +26,6 @@
 @else
 @mainpage *INTERNAL* XED Build Guide
 @endif
-by Mark Charney
 
 2019-05-28
 

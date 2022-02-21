@@ -1,5 +1,4 @@
 #-*- python -*-
-# Mark Charney <mark.charney@intel.com>
 # Generic utilities
 #BEGIN_LEGAL
 #
