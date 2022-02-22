@@ -1044,7 +1044,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
 {
     unsigned char length = xed_decoded_inst_get_length(d);
     xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
-    xed_int_t i;
+    xed_uint64_t i;
 
     // matching maps vs having a summary of which opcodes are definately map0.
     // Common case is map 0, but the loop would check them all and deduce map 0, slowly.
