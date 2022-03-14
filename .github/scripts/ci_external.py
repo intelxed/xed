@@ -1,6 +1,6 @@
 # BEGIN_LEGAL
 #
-# Copyright (c) 2021 Intel Corporation
+# Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ sys.path = ['scripts'] + sys.path
 
 class JobStatus:
     """record job status (success, failure and (retval,job) list"""
-
     def __init__(self):
         self.jobs = 0
         self.fails = 0
@@ -67,24 +66,18 @@ class JobStatus:
 
 
 def success(status):
-    '''send success SMS'''
     sys.stdout.write(str(status))
     sys.stdout.write(f'[ELAPSED TIME] {datetime.now() - status.start_time}\n')
     sys.stdout.write("[FINAL STATUS] PASS\n")
     sys.stdout.flush()
-    # send_sms.send("XED CI: Passed ({} passing)".format(
-    #    status.pass_rate_fraction()))
     sys.exit(0)
 
 
 def fail(status):
-    '''send failing SMS'''
     sys.stdout.write(str(status))
     sys.stdout.write(f'[ELAPSED TIME] {datetime.now() - status.start_time}\n')
     sys.stdout.write("[FINAL STATUS] FAIL\n")
     sys.stdout.flush()
-    # send_sms.send("XED CI: Failed ({} passing)".format(
-    #    status.pass_rate_fraction()))
     sys.exit(1)
 
 
@@ -138,103 +131,10 @@ def get_python_cmds():
     return [('dfltpython', 'python')]
 
 
-def all_instr(pyver, pycmd, status, kind):
-    size = 'x86-64'
-    linkkind = 'static'
-    build_dir = f'obj-{kind}-{pyver}-{size}-{linkkind}'
-    cwd = os.path.abspath(os.curdir)
-    flags = f'--kind {kind} --enc2-test-checked'
-    cmd = f'{pycmd} xedext/xed_build.py --xed-dir {cwd} {flags}  --build-dir={build_dir} host_cpu={size}'
-    ok = run(status, cmd)
-
-    if ok:
-        cmd = f'{build_dir}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'
-        ok = run(status, cmd)
-
-        if 1:  # FIXME: ignore error code for now.
-            cmd = 'gcc a.c'
-            run(status, cmd)
-
-            if ok:
-                cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
-                run(status, cmd)
-
-
-def archval(pyver, pycmd, status):
-    size = 'x86-64'
-    linkkind = 'static'
-    build_dir = f'obj-archval-{pyver}-{size}-{linkkind}'
-    cwd = os.path.abspath(os.curdir)
-    flags = f"--kind architectural-val {os.getenv('ARCHVAL_OPTIONS')}"
-    cmd = f'{pycmd} xedext/xed_build.py --xed-dir {cwd} {flags} --build-dir={build_dir} host_cpu={size}'
-    run(status, cmd)
-
-
-def get_branches_from_file() -> Dict[str, str]:
-    f = open("../../misc/ci-branches.txt", "r")
-    lines = f.readlines()
-    f.close()
-    d = {}
-    for x in lines:
-        x = x.strip()
-        a = x.split()
-        repo = a[0]
-        branch = a[1]
-        print(f"READING REPO: {repo}  TO BRANCH: {branch}")
-        d[repo] = branch
-    return d
-
-
-def checkout_branches(status, branches):
-    for repo, branch in branches.items():
-        print(f"CHANGING REPO: {repo}  TO BRANCH: {branch}")
-        run(status, f"git checkout {branch}", cwd=repo)
-
-
 def main():
     status = JobStatus()
 
-    # IPLDT scan XED and MBUILD
-    if 0:  # disabled until get  right branch
-        # obtain IPLDT scanner tool
-        bintools_git = git_base + 'binary-tools.git'
-        cmd = f'git clone --depth 1 {bintools_git} binary-tools'
-        run(status, cmd, required=True)
-
-        # clone another copy of xed sources just for IPLDT scanning
-        # FIXME: need to get the branch we are testing!
-        xed_git = git_base + 'xed.git'
-        cmd = f'git clone --depth 1 {xed_git} xed'
-        run(status, cmd, required=True)
-
-        cmd = 'binary-tools/lin/ipldt3 -i xed -r ipldt-results-xed'
-        run(status, cmd, required=False)
-        cmd = 'cat ipldt-results-xed/ipldt_results.txt'
-        run(status, cmd, required=True)
-
-        cmd = 'binary-tools/lin/ipldt3 -i mbuild -r ipldt-results-mbuild'
-        run(status, cmd, required=False)
-        cmd = 'cat ipldt-results-mbuild/ipldt_resuplts.txt'
-        run(status, cmd, required=True)
-    if 'CI' not in os.environ:
-        git_base = 'https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.devtools.intel.com/xed-group/'
-
-        mbuild_git = git_base + 'mbuild.git'
-        cmd = f'git clone {mbuild_git} mbuild'
-        run(status, cmd, required=True)
-
-        branches = get_branches_from_file()
-        checkout_branches(status, branches)
-
-    archval_repo = os.getenv('ARCHVAL_REPO')
-    if archval_repo:
-        archval_git = git_base + archval_repo
-        short_name = os.path.splitext(archval_repo)[0]
-        cmd = f'git clone {archval_git} {short_name}'
-        run(status, cmd, required=True)
-
     for pyver, pycmd in get_python_cmds():
-
         cmd = f'{pycmd} -m pip install --user ./mbuild'
         run(status, cmd, required=True)
 
@@ -250,34 +150,11 @@ def main():
         cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu={"x86-64"} test'
         run(status, cmd)
 
-        # all instr tests
-        all_instr(pyver, pycmd, status, 'lnc')  # TODO - "internal-conf" is broken. meantime, replace with LNC.
-        all_instr(pyver, pycmd, status, 'external')
-
-        # arch val test
-        archval(pyver, pycmd, status)
-
-        # knc test
-        if 0:
-            size = 'x86-64'
-            linkkind = 'static'
-            build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
-            cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
-            run(status, cmd)
-
         if status.fails == 0:
             success(status)
         fail(status)
 
 
-def test():
-    status = JobStatus()
-    status.success(1, 'foo')
-    status.success(1, 'bar')
-    fail(status)
-
-
 if __name__ == "__main__":
-    # test()
     main()
     sys.exit(0)

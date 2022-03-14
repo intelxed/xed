@@ -1,0 +1,24 @@
+name: External Test
+on:
+  pull_request:
+     - external
+
+jobs:
+  test:
+    runs-on:
+      - self-hosted
+      - xed-runners
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:0.0.6
+    steps:
+    - name: Checkout xed
+      uses: actions/checkout@v2
+    - name: Checkout mbuild
+      uses: actions/checkout@v2
+      with:
+        repository: ${{ secrets.MBUILD_REPO_URL }}
+        ref: main
+        path: mbuild
+    - name: test
+      run: |
+          python3 .github/scripts/ci_external.py

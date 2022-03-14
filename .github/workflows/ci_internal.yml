@@ -1,4 +1,4 @@
-name: Test
+name: Internal Test
 on:
   pull_request:
 
