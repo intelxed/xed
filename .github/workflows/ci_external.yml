@@ -1,7 +1,8 @@
 name: External Test
 on:
   pull_request:
-     - external
+    branches:
+      - external
 
 jobs:
   test:
