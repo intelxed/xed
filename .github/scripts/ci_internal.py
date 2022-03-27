@@ -251,7 +251,7 @@ def main():
         run(status, cmd)
 
         # all instr tests
-        all_instr(pyver, pycmd, status, 'lnc')  # TODO - "internal-conf" is broken. meantime, replace with LNC.
+        all_instr(pyver, pycmd, status, 'internal-conf')
         all_instr(pyver, pycmd, status, 'external')
 
         # arch val test
