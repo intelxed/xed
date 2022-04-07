@@ -1471,13 +1471,22 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 
     // evex scanner assumes it can read bytes so we must check for limit first.
     if (xed3_operand_get_out_of_bytes(ild) ||
-        xed3_operand_get_error(ild)     )
+        xed3_operand_get_error(ild))
         return;
 
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
-    if (!xed3_operand_get_vexvalid(ild) && chip_supports_avx512(ild)) 
+    if (!xed3_operand_get_vexvalid(ild)) {
+#if defined(XED_SUPPORTS_KNC)
+        // Always scan for EVEX prefixes (No AVX512 in KNC build)
         evex_scanner(ild);
+#else
+        if (chip_supports_avx512(ild)) {
+            // Scan EVEX prefixes only if chip supports AVX512
+            evex_scanner(ild);
+        }
+#endif
+    }
 #endif
 
     if (xed3_operand_get_out_of_bytes(ild))
