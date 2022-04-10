@@ -24,7 +24,7 @@ char const* const xed_copyright =
 /* need two levels of macros to expand and stringify the CPP macro arg. */
 #define XED_STR1(x) #x
 #define XED_STR2(a) XED_STR1(a)
-char const* const xed_version = XED_STR2(XED_GIT_VERSION) ;
+char const* const xed_version = XED_STR2(XED_VERSION) ;
 
 char const* xed_get_version(void) {
     return xed_version;
