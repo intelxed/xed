@@ -150,6 +150,14 @@ def main():
         cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu={"x86-64"} test'
         run(status, cmd)
 
+        # knc test
+        size = 'x86-64'
+        linkkind = 'static'
+        build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
+        cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
+        run(status, cmd)
+
+
         if status.fails == 0:
             success(status)
         fail(status)

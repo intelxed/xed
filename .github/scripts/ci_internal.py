@@ -258,12 +258,11 @@ def main():
         archval(pyver, pycmd, status)
 
         # knc test
-        if 0:
-            size = 'x86-64'
-            linkkind = 'static'
-            build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
-            cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
-            run(status, cmd)
+        size = 'x86-64'
+        linkkind = 'static'
+        build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
+        cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
+        run(status, cmd)
 
         if status.fails == 0:
             success(status)
