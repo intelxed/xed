@@ -1444,11 +1444,7 @@ def _configure_libxed_extensions(env):
 
         if env['future']:
             _add_normal_ext(env,'future')
-            _add_normal_ext(env,'tdx')
 
-
-
-        
     env['extf'] = newstuff + env['extf']
 
 def _get_src(env,subdir):
