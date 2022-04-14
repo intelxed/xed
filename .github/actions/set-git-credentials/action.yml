@@ -1,0 +1,31 @@
+name: Set git credentials
+description: Set git credentials
+inputs:
+  token:
+    description: Token to push tags
+    required: true
+  remote:
+    description: Remote name
+    required: true
+    default: 'origin'
+  path:
+    description: Path to repository
+    default: '.'
+    required: true
+  repository:
+    description: Repository path
+    required: true
+    default: ${{ github.repository }}
+runs:
+  using: composite
+  steps:
+    - name: Set git credential
+      shell: bash
+      run: |
+        set -e
+        cd ${{ inputs.path }}
+        git remote remove ${{ inputs.remote }} || true
+        git config --global user.email ${{ github.actor }}@users.noreply.github.com
+        git config --global user.name  ${{ github.actor }}
+        git config --unset-all http.https://github.com/.extraheader || true
+        git remote add ${{ inputs.remote }} https://not-login:${{ inputs.token }}@github.com/${{ inputs.repository }}.git

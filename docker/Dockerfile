@@ -1,10 +1,11 @@
 # syntax = docker/dockerfile:1.3
 
-FROM ubuntu:20.10
+FROM ubuntu:20.04
 
-ENV http_proxy=http://proxy-dmz.intel.com:911
-ENV https_proxy=http://proxy-dmz.intel.com:912
+ENV http_proxy=http://proxy-dmz.intel.com:915
+ENV https_proxy=http://proxy-dmz.intel.com:915
 ENV no_proxy=.intel.com
+ENV DEBIAN_FRONTEND=noninteractive
 
 RUN --mount=type=cache,target=/var/cache/apt/ apt-get update && \
     apt-get -y install gcc g++ gcc-multilib g++-multilib \
@@ -16,7 +17,8 @@ RUN --mount=type=cache,target=/var/cache/apt/ apt-get update && \
                        libbz2-dev libxml2-dev  \
                        binutils-dev  lib32z1-dev lib32readline-dev nodejs\
 		       libc6-dev libc6-dev-i386 libc6-i386 \
-                       python3 python3-pip python3-venv  && \
-    pip3 install --upgrade setuptools
+                       python3 python3-pip python3-venv rsync && \
+    pip3 install --upgrade setuptools && \
+    pip3 install conan
     
     

@@ -1,0 +1,81 @@
+name: Create External Release
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: PR title
+        type: string
+        default: Release External
+        required: true
+      commit_message:
+        description: Sync commit message
+        type: string
+        required: true
+jobs:
+  create_external_pr:
+    runs-on:
+      - self-hosted
+      - xed-runners
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:latest
+    steps:
+      - name: Setup node
+        # We need to setup node.js in order for create pull request
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      - name: Get version from date
+        id: get-version
+        run: echo "::set-output name=version::v$(date +"%Y.%m.%d")"
+      - name: Checkout main branch
+        uses: actions/checkout@v3
+        with:
+          path: main
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+      - name: Setup main repository
+        uses: ./main/.github/actions/set-git-credentials
+        with:
+          token: ${{ secrets.PAT }}
+          path: main
+          remote: origin
+      - name: Delete tag from origin
+        continue-on-error: true
+        run: |
+          cd main
+          git push --delete origin "${{steps.get-version.outputs.version}}.rc"
+      - name: Tagging main with version
+        run: |
+          cd main
+          git tag --force "${{steps.get-version.outputs.version}}.rc" -a -m "${{ github.event.inputs.commit_message }}" ${{ github.sha }}
+          git push --tags
+      - name: Checkout external branch
+        uses: actions/checkout@v3
+        with:
+          path: external
+          ref: external
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+
+      - name: Copy files from main to external branch
+        run: |
+          rsync -acz --progress ./main/ ./external --exclude-from=./main/.github/workflows/exclude_external.txt --del
+      - name: Update version file
+        run: |
+          echo "${{steps.get-version.outputs.version}}" > external/VERSION
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.PAT }}
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          commit-message: ${{ github.event.inputs.commit_message }}
+          branch: external_release_${{ steps.get-version.outputs.version }}
+          delete-branch: true
+          title: "${{ github.event.inputs.title }} ${{ steps.get-version.outputs.version }}"
+          body: ${{ github.event.inputs.commit_message }}
+          labels: external, release, ${{ steps.get-version.outputs.version }}
+          base: external
+          assignees: ${{ github.actor }}
+          reviewers: ${{ github.actor }}
+          path: external
