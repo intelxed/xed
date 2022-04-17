@@ -7,3 +7,4 @@ prepare_release.yml
 docker
 exclude_external.txt
 .github/actions/set-git-credentials
+README.md
