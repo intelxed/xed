@@ -3885,7 +3885,8 @@ def create_vex_simd_reg(env,ii):
     elif ii.rm_required != 'unspecified':
         if ii.rm_required: # ZERO INIT OPTIMIZATION
             fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
-        
+
+    # NOTE - for any SE_IMM related issues, look at create_vex_regs_mem()
     if var_se:
         fo.add_code_eol('enc_imm8_reg_{}(r,{})'.format(sz_se, var_se))
 
@@ -3919,16 +3920,18 @@ def create_vex_regs_mem(env,ii):
     width = op.oc2
     opsig = make_opnd_signature(env,ii)
     vlname = 'ymm' if ii.vl == '256' else 'xmm'
-    immw=0
-    if ii.has_imm8:
-        immw=8
     dispsz_list = get_dispsz_list(env)
     opnd_types_org = get_opnd_types(env,ii)
     arg_regs = [ arg_reg0, arg_reg1, arg_reg2, arg_reg3 ]
     var_regs = [ var_reg0, var_reg1, var_reg2, var_reg3 ]
         
     ispace = itertools.product(get_index_vals(ii), dispsz_list)
-    for use_index, dispsz  in ispace:
+    for use_index, dispsz in ispace:
+        # each enc function might need its own imm width for emitting reg in SE_IMM
+        immw = 0
+        if ii.has_imm8:
+            immw = 8
+
         memaddrsig = get_memsig(env.asz, use_index, dispsz)
 
         fname = "{}_{}_{}_{}".format(enc_fn_prefix,

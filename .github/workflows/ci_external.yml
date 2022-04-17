@@ -1,0 +1,25 @@
+name: External Test
+on:
+  pull_request:
+    branches:
+      - external
+jobs:
+  test:
+    runs-on:
+      - self-hosted
+      - xed-runners
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:latest
+    steps:
+    - name: Checkout xed
+      uses: actions/checkout@v2
+    - name: Checkout mbuild
+      uses: actions/checkout@v2
+      with:
+        repository: intelxed/mbuild
+        ref: main
+        path: mbuild
+        token: ${{ secrets.PAT }}
+    - name: test
+      run: |
+          python3 .github/scripts/ci_external.py

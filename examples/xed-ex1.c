@@ -72,9 +72,12 @@ void print_misc(xed_decoded_inst_t* xedd) {
     if (xed_decoded_inst_is_broadcast(xedd))
         printf("BROADCAST\n");
     
-    if ( xed_classify_sse(xedd) || xed_classify_avx(xedd) || xed_classify_avx512(xedd) )
+    if (xed_classify_sse(xedd) || xed_classify_avx(xedd) || xed_classify_avx512(xedd) || 
+        xed_classify_amx(xedd))
     {
-        if (xed_classify_avx512_maskop(xedd))
+        if (xed_classify_amx(xedd))
+            printf("AMX\n");
+        else if (xed_classify_avx512_maskop(xedd))
             printf("AVX512 KMASK-OP\n");
         else {
             xed_bool_t sse = 0;

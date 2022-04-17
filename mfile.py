@@ -75,7 +75,7 @@ def find_mbuild_import():
     # (enumer,codegen) can find mbuild.
     
     if 'PYTHONPATH' in os.environ:
-        sep = ':'
+        sep = os.pathsep
         os.environ['PYTHONPATH'] =  mbuild_install_path + sep +  \
                                     os.environ['PYTHONPATH']
     else:
@@ -96,13 +96,10 @@ def work():
         fatal("mbuild import failed")
     import xed_mbuild
     import xed_build_common
-    if 0:
+    try:
         retval = xed_mbuild.execute()
-    else:
-        try:
-            retval = xed_mbuild.execute()
-        except Exception as e:
-            xed_build_common.handle_exception_and_die(e)
+    except Exception as e:
+        xed_build_common.handle_exception_and_die(e)
     return retval
     
 if __name__ == "__main__":

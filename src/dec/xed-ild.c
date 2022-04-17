@@ -1044,7 +1044,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
 {
     unsigned char length = xed_decoded_inst_get_length(d);
     xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
-    xed_int_t i;
+    xed_uint64_t i;
 
     // matching maps vs having a summary of which opcodes are definately map0.
     // Common case is map 0, but the loop would check them all and deduce map 0, slowly.
@@ -1168,6 +1168,8 @@ typedef union{  // AVX512 only
 static XED_INLINE xed_bool_t chip_supports_avx512(xed_decoded_inst_t* d)
 {
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
+    if (xed3_operand_get_no_vex(d) || xed3_operand_get_no_evex(d))
+        return 0;
     if (chip == XED_CHIP_INVALID)
         chip = XED_CHIP_ALL;
     if (chip < XED_CHIP_LAST)
@@ -1310,6 +1312,11 @@ static void evex_scanner(xed_decoded_inst_t* d)
              * one byte as nominal opcode, this is exactly what we want for 
              * evex*/
             evex_vex_opcode_scanner(d);
+            
+            /* identify the instruction as EVEX (will be used in the encoder to force
+             * re-encoding in the EVEX space).
+             * This will prevent cases where EVEX input will be re-encoded to VEX space */
+            xed3_operand_set_must_use_evex(d, 1);
         }
         else {
             /*there is no enough bytes, hence we are out of bytes */
@@ -1455,21 +1462,31 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 {
     prefix_scanner(ild);
 #if defined(XED_AVX) 
-    if (xed3_operand_get_out_of_bytes(ild)) 
+    if (xed3_operand_get_out_of_bytes(ild))
         return;
-    vex_scanner(ild);
+    if (!xed3_operand_get_no_vex(ild))
+        vex_scanner(ild);
 #endif
 #if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
 
     // evex scanner assumes it can read bytes so we must check for limit first.
     if (xed3_operand_get_out_of_bytes(ild) ||
-        xed3_operand_get_error(ild)     )
+        xed3_operand_get_error(ild))
         return;
 
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
-    if (!xed3_operand_get_vexvalid(ild) && chip_supports_avx512(ild)) 
+    if (!xed3_operand_get_vexvalid(ild)) {
+#if defined(XED_SUPPORTS_KNC)
+        // Always scan for EVEX prefixes (No AVX512 in KNC build)
         evex_scanner(ild);
+#else
+        if (chip_supports_avx512(ild)) {
+            // Scan EVEX prefixes only if chip supports AVX512
+            evex_scanner(ild);
+        }
+#endif
+    }
 #endif
 
     if (xed3_operand_get_out_of_bytes(ild))
@@ -1481,7 +1498,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 #if defined(XED_AVX)
     // vex/xop prefixes also eat the vex/xop opcode
     if (!xed3_operand_get_vexvalid(ild) &&
-        !xed3_operand_get_error(ild)     )
+        !xed3_operand_get_error(ild))
         opcode_scanner(ild);
 #else
     opcode_scanner(ild);

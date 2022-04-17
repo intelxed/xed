@@ -303,9 +303,9 @@ DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2E9910408
 DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2ED910408
 DEC XOP              ; BUILDDIR/xed-ex-ild2 -64  8f e9 78 81 ca
 DEC XOP              ; BUILDDIR/xed-ex-ild2 -64 -chip WESTMERE  8f e9 78 81 ca
-DEC ENC              ; BUILDDIR/xed -64 -de  0f1aff
-DEC ENC              ; BUILDDIR/xed -64 -de  0f1bff
-DEC ENC              ; BUILDDIR/xed -64 -de  f30f1bff
+DEC                  ; BUILDDIR/xed -64 -d  0f1aff
+DEC                  ; BUILDDIR/xed -64 -d  0f1bff
+DEC                  ; BUILDDIR/xed -64 -d  f30f1bff
 DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 bd 79 f2 45
 DEC AVX AMD          ; BUILDDIR/xed -64 -d c4 c3 bd 79 f2 45
 DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45

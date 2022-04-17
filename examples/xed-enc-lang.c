@@ -46,14 +46,16 @@ void slash_split(char const* const src,
     xed_str_list_t* sv = tokenize(src, "/");
     xed_str_list_t* p = sv;
     xed_uint_t i=0;
+    *first = 0;
+    *second = 0;
     for(; p ; i++, p=p->next)
     {
         if (i==0) {
             *first = p->s;
-            *second = 0;
         }
-        else if (i==1)
+        else if (i==1) {
             *second = p->s;
+        }
     }
 }
 
@@ -210,12 +212,14 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
     self->base = "INVALID";
     self->indx = "INVALID";
     self->scale = "1";
+    self->disp = "";
     self->segment_reg = XED_REG_INVALID;
     self->base_reg = XED_REG_INVALID;
     self->index_reg = XED_REG_INVALID;
     self->disp_val = 0;
     self->disp_width_bits = 0;
     self->mem_len = 0;
+    self->scale_val = 1;
 
     upcase(s);
     // split on colon first
@@ -376,7 +380,8 @@ parse_encode_request(ascii_encode_request_t areq)
 
     for ( ; p ; token_index++, p=p->next ) {
         slash_split(p->s, &cfirst, &csecond);
-        assert(cfirst);
+        if(cfirst == 0)
+            break;
         upcase(cfirst);
         if (CLIENT_VERBOSE3)
             printf( "[%s][%s][%s]\n", p->s,
@@ -434,6 +439,9 @@ parse_encode_request(ascii_encode_request_t areq)
         char* cres_reg=0;
         char* csecond_x=0; //FIXME: not used
         slash_split(p->s, &cres_reg, &csecond_x);
+        if (cres_reg == 0)
+            continue;
+
         upcase(cres_reg);
         // prune the AGEN or MEM(base,index,scale[,displacement]) text from
         // cres_reg
@@ -443,7 +451,6 @@ parse_encode_request(ascii_encode_request_t areq)
         if (mem_bis.valid) {
             xed_reg_class_enum_t rc = XED_REG_CLASS_INVALID;
             xed_reg_class_enum_t rci = XED_REG_CLASS_INVALID;
-            
 
             if (mem_bis.mem) {
                 if (memop == 0) {

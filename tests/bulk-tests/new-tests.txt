@@ -45,9 +45,9 @@ DEC ENC              ; BUILDDIR/xed      -de 62 00
 DEC ENC              ; BUILDDIR/xed      -de 66 62 00
 # tag these tests with AVX512X because the chips mentioned currently
 # only come with AVX512 configurations
-DEC               ; BUILDDIR/xed -chip-check SKYLAKE_SERVER -d 66 0fae 30
-DEC               ; BUILDDIR/xed -chip-check CANNONLAKE -d 66 0fae 30
-DEC               ; BUILDDIR/xed -chip-check ICE_LAKE_SERVER -d 66 0fae 30
+DEC AVX512X       ; BUILDDIR/xed -chip-check SKYLAKE_SERVER -d 66 0fae 30
+DEC AVX512X       ; BUILDDIR/xed -chip-check CANNONLAKE -d 66 0fae 30
+DEC AVX512X       ; BUILDDIR/xed -chip-check ICE_LAKE_SERVER -d 66 0fae 30
 DEC               ; BUILDDIR/xed -d 0f1c00
 DEC               ; BUILDDIR/xed -set CLDEMOTE 1 -d 0f1c00
 DEC               ; BUILDDIR/xed -chip-check SNOW_RIDGE -d 0f1c00

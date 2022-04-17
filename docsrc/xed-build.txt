@@ -1,5 +1,5 @@
 #BEGIN_LEGAL
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2021 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@
 @else
 @mainpage *INTERNAL* XED Build Guide
 @endif
-by Mark Charney
 
 2019-05-28
 
@@ -74,8 +73,8 @@ git clone https://github.com/intelxed/mbuild.git mbuild
 @endcode
 @else
 @code
-git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
-git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
+git clone {xed repository URL} xed
+git clone {mbuild repository URL} mbuild
 @endcode
 @endif
 
@@ -145,8 +144,8 @@ C:/Python37/python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
-git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
+git clone {xed repository URL} xed
+git clone {mbuild repository URL} mbuild
 mkdir test
 cd test
 C:/Python37/python ../xed/mfile.py examples install zip
@@ -167,8 +166,8 @@ python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
-git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/xed.git xed
-git clone ssh://git@gitlab.devtools.intel.com:29418/xed-group/mbuild.git mbuild
+git clone {xed repository URL} xed
+git clone {mbuild repository URL} mbuild
 mkdir test
 cd test
 python ../xed/mfile.py examples install zip
@@ -399,7 +398,6 @@ Options:
   --python=PYTHONARG    Use a specific version of python
                         for subprocesses.
   --elf-dwarf, --dwarf  Use libelf/libdwarf. (Linux only)
-  --dev                 Developer knob. Updates VERSION file
   --elf-dwarf-precompiled
                         Use precompiled libelf/libdwarf from  the XED source
                         distribution. This is the currently required if you

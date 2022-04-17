@@ -201,6 +201,10 @@ static void read_dwarf_line_numbers(void* region,
                                                   &file_name_table, file_num);
             line_number_entry_t* p =
                  (line_number_entry_t*)malloc(sizeof(line_number_entry_t));
+            if (p == 0) {
+                fprintf(stderr, "ERROR: Could not malloc\n");
+                exit(1);
+            }
             line_number_entry_init(p, line_num, gfn);
             avl_insert(&line_number_table, line_addr, p, 1);
 

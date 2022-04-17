@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- python -*-
-# Mark Charney <mark.charney@intel.com>
 # Code generation support: emitting files, emitting functions, etc.
 #BEGIN_LEGAL
 #

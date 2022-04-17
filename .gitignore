@@ -13,6 +13,8 @@ xed-install*
 TAGS
 /VS10/xed.vcxproj.user
 /VS10/xed.sdf
+/.vs/
+.idea/
 kits/*
 logs/*
 .developer

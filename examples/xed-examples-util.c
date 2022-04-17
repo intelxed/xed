@@ -497,8 +497,9 @@ xed_map_region(const char* path,
                   MAP_PRIVATE,
                   fd,
                   0);
-    if (*start == (void*) -1)
+    if (*start == MAP_FAILED)
         xedex_derror("could not map region");
+    close(fd);
 #endif
     if (CLIENT_VERBOSE1)
         printf("Mapped " XED_FMT_U " bytes!\n", *length);
@@ -1364,6 +1365,7 @@ finish:
         if (graph_empty ==0 ) 
             xed_dot_graph_dump(di->dot_graph_output, gs);
         xed_dot_graph_supp_deallocate(gs);
+        free(gs);
     }
     
     di->errors += errors;

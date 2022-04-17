@@ -22,6 +22,7 @@
 ptr         u8      0
 tmemrow     u8      0
 tmemcol     u8      0
+m512        struct  64 # bytes
 
 # tiles are variable width based on palette so hard to really specify an overall width.
 tv          u8      0 

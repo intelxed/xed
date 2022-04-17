@@ -1,0 +1,10 @@
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27b49c0   # TILEZERO
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2784900   # LDTILECFG
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27b4b0410 # TILELOADD
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27a4b0410 # TILESTORED
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27b5ed1   # TDPBSSD
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27a5ed1   # TDPBSUD
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2795ed1   # TDPBUSD
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2785ed1   # TDPBUUD
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2725cd0   # TDPBF16PS
+DEC AMX              ; BUILDDIR/xed-ex1 -64 c4e2725cd0

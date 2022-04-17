@@ -69,6 +69,11 @@ xed_disas_hex(xed_disas_info_t* fi)
     xed_uint8_t b = 0;
     FILE* f = 0;
 
+    if ((fi->input_file_name == 0) || (fi->input_file_name[0] == 0)) {
+        fprintf(stderr, "ERROR: illegal input_file_name\n");
+        exit(1);
+    }
+
     // read file once to get length
     f = open_file(fi->input_file_name, "r");
     while (read_byte(f,0) != -1)

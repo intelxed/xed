@@ -824,6 +824,14 @@ def xed_args(env):
                           action="store_false", 
                           dest="future", 
                           help="Do not include future NI.")
+    env.parser.add_option("--no-amd",
+                          action="store_false",
+                          dest="amd_enabled",
+                          help="Disable AMD public instructions")
+    env.parser.add_option("--no-via",
+                          action="store_false",
+                          dest="via_enabled",
+                          help="Disable VIA public instructions")
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -846,14 +854,6 @@ def xed_args(env):
                           action="store",
                           help="Kit version string.  " +
                           "The default is 'base'")
-    env.parser.add_option("--no-amd", 
-                          action="store_false",
-                          dest="amd_enabled",
-                          help="Disable AMD public instructions")
-    env.parser.add_option("--no-via", 
-                          action="store_false",
-                          dest="via_enabled",
-                          help="Disable VIA public instructions")
     env.parser.add_option("--limit-strings", 
                           action="store_true",
                           dest="limit_strings",
@@ -897,10 +897,6 @@ def xed_args(env):
                           action="store_true",
                           dest="use_elf_dwarf",
                           help="Use libelf/libdwarf. (Linux only)")
-    env.parser.add_option('--dev', 
-                          action='store_true',
-                          dest='dev',
-                          help='Developer knob. Updates VERSION file')
     env.parser.add_option("--elf-dwarf-precompiled", 
                           action="store_true",
                           dest="use_elf_dwarf_precompiled",
@@ -1002,7 +998,7 @@ def init(env):
 
     xbc.init(env)
     
-    env.add_define('XED_GIT_VERSION="%(xed_git_version)s"')
+    env.add_define('XED_VERSION="%(xed_version)s"')
     if env['shared']:
         env.add_define('XED_DLL')
 
@@ -1445,14 +1441,10 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'tdx')
             _add_normal_ext(env,'avx512-fp16')
             _add_normal_ext(env,'evex-map5-6')
-            
-        if env['future']: 
+
+        if env['future']:
             _add_normal_ext(env,'future')
-            _add_normal_ext(env,'tdx')
 
-
-
-        
     env['extf'] = newstuff + env['extf']
 
 def _get_src(env,subdir):
@@ -2392,42 +2384,36 @@ def get_git_cmd(env):
          git = gite
    return git
 
-def autodev(env):
-   if env['dev']:
-      return True
-   if os.path.exists(mbuild.join(env['src_dir'],".developer")):
-      return True
-   return False
 
 def get_git_version(env):
-   fn = mbuild.join(env['src_dir'],'VERSION')
-   # are we in a GIT repo?
-   if os.path.exists(mbuild.join(env['src_dir'],'.git')):
-      cmd = get_git_cmd(env) + ' describe --tags'
-      (retcode, stdout, stderr) = mbuild.run_command(cmd,
-                                                     directory=env['src_dir'])
-      if retcode == 0:
-         # git worked, update VERSION file
-         line = stdout[0].strip()
-         # update the VERSION file conditionally. It will mess up nightly
-         # machines to modify a tracked file on every build.
-         if autodev(env):
-            f = open(fn,'w')
-            f.write(line + "\n")
-            f.close()
-            
-         return line
-      else:
-         xbc.dump_lines("git description stdout", stdout)
-         xbc.dump_lines("git description stderr", stderr)
+    NO_VERSION = '000'
 
-   # not a git repo or git failed or was not found.
-   try:
-      lines = open(fn,'r').readlines()
-      line = lines[0].strip()
-      return line
-   except:
-      xbc.cdie("Could not find VERSION file, git or git repo")
+    # are we in a GIT repo?
+    if os.path.exists(mbuild.join(env['src_dir'],'.git')):
+        cmd = get_git_cmd(env) + ' describe --tags'
+        (retcode, stdout, stderr) = mbuild.run_command(cmd,
+                                                     directory=env['src_dir'])
+        if retcode == 0:
+            line = stdout[0].strip()
+            return line
+        else:
+            xbc.dump_lines("git version description", "FAILED")
+            xbc.dump_lines("git description stdout", stdout)
+            xbc.dump_lines("git description stderr", stderr)
+
+    # not a git repo or git failed.
+    # search for VERSION file (Available with the public XED repository)
+    version_file = mbuild.join(env['src_dir'], 'VERSION')
+    if os.path.exists(version_file):
+        try:
+            with open(version_file, 'r') as f:
+                line = f.readline()
+            return line.strip()
+        except:
+            xbc.dump_lines("Could not find VERSION file or git repo for versioning")
+
+    return NO_VERSION
+
 
 def emit_defines_header(env):
     """Grab all the XED_* defines and the model name and emit a header file"""
@@ -2477,22 +2463,8 @@ def emit_defines_header(env):
 
 def update_version(env):
    new_rev = get_git_version(env)
-   date = time.strftime("%Y-%m-%d")
-   if new_rev:
-      mbuild.vmsgb(1, "GIT VERSION", new_rev)
-   else:
-      new_rev = "000"
-      mbuild.warn("Could not find GIT revision number")
-
-   # For developer builds, include the date in the git version.  For
-   # non developer builds, do not include the date. The git version
-   # gets put in the xed-build-defines.h file.  If the git version
-   # includes the date, it would trigger rebuilds on a daily basis.
-   
-   if autodev(env):
-       env['xed_git_version'] =  new_rev + " " + date
-   else:
-       env['xed_git_version'] =  new_rev
+   mbuild.vmsgb(1, "XED VERSION", new_rev)
+   env['xed_version'] =  new_rev
        
 def _test_setup(env):
     osenv = None
@@ -2541,7 +2513,7 @@ def _run_canned_tests(env,osenv):
     wkit = env['wkit']
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
-    dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax']
+    dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2560,6 +2532,8 @@ def _run_canned_tests(env,osenv):
         codes.append('KNC')
     if env['skx']:
         codes.append('AVX512X')
+    if env['spr']:
+        codes.append('AMX')
     if env['knm'] or env['knl']:
         codes.append('AVX512PF')
     if env['hsw']: 

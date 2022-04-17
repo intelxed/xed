@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- python -*-
-# Mark Charney <mark.charney@intel.com>
 #BEGIN_LEGAL
 #
 #Copyright (c) 2019 Intel Corporation

@@ -1,0 +1,81 @@
+name: External release
+on:
+  push:
+    branches:
+      - external
+
+jobs:
+  external_release:
+    runs-on:
+      - self-hosted
+      - xed-runners
+    steps:
+      - name: Checkout external branch
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+          ref: external
+          path: external
+      - name: Get external commit message description
+        id: commit-body
+        run: |
+          cd external
+          echo 
+          echo "$(git log -1 --pretty=%B)" >> ../body.txt
+      - name: Checkout main
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }}
+          fetch-depth: 0
+          ref: main
+          path: main
+      - name: Get version
+        id: get-version
+        run: echo "::set-output name=version::$(cat external/VERSION)"
+      - name: Git config
+        uses: ./main/.github/actions/set-git-credentials
+        with:
+          token: ${{ secrets.PAT }}
+          path: main
+          remote: origin
+      - name: Replace .rc with .external tag on main
+        run: |
+          cd main
+          set tag_sha=$(git rev-list -n 1 "${{steps.get-version.outputs.version}}.rc")
+          echo $tag_sha
+          git push --delete origin "${{steps.get-version.outputs.version}}.external" || true
+          git push --delete origin "${{steps.get-version.outputs.version}}.rc" || true
+          git tag -d  "${{steps.get-version.outputs.version}}.rc" || true
+          git tag --force "${{steps.get-version.outputs.version}}.external" -a -F ../body.txt $tag_sha
+          git push origin "${{steps.get-version.outputs.version}}.external"
+      - name: Git config
+        uses: ./main/.github/actions/set-git-credentials
+        with:
+          token: ${{ secrets.PAT }}
+          path: external
+          remote: origin
+      - name: Tag external branch
+        run: |
+          cd external
+          git push --delete origin "${{steps.get-version.outputs.version}}" || true
+          git tag -d  "${{steps.get-version.outputs.version}}" || true
+          git tag --force "${{steps.get-version.outputs.version}}" -a -F ../body.txt ${{ github.sha }}
+          git push origin "${{steps.get-version.outputs.version}}"
+      - name: Git config external repo
+        uses: ./main/.github/actions/set-git-credentials
+        with:
+          token: ${{ secrets.PAT }}
+          path: external
+          remote: external
+          repository: ${{ secrets.EXTERNAL_REPO }}
+      - name: Push to external repo
+        run: |
+          cd external
+          git push external HEAD:main
+      - name: Tag external repo
+        run: |
+          cd external
+          git push --delete external "${{steps.get-version.outputs.version}}" || true
+          git tag --force "${{steps.get-version.outputs.version}}" -a -F ../body.txt ${{ github.sha }}
+          git push external "${{steps.get-version.outputs.version}}"
