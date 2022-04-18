@@ -1,9 +1,6 @@
-name: Conan flow
+name: Test Conan
 on:
   pull_request:
-  release:
-    types:
-      - published
 
   workflow_dispatch:
 env:
@@ -16,7 +13,7 @@ jobs:
       - self-hosted
       - xed-runners
     container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
+      image: ger-is-registry.caas.intel.com/bit/xed:0.0.6
     steps:
       - name: Checkout
         uses: actions/checkout@v2
