@@ -1,6 +1,6 @@
 /*BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2022 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ END_LEGAL */
 #include "xed-ild-enum.h"
 #include "xed-map-feature-tables.h"
 #include "xed-chip-features-table.h"
-
+#include "xed-ild-extension.h"
 
 static XED_INLINE int xed3_mode_64b(xed_decoded_inst_t* d) {
     return (xed3_operand_get_mode(d) == XED_GRAMMAR_MODE_64);
@@ -774,7 +774,7 @@ static void bad_ll_check(xed_decoded_inst_t* d)
 }
 #endif
 
-static void modrm_scanner(xed_decoded_inst_t* d)
+void xed_modrm_scanner(xed_decoded_inst_t* d)
 {
     xed_uint8_t b;
     xed_uint8_t has_modrm;
@@ -945,11 +945,6 @@ static void disp_scanner(xed_decoded_inst_t* d)
 
 
 
-
-#if defined(XED_EXTENDED)
-# include "xed-ild-extension.h"
-#endif
-
 static void set_has_modrm(xed_decoded_inst_t* d) {
     xed_uint_t yes_no_var = xed_ild_get_has_modrm(d);
     if (yes_no_var == 1) {
@@ -998,7 +993,7 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-static void set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
+void xed_set_downstream_info(xed_decoded_inst_t* d, xed_uint_t vv) {
     xed_uint_t mapno = xed3_operand_get_map(d);
 
     // copy the codes from the map_info_t tables for later procsssing
@@ -1036,7 +1031,7 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
     xed3_operand_set_nominal_opcode(d, b);
     xed3_operand_set_pos_nominal_opcode(d, length);
     xed_decoded_inst_inc_length(d);
-    set_downstream_info(d,xed3_operand_get_vexvalid(d));
+    xed_set_downstream_info(d,xed3_operand_get_vexvalid(d));
 }
 #endif
 
@@ -1056,7 +1051,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
         xed3_operand_set_pos_nominal_opcode(d, length);
         xed3_operand_set_srm(d, xed_modrm_rm(b));
         xed_decoded_inst_inc_length(d);
-        set_downstream_info(d,0);
+        xed_set_downstream_info(d,0);
         return;
     }
     // things that start with 0x0F are escape maps...
@@ -1083,7 +1078,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
                 xed_decoded_inst_set_length(d, length);
                 //set SRM (partial opcode instructions need it)
                 xed3_operand_set_srm(d, xed_modrm_rm(b));
-                set_downstream_info(d,0);
+                xed_set_downstream_info(d,0);
                 return;
             }
             else if (m->legacy_opcode == b) {
@@ -1096,7 +1091,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
                 else
 #endif
                     get_next_as_opcode(d);
-                set_downstream_info(d,0);
+                xed_set_downstream_info(d,0);
                 return;
             }
         }
@@ -1221,6 +1216,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
         if (length + 4 < max_bytes) {
             xed_avx512_payload2_t evex2;
             xed_uint_t eff_map;
+            xed_bool_t avx512 = 0;
 
             evex2.u32 = xed_decoded_inst_get_byte(d, length+2);
 
@@ -1238,39 +1234,34 @@ static void evex_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_vexdest3(d,  evex2.s.vexdest3);
             xed3_operand_set_vexdest210(d, evex2.s.vexdest210);
             xed3_operand_set_ubit(d, evex2.s.ubit);
-
-#if defined(XED_SUPPORTS_KNC)
-            if (evex2.s.ubit==0)
-                xed3_operand_set_vexvalid(d, 4); // KNC EVEX U=0 req'd
-            else
-                xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
-#else
-            // 2020-05-15: when not supporting KNC, we put KNC (EVEX.U=0)
-            // stuff in vv=2(EVEX) and let the UBIT error tank it later.
-            xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
-            if (evex2.s.ubit==0) 
-                xed3_operand_set_error(d,XED_ERROR_BAD_EVEX_UBIT);
-#endif
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
 
             eff_map = evex1.s.map;
-#if defined(XED_SUPPORTS_AVX512) 
-            if (xed_ild_map_valid_evex(eff_map) == 0) {
-                xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
-                bad_map(d);
-                return; 
-            }
-#elif defined(XED_SUPPORTS_KNC)
+#if defined(XED_SUPPORTS_KNC)
             if (xed_ild_map_valid_knc(eff_map) == 0) {
                 xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
                 bad_map(d);
                 return; 
             }
+
+            avx512 = xed3_operand_get_ubit(d);
+            if (avx512==0)
+                xed3_operand_set_vexvalid(d, 4); // KNC EVEX U=0 req'd
+            else
+                xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
+#else
+            if (xed_ild_map_valid_evex(eff_map) == 0) {
+                xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
+                bad_map(d);
+                return;
+            }
+
+            avx512 = xed_ild_extension_handle_ubit_avx512(d);
 #endif
 
-            if (evex2.s.ubit)  // AVX512 only (Not KNC)
+            if (avx512)
             {
-#if defined(XED_SUPPORTS_AVX512)                
+#if defined(XED_SUPPORTS_AVX512)
                 xed_avx512_payload3_t evex3;
                 evex3.u32 = xed_decoded_inst_get_byte(d, length+3);
 
@@ -1503,7 +1494,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
 #else
     opcode_scanner(ild);
 #endif
-    modrm_scanner(ild);
+    xed_modrm_scanner(ild);
     sib_scanner(ild);
     disp_scanner(ild);
     imm_scanner(ild);

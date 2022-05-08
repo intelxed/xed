@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1041,6 +1041,7 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
     
     # grab common sources compiled earlier
     common_sources = ['xed-ild.c',                 # dec
+                      'xed-ild-extension.c',       # dec
                       'xed-chip-features.c',       # dec
                       'xed-isa-set.c',             # common
                       'xed-chip-modes.c',          # common
