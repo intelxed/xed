@@ -13,7 +13,7 @@ jobs:
       - self-hosted
       - xed-runners
     container:
-      image: ger-is-registry.caas.intel.com/bit/xed:0.0.6
+      image: ger-is-registry.caas.intel.com/bit/xed:latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
