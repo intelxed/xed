@@ -1,9 +1,96 @@
 name: Internal Test
 on:
   pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      xedext_branch:
+        description: XEDEXT Branch
+        type: string
+        default: main
+        required: true
+      mbuild_branch:
+        description: mbuild Branch
+        type: string
+        default: main
+        required: true
+      note:
+        description: Add a note
+        type: string
+        default: ''
+        required: false
 
 jobs:
+  ### setup xed-group repositories branches and action mode ###
+  init:
+    name: Init
+    runs-on:
+      - self-hosted
+      - xed-runners
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:latest
+    outputs:
+      mbuild_branch: ${{ steps.branches.outputs.mbuild_branch }}
+      xedext_branch: ${{ steps.branches.outputs.xedext_branch }}
+      checkout_action: ${{ steps.branches.outputs.checkout_action }}
+    steps:
+      # if: Manually triggered. Grab branch names from workflow inputs
+      - if: github.event_name == 'workflow_dispatch'
+        name: 'Option 1: Manual Trigger - Check and handle branches'
+        run: |
+          echo "checkout_action=Manual Trigger" >> $GITHUB_ENV
+          echo "mbuild_branch=${{github.event.inputs.mbuild_branch}}" >> $GITHUB_ENV
+          echo "xedext_branch=${{github.event.inputs.xedext_branch}}" >> $GITHUB_ENV
+      # else if: Synced Mode PR  - Checkout all repos to the same XEDEXT branch name
+      - if: github.event_name != 'workflow_dispatch' && startsWith(github.head_ref, 'sync/')
+        name: 'Option 2: PR Synced Mode - Check and handle branches'
+        run: |
+          echo "checkout_action=Synced PR" >> $GITHUB_ENV
+          echo "mbuild_branch=${{github.head_ref}}" >> $GITHUB_ENV
+          echo "xedext_branch=${{github.head_ref}}" >> $GITHUB_ENV
+      # else: Standard PR - Explicitly set to "main" branch for better logs
+      - if: github.event_name != 'workflow_dispatch' && !startsWith(github.head_ref, 'sync/')
+        name: 'Option 3: PR Standard Mode - Check and handle branches'
+        run: |
+          echo "checkout_action=PR" >> $GITHUB_ENV
+          echo "mbuild_branch=main" >> $GITHUB_ENV
+          echo "xedext_branch=main" >> $GITHUB_ENV
+      - name: 'Stash group branches for ${{ env.checkout_action }} | mbuild=${{ env.mbuild_branch }}, 
+        xedext=${{ env.xedext_branch }}, xed=${{ github.ref_name }}(${{ github.head_ref }})'
+        # Stash for subsequent steps and jobs
+        id: branches
+        run: |
+          echo "::set-output name=checkout_action::${{ env.checkout_action }}"
+          echo "::set-output name=mbuild_branch::${{ env.mbuild_branch }}"
+          echo "::set-output name=xedext_branch::${{ env.xedext_branch }}"
+      - name: step summary
+        run: |
+          echo "### ${{ env.checkout_action }}" >> $GITHUB_STEP_SUMMARY
+          echo "- mbuild branch = ${{ env.mbuild_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- xedext branch = ${{ env.xedext_branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- xed branch    = ref:'${{ github.ref_name }}', head:'${{ github.head_ref }}'" >> $GITHUB_STEP_SUMMARY
+          echo "=================================" >> $GITHUB_STEP_SUMMARY
+          echo "${{ github.event.inputs.note }}" >> $GITHUB_STEP_SUMMARY
+  
+
+  # highlight XED-group checkout information as a separate job
+  checkout_log:
+    name: '${{ needs.init.outputs.checkout_action }} Checkout: mbuild=${{ needs.init.outputs.mbuild_branch }}, 
+    xedext=${{ needs.init.outputs.xedext_branch }}, xed=${{ github.ref_name }}'
+    needs: init
+    runs-on:
+      - self-hosted
+      - xed-runners
+    container:
+      image: ger-is-registry.caas.intel.com/bit/xed:latest
+    steps:
+      - name: 'Notes: ${{ github.event.inputs.note }}'
+        run: echo "${{ github.event.inputs.note }}"
+
+
   test:
+    needs: init
     env:
       ARCHVAL_OPTIONS: pppe=1 psmi=1 xed_top_secret=xed-topsecret
     runs-on:
@@ -20,12 +107,14 @@ jobs:
       uses: actions/checkout@v2
       with:
         repository: intel-innersource/libraries.isa.xed.mbuild
+        ref: ${{ needs.init.outputs.mbuild_branch }}
         path: mbuild
         token: ${{ secrets.PAT }}
     - name: Checkout xedext
       uses: actions/checkout@v2
       with:
         repository: intel-restricted/libraries.isa.xed.xedext
+        ref: ${{ needs.init.outputs.xedext_branch }}
         path: xedext
         token: ${{ secrets.PAT }}
     - name: Checkout xed-topsecret
