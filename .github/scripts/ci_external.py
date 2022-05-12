@@ -84,7 +84,10 @@ def fail(status):
 def ensure_string(x):
     '''handle non unicode output'''
     if isinstance(x, bytes):
-        return x.decode('utf-8')
+        try:
+            return x.decode('utf-8')
+        except:
+            return ''
     return x
 
 
