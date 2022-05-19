@@ -86,9 +86,8 @@ P4PRESCOTT_NOLAHF:  ALL_OF(P4PRESCOTT)  NOT(LAHF)
 P4PRESCOTT_VTX:  ALL_OF(P4PRESCOTT)  VTX
 
 # SSSE3MMX is a a bunch of purely mmx instructions that came with SSSE3.
-# They are really part of SSSE3. The 3DNOW_PREFETCH instr were nops.
-# previously listed as CORE2
-MEROM:       ALL_OF(P4PRESCOTT)  VTX SSSE3 SSSE3MMX SMX 3DNOW_PREFETCH
+# They are really part of SSSE3.
+MEROM:       ALL_OF(P4PRESCOTT)  VTX SSSE3 SSSE3MMX SMX
 
 PENRYN:      ALL_OF(MEROM)     SSE4
 PENRYN_E:    ALL_OF(PENRYN)    XSAVE
