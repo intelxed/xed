@@ -417,7 +417,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
     //          ^          
     // length is set to the position of the first payload byte.
     // we need 2 more: 2nd payload byte and opcode.
-    if (length + 2 <= max_bytes) {
+    if (length + 2 < max_bytes) {
       xed_avx_c4_payload2_t c4byte2;
       xed_uint_t eff_map;
 
@@ -463,11 +463,11 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
 static void vex_c5_scanner(xed_decoded_inst_t* d)
 {
     // assumption: length < max_bytes. This is checked in prefix_scanner.
-    // c5 is  the byte at 'length'
+    // c5 is the byte at 'length'
     xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
     unsigned char length  = xed_decoded_inst_get_length(d);
     xed_avx_c5_payload_t c5byte1;
-    if (length+1 <= max_bytes)   {
+    if (length + 1 < max_bytes)   {
         length++;
         c5byte1.u32 = xed_decoded_inst_get_byte(d, length);
         // in 16/32b modes, the MODRM.MOD field MUST be 0b11
@@ -486,7 +486,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
     //          ^          
     // length is set to the position of the first payload byte.
     // we need 1 more: opcode.
-    if (length + 1 <= max_bytes) {
+    if (length + 1 < max_bytes) {
 
         xed3_operand_set_rexr(d, ~c5byte1.s.r_inv&1);
         xed3_operand_set_vexdest3(d,   c5byte1.s.v3);
