@@ -450,7 +450,7 @@ def legal_header_tagging(env):
                     data_files.append(fn)
 
     if env.on_windows():
-        xbc.cdie("ERROR","TAGGING THE IN-USE PYTHON FILES DOES " +
+        xbc.cdie("[ERROR], TAGGING THE IN-USE PYTHON FILES DOES " +
                    "NOT WORK ON WINDOWS.")
 
     legal_header = open(mbuild.join(env['src_dir'],'misc',
