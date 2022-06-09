@@ -13,7 +13,7 @@ Nominal opcode 0x9d
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0         REG0=STACKPOP SUPPRESSED   R         W   16     2     1     16        INT     PSEUDO
+0   REG0         REG0=STACKPOP SUPPRESSED  RW         W   16     2     1     16        INT     PSEUDO
 1   MEM0           (see below) SUPPRESSED   R         W   16     2     1     16        INT    INVALID
 2  BASE0             BASE0=ESP SUPPRESSED  RW       SSZ   32     4     1     32        INT        GPR
 3   REG1           REG1=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
