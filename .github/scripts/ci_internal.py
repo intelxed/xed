@@ -43,6 +43,18 @@ class JobStatus:
             s.append(f"{index}: status: {r} cmd: {c}")
         return os.linesep.join(s) + os.linesep
 
+    def print_fails(self):
+
+        s = ["------------------[FAILED TESTS]------------------"]
+
+        for index, (r, c) in enumerate(self.commands):
+            if r != 0:
+                s.append(f"{index}: status: {r} cmd: {c}")
+
+        s.append("---------------------------------------------\n")
+        return os.linesep.join(s)
+
+
     def addjob(self, retval, cmd):
         self.jobs += 1
         self.commands.append((retval, cmd))
@@ -81,6 +93,7 @@ def fail(status):
     '''send failing SMS'''
     sys.stdout.write(str(status))
     sys.stdout.write(f'[ELAPSED TIME] {datetime.now() - status.start_time}\n')
+    sys.stdout.write(status.print_fails())
     sys.stdout.write("[FINAL STATUS] FAIL\n")
     sys.stdout.flush()
     # send_sms.send("XED CI: Failed ({} passing)".format(
@@ -218,22 +231,6 @@ def main():
         cmd = 'binary-tools/lin/ipldt3 -i mbuild -r ipldt-results-mbuild'
         run(status, cmd, required=False)
         cmd = 'cat ipldt-results-mbuild/ipldt_resuplts.txt'
-        run(status, cmd, required=True)
-    if 'CI' not in os.environ:
-        git_base = 'https://gitlab-ci-token:${CI_JOB_TOKEN}@gitlab.devtools.intel.com/xed-group/'
-
-        mbuild_git = git_base + 'mbuild.git'
-        cmd = f'git clone {mbuild_git} mbuild'
-        run(status, cmd, required=True)
-
-        branches = get_branches_from_file()
-        checkout_branches(status, branches)
-
-    archval_repo = os.getenv('ARCHVAL_REPO')
-    if archval_repo:
-        archval_git = git_base + archval_repo
-        short_name = os.path.splitext(archval_repo)[0]
-        cmd = f'git clone {archval_git} {short_name}'
         run(status, cmd, required=True)
 
     for pyver, pycmd in get_python_cmds():
