@@ -125,4 +125,15 @@ jobs:
         token: ${{ secrets.PAT }}
     - name: test
       run: |
-          python3 .github/scripts/ci_internal.py
+          python3 .github/scripts/ci_internal.py  | tee -a $GITHUB_WORKSPACE/ci_internal_log.txt
+    # XED's Github developers can set notifications for failed workflows only (within 
+    # GitHub's notification settings).
+    # We don't need to receive notification for every passed action - It is too much! 
+    # But, receiving success notification of manually triggered event make sense...
+    # Therefore manually send a success mail notification for manually triggered events only.
+    - if: success() && (needs.init.outputs.checkout_action == 'Manual Trigger')
+      name: Send success summary mail on manual trigger
+      run: |
+          python3 .github/scripts/send_mail.py --to-user ${{github.actor}} \
+          --subject='XED CI: Passed (${{ github.ref_name }})' \
+          --text-from-file="$GITHUB_WORKSPACE/ci_internal_log.txt"

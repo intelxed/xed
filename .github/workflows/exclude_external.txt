@@ -1,4 +1,6 @@
 .github/*/*ci_internal.*
+.github/actions/set-git-credentials
+.github/scripts/send_mail.py
 conan.yml
 conanfile.py
 test_package
@@ -6,5 +8,4 @@ prepare_release.yml
 .git
 docker
 exclude_external.txt
-.github/actions/set-git-credentials
 README.md
