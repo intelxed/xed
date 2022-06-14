@@ -3,6 +3,8 @@ on:
   pull_request:
     branches:
       - external
+  workflow_dispatch:
+
 jobs:
   test:
     runs-on:
