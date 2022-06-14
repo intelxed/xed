@@ -149,14 +149,26 @@ def main():
                 run(status, cmd)
 
         # do a build with asserts enabled
-        build_dir = f'obj-assert-{pyver}-{"x86-64"}'
-        cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu={"x86-64"} test'
+        build_dir = f'obj-assert-{pyver}-x86-64'
+        cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu=x86-64 test'
         run(status, cmd)
 
+        # check enc-dec for all instructions
+        build_dir = f'obj-enc2-{pyver}-x86-64-static'
+        cmd = f'{pycmd} mfile.py --enc2-test-checked --build-dir={build_dir} host_cpu=x86-64 test'
+        ok = run(status, cmd)
+        if ok:
+            cmd = f'{build_dir}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'
+            ok = run(status, cmd)
+            if ok:
+                cmd = 'gcc a.c'
+                run(status, cmd)
+                if ok:
+                    cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
+                    run(status, cmd)
+
         # knc test
-        size = 'x86-64'
-        linkkind = 'static'
-        build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
+        build_dir = f'obj-knc-{pyver}-x86-64-static'
         cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
         run(status, cmd)
 
