@@ -158,9 +158,8 @@ def all_instr(pyver, pycmd, status, kind):
     size = 'x86-64'
     linkkind = 'static'
     build_dir = f'obj-{kind}-{pyver}-{size}-{linkkind}'
-    cwd = os.path.abspath(os.curdir)
     flags = f'--kind {kind} --enc2-test-checked'
-    cmd = f'{pycmd} xedext/xed_build.py --xed-dir {cwd} {flags}  --build-dir={build_dir} host_cpu={size}'
+    cmd = f'{pycmd} ../xedext/xed_build.py {flags}  --build-dir={build_dir} host_cpu={size}'
     ok = run(status, cmd)
 
     if ok:
@@ -180,9 +179,8 @@ def archval(pyver, pycmd, status):
     size = 'x86-64'
     linkkind = 'static'
     build_dir = f'obj-archval-{pyver}-{size}-{linkkind}'
-    cwd = os.path.abspath(os.curdir)
     flags = f"--kind architectural-val {os.getenv('ARCHVAL_OPTIONS')}"
-    cmd = f'{pycmd} xedext/xed_build.py --xed-dir {cwd} {flags} --build-dir={build_dir} host_cpu={size}'
+    cmd = f'{pycmd} ../xedext/xed_build.py {flags} --build-dir={build_dir} host_cpu={size}'
     run(status, cmd)
 
 
@@ -235,7 +233,7 @@ def main():
 
     for pyver, pycmd in get_python_cmds():
 
-        cmd = f'{pycmd} -m pip install --user ./mbuild'
+        cmd = f'{pycmd} -m pip install --user ../mbuild'
         run(status, cmd, required=True)
 
         # {32b,64b} x {shared,dynamic} link
