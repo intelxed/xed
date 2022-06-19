@@ -1,4 +1,4 @@
-name: Internal Test
+name: Sanity
 on:
   pull_request:
     branches:
@@ -125,7 +125,7 @@ jobs:
         token: ${{ secrets.PAT }}
     - name: test
       run: |
-          python3 .github/scripts/ci_internal.py  | tee -a $GITHUB_WORKSPACE/ci_internal_log.txt
+          python3 .github/scripts/sanity_internal.py  | tee -a $GITHUB_WORKSPACE/sanity_internal_log.txt
     # XED's Github developers can set notifications for failed workflows only (within 
     # GitHub's notification settings).
     # We don't need to receive notification for every passed action - It is too much! 
@@ -135,5 +135,5 @@ jobs:
       name: Send success summary mail on manual trigger
       run: |
           python3 .github/scripts/send_mail.py --to-user ${{github.actor}} \
-          --subject='XED CI: Passed (${{ github.ref_name }})' \
-          --text-from-file="$GITHUB_WORKSPACE/ci_internal_log.txt"
+          --subject='XED Sanity: Passed (${{ github.ref_name }})' \
+          --text-from-file="$GITHUB_WORKSPACE/sanity_internal_log.txt.txt"

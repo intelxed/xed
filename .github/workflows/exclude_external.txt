@@ -1,4 +1,4 @@
-.github/*/*ci_internal.*
+.github/*/*sanity_internal.*
 .github/actions/set-git-credentials
 .github/scripts/send_mail.py
 conan.yml
