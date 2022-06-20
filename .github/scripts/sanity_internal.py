@@ -1,6 +1,6 @@
 # BEGIN_LEGAL
 #
-# Copyright (c) 2021 Intel Corporation
+# Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,174 +17,45 @@
 # END_LEGAL
 """ run CI checks """
 import os
-import platform
-import subprocess
 import sys
-from datetime import datetime
 from typing import Dict
-
-sys.path = ['scripts'] + sys.path
-
-
-class JobStatus:
-    """record job status (success, failure and (retval,job) list"""
-
-    def __init__(self):
-        self.jobs = 0
-        self.fails = 0
-        self.successes = 0
-        self.start_time = datetime.now()
-        self.commands = []  # list of  tuples of (retval, command)
-
-    def __str__(self):
-        s = [f"JOBS: {self.jobs}, SUCCESSES: {self.successes}, FAILS: {self.fails}"]
-
-        for index, (r, c) in enumerate(self.commands):
-            s.append(f"{index}: status: {r} cmd: {c}")
-        return os.linesep.join(s) + os.linesep
-
-    def print_fails(self):
-
-        s = ["------------------[FAILED TESTS]------------------"]
-
-        for index, (r, c) in enumerate(self.commands):
-            if r != 0:
-                s.append(f"{index}: status: {r} cmd: {c}")
-
-        s.append("---------------------------------------------\n")
-        return os.linesep.join(s)
-
-
-    def addjob(self, retval, cmd):
-        self.jobs += 1
-        self.commands.append((retval, cmd))
-
-    def fail(self, retval, cmd):
-        self.fails += 1
-        self.addjob(retval, cmd)
-
-    def success(self, retval, cmd):
-        self.successes += 1
-        self.addjob(retval, cmd)
-
-    def merge(self, status):
-        """merge status object"""
-        self.jobs += status.jobs
-        self.fails += status.fails
-        self.successes += status.successes
-        self.commands.extend(status.commands)
-
-    def pass_rate_fraction(self):
-        return f'{self.successes}/{self.jobs}'
-
-
-def success(status):
-    '''send success SMS'''
-    sys.stdout.write(str(status))
-    sys.stdout.write(f'[ELAPSED TIME] {datetime.now() - status.start_time}\n')
-    sys.stdout.write("[FINAL STATUS] PASS\n")
-    sys.stdout.flush()
-    # send_sms.send("XED CI: Passed ({} passing)".format(
-    #    status.pass_rate_fraction()))
-    sys.exit(0)
-
-
-def fail(status):
-    '''send failing SMS'''
-    sys.stdout.write(str(status))
-    sys.stdout.write(f'[ELAPSED TIME] {datetime.now() - status.start_time}\n')
-    sys.stdout.write(status.print_fails())
-    sys.stdout.write("[FINAL STATUS] FAIL\n")
-    sys.stdout.flush()
-    # send_sms.send("XED CI: Failed ({} passing)".format(
-    #    status.pass_rate_fraction()))
-    sys.exit(1)
-
-
-def ensure_string(x):
-    '''handle non unicode output'''
-    if isinstance(x, bytes):
-        try:
-            return x.decode('utf-8')
-        except:
-            return ''
-    return x
-
-
-def run_subprocess(cmd, **kwargs):
-    '''front end to running subprocess'''
-    sub = subprocess.Popen(cmd,
-                           shell=True,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT,
-                           **kwargs)
-    lines = sub.stdout.readlines()
-    lines = [ensure_string(x) for x in lines]
-    sub.wait()
-    return sub.returncode, lines
-
-
-def run(status:JobStatus, cmd, required=False, cwd=None):
-    """run subprocess, and record fails"""
-    print(cmd, flush=True)
-    retval, output = run_subprocess(cmd, cwd=cwd)
-    for line in output:
-        sys.stdout.write(line)
-    if retval == 0:
-        print("[SUCCESS]")
-        status.success(retval, cmd)
-    else:
-        print(f"[FAIL] retval = {retval}")
-        status.fail(retval, cmd)
-        if required:
-            fail(status)
-    return retval == 0  # 1=ok!
-
-
-def get_python_cmds():
-    '''find python verions. return tuples of (name, command)'''
-    if platform.system() == 'Windows':
-        for x in ['37']:
-            p_path = f'C:/python{x}/python'
-            if os.path.exists(p_path):
-                return [(x, p_path)]
-    if platform.system() in ['Darwin', 'Linux']:
-        # The file .travis.yml installs python3 on linux. Already present on mac
-        return [('3.x', 'python3')]
-    return [('dfltpython', 'python')]
+import utils
 
 
 def all_instr(pyver, pycmd, status, kind):
+    """Generate build command that tests decode-encode path of all the kind's available instructions"""
     size = 'x86-64'
     linkkind = 'static'
     build_dir = f'obj-{kind}-{pyver}-{size}-{linkkind}'
     flags = f'--kind {kind} --enc2-test-checked'
     cmd = f'{pycmd} ../xedext/xed_build.py {flags}  --build-dir={build_dir} host_cpu={size}'
-    ok = run(status, cmd)
+    ok = utils.run(status, cmd)
 
     if ok:
         cmd = f'{build_dir}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'
-        ok = run(status, cmd)
+        ok = utils.run(status, cmd)
 
         if 1:  # FIXME: ignore error code for now.
             cmd = 'gcc a.c'
-            run(status, cmd)
+            utils.run(status, cmd)
 
             if ok:
                 cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
-                run(status, cmd)
+                utils.run(status, cmd)
 
 
 def archval(pyver, pycmd, status):
+    """Build and test the architectural-val kind"""
     size = 'x86-64'
     linkkind = 'static'
     build_dir = f'obj-archval-{pyver}-{size}-{linkkind}'
     flags = f"--kind architectural-val {os.getenv('ARCHVAL_OPTIONS')}"
     cmd = f'{pycmd} ../xedext/xed_build.py {flags} --build-dir={build_dir} host_cpu={size}'
-    run(status, cmd)
+    utils.run(status, cmd)
 
 
 def get_branches_from_file() -> Dict[str, str]:
+    """retrieves the branches from a specific file and returns a mapping from repository to respective branch"""
     f = open("../../misc/ci-branches.txt", "r")
     lines = f.readlines()
     f.close()
@@ -200,13 +71,14 @@ def get_branches_from_file() -> Dict[str, str]:
 
 
 def checkout_branches(status, branches):
+    """checkout to given branches in respective repositories"""
     for repo, branch in branches.items():
         print(f"CHANGING REPO: {repo}  TO BRANCH: {branch}")
-        run(status, f"git checkout {branch}", cwd=repo)
+        utils.run(status, f"git checkout {branch}", cwd=repo)
 
 
 def main():
-    status = JobStatus()
+    status = utils.JobStatus()
 
     # IPLDT scan XED and MBUILD
     if 0:  # disabled until get  right branch
@@ -231,22 +103,22 @@ def main():
         cmd = 'cat ipldt-results-mbuild/ipldt_resuplts.txt'
         run(status, cmd, required=True)
 
-    for pyver, pycmd in get_python_cmds():
+    for pyver, pycmd in utils.get_python_cmds():
 
         cmd = f'{pycmd} -m pip install --user ../mbuild'
-        run(status, cmd, required=True)
+        utils.run(status, cmd)
 
         # {32b,64b} x {shared,dynamic} link
         for size in ['ia32', 'x86-64']:
             for linkkind, link in [('static', ''), ('dynamic', '--shared')]:
                 build_dir = f'obj-general-{pyver}-{size}-{linkkind}'
                 cmd = f'{pycmd} mfile.py --build-dir={build_dir} host_cpu={size} {link} test'
-                run(status, cmd)
+                utils.run(status, cmd)
 
         # do a build with asserts enabled
-        build_dir = f'obj-assert-{pyver}-{"x86-64"}'
-        cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu={"x86-64"} test'
-        run(status, cmd)
+        build_dir = f'obj-assert-{pyver}-x86-64'
+        cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu=x86-64 test'
+        utils.run(status, cmd)
 
         # all instr tests
         all_instr(pyver, pycmd, status, 'internal-conf')
@@ -260,21 +132,11 @@ def main():
         linkkind = 'static'
         build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
         cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
-        run(status, cmd)
+        utils.run(status, cmd)
 
-        if status.fails == 0:
-            success(status)
-        fail(status)
-
-
-def test():
-    status = JobStatus()
-    status.success(1, 'foo')
-    status.success(1, 'bar')
-    fail(status)
+        status.report_and_exit()
 
 
 if __name__ == "__main__":
-    # test()
     main()
     sys.exit(0)
