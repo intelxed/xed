@@ -28,8 +28,6 @@ jobs:
     runs-on:
       - self-hosted
       - xed-runners
-    container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
     outputs:
       mbuild_branch: ${{ steps.branches.outputs.mbuild_branch }}
       xedext_branch: ${{ steps.branches.outputs.xedext_branch }}
@@ -82,8 +80,6 @@ jobs:
     runs-on:
       - self-hosted
       - xed-runners
-    container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
     steps:
       - name: 'Notes: ${{ github.event.inputs.note }}'
         run: echo "${{ github.event.inputs.note }}"
@@ -93,11 +89,19 @@ jobs:
     needs: init
     env:
       ARCHVAL_OPTIONS: pppe=1 psmi=1 xed_top_secret=xed-topsecret
+    strategy:
+          fail-fast: false
+          matrix: 
+            os: ["Linux"]
+            include:
+            - os: "Linux"
+              container:
+                image: ger-is-registry.caas.intel.com/bit/xed:latest
     runs-on:
       - self-hosted
       - xed-runners
-    container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
+      - ${{ matrix.os }}
+    container: ${{ matrix.container }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2

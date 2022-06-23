@@ -7,11 +7,19 @@ on:
 
 jobs:
   test:
+    strategy:
+          fail-fast: false
+          matrix: 
+            os: ["Linux"]
+            include:
+            - os: "Linux"
+              container:
+                image: ger-is-registry.caas.intel.com/bit/xed:latest
     runs-on:
       - self-hosted
       - xed-runners
-    container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
+      - ${{ matrix.os }}
+    container: ${{ matrix.container }}
     steps:
     - name: Checkout xed
       uses: actions/checkout@v2

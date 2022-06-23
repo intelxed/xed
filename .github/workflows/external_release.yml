@@ -79,3 +79,4 @@ jobs:
           git push --delete external "${{steps.get-version.outputs.version}}" || true
           git tag --force "${{steps.get-version.outputs.version}}" -a -F ../body.txt ${{ github.sha }}
           git push external "${{steps.get-version.outputs.version}}"
+          

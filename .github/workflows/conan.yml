@@ -12,6 +12,7 @@ jobs:
     runs-on:
       - self-hosted
       - xed-runners
+      - Linux
     container:
       image: ger-is-registry.caas.intel.com/bit/xed:latest
     steps:
