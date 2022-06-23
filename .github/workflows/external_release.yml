@@ -9,6 +9,7 @@ jobs:
     runs-on:
       - self-hosted
       - xed-runners
+      - Linux
     steps:
       - name: Checkout external branch
         uses: actions/checkout@v3

@@ -28,6 +28,7 @@ jobs:
     runs-on:
       - self-hosted
       - xed-runners
+      - Linux
     outputs:
       mbuild_branch: ${{ steps.branches.outputs.mbuild_branch }}
       xedext_branch: ${{ steps.branches.outputs.xedext_branch }}
