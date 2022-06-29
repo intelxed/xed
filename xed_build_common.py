@@ -66,13 +66,13 @@ def add_to_flags(env,s):
     env.add_to_var('CXXFLAGS',s)
 
 def compile_with_pin_crt_lin_mac_common_cplusplus(env):
-    env.add_to_var('LINKFLAGS','-lstlport-dynamic')
+    env.add_to_var('LINKFLAGS','-lc++abi')
+    env.add_to_var('LINKFLAGS','-lc++')
     env.add_to_var('CXXFLAGS','-fno-exceptions')
     env.add_to_var('CXXFLAGS', '-fno-rtti')
     
 def _compile_with_pin_crt_lin_mac_common(env):    
-    env.add_system_include_dir('%(pin_root)s/extras/stlport/include')
-    env.add_system_include_dir('%(pin_root)s/extras/libstdc++/include')
+    env.add_system_include_dir('%(pin_root)s/extras/cxx/include')
     env.add_system_include_dir('%(pin_root)s/extras/crt/include')
     env.add_system_include_dir(
         '%(pin_root)s/extras/crt/include/arch-%(bionic_arch)s')
