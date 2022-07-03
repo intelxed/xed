@@ -59,7 +59,7 @@ def get_python_cmds():
 
 def run(status: JobStatus, cmd, required=False, cwd=None):
     """run a command in subprocess and return status and stdout"""
-    sys.stdout.write(cmd)
+    sys.stdout.write(f'{cmd}\n')
     retval, output = run_subprocess(cmd, cwd=cwd)
     for line in output:
         sys.stdout.write(line)

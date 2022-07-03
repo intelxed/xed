@@ -17,6 +17,7 @@
 # END_LEGAL
 """ run CI checks """
 import os
+import platform
 import sys
 from typing import Dict
 import utils
@@ -104,8 +105,12 @@ def main():
         run(status, cmd, required=True)
 
     for pyver, pycmd in utils.get_python_cmds():
-
-        cmd = f'{pycmd} -m pip install --user ../mbuild'
+        
+        python_pip = 'python3'
+        if platform.system() in ['Darwin', 'Linux']:
+            # use python version with pip (No in system PATH)
+            python_pip = f'/opt/python3/37/bin/{python_pip}'
+        cmd = f'{python_pip} -m pip install --user ../mbuild'
         utils.run(status, cmd)
 
         # {32b,64b} x {shared,dynamic} link

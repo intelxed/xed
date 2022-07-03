@@ -6,6 +6,7 @@ on:
 env:
   PACKAGE_NAME: xed
   PACKAGE_REF: xed/${{github.sha}}@xed/ci
+  CONAN_USER_HOME: /tmp_proj/sde_admin
 jobs:
   conan:
     name: Conan
@@ -13,9 +14,8 @@ jobs:
       - self-hosted
       - xed-runners
       - Linux
-    container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
     steps:
+      - run: echo "/opt/python3/37/bin/" >> $GITHUB_PATH
       - name: Checkout
         uses: actions/checkout@v2
         with:

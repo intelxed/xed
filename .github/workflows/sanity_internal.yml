@@ -96,13 +96,10 @@ jobs:
             os: ["Linux"]
             include:
             - os: "Linux"
-              container:
-                image: ger-is-registry.caas.intel.com/bit/xed:latest
     runs-on:
       - self-hosted
       - xed-runners
       - ${{ matrix.os }}
-    container: ${{ matrix.container }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2

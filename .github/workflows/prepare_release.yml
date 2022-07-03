@@ -17,8 +17,6 @@ jobs:
       - self-hosted
       - xed-runners
       - Linux
-    container:
-      image: ger-is-registry.caas.intel.com/bit/xed:latest
     steps:
       - name: Setup node
         # We need to setup node.js in order for create pull request
