@@ -1,6 +1,6 @@
 # Intel X86 Encoder Decoder  (Intel XED)
 
-![.github/workflows/ci.yml](https://github.com/intelxed/xed/workflows/.github/workflows/ci.yml/badge.svg)
+[![XED-group Nightly](https://github.com/intel-restricted/libraries.isa.xed.xed-topsecret/actions/workflows/nightly.yml/badge.svg?event=schedule)](https://github.com/intel-restricted/libraries.isa.xed.xed-topsecret/actions/workflows/nightly.yml)
 
 ## Doxygen API manual and source build manual:
 
