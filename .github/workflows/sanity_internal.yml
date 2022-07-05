@@ -1,4 +1,25 @@
+# The workflow execute validation tests for the XEDEXT repository.
+# It can run in 3 different modes:
+#   1. Standard PR - All xed-group repos points to the "main" branch (except XEDEXT)
+#   2. Synced PR   - When source branch name is "sync/*", all xed-group repos points to the same XEDEXT PR branch name
+#   3. Manual trigger - The user manually set the repositories branches (and can add a note)
+
 name: Sanity
+###### Workflow setup for cross-OS execution support ######
+defaults:
+  run:
+    # Use bash on both Linux and Windows
+    shell: bash
+env:
+  # GitHub Actions loads Bash with no sources (Non-interactive mode with --noprofile and --norc).
+  # The BASH_ENV environment var will force source the specified file, even on the above mode.
+  # The .bashrc_xed source file is distributed across Linux and Windows by AVI auto-setup.
+  # 
+  # This source file is essential in order to to set the '\r' ignore flag on Cygwin bash.
+  BASH_ENV: "/tmp_proj/sde_admin/.bashrc_xed"
+###########################################################
+
+
 on:
   pull_request:
     branches:
@@ -28,11 +49,11 @@ jobs:
     runs-on:
       - self-hosted
       - xed-runners
-      - Linux
     outputs:
       mbuild_branch: ${{ steps.branches.outputs.mbuild_branch }}
       xedext_branch: ${{ steps.branches.outputs.xedext_branch }}
       checkout_action: ${{ steps.branches.outputs.checkout_action }}
+      test_matrix: ${{ steps.load_matrix.outputs.matrix }}
     steps:
       # if: Manually triggered. Grab branch names from workflow inputs
       - if: github.event_name == 'workflow_dispatch'
@@ -63,6 +84,13 @@ jobs:
           echo "::set-output name=checkout_action::${{ env.checkout_action }}"
           echo "::set-output name=mbuild_branch::${{ env.mbuild_branch }}"
           echo "::set-output name=xedext_branch::${{ env.xedext_branch }}"
+      - name: Checkout xed for reusable actions
+        uses: actions/checkout@v3
+      - name: Set test matrix
+        id: load_matrix
+        uses: ./.github/actions/load-matrix
+        with:
+          matrix_kind: sanity
       - name: step summary
         run: |
           echo "### ${{ env.checkout_action }}" >> $GITHUB_STEP_SUMMARY
@@ -92,36 +120,33 @@ jobs:
       ARCHVAL_OPTIONS: pppe=1 psmi=1 xed_top_secret=xed-topsecret
     strategy:
           fail-fast: false
-          matrix: 
-            os: ["Linux"]
-            include:
-            - os: "Linux"
+          matrix: ${{fromJson(needs.init.outputs.test_matrix)}}
     runs-on:
       - self-hosted
       - xed-runners
       - ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: xed
         fetch-depth: 0
     - name: Checkout mbuild
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: intel-innersource/libraries.isa.xed.mbuild
         ref: ${{ needs.init.outputs.mbuild_branch }}
         path: mbuild
         token: ${{ secrets.PAT }}
     - name: Checkout xedext
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: intel-restricted/libraries.isa.xed.xedext
         ref: ${{ needs.init.outputs.xedext_branch }}
         path: xedext
         token: ${{ secrets.PAT }}
     - name: Checkout xed-topsecret
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: intel-restricted/libraries.isa.xed.xed-topsecret
         path: xed-topsecret
@@ -130,15 +155,25 @@ jobs:
       run: |
           cd xed
           python3 .github/scripts/sanity_internal.py
-    # XED's Github developers can set notifications for failed workflows only (within 
-    # GitHub's notification settings).
-    # We don't need to receive notification for every passed action - It is too much! 
-    # But, receiving success notification of manually triggered event make sense...
-    # Therefore manually send a success mail notification for manually triggered events only.
-    - if: success() && (needs.init.outputs.checkout_action == 'Manual Trigger')
-      name: Send success summary mail on manual trigger
-      run: |
-          cd xed
-          python3 .github/scripts/send_mail.py --to-user ${{github.actor}} \
-          --subject='XED Sanity: Passed (${{ github.ref_name }})' \
-          --text="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+
+  # XED's Github developers can set notifications for failed workflows only (within
+  # GitHub's notification settings).
+  # We don't need to receive notification for every passed action - It is too much!
+  # But, receiving success notification of manually triggered event make sense...
+  # Therefore manually send a success mail notification for manually triggered events only.
+  send_mail_if_needed:
+    needs: [test, init]
+    # If we got here, then all previews jobs finished successfully. notify on Manual Trigger
+    if: needs.init.outputs.checkout_action == 'Manual Trigger'
+    runs-on:
+    - self-hosted
+    - xed-runners
+    steps:
+      - name: Checkout xed for reusable actions/scripts
+        uses: actions/checkout@v3
+      - name: Send success summary mail on manual trigger
+        run: >
+            python3 .github/scripts/send_mail.py --to-user ${{github.actor}} 
+            --subject='XED Sanity: Passed (${{ github.ref_name }})' 
+            --text="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"

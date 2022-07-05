@@ -17,6 +17,7 @@
 # END_LEGAL
 """ run CI checks """
 import os
+from pathlib import Path
 import platform
 import sys
 from typing import Dict
@@ -27,22 +28,22 @@ def all_instr(pyver, pycmd, status, kind):
     """Generate build command that tests decode-encode path of all the kind's available instructions"""
     size = 'x86-64'
     linkkind = 'static'
-    build_dir = f'obj-{kind}-{pyver}-{size}-{linkkind}'
+    build_dir = Path(Path().cwd(), f'obj-{kind}-{pyver}-{size}-{linkkind}').resolve(strict=False)
     flags = f'--kind {kind} --enc2-test-checked'
     cmd = f'{pycmd} ../xedext/xed_build.py {flags}  --build-dir={build_dir} host_cpu={size}'
     ok = utils.run(status, cmd)
 
     if ok:
-        cmd = f'{build_dir}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'
+        enc2tester = build_dir.joinpath('enc2-m64-a64', 'enc2tester-enc2-m64-a64') 
+        cmd = f'{enc2tester} --reps 1 --main --gnuasm > a.c'
         ok = utils.run(status, cmd)
 
-        if 1:  # FIXME: ignore error code for now.
+        if platform.system() == 'Linux':  # TBD - Add Windows support
             cmd = 'gcc a.c'
             utils.run(status, cmd)
 
-            if ok:
-                cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
-                utils.run(status, cmd)
+            cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
+            utils.run(status, cmd)
 
 
 def archval(pyver, pycmd, status):
