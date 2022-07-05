@@ -1,0 +1,22 @@
+name: Load Matrix of strategy
+description: Load Matrix of strategy
+inputs:
+  matrix_kind:
+    description: 'set test matrix kind (sanity or nightly)'
+    required: true
+    type: string
+outputs:
+  matrix:
+    description: "strategy matrix in Json format"
+    value: ${{ steps.read_matrix.outputs.json }}
+runs:
+  using: composite
+  steps:
+    - name: Generate and store test matrix
+      shell: bash
+      id: read_matrix
+      run: |
+        JSON=$(python3 .github/scripts/gen_matrix.py --${{inputs.matrix_kind}})
+        echo $JSON
+        echo "::set-output name=json::${JSON//%/%25}"
+        
