@@ -22,68 +22,66 @@ from datetime import datetime
 
 
 class JobStatus:
-    """record job status (success, failure and (retval,job) list"""
+  """record job status (success, failure and (retval,job) list"""
 
-    def __init__(self):
-        self.jobs = 0
-        self.fails = 0
-        self.successes = 0
-        self.start_time = datetime.now()
-        self.commands = []  # list of  tuples of (retval, command)
+  def __init__(self):
+    self.jobs = 0
+    self.fails = 0
+    self.successes = 0
+    self.start_time = datetime.now()
+    self.commands = []  # list of  tuples of (retval, command)
 
-    def __str__(self):
-        s = [f"JOBS: {self.jobs}, SUCCESSES: {self.successes}, FAILS: {self.fails}"]
+  def __str__(self):
+    s = [f"JOBS: {self.jobs}, SUCCESSES: {self.successes}, FAILS: {self.fails}"]
 
-        for index, (r, c) in enumerate(self.commands):
-            s.append(f"{index}: status: {r} cmd: {c}")
-        return os.linesep.join(s) + os.linesep
+    for index, (r, c) in enumerate(self.commands):
+      s.append(f"{index}: status: {r} cmd: {c}")
+    return os.linesep.join(s) + os.linesep
 
-    def print_fails(self):
-        """prints all failed tests separately"""
-        s = ["------------------[FAILED TESTS]------------------"]
+  def print_fails(self):
+    """prints all failed tests separately"""
+    s = ["------------------[FAILED TESTS]------------------"]
 
-        for index, (r, c) in enumerate(self.commands):
-            if r != 0:
-                s.append(f"{index}: status: {r} cmd: {c}")
+    for index, (r, c) in enumerate(self.commands):
+      if r != 0:
+        s.append(f"{index}: status: {r} cmd: {c}")
 
-        s.append("---------------------------------------------\n")
-        return os.linesep.join(s)
+    s.append("--------------------------------------------------\n")
+    return os.linesep.join(s)
 
-    def addjob(self, retval, cmd):
-        """adds a new job to the list of commands"""
-        self.jobs += 1
-        self.commands.append((retval, cmd))
+  def addjob(self, retval, cmd):
+    """adds a new job to the list of commands"""
+    self.jobs += 1
+    self.commands.append((retval, cmd))
 
-    def fail(self, retval, cmd):
-        """adds a new job to the list of commands and marks it as failed"""
-        self.fails += 1
-        self.addjob(retval, cmd)
+  def fail(self, retval, cmd):
+    """adds a new job to the list of commands and marks it as failed"""
+    self.fails += 1
+    self.addjob(retval, cmd)
 
-    def success(self, retval, cmd):
-        """adds a new job to the list of commands and marks it as successful"""
-        self.successes += 1
-        self.addjob(retval, cmd)
+  def success(self, retval, cmd):
+    """adds a new job to the list of commands and marks it as successful"""
+    self.successes += 1
+    self.addjob(retval, cmd)
 
-    def merge(self, status):
-        """merge status object"""
-        self.jobs += status.jobs
-        self.fails += status.fails
-        self.successes += status.successes
-        self.commands.extend(status.commands)
+  def merge(self, status):
+    """merge status object"""
+    self.jobs += status.jobs
+    self.fails += status.fails
+    self.successes += status.successes
+    self.commands.extend(status.commands)
 
-    def pass_rate_fraction(self):
-        """calculate success rate"""
-        return f'{self.successes}/{self.jobs}'
+  def pass_rate_fraction(self):
+    """calculate success rate"""
+    return f'{self.successes}/{self.jobs}'
 
-    def report_and_exit(self):
-        """Print tests summary and exit with status equal to the number of failures"""
-        sys.stdout.write(str(self))
-        sys.stdout.write(f'[ELAPSED TIME] {datetime.now() - self.start_time}\n')
+  def print_report(self):
+    """Print tests summary and return exit status equal to the number of failures"""
+    print(f'{"-"*40}\n' + str(self))
 
-        if self.fails:
-            sys.stdout.write(self.print_fails())
+    if self.fails:
+      print(self.print_fails())
 
-        sys.stdout.write("[FINAL STATUS] {}\n".format("PASS" if not self.fails else "FAIL"))
-        sys.stdout.flush()
-        sys.exit(self.fails)
-
+    print("[FINAL STATUS] {}\n".format(
+        "PASS" if not self.fails else "FAIL"), flush=True)
+    return self.fails

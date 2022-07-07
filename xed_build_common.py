@@ -268,9 +268,6 @@ def set_env_gnu(env):
             # -fvisibility=hidden only works on gcc>4. If not gcc,
             # assume it works. Really only a problem for older icc
             # compilers.
-            if env['compiler'] == 'gcc':
-                vstr = _gcc_version_string(env)
-                mbuild.msgb("GCC VERSION", vstr)
             if env['compiler'] != 'gcc' or _greater_than_gcc(env,4,0,0):
                 hidden = ' -fvisibility=hidden' 
                 env['LINKFLAGS'] += hidden
@@ -286,6 +283,9 @@ def set_env_gnu(env):
     #env['CCFLAGS'] += ' -Wmissing-prototypes'
 
     env['CXXFLAGS'] += flags
+
+    if env['compiler'] in ['gcc', 'gnu']:
+        mbuild.msgb("GCC VERSION", _gcc_version_string(env))
 
 def set_env_clang(env):
    set_env_gnu(env)
@@ -337,6 +337,8 @@ def set_env_ms(env):
     #flags += ' /Zm200'
     env['CCFLAGS'] += flags
     env['CXXFLAGS'] += cxxflags + " " + flags
+
+    mbuild.msgb("MSVS VERSION", env['msvs_version'])
 
 def intel_compiler_disables(env):
     """Return a comma separated string of compile warning number disables
