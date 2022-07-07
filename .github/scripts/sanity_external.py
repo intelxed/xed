@@ -15,52 +15,59 @@
 #  limitations under the License.
 #
 # END_LEGAL
-""" run CI checks """
+""""XED External Sanity Check"""
+from pathlib import Path
 import sys
 import utils
 
 
-def main():
-    status = utils.JobStatus()
+def main(env):
+    cwd = Path.cwd().resolve()
+    # clean test dirs
+    kits_dir = Path(cwd, 'kits')
+    print('Cleaning old sanity kits...\n', flush=True)
+    utils.clean_test_kits(kits_dir)
 
-    for pyver, pycmd in utils.get_python_cmds():
-        cmd = f'{pycmd} -m pip install --user ./mbuild'
-        utils.run(status, cmd)
+    cmd = f'{env["pycmd"]} -m pip install --user ../mbuild'
+    utils.run_worker(cmd, required=True)
 
-        # {32b,64b} x {shared,dynamic} link
-        for size in ['ia32', 'x86-64']:
-            for linkkind, link in [('static', ''), ('dynamic', '--shared')]:
-                build_dir = f'obj-general-{pyver}-{size}-{linkkind}'
-                cmd = f'{pycmd} mfile.py --build-dir={build_dir} host_cpu={size} {link} test'
-                utils.run(status, cmd)
+    # Prepare |
+    # Generate build commands
+    commands = []
+    xed_builder = 'mfile.py'
+    flags='test'
+    # {32b,64b} x {shared,dynamic} link
+    for size in ['ia32', 'x86-64']:
+        for linkkind, link in [('static', ''), ('dynamic', ' --shared')]:
+            dir = f'obj-general-{env["pyver"]}-{size}-{linkkind}'
+            build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
+            cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + link)
+            commands.append(cmd)
 
-        # do a build with asserts enabled
-        build_dir = f'obj-assert-{pyver}-x86-64'
-        cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu=x86-64 test'
-        utils.run(status, cmd)
+    # do a build with asserts enabled
+    size = 'x86-64'
+    dir = f'obj-assert-{env["pyver"]}-{size}'
+    build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + ' --assert')
+    commands.append(cmd)
 
-        # check enc-dec for all instructions
-        build_dir = f'obj-enc2-{pyver}-x86-64-static'
-        cmd = f'{pycmd} mfile.py --enc2-test-checked --build-dir={build_dir} host_cpu=x86-64 test'
-        ok = utils.run(status, cmd)
-        if ok:
-            cmd = f'{build_dir}/enc2-m64-a64/enc2tester-enc2-m64-a64 --reps 1 --main --gnuasm > a.c'
-            ok = utils.run(status, cmd)
-            if ok:
-                cmd = 'gcc a.c'
-                utils.run(status, cmd)
-                if ok:
-                    cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
-                    utils.run(status, cmd)
+    # enc2test - test encode-decode path of all instructions
+    cmd_enc2test_ext = utils.gen_enc2test_cmd(env, xed_builder, kits_dir, '', flags='test')
+    commands = [cmd_enc2test_ext] + commands  # enc2test is a long test, run it first
 
-        # knc test
-        build_dir = f'obj-knc-{pyver}-x86-64-static'
-        cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
-        utils.run(status, cmd)
+    # run
+    res_mp = utils.run_multiprocess(env, commands)
+    exit_status = utils.report_multiprocess(res_mp)
 
-        status.report_and_exit()
+    # Finalize
+    if exit_status == 0:
+        print(f'[Validation PASSED] Cleaning test kits...\n', flush=True)
+        utils.clean_test_kits(kits_dir)
+
+    return exit_status
 
 
 if __name__ == "__main__":
-    main()
-    sys.exit(0)
+    env = utils.setup()
+    exit_status = main(env)
+    sys.exit(exit_status)

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- python -*-
 # BEGIN_LEGAL
 #
 # Copyright (c) 2022 Intel Corporation
@@ -15,134 +17,64 @@
 #  limitations under the License.
 #
 # END_LEGAL
-""" run CI checks """
-import os
+""""XED Internal Sanity Check"""
 from pathlib import Path
-import platform
 import sys
-from typing import Dict
 import utils
 
 
-def all_instr(pyver, pycmd, status, kind):
-    """Generate build command that tests decode-encode path of all the kind's available instructions"""
+def main(env):
+    cwd = Path.cwd().resolve()
+    # clean test dirs
+    kits_dir = Path(cwd, 'kits')
+    print('Cleaning old sanity kits...\n', flush=True)
+    utils.clean_test_kits(kits_dir)
+
+    # Prepare |
+    # Generate build commands
+    commands = []
+    xed_builder = 'mfile.py'
+    xedext_builder = '../xedext/xed_build.py'
+    flags='test'
+    # {32b,64b} x {shared,dynamic} link
+    for size in ['ia32', 'x86-64']:
+        for linkkind, link in [('static', ''), ('dynamic', ' --shared')]:
+            dir = f'obj-general-{env["pyver"]}-{size}-{linkkind}'
+            build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
+            cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + link)
+            commands.append(cmd)
+
+    # do a build with asserts enabled
     size = 'x86-64'
-    linkkind = 'static'
-    build_dir = Path(Path().cwd(), f'obj-{kind}-{pyver}-{size}-{linkkind}').resolve(strict=False)
-    flags = f'--kind {kind} --enc2-test-checked'
-    cmd = f'{pycmd} ../xedext/xed_build.py {flags}  --build-dir={build_dir} host_cpu={size}'
-    ok = utils.run(status, cmd)
+    dir = f'obj-assert-{env["pyver"]}-{size}'
+    build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + ' --assert')
+    commands.append(cmd)
 
-    if ok:
-        enc2tester = build_dir.joinpath('enc2-m64-a64', 'enc2tester-enc2-m64-a64') 
-        cmd = f'{enc2tester} --reps 1 --main --gnuasm > a.c'
-        ok = utils.run(status, cmd)
+    # arch val test
+    kind = 'architectural-val'
+    build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + kind)
+    cmd = utils.gen_build_cmd(env, xedext_builder, kind, build_dir, 'x86-64', '--no-install')
+    commands.append(cmd)
 
-        if platform.system() == 'Linux':  # TBD - Add Windows support
-            cmd = 'gcc a.c'
-            utils.run(status, cmd)
+    # enc2test - test encode-decode path of all instructions
+    cmd_enc2test_ext = utils.gen_enc2test_cmd(env, xed_builder, kits_dir, '', flags='test')
+    cmd_enc2test_int = utils.gen_enc2test_cmd(env, xedext_builder, kits_dir, 'internal-conf')
+    commands = [cmd_enc2test_ext, cmd_enc2test_int] + commands  # enc2test is a long test, run it first
 
-            cmd = f'{build_dir}/wkit/bin/xed -i a.out > all.dis'
-            utils.run(status, cmd)
+    # run
+    res_mp = utils.run_multiprocess(env, commands)
+    exit_status = utils.report_multiprocess(res_mp)
 
+    # Finalize
+    if exit_status == 0:
+        print(f'[Validation PASSED] Cleaning test kits...\n', flush=True)
+        utils.clean_test_kits(kits_dir)
 
-def archval(pyver, pycmd, status):
-    """Build and test the architectural-val kind"""
-    size = 'x86-64'
-    linkkind = 'static'
-    build_dir = f'obj-archval-{pyver}-{size}-{linkkind}'
-    flags = f"--kind architectural-val {os.getenv('ARCHVAL_OPTIONS')}"
-    cmd = f'{pycmd} ../xedext/xed_build.py {flags} --build-dir={build_dir} host_cpu={size}'
-    utils.run(status, cmd)
-
-
-def get_branches_from_file() -> Dict[str, str]:
-    """retrieves the branches from a specific file and returns a mapping from repository to respective branch"""
-    f = open("../../misc/ci-branches.txt", "r")
-    lines = f.readlines()
-    f.close()
-    d = {}
-    for x in lines:
-        x = x.strip()
-        a = x.split()
-        repo = a[0]
-        branch = a[1]
-        print(f"READING REPO: {repo}  TO BRANCH: {branch}")
-        d[repo] = branch
-    return d
-
-
-def checkout_branches(status, branches):
-    """checkout to given branches in respective repositories"""
-    for repo, branch in branches.items():
-        print(f"CHANGING REPO: {repo}  TO BRANCH: {branch}")
-        utils.run(status, f"git checkout {branch}", cwd=repo)
-
-
-def main():
-    status = utils.JobStatus()
-
-    # IPLDT scan XED and MBUILD
-    if 0:  # disabled until get  right branch
-        # obtain IPLDT scanner tool
-        bintools_git = git_base + 'binary-tools.git'
-        cmd = f'git clone --depth 1 {bintools_git} binary-tools'
-        run(status, cmd, required=True)
-
-        # clone another copy of xed sources just for IPLDT scanning
-        # FIXME: need to get the branch we are testing!
-        xed_git = git_base + 'xed.git'
-        cmd = f'git clone --depth 1 {xed_git} xed'
-        run(status, cmd, required=True)
-
-        cmd = 'binary-tools/lin/ipldt3 -i xed -r ipldt-results-xed'
-        run(status, cmd, required=False)
-        cmd = 'cat ipldt-results-xed/ipldt_results.txt'
-        run(status, cmd, required=True)
-
-        cmd = 'binary-tools/lin/ipldt3 -i mbuild -r ipldt-results-mbuild'
-        run(status, cmd, required=False)
-        cmd = 'cat ipldt-results-mbuild/ipldt_resuplts.txt'
-        run(status, cmd, required=True)
-
-    for pyver, pycmd in utils.get_python_cmds():
-        
-        python_pip = 'python3'
-        if platform.system() in ['Darwin', 'Linux']:
-            # use python version with pip (No in system PATH)
-            python_pip = f'/opt/python3/37/bin/{python_pip}'
-        cmd = f'{python_pip} -m pip install --user ../mbuild'
-        utils.run(status, cmd)
-
-        # {32b,64b} x {shared,dynamic} link
-        for size in ['ia32', 'x86-64']:
-            for linkkind, link in [('static', ''), ('dynamic', '--shared')]:
-                build_dir = f'obj-general-{pyver}-{size}-{linkkind}'
-                cmd = f'{pycmd} mfile.py --build-dir={build_dir} host_cpu={size} {link} test'
-                utils.run(status, cmd)
-
-        # do a build with asserts enabled
-        build_dir = f'obj-assert-{pyver}-x86-64'
-        cmd = f'{pycmd} mfile.py --asserts --build-dir={build_dir} host_cpu=x86-64 test'
-        utils.run(status, cmd)
-
-        # all instr tests
-        all_instr(pyver, pycmd, status, 'internal-conf')
-        all_instr(pyver, pycmd, status, 'external')
-
-        # arch val test
-        archval(pyver, pycmd, status)
-
-        # knc test
-        size = 'x86-64'
-        linkkind = 'static'
-        build_dir = f'obj-knc-{pyver}-{size}-{linkkind}'
-        cmd = f'{pycmd} mfile.py --knc --build-dir={build_dir} host_cpu={size} test'
-        utils.run(status, cmd)
-
-        status.report_and_exit()
+    return exit_status
 
 
 if __name__ == "__main__":
-    main()
-    sys.exit(0)
+    env = utils.setup()
+    exit_status = main(env)
+    sys.exit(exit_status)

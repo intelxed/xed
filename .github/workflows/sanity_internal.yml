@@ -116,8 +116,6 @@ jobs:
 
   test:
     needs: init
-    env:
-      ARCHVAL_OPTIONS: pppe=1 psmi=1 xed_top_secret=xed-topsecret
     strategy:
           fail-fast: false
           matrix: ${{fromJson(needs.init.outputs.test_matrix)}}
@@ -145,16 +143,10 @@ jobs:
         ref: ${{ needs.init.outputs.xedext_branch }}
         path: xedext
         token: ${{ secrets.PAT }}
-    - name: Checkout xed-topsecret
-      uses: actions/checkout@v3
-      with:
-        repository: intel-restricted/libraries.isa.xed.xed-topsecret
-        path: xed-topsecret
-        token: ${{ secrets.PAT }}
     - name: test
       run: |
           cd xed
-          python3 .github/scripts/sanity_internal.py
+          python3 .github/scripts/sanity_internal.py --compiler=${{matrix.compiler}} --version=${{matrix.ver}}
 
 
   # XED's Github developers can set notifications for failed workflows only (within

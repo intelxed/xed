@@ -6,22 +6,37 @@ on:
   workflow_dispatch:
 
 jobs:
+  init:
+    runs-on:
+      - self-hosted
+      - xed-runners
+    outputs:
+      test_matrix: ${{ steps.load_matrix.outputs.matrix }}
+    steps:
+      - name: Checkout xed for reusable actions
+        uses: actions/checkout@v3
+      - name: Set test matrix
+        id: load_matrix
+        uses: ./.github/actions/load-matrix
+        with:
+          matrix_kind: nightly
+
   test:
+    needs: init
     strategy:
           fail-fast: false
-          matrix: 
-            os: ["Linux"]
-            include:
-            - os: "Linux"
+          matrix: ${{fromJson(needs.init.outputs.test_matrix)}}
     runs-on:
       - self-hosted
       - xed-runners
       - ${{ matrix.os }}
     steps:
     - name: Checkout xed
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+      with:
+        path: xed
     - name: Checkout mbuild
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: intelxed/mbuild
         ref: main
@@ -29,4 +44,5 @@ jobs:
         token: ${{ secrets.PAT }}
     - name: test
       run: |
-          python3 .github/scripts/sanity_external.py
+          cd xed
+          python3 .github/scripts/sanity_external.py --compiler=${{matrix.compiler}} --version=${{matrix.ver}}
