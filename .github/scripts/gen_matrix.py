@@ -14,6 +14,19 @@ class Axis:
   compiler: str
   ver: str
 
+  def __lt__(self, other):
+    assert (self.compiler ==
+            other.compiler), 'Can not compare different compiler versions'
+    default_ver = [0, 0, 0]
+    # Convert string to array of integers
+    my_ver = [int(i) for i in self.ver.split('.')]
+    other_ver = [int(i) for i in other.ver.split('.')]
+    # Force 3 elements list (Major, minor, patch)
+    # If element is missing, fill with zeros
+    my_ver = [my_ver + default_ver][:3]
+    other_ver = [other_ver + default_ver][:3]
+    return my_ver < other_ver
+
 
 @dataclasses.dataclass
 class Matrix:
@@ -71,13 +84,14 @@ def setup():
 
 def get_latest_version(compiler):
   '''return a string of the latest supported compiler version'''
-  latest = float(0)
-  for d in nightly_matrix['include']:
-    if d['compiler'] == compiler and latest < float(d['version']):
-      latest = d['version']
+  zero_v = '0'
+  latest = Axis(os='', compiler=compiler, ver=zero_v)
+  for d in nightly_matrix.include:
+    if d.compiler == compiler and latest < d:
+      latest = d
 
-  assert latest, f'Could not find latest version of {compiler}'
-  return str(latest)
+  assert latest.ver != zero_v, f'Could not find latest version of {compiler}'
+  return str(latest.ver)
 
 
 if __name__ == "__main__":
