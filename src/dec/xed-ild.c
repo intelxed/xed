@@ -329,12 +329,9 @@ out:
     }
 }
 
-#if defined(XED_AVX) || defined(XED_SUPPORTS_KNC)
+#if defined(XED_AVX)
 //VEX_PREFIX use 2 as F2 and 3 as F3 so table is required.
 static unsigned int vex_prefix_recoding[/*pp*/] = { 0,1,3,2 };
-#endif
-
-#if defined(XED_AVX)
 
 typedef union { // C4 payload 1
     struct {
@@ -1101,11 +1098,11 @@ static void opcode_scanner(xed_decoded_inst_t* d)
 }
 
 //////////////////////////////////////////////////////////////////////////
-// KNC/AVX512 EVEX and EVEX-IMM8 scanners
+// AVX512 EVEX and EVEX-IMM8 scanners
 
-#if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
+#if defined(XED_SUPPORTS_AVX512)
 
-typedef union { // Common KNC & AVX512
+typedef union { // AVX512
     struct {
         xed_uint32_t map:4;
         xed_uint32_t rr_inv:1;
@@ -1124,7 +1121,7 @@ typedef union { // Common KNC & AVX512
     xed_uint32_t u32;
 } xed_avx512_payload1_t;
 
-typedef union { // Common KNC & AVX512
+typedef union { // AVX512
     struct {
         xed_uint32_t pp:2;
         xed_uint32_t ubit:1;
@@ -1135,18 +1132,6 @@ typedef union { // Common KNC & AVX512
     } s;
     xed_uint32_t u32;
 } xed_avx512_payload2_t;
-
-typedef union{  // KNC only
-    struct  {
-        xed_uint32_t mask:3;
-        xed_uint32_t vexdest4p:1;
-        xed_uint32_t swiz:3;
-        xed_uint32_t nr:1;
-        xed_uint32_t pad:24;
-    } s;
-    xed_uint32_t u32;
-} xed_knc_payload3_t;
-
 
 typedef union{  // AVX512 only
     struct  {
@@ -1216,7 +1201,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
         if (length + 4 < max_bytes) {
             xed_avx512_payload2_t evex2;
             xed_uint_t eff_map;
-            xed_bool_t avx512 = 0;
+            xed_bool_t evex = 0;
 
             evex2.u32 = xed_decoded_inst_get_byte(d, length+2);
 
@@ -1237,31 +1222,17 @@ static void evex_scanner(xed_decoded_inst_t* d)
             xed3_operand_set_vex_prefix(d,vex_prefix_recoding[evex2.s.pp]);
 
             eff_map = evex1.s.map;
-#if defined(XED_SUPPORTS_KNC)
-            if (xed_ild_map_valid_knc(eff_map) == 0) {
-                xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
-                bad_map(d);
-                return; 
-            }
-
-            avx512 = xed3_operand_get_ubit(d);
-            if (avx512==0)
-                xed3_operand_set_vexvalid(d, 4); // KNC EVEX U=0 req'd
-            else
-                xed3_operand_set_vexvalid(d, 2); // AVX512 EVEX U=1 req'd
-#else
             if (xed_ild_map_valid_evex(eff_map) == 0) {
                 xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
                 bad_map(d);
                 return;
             }
 
-            avx512 = xed_ild_extension_handle_ubit_avx512(d);
-#endif
+            evex = xed_ild_extension_handle_ubit_avx512(d);
 
-            if (avx512)
-            {
 #if defined(XED_SUPPORTS_AVX512)
+            if (evex)
+            {
                 xed_avx512_payload3_t evex3;
                 evex3.u32 = xed_decoded_inst_get_byte(d, length+3);
 
@@ -1280,20 +1251,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 xed3_operand_set_mask(d, evex3.s.mask);
                 if (evex3.s.mask == 0 && evex3.s.z == 1)
                     bad_z_aaa(d);
-#endif
-            }
-#if defined(XED_SUPPORTS_KNC)            
-            else // KNC
-            {
-                const xed_uint_t vl_512=2;
-                xed_knc_payload3_t evex3;
-                evex3.u32 = xed_decoded_inst_get_byte(d, length+3);
-                set_vl(d, vl_512); //Indicates vector length 512b
-
-                xed3_operand_set_nr(d, evex3.s.nr);
-                xed3_operand_set_swiz(d, evex3.s.swiz);
-                xed3_operand_set_vexdest4(d, ~evex3.s.vexdest4p&1);
-                xed3_operand_set_mask(d, evex3.s.mask);
             }
 #endif
             
@@ -1458,8 +1415,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     if (!xed3_operand_get_no_vex(ild))
         vex_scanner(ild);
 #endif
-#if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
-
+#if defined(XED_SUPPORTS_AVX512)
     // evex scanner assumes it can read bytes so we must check for limit first.
     if (xed3_operand_get_out_of_bytes(ild) ||
         xed3_operand_get_error(ild))
@@ -1468,15 +1424,10 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
     if (!xed3_operand_get_vexvalid(ild)) {
-#if defined(XED_SUPPORTS_KNC)
-        // Always scan for EVEX prefixes (No AVX512 in KNC build)
-        evex_scanner(ild);
-#else
         if (chip_supports_avx512(ild)) {
             // Scan EVEX prefixes only if chip supports AVX512
             evex_scanner(ild);
         }
-#endif
     }
 #endif
 

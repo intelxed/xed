@@ -81,13 +81,8 @@ xed_int64_t  xed_operand_values_get_memory_displacement_int64(
           
           // converted to bytes
           xed_int64_t element_size = xed3_operand_get_element_size(p)>>3; 
-
-
-          // the loadunpack & packstore instructions ignore the number of
-          // elements
-          if (xed3_operand_get_no_scale_disp8(p))
-              nelem = 1;
           
+                    
           odisp = disp * nelem * element_size;
           /* printf("DISP: " XED_FMT_LX16 " NELEM
                     " XED_FMT_LD " SIZE " XED_FMT_LD

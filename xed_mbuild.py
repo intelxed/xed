@@ -592,7 +592,6 @@ def mkenv():
                                  default_isa='',
                                  avx=True,
                                  avx512=True,
-                                 knc=False,
                                  ivb=True,
                                  hsw=True,
                                  mpx=True,
@@ -748,10 +747,6 @@ def xed_args(env):
                           dest="default_isa",
                           help="Override the default ISA files.cfg file")
 
-    env.parser.add_option("--knc",
-                          action="store_true",
-                          dest="knc", 
-                          help="Include KNC support")
     env.parser.add_option("--no-avx",
                           action="store_false",
                           dest="avx", 
@@ -1261,8 +1256,6 @@ def _configure_libxed_extensions(env):
 
     if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr']):
         env.add_define('XED_SUPPORTS_AVX512')
-    if env['knc']:
-        env.add_define('XED_SUPPORTS_KNC')
     if env['mpx']:
         env.add_define('XED_MPX')
     if env['cet']:
@@ -1315,12 +1308,6 @@ def _configure_libxed_extensions(env):
         if e not in tenv['extf']:
             tenv['extf'].append( e )
 
-    if env['knc']:
-        if env['knm'] or env['knl'] or env['skx']:
-            _add_normal_ext(env,'knc', 'files-with-avx512f.cfg')
-        else:
-            _add_normal_ext(env,'knc', 'files-no-avx512f.cfg')
-            
     if env['mpx']: # MPX first on GLM or SKL
         _add_normal_ext(env,'mpx')
     if env['cet']:
@@ -1349,8 +1336,7 @@ def _configure_libxed_extensions(env):
     _add_normal_ext(env,'movdir')
     _add_normal_ext(env,'waitpkg')
     _add_normal_ext(env,'cldemote')
-    if not env['knc']:
-        _add_normal_ext(env,'sgx-enclv') 
+    _add_normal_ext(env,'sgx-enclv') 
 
     if env['avx']:
         _add_normal_ext(env,'avx')
@@ -1393,7 +1379,6 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'vpopcntdq-512')
             
         if env['skx'] or env['knl'] or env['knm']:
-            _add_normal_ext(env,'avx512f','shared-files.cfg')
             _add_normal_ext(env,'avx512f')
             _add_normal_ext(env,'avx512cd')
         if env['skx']:
@@ -2514,7 +2499,7 @@ def _run_canned_tests(env,osenv):
     wkit = env['wkit']
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
-    dirs = ['tests-base', 'tests-knc', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx']
+    dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2529,8 +2514,6 @@ def _run_canned_tests(env,osenv):
         codes.append('DEC')
     if env['avx']:
         codes.append('AVX')
-    if env['knc']:
-        codes.append('KNC')
     if env['skx']:
         codes.append('AVX512X')
     if env['spr']:
@@ -2646,22 +2629,6 @@ def verify_args(env):
         env['cet'] = False
         env['spr'] = False
     if not env['spr']:
-        env['future'] = False
-        
-    if env['knc']: 
-        mbuild.warn("Disabling AMD, AVX512, FUTURE, for KNC build\n\n\n")
-        env['amd_enabled']=False
-        env['knl'] = False
-        env['knm'] = False
-        env['skx'] = False
-        env['clx'] = False
-        env['cpx'] = False
-        env['cnl'] = False
-        env['icl'] = False
-        env['tgl'] = False
-        env['spr'] = False
-        env['adl'] = False
-        env['cet'] = False
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:

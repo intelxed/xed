@@ -2270,8 +2270,6 @@ class encoder_configuration_t(object):
                 iform.priority = 2
         elif 'VEXVALID=3' in ipattern: # XOP
             iform.priority = 3
-        elif 'VEXVALID=4' in ipattern: # KNC
-            iform.priority = 3
         else:  # EVERYTHING ELSE
             iform.priority = 1
 

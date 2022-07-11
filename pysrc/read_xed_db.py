@@ -599,9 +599,6 @@ class xed_reader_t(object):
             elif p0 == 'VEXVALID=2':
                 v.space = 'evex'
                 opcode = pattern[1]
-            elif p0 == 'VEXVALID=4': #KNC
-                v.space = 'evex.u0'
-                opcode = pattern[1]
             elif p0 == 'VEXVALID=3':
                 v.space = 'xop'
                 opcode = pattern[1]

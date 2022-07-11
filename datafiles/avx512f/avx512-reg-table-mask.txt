@@ -16,9 +16,6 @@
 #  
 #END_LEGAL
 
-# FIXME: the rest of this file is common w/KNC. Split it out to avoid
-#  duplication
-
 xed_reg_enum_t MASK1()::
 MASK=0x0  | OUTREG=XED_REG_K0
 MASK=0x1  | OUTREG=XED_REG_K1

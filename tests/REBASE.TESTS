@@ -1,2 +1,1 @@
 ./run-cmd.py --build-dir ../obj/wkit/bin   --rebase-tests --tests tests-base --tests tests-avx512  --tests tests-xop --tests test-avx512pf --tests tests-cet  --tests tests-via --tests tests-syntax --tests tests-amx
-./run-cmd.py --build-dir ../obj-knc/wkit/bin --rebase-tests --tests tests-knc

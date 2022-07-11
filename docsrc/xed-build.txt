@@ -362,7 +362,6 @@ Options:
                         which the     config file is located
   --default-isa-extf=DEFAULT_ISA
                         Override the default ISA files.cfg file
-  --knc                 Include KNC support
   --no-avx              Do not include AVX
   --no-xsaveopt         Do not include XSAVEOPT
   --no-ivbavx           Do not include AVX for IVB.

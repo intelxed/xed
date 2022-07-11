@@ -5,8 +5,6 @@
 
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-amx   -b bulk-tests/amx-bulk-tests.txt
 
-./run-cmd.py --build-dir ../obj-knc/wkit/bin --otests tests-knc  -b bulk-tests/knc-bulk-tests.txt 
-
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-xop  -b bulk-tests/amd-xop-bulk-tests.txt
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-cet  -b bulk-tests/cet-tests.txt
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-via  -b bulk-tests/via-padlock-tests.txt 

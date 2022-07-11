@@ -26,10 +26,7 @@ xed_bool_t xed_ild_extension_handle_ubit_avx512(xed_decoded_inst_t *d)
 {
     xed_bool_t ubit = xed3_operand_get_ubit(d);
 
-    // When not supporting KNC, we put KNC (EVEX.U=0)
-    // stuff in vv=2(EVEX) and let the UBIT error tank it later.
     xed3_operand_set_vexvalid(d, 2);
-
     if (ubit==0)
         xed3_operand_set_error(d, XED_ERROR_BAD_EVEX_UBIT);
 
