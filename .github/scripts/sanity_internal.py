@@ -19,6 +19,7 @@
 # END_LEGAL
 """"XED Internal Sanity Check"""
 from pathlib import Path
+import platform
 import sys
 import utils
 
@@ -38,7 +39,11 @@ def main(env):
     flags='test'
     # {32b,64b} x {shared,dynamic} link
     for size in ['ia32', 'x86-64']:
-        for linkkind, link in [('static', ''), ('dynamic', ' --shared')]:
+        link_options = [('static', ''), ('dynamic', ' --shared')]
+        if env['compiler'] == utils.CLANG and platform.system() == 'Windows':
+            # TODO - Fix clang dynamic build on windows (Jira SDE-3049)
+            link_options = [('static', '')]
+        for linkkind, link in link_options:
             dir = f'obj-general-{env["pyver"]}-{size}-{linkkind}'
             build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
             cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + link)

@@ -41,6 +41,16 @@ sanity_matrix = Matrix(
             ver='11.2.0'
         ),
         Axis(
+            os='Linux',
+            compiler='clang',
+            ver='14.0.6'
+        ),
+        Axis(
+            os='Windows',
+            compiler='clang',
+            ver='14.0.6'
+        ),
+        Axis(
             os='Windows',
             compiler='msvs',
             ver='17'  # Visual Studio 2022
@@ -56,6 +66,11 @@ nightly_matrix = Matrix(
             os='Linux',
             compiler='gcc',
             ver='10.2.1'
+        ),
+        Axis(
+            os='Linux',
+            compiler='clang',
+            ver='13.0.1'
         ),
         Axis(
             os='Windows',

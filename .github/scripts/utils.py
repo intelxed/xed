@@ -17,6 +17,7 @@
 # END_LEGAL
 
 import argparse
+from collections import defaultdict
 import itertools
 from multiprocessing import Pool, cpu_count
 from os import stat
@@ -28,104 +29,106 @@ from typing import List, Optional, Tuple
 from job_status import *
 from gen_matrix import get_latest_version
 
-
 ######### Globals #########
 GCC = 'gcc'
 GNU = 'gnu'
 MSVS = 'msvs'
-SUPPORTED_COMPILERS = [GCC, GNU, MSVS]
+CLANG = 'clang'
+SUPPORTED_COMPILERS = [GCC, GNU, MSVS, CLANG]
 KIT_PREFIX_PATT = 'xed-test-kit-'  # prefix name of the test kit directories
 
 
 ########## Setup ###########
 def get_compiler_build_flags(env):
-  """
-  Generates build string that specifies compiler and version
-  Use this string later as arguments for XED builder scripts
-  """
-  build_args = ''
-  compiler = env['compiler']
-  version = env['compiler_version'] if env['compiler_version'] else get_latest_version(
-      compiler)
+    """
+    Generates build string that specifies compiler and version
+    Use this string later as arguments for XED builder scripts
+    """
+    os_ver = platform.system()
+    compiler = env['compiler']
+    version = env['compiler_version'] if env['compiler_version'] else get_latest_version(compiler)
 
-  if compiler == MSVS:
-    build_args = f'--compiler=ms --msvs-version={version}'
+    if compiler == MSVS:
+        # Let mbuild find the needed toolchain
+        build_args = f'--compiler=ms --msvs-version={version}'
+    
+    elif compiler in [GNU, GCC]:
+        tool = f'/usr/local/{GCC}-{version}/bin/'
+        build_args = f'--toolchain={tool} '
+        build_args += f'--compiler={GNU} --{GCC}-version={version}'
 
-  if compiler in [GNU, GCC]:
-    if version in ['10', '10.2.1']:
-      bin = Path('/usr/local/gcc-10.2.1/bin/').resolve(strict=True)
-    elif version in ['11', '11.2.0']:
-      bin = Path(
-          '/nfs/iil/ptl/bistro/_common_tools/_CACHE/Linux/gcc-11.2.0/bin/').resolve(strict=True)
-    else:
-      assert False, f'Unsupported version ({version}) for {compiler}'
+    elif compiler in [CLANG]:
+        if os_ver == "Linux":
+            tool = f'/usr/local/{compiler}-{version}/bin/'
+        elif os_ver == "Windows":
+            tool = f'C:\\tools\\LLVM\\bin\\'
+        assert tool, 'Could not find CLANG path'
+        build_args = f'--toolchain={tool} '
+        build_args += f'--compiler={compiler}'
 
-    build_args = f'--compiler=gnu --toolchain={bin}/'
-
-  assert build_args, f'Unsupported compiler "{compiler}" / version "{version}"'
-  return build_args
+    return build_args
 
 
 def setup():
-  """Parse input arguments and return env dict"""
-  parser = argparse.ArgumentParser(
-      description='setup sanity for xed-group repository')
-  parser.add_argument('-j',
-                      dest='num_of_builds',
-                      help='number of parallel builds. Default = #of cores',
-                      type=int,
+    """Parse input arguments and return env dict"""
+    parser = argparse.ArgumentParser(
+        description='setup sanity for xed-group repository')
+    parser.add_argument('-j',
+                        dest='num_of_builds',
+                        help='number of parallel builds. Default = #of cores',
+                        type=int,
                       default=int(cpu_count()/2))  # == Number Of Cores
-  parser.add_argument('--compiler',
-                      dest='compiler',
-                      help='set compiler',
-                      type=str,
-                      default='',
-                      choices=SUPPORTED_COMPILERS)
-  parser.add_argument('--version',
-                      dest='compiler_version',
-                      help='set compiler version. Default is the latest supported version',
-                      type=str,
-                      default='')
+    parser.add_argument('--compiler',
+                        dest='compiler',
+                        help='set compiler',
+                        type=str,
+                        default='',
+                        choices=SUPPORTED_COMPILERS)
+    parser.add_argument('--version',
+                        dest='compiler_version',
+                        help='set compiler version. Default is the latest supported version',
+                        type=str,
+                        default='')
 
-  args, extra_args = parser.parse_known_args()
-  env = vars(args)
-  env['extra_build_args'] = ' '.join(extra_args)
-  env['compiler_flags'] = ''
-  if env['compiler']:
-    env['compiler_flags'] = get_compiler_build_flags(env)
+    args, extra_args = parser.parse_known_args()
+    env = vars(args)
+    env['extra_build_args'] = ' '.join(extra_args)
+    env['compiler_flags'] = ''
+    if env['compiler']:
+        env['compiler_flags'] = get_compiler_build_flags(env)
 
-  env['pyver'], env['pycmd'] = ('3.x', 'python3')
+    env['pyver'], env['pycmd'] = ('3.x', 'python3')
 
-  return env
+    return env
 
 
 ##### Run process #######
 def ensure_string(x):
-  """handle non unicode output"""
-  if isinstance(x, bytes):
-    try:
-      return x.decode('utf-8')
-    except:
-      return ''
-  return x
+    """handle non unicode output"""
+    if isinstance(x, bytes):
+        try:
+            return x.decode('utf-8')
+        except:
+            return ''
+    return x
 
 
 def run_subprocess(cmd, **kwargs):
-  """front end to running subprocess"""
-  sub = subprocess.Popen(cmd,
-                         shell=True,
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.STDOUT,
-                         **kwargs)
-  lines = sub.stdout.readlines()
-  lines = [ensure_string(x) for x in lines]
-  sub.wait()
-  return sub.returncode, lines
+    """front end to running subprocess"""
+    sub = subprocess.Popen(cmd,
+                           shell=True,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT,
+                           **kwargs)
+    lines = sub.stdout.readlines()
+    lines = [ensure_string(x) for x in lines]
+    sub.wait()
+    return sub.returncode, lines
 
 
 def run_worker(cmd_in: str, cwd: Optional[str] = None,
                required: bool = False) -> Tuple[JobStatus, str]:
-  """
+    """
   run cmd_in as a single subprocess
   Arguments:
       cmd_in: string of commands to execute. use ';' as a serialized multi commands separator
@@ -133,112 +136,112 @@ def run_worker(cmd_in: str, cwd: Optional[str] = None,
   Returns:
       Tuple of (JabStatus object, run output)
   """
-  res = []
-  if ';' in cmd_in:
-    # execute several commands serially
-    commands = cmd_in.split(';')
-  else:
-    commands = [cmd_in]
-
-  for c in commands:
-    status = JobStatus()
-    print(f'[RUNNING] {c}', flush=True)
-    retval, output = run_subprocess(c, cwd=cwd)
-    if retval == 0:
-      status.success(retval, c)
+    res = []
+    if ';' in cmd_in:
+        # execute several commands serially
+        commands = cmd_in.split(';')
     else:
-      status.fail(retval, c)
-      if required:
-        print(''.join(output))
-        print(f"[FAIL] retval = {retval}\nExit...")
-        sys.exit(status.print_report())
-    res.append((status, output))
+        commands = [cmd_in]
 
-  return res
+    for c in commands:
+        status = JobStatus()
+        print(f'[RUNNING] {c}', flush=True)
+        retval, output = run_subprocess(c, cwd=cwd)
+        if retval == 0:
+            status.success(retval, c)
+        else:
+            status.fail(retval, c)
+            if required:
+                print(''.join(output))
+                print(f"[FAIL] retval = {retval}\nExit...")
+                sys.exit(status.print_report())
+        res.append((status, output))
+
+    return res
 
 
 def run_multiprocess(env, commands):
-  """ 
+    """
   run commands in parallel
   return a list of (JabStatus object, run output) tuple 
   """
-  CORES = env['num_of_builds']
-  if env['extra_build_args']:
-    print(f'Build with extra flags: {env["extra_build_args"]}')
-  if env['compiler_flags']:
-    print(f'Compiler build flags:\n {env["compiler_flags"].split()}\n')
-  print(f'Running {CORES} parallel builds...', flush=True)
-  with Pool(CORES) as pool:
-    res = pool.map(run_worker, commands)
-    pool.close()  # Call the garbage collector
-    pool.join()
+    CORES = env['num_of_builds']
+    if env['extra_build_args']:
+        print(f'Build with extra flags: {env["extra_build_args"]}')
+    if env['compiler_flags']:
+        print(f'Compiler build flags:\n {env["compiler_flags"].split()}\n')
+    print(f'Running {CORES} parallel builds...', flush=True)
+    with Pool(CORES) as pool:
+        res = pool.map(run_worker, commands)
+        pool.close()  # Call the garbage collector
+        pool.join()
 
-  # res can include list within a list - convert to a flat list
-  res = list(itertools.chain(*res))
-  commands_len = len(list(itertools.chain(*[c.split(';') for c in commands])))
-  # check that we received status for all commands
-  assert len(res) == commands_len
-  return res
+    # res can include list within a list - convert to a flat list
+    res = list(itertools.chain(*res))
+    commands_len = len(list(itertools.chain(*[c.split(';') for c in commands])))
+    # check that we received status for all commands
+    assert len(res) == commands_len
+    return res
 
 
 def report_multiprocess(res_mp):
-  status = JobStatus()
-  # build status object and print cmd output for failed commands
-  for run_status, run_output in res_mp:
-    status.merge(run_status)
-    if run_status.fails:
-      print(f'[BUILD FAILED] {run_status.commands[0][1]}')
-      print(''.join(run_output))
+    status = JobStatus()
+    # build status object and print cmd output for failed commands
+    for run_status, run_output in res_mp:
+        status.merge(run_status)
+        if run_status.fails:
+            print(f'[BUILD FAILED] {run_status.commands[0][1]}')
+            print(''.join(run_output), sep='')
 
-  exit_status = status.print_report()
-  return exit_status
+    exit_status = status.print_report()
+    return exit_status
 
 
 ########## Generate build commands ##########
 def gen_build_cmd(env, builder, kind, build_dir, host, flags):
-  """Generate XED build command using a given python builder script"""
-  cmd = f'{env["pycmd"]} {builder} '
-  if kind:
-    cmd += f'--kind={kind} '
-  cmd += f'--build-dir={build_dir} host_cpu={host} {flags} '
-  cmd += '{extra_build_args} {compiler_flags}'.format(**env)
-  return cmd
+    """Generate XED build command using a given python builder script"""
+    cmd = f'{env["pycmd"]} {builder} '
+    if kind:
+        cmd += f'--kind={kind} '
+    cmd += f'--build-dir={build_dir} host_cpu={host} {flags} '
+    cmd += '{extra_build_args} {compiler_flags}'.format(**env)
+    return cmd
 
 
 def gen_enc2test_cmd(env, builder, kits_dir, kind, flags=''):
-  """Generate enc2 build+test to validate enc-dec of all the kind's instructions"""
-  commands = []
-  host = 'x86-64'
-  build_dir = Path(kits_dir, f'obj-{kind}-{host}-static-enc2test')
-  cmd = gen_build_cmd(env, builder, kind, build_dir, host,
-                      '--enc2-test-checked ' + flags)
-  commands.append(cmd)
-
-  output = f'enc2tester-{kind}'
-  enc2tester = Path(build_dir, 'enc2-m64-a64', 'enc2tester-enc2-m64-a64')
-  cmd = f'{enc2tester} --reps 1 --main --gnuasm > {output}.c'
-  commands.append(cmd)
-
-  if platform.system() == 'Linux':  # TBD - Add Windows support
-    cmd = f'gcc {output}.c -o {output}.out'
+    """Generate enc2 build+test to validate enc-dec of all the kind's instructions"""
+    commands = []
+    host = 'x86-64'
+    build_dir = Path(kits_dir, f'obj-{kind}-{host}-static-enc2test')
+    cmd = gen_build_cmd(env, builder, kind, build_dir, host,
+                        '--enc2-test-checked ' + flags)
     commands.append(cmd)
 
-    cmd = f'{build_dir}/wkit/bin/xed -i {output}.out > all.dis'
+    output = f'enc2tester-{kind}'
+    enc2tester = Path(build_dir, 'enc2-m64-a64', 'enc2tester-enc2-m64-a64')
+    cmd = f'{enc2tester} --reps 1 --main --gnuasm > {output}.c'
     commands.append(cmd)
-  return '; '.join(commands)
+
+    if platform.system() == 'Linux':  # TBD - Add Windows and custom gcc version support
+        cmd = f'gcc {output}.c -o {output}.out'
+        commands.append(cmd)
+
+        cmd = f'{build_dir}/wkit/bin/xed -i {output}.out > all.dis'
+        commands.append(cmd)
+    return '; '.join(commands)
 
 
 ############# extra #############
 
 def clean_test_kits(kits_dir: Path):
-  """clean the test build kits"""
-  if not kits_dir.exists():
-    kits_dir.mkdir()
-    return
+    """clean the test build kits"""
+    if not kits_dir.exists():
+        kits_dir.mkdir()
+        return
 
-  test_kits = kits_dir.glob(f'{KIT_PREFIX_PATT}*')
-  for kit in test_kits:
-    try:
-      shutil.rmtree(kit.resolve(strict=True))
-    except:
-      pass  # no need to stop if cleaning failed
+    test_kits = kits_dir.glob(f'{KIT_PREFIX_PATT}*')
+    for kit in test_kits:
+        try:
+            shutil.rmtree(kit.resolve(strict=True))
+        except:
+            pass  # no need to stop if cleaning failed
