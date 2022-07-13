@@ -355,6 +355,7 @@ def build_examples(env, work_queue):
         elif env.on_windows():
             xed_cmdline_files.append('xed-disas-pecoff.cpp')
             if ( env['dbghelp'] and 
+                 env['compiler'] == 'ms' and
                  env['msvs_version'] not in ['6','7'] ):
                 env.add_define("XED_DBGHELP")
                 xed_cmdline_files.append('udhelp.cpp')

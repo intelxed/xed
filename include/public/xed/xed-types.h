@@ -26,7 +26,7 @@ END_LEGAL */
 
 #include "xed-common-hdrs.h"
 
-#if defined(__GNUC__) || defined(__ICC)
+#if defined(__GNUC__) || defined(__ICC) || defined(__clang__)
 #  include <stdint.h>
 #  define xed_uint8_t   uint8_t 
 #  define xed_uint16_t  uint16_t

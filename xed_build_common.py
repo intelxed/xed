@@ -189,6 +189,11 @@ def  _gcc_version_string(env):
     vstr = mbuild.get_gcc_version(gcc)
     return vstr
 
+def  _clang_version_string(env):
+    gcc = env.expand('%(CC)s')
+    vstr = mbuild.get_clang_version(gcc)
+    return vstr
+
 def  _greater_than_gcc(env,amaj,amin,aver):
     vstr = _gcc_version_string(env)
     try:
@@ -284,11 +289,10 @@ def set_env_gnu(env):
 
     env['CXXFLAGS'] += flags
 
-    if env['compiler'] in ['gcc', 'gnu']:
-        mbuild.msgb("GCC VERSION", _gcc_version_string(env))
 
 def set_env_clang(env):
    set_env_gnu(env)
+   env['CXXFLAGS'] += ' -Wno-unused-function'
         
 def set_env_ms(env):
     """Set up the MSVS environment for compilation"""
@@ -338,7 +342,6 @@ def set_env_ms(env):
     env['CCFLAGS'] += flags
     env['CXXFLAGS'] += cxxflags + " " + flags
 
-    mbuild.msgb("MSVS VERSION", env['msvs_version'])
 
 def intel_compiler_disables(env):
     """Return a comma separated string of compile warning number disables
@@ -422,10 +425,13 @@ def init(env):
     
     if env['compiler'] == 'gnu':
         set_env_gnu(env)
+        mbuild.msgb("GNU/GCC VERSION", _gcc_version_string(env))
     elif env['compiler'] == 'clang':
         set_env_clang(env)
+        mbuild.msgb("CLANG VERSION", _clang_version_string(env))
     elif env['compiler'] == 'ms':
         set_env_ms(env)
+        mbuild.msgb("MS VERSION", env['msvs_version'])
     elif env['compiler'] == 'icc':
         set_env_icc(env)
     elif env['compiler'] == 'icl':
