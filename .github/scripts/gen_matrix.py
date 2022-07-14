@@ -38,7 +38,7 @@ sanity_matrix = Matrix(
         Axis(
             os='Linux',
             compiler='gcc',
-            ver='11.2.0'
+            ver='12.1.0'
         ),
         Axis(
             os='Linux',
@@ -65,7 +65,7 @@ nightly_matrix = Matrix(
         Axis(
             os='Linux',
             compiler='gcc',
-            ver='10.2.1'
+            ver='11.2.0'
         ),
         Axis(
             os='Linux',
