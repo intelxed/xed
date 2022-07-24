@@ -54,6 +54,7 @@ jobs:
       xedext_branch: ${{ steps.branches.outputs.xedext_branch }}
       checkout_action: ${{ steps.branches.outputs.checkout_action }}
       test_matrix: ${{ steps.load_matrix.outputs.matrix }}
+      matrix_table: ${{ steps.load_matrix.outputs.matrix_table }}
     steps:
       # if: Manually triggered. Grab branch names from workflow inputs
       - if: github.event_name == 'workflow_dispatch'
@@ -164,8 +165,15 @@ jobs:
     steps:
       - name: Checkout xed for reusable actions/scripts
         uses: actions/checkout@v3
+      - name: Generate notification body
+        run: |
+          echo "Testing matrix table:" > $GITHUB_WORKSPACE/body.txt
+          echo "${{needs.init.outputs.matrix_table}}" >> $GITHUB_WORKSPACE/body.txt
+          echo "" >> $GITHUB_WORKSPACE/body.txt
+          echo "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" >> $GITHUB_WORKSPACE/body.txt
       - name: Send success summary mail on manual trigger
         run: >
-            python3 .github/scripts/send_mail.py --to-user ${{github.actor}} 
-            --subject='XED Sanity: Passed (${{ github.ref_name }})' 
-            --text="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          python3 .github/scripts/send_mail.py --to-user ${{github.actor}} 
+          --subject='XED Sanity: Passed (${{ github.ref_name }})' 
+          --text-from-file="$GITHUB_WORKSPACE/body.txt" --html
+  

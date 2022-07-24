@@ -8,14 +8,24 @@ inputs:
 outputs:
   matrix:
     description: "strategy matrix in Json format"
-    value: ${{ steps.read_matrix.outputs.json }}
+    value: ${{ steps.matrix_json.outputs.json }}
+  matrix_table:
+    description: "strategy matrix in html table format"
+    value: ${{ steps.matrix_table.outputs.table }}
 runs:
   using: composite
   steps:
-    - name: Generate and store test matrix
+    - name: Generate test Json matrix 
       shell: bash
-      id: read_matrix
+      id: matrix_json
       run: |
         JSON=$(python3 .github/scripts/gen_matrix.py --${{inputs.matrix_kind}})
         echo $JSON
         echo "::set-output name=json::${JSON//%/%25}"
+    - name: Generate test html table matrix
+      shell: bash
+      id: matrix_table
+      run: |
+        TABLE=$(python3 .github/scripts/gen_matrix.py --${{inputs.matrix_kind}} --html)
+        echo $TABLE
+        echo "::set-output name=table::${TABLE//%/%25}"    

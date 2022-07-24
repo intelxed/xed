@@ -101,6 +101,10 @@ def setup():
                         help='mail subject',
                         action='store', 
                         type=str)
+    parser.add_argument('--html',
+                        help='indicate whether the content is both html and text',
+                        action='store_true', 
+                        default=False)
 
     args = parser.parse_args()
     env = vars(args)
@@ -109,7 +113,6 @@ def setup():
 
 if __name__ == "__main__":
     env = setup()
-
     # set mail's text body
     text = env['text']
     if env['text_file']:
@@ -127,4 +130,4 @@ if __name__ == "__main__":
 
     assert mail_to, "Mail recipient was not set"
 
-    send(env['from'], env['to'], env['subject'], text)
+    send(env['from'], env['to'], env['subject'], text, env['html'])

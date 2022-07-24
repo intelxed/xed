@@ -1,4 +1,5 @@
 import argparse
+from collections import defaultdict
 import dataclasses
 import json
 from pathlib import Path
@@ -93,6 +94,10 @@ def setup():
   group.add_argument('--nightly',
                      help='Print test matrix for nightly workflows',
                      action="store_true")
+  parser.add_argument('--html',
+                  help='Generate html table to stdout',
+                  action='store_true', 
+                  default=False)
   args = parser.parse_args()
   return args
 
@@ -109,8 +114,39 @@ def get_latest_version(compiler):
   return str(latest.ver)
 
 
+def gen_tests_table(matrix):
+    """Generate GitHub test matrix in a format of HTML table"""
+    os_set = set()
+    compiler_set = set()
+    for m in matrix:
+        os_set.add(m.os)                # store all unique operating systems
+        compiler_set.add(m.compiler)    # store all unique compilers
+    
+    #keys of db are operating systems, values are dictionaries with compilers as keys
+    db = {o: defaultdict(list) for o in os_set}    
+    
+    # map all versions to the respective operating system and compiler
+    for m in matrix:
+        db[m.os][m.compiler].append(m.ver)
+    
+    # Generate the html table
+    table = '<th>\t</th>'
+    table += ''.join('<th>' + x + '</th>' for x in compiler_set)    #generate the table's header
+    for o in os_set:  # Append row
+        table += f'<tr><td>{o}</td>'
+        for c in compiler_set:  # Append column
+            table += '<td>' + ', '.join(db[o][c]) + '</td>'
+        table += '</tr>'
+    html = '<table border=1 class="stocktable" id="table1">' + table + '</table>'
+    return html
+
 if __name__ == "__main__":
   args = setup()
-  matrix_json = json.dumps(
-      dataclasses.asdict(sanity_matrix if args.sanity else nightly_matrix))
-  print(matrix_json)
+  matrix = sanity_matrix if args.sanity else nightly_matrix
+  
+  if args.html:
+    print(gen_tests_table(matrix.include))
+  else:
+    print(json.dumps(dataclasses.asdict(matrix)))
+
+  
