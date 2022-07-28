@@ -70,7 +70,7 @@ def get_compiler_build_flags(env):
 
 
 def setup():
-    """Parse input arguments and return env dict"""
+    """Define the common parser arguments"""
     parser = argparse.ArgumentParser(
         description='setup sanity for xed-group repository')
     parser.add_argument('-j',
@@ -89,16 +89,22 @@ def setup():
                         help='set compiler version. Default is the latest supported version',
                         type=str,
                         default='')
+    parser.add_argument('--extra-build-args',
+                        dest='extra_build_args',
+                        type=str,
+                        default='')
+    return parser
+    
 
-    args, extra_args = parser.parse_known_args()
+def process_args(parser):
+    """Parse input arguments and return env dict"""
+    args, _ = parser.parse_known_args()
     env = vars(args)
-    env['extra_build_args'] = ' '.join(extra_args)
     env['compiler_flags'] = ''
     if env['compiler']:
         env['compiler_flags'] = get_compiler_build_flags(env)
 
     env['pyver'], env['pycmd'] = ('3.x', 'python3')
-
     return env
 
 

@@ -70,6 +70,7 @@ def main(env):
 
 
 if __name__ == "__main__":
-    env = utils.setup()
+    parser = utils.setup()
+    env = utils.process_args(parser)
     exit_status = main(env)
     sys.exit(exit_status)
