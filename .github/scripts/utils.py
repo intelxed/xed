@@ -98,7 +98,7 @@ def setup():
 
 def process_args(parser):
     """Parse input arguments and return env dict"""
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
     env = vars(args)
     env['compiler_flags'] = ''
     if env['compiler']:
