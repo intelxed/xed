@@ -5158,6 +5158,8 @@ def xed_mode_removal(env,ii):
         return True
     if 'CET=0' in ii.pattern:
         return True
+    if 'MARKER' in ii.pattern:
+        return True
     if env.short_ud0:
         if 'MODE_SHORT_UD0=0' in ii.pattern: # long UD0
             return True # skip
