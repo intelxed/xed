@@ -125,3 +125,4 @@ error                  ERROR=XED_ERROR_GENERAL_ERROR
 
 # dummy constraint which always satisfies
 true                   DUMMY=0
+false                  DUMMY=1

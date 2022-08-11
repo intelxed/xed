@@ -314,11 +314,11 @@ the implementation. The changes are as follows:
     <li> LOCK-prefixed (0xF0) atomic read-modify-write memory
     instructions were split in to separate iclasses that contain the
     substring "_LOCK".  LOCK-prefixed instructions have an attribute
-    XED_ATTRIBUTE_LOCK. Memory instructions that could have a lock
+    XED_ATTRIBUTE_LOCKED. Memory instructions that could have a lock
     prefix added to them when encoding, have an attribute
     XED_ATTRIBUTE_LOCKABLE.  For example XED_ICLASS_CMPXCHG16B_LOCK
     has a lock prefix, but XED_ICLASS_CMPXCHG16B does not have a lock
-    prefix.  As always XCHG is atomic with our without a LOCK prefix
+    prefix.  As always XCHG is atomic with or without a LOCK prefix
     as per the rules of the ISA, so XED_ICLASS_XCHG does not have a
     _LOCK suffix in the xed_iclass_enum_t name.
     </ul>

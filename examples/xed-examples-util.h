@@ -47,6 +47,7 @@ unsigned int xed_convert_ascii_to_hex(const char* src,
                                       xed_uint8_t* dst, 
                                       unsigned int max_bytes);
 
+#define XED_MAX_INPUT_OPERNADS 4
 #define XED_HEX_BUFLEN 200
 void xed_print_hex_line(char* buf,
                         const xed_uint8_t* array,
@@ -83,8 +84,8 @@ typedef struct {
     xed_chip_enum_t chip;
     xed_bool_t emit_isa_set;    
     xed_format_options_t format_options;
-    xed_operand_enum_t operand;
-    xed_uint32_t operand_value;
+    xed_operand_enum_t operands[XED_MAX_INPUT_OPERNADS];
+    xed_uint32_t operands_value[XED_MAX_INPUT_OPERNADS];
     xed_bool_t encode_force;
     
     xed_uint64_t errors;

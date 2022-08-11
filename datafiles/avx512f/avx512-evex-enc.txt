@@ -47,7 +47,8 @@ SEQUENCE EVEX_ENC_BIND
          EVEX_REXRR_ENC_BIND
          EVEX_MAP_ENC_BIND
          EVEX_REXW_VVVV_ENC_BIND
-         EVEX_UPP_ENC_BIND
+         EVEX_U_ENC_BIND
+         EVEX_PP_ENC_BIND
          EVEX_LL_ENC_BIND
          AVX512_EVEX_BYTE3_ENC_BIND
 
@@ -59,7 +60,8 @@ SEQUENCE EVEX_ENC_EMIT
          EVEX_REXRR_ENC_EMIT
          EVEX_MAP_ENC_EMIT
          EVEX_REXW_VVVV_ENC_EMIT
-         EVEX_UPP_ENC_EMIT
+         EVEX_U_ENC_EMIT
+         EVEX_PP_ENC_EMIT
          EVEX_LL_ENC_EMIT
          AVX512_EVEX_BYTE3_ENC_EMIT
 
@@ -97,12 +99,15 @@ MAP=3  -> 0b0011
 EVEX_REXW_VVVV_ENC()::
 true REXW[w] VEXDEST3[u] VEXDEST210[ddd] -> w u_ddd
 
-# emit the EVEX.U=1 with the EVEX.pp field
-EVEX_UPP_ENC()::
-VNP -> 0b100
-V66 -> 0b101
-VF3 -> 0b110
-VF2 -> 0b111
+EVEX_U_ENC()::
+false     ->  UBIT=1 0b1
+otherwise ->  UBIT=1 0b1
+
+EVEX_PP_ENC()::
+VNP -> 0b00
+V66 -> 0b01
+VF3 -> 0b10
+VF2 -> 0b11
 
 EVEX_LL_ENC()::
 ROUNDC=0 SAE=0 VL128 -> LLRC=0

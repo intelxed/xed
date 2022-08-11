@@ -31,7 +31,7 @@ import enum_txt_writer
 import codegen
 
 # dict space name -> numerical space id
-_space_id = {'legacy':0, 'vex':1, 'evex':2, 'xop':3, 'knc':4}
+_space_id = {'legacy': 0, 'vex': 1, 'evex': 2, 'xop': 3}
 _space_id_to_name = {v: k for k,v in _space_id.items()}
 
 # list ordered by numerical space id
@@ -161,7 +161,7 @@ def _parse_map_line(s):
         
     mi.map_id_fixup=False
     
-    if mi.space not in ['legacy','vex','evex', 'xop','knc']:
+    if mi.space not in ['legacy', 'vex', 'evex', 'xop']:
         _die("Bad map description encoding space [{}]".format(s))
     if mi.space == 'legacy':
         if genutil.is_hex(mi.legacy_escape):
@@ -231,7 +231,7 @@ def emit_map_info_tables(agi):
 
     spaces = list(set([ mi.space for mi in sorted_list ]))
     sorted_spaces = sorted(spaces, key=lambda x: encoding_space_to_vexvalid(x))
-    max_space_id = _encoding_space_max() # legacy,vex,evex,xop,knc
+    max_space_id = _encoding_space_max()  # legacy,vex,evex,xop
     #max_space_id = encoding_space_to_vexvalid(sorted_spaces[-1])
     
     max_map_id = max([mi.map_id for mi in agi.map_info]) #0...31

@@ -463,6 +463,9 @@ int main(int argc, char** argv) {
     char const* decode_text=0;
     unsigned int len;
     xed_error_enum_t xed_error;
+    xed_uint_t operands_index = 0;
+    xed_operand_enum_t operands[XED_MAX_INPUT_OPERNADS] = {XED_OPERAND_INVALID};
+    xed_uint32_t operands_value[XED_MAX_INPUT_OPERNADS] = {0};
         
 #if defined(XED_MPX)
     unsigned int mpx_mode=0;
@@ -509,11 +512,27 @@ int main(int argc, char** argv) {
             first_argv++;
         }
         else if (strcmp(argv[i], "-chip") == 0) {
-            assert(i+1 < argcu);
+            assert(i+1 < argcu);    
             chip = str2xed_chip_enum_t(argv[i+1]);
             printf("Setting chip to %s\n", xed_chip_enum_t2str(chip));
             assert(chip != XED_CHIP_INVALID);
             first_argv+=2;
+        }
+        else if (strcmp(argv[i], "-set") == 0) {
+            assert(i+2 < argcu);    // needs 2 args
+            if (operands_index >= XED_MAX_INPUT_OPERNADS) {
+                printf("ERROR: too many -set operands, max is %d\n", XED_MAX_INPUT_OPERNADS);
+                exit(1);
+            }
+
+            operands[operands_index] = str2xed_operand_enum_t(argv[i+1]);
+            if (operands[operands_index] == XED_OPERAND_INVALID){
+                printf("ERROR: operand %s doesn't exist\n", argv[i+1]);
+                exit(1);
+            }
+            operands_value[operands_index] = XED_STATIC_CAST(xed_uint8_t, xed_atoi_general(argv[i+2],1000));
+            operands_index++;
+            first_argv+=3;
         }
     }
 
@@ -527,11 +546,14 @@ int main(int argc, char** argv) {
 #if defined(XED_CET)
     xed3_operand_set_cet(&xedd, cet_mode);
 #endif
+    // set the value of operands referenced after '-set'
+    for (i = 0; i < operands_index; i++)    
+        xed3_set_generic_operand(&xedd, operands[i], operands_value[i]);
 
     // convert ascii hex to hex bytes
     for(i=first_argv; i< argcu;i++) 
         decode_text = xedex_append_string(decode_text,argv[i]);
-
+    
     len = (unsigned int) strlen(decode_text);
     if ((len & 1) == 1) { 
         printf("Must supply even number of nibbles per substring\n");
@@ -577,7 +599,6 @@ int main(int argc, char** argv) {
         exit(1);
     }
         
-
     printf("iclass %s\t",
            xed_iclass_enum_t2str(xed_decoded_inst_get_iclass(&xedd)));
     printf("category %s\t" ,

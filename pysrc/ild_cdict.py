@@ -133,7 +133,7 @@ def get_all_constraints_state_space(agi):
     # the ild relies on this operand so we add it manually
     if 'VEXVALID' not in state_space:
         state_space['VEXVALID'][0] = True 
-    else: # KNC/AVX/EVEX builds...
+    else: # AVX/EVEX builds...
         # 2014-10-10: when I got rid of the NTs for decoding the
         # VEX/EVEX/XOP prefixes, I ended up losing the only NTs that
         # mention ZEROING=1 and VLBAD (VL=3). So we add them here.

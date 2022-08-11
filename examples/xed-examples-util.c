@@ -328,8 +328,7 @@ decode_internal(xed_decoded_inst_t* xedd,
 void init_xedd(xed_decoded_inst_t* xedd,
                xed_disas_info_t* di)
 {
-
-
+    unsigned int i;
 #if defined(XED_DECODER)
     xed_decoded_inst_zero_set_mode(xedd, &(di->dstate));
 #endif
@@ -340,8 +339,10 @@ void init_xedd(xed_decoded_inst_t* xedd,
 #if defined(XED_CET)
     xed3_operand_set_cet(xedd, di->cet_mode);
 #endif
-    if (di->operand != XED_OPERAND_INVALID) 
-        xed3_set_generic_operand(xedd, di->operand, di->operand_value);
+    for(i = 0; i < XED_MAX_INPUT_OPERNADS; i++) {
+        if (di->operands[i] != XED_OPERAND_INVALID) 
+            xed3_set_generic_operand(xedd, di->operands[i], di->operands_value[i]);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////

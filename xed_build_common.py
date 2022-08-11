@@ -66,13 +66,13 @@ def add_to_flags(env,s):
     env.add_to_var('CXXFLAGS',s)
 
 def compile_with_pin_crt_lin_mac_common_cplusplus(env):
-    env.add_to_var('LINKFLAGS','-lstlport-dynamic')
+    env.add_to_var('LINKFLAGS','-lc++abi')
+    env.add_to_var('LINKFLAGS','-lc++')
     env.add_to_var('CXXFLAGS','-fno-exceptions')
     env.add_to_var('CXXFLAGS', '-fno-rtti')
     
 def _compile_with_pin_crt_lin_mac_common(env):    
-    env.add_system_include_dir('%(pin_root)s/extras/stlport/include')
-    env.add_system_include_dir('%(pin_root)s/extras/libstdc++/include')
+    env.add_system_include_dir('%(pin_root)s/extras/cxx/include')
     env.add_system_include_dir('%(pin_root)s/extras/crt/include')
     env.add_system_include_dir(
         '%(pin_root)s/extras/crt/include/arch-%(bionic_arch)s')
@@ -189,6 +189,11 @@ def  _gcc_version_string(env):
     vstr = mbuild.get_gcc_version(gcc)
     return vstr
 
+def  _clang_version_string(env):
+    gcc = env.expand('%(CC)s')
+    vstr = mbuild.get_clang_version(gcc)
+    return vstr
+
 def  _greater_than_gcc(env,amaj,amin,aver):
     vstr = _gcc_version_string(env)
     try:
@@ -268,9 +273,6 @@ def set_env_gnu(env):
             # -fvisibility=hidden only works on gcc>4. If not gcc,
             # assume it works. Really only a problem for older icc
             # compilers.
-            if env['compiler'] == 'gcc':
-                vstr = _gcc_version_string(env)
-                mbuild.msgb("GCC VERSION", vstr)
             if env['compiler'] != 'gcc' or _greater_than_gcc(env,4,0,0):
                 hidden = ' -fvisibility=hidden' 
                 env['LINKFLAGS'] += hidden
@@ -287,8 +289,10 @@ def set_env_gnu(env):
 
     env['CXXFLAGS'] += flags
 
+
 def set_env_clang(env):
    set_env_gnu(env)
+   env['CXXFLAGS'] += ' -Wno-unused-function'
         
 def set_env_ms(env):
     """Set up the MSVS environment for compilation"""
@@ -337,6 +341,7 @@ def set_env_ms(env):
     #flags += ' /Zm200'
     env['CCFLAGS'] += flags
     env['CXXFLAGS'] += cxxflags + " " + flags
+
 
 def intel_compiler_disables(env):
     """Return a comma separated string of compile warning number disables
@@ -420,10 +425,13 @@ def init(env):
     
     if env['compiler'] == 'gnu':
         set_env_gnu(env)
+        mbuild.msgb("GNU/GCC VERSION", _gcc_version_string(env))
     elif env['compiler'] == 'clang':
         set_env_clang(env)
+        mbuild.msgb("CLANG VERSION", _clang_version_string(env))
     elif env['compiler'] == 'ms':
         set_env_ms(env)
+        mbuild.msgb("MS VERSION", env['msvs_version'])
     elif env['compiler'] == 'icc':
         set_env_icc(env)
     elif env['compiler'] == 'icl':

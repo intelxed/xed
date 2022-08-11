@@ -645,11 +645,6 @@ xed_decoded_inst_operand_element_type(const xed_decoded_inst_t* p,
            type codes. It is not 100% accurate */
         if (dtype == XED_OPERAND_ELEMENT_TYPE_INVALID) 
             return XED_OPERAND_ELEMENT_TYPE_INT;
-#if defined(XED_SUPPORTS_KNC)
-        else if (dtype == XED_OPERAND_ELEMENT_TYPE_VARIABLE) 
-            dtype = XED_STATIC_CAST(xed_operand_element_type_enum_t,
-                                    xed3_operand_get_type(p));
-#endif
     }
     return dtype;
 }
@@ -877,7 +872,7 @@ xed_decoded_inst_get_nprefixes(const xed_decoded_inst_t* p) {
 }
 
 xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
-#if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
+#if defined(XED_SUPPORTS_AVX512)
     if (xed3_operand_get_mask(p) != 0)
         return 1;
 #endif
@@ -886,10 +881,9 @@ xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
 }
 
 xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
-#if defined(XED_SUPPORTS_AVX512) || defined(XED_SUPPORTS_KNC)
+#if defined(XED_SUPPORTS_AVX512)
     if (xed3_operand_get_mask(p) != 0)
     {
-#   if defined(XED_SUPPORTS_AVX512)
         const xed_inst_t* xi = xed_decoded_inst_inst(p);
         const xed_operand_t* op = xed_inst_operand(xi,0); // 0'th operand.
         if (xed_operand_width(op) == XED_OPERAND_WIDTH_MSKW) // mask dest -> always zeroing
@@ -898,9 +892,6 @@ xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
         if (xed3_operand_get_zeroing(p) == 0)
             if (!xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_MASK_AS_CONTROL))            
                 return 1;
-#   elif defined(XED_SUPPORTS_KNC)
-        return 1;
-#   endif
     }
 #endif
     return 0;

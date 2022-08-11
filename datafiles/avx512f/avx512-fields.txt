@@ -28,10 +28,6 @@ MASK       SCALAR xed_bits_t 3           SUPPRESSED    NOPRINT INTERNAL DO EO
 ROUNDC        SCALAR xed_bits_t  3       SUPPRESSED NOPRINT INTERNAL DO EI
 SAE           SCALAR xed_bits_t  1       SUPPRESSED NOPRINT INTERNAL DO EI
 
-# this is required for KNC's disp8 C-code override file
-#  (for their unaligned memop support).
-NO_SCALE_DISP8 SCALAR xed_bits_t 1       SUPPRESSED NOPRINT INTERNAL DO EO
-
 UBIT          SCALAR xed_bits_t 1         SUPPRESSED    NOPRINT INTERNAL DO EO
 
 

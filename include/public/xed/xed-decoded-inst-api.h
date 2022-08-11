@@ -382,7 +382,7 @@ xed_decoded_inst_get_iform_enum(const xed_decoded_inst_t* p) {
 static XED_INLINE unsigned int
 xed_decoded_inst_get_iform_enum_dispatch(const xed_decoded_inst_t* p) {
     xed_assert(p->_inst != 0);
-    return xed_inst_iform_enum(p->_inst) -
+    return XED_STATIC_CAST(xed_uint_t, xed_inst_iform_enum(p->_inst)) -
                 xed_iform_first_per_iclass(xed_inst_iclass(p->_inst));
 }
 //@}

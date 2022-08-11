@@ -13,7 +13,7 @@ Nominal opcode 0xcf
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0         REG0=STACKPOP SUPPRESSED   R      SPW5  320    40     1    320        INT     PSEUDO
+0   REG0         REG0=STACKPOP SUPPRESSED  RW      SPW5  320    40     1    320        INT     PSEUDO
 1   REG1              REG1=RIP SUPPRESSED   W         Q   64     8     1     64        INT         IP
 2   MEM0           (see below) SUPPRESSED   R      SPW5  320    40     1    320        INT    INVALID
 3  BASE0             BASE0=RSP SUPPRESSED  RW       SSZ   64     8     1     64        INT        GPR

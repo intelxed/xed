@@ -103,8 +103,8 @@ fopen_portable(char const* const file_name,
 
 static unsigned int disas_encode(const xed_state_t* dstate,
                                  const char* encode_text,
-                                 xed_operand_enum_t operand,
-                                 xed_uint32_t operand_value,
+                                 xed_operand_enum_t* operands,
+                                 xed_uint32_t* operands_value,
                                  xed_bool_t encode_force)
 {
     char buf[5000];
@@ -114,14 +114,15 @@ static unsigned int disas_encode(const xed_state_t* dstate,
     ascii_encode_request_t areq;
     xed_encoder_request_t req;
     xed_error_enum_t r;
+    unsigned int i;
 
     areq.dstate = *dstate;
     areq.command = encode_text;
     req = parse_encode_request(areq);
-
-    if (operand != XED_OPERAND_INVALID)
-        xed3_set_generic_operand(&req, operand, operand_value);
-    
+    for(i = 0; i < XED_MAX_INPUT_OPERNADS; i++) {
+        if (operands[i] != XED_OPERAND_INVALID)
+            xed3_set_generic_operand(&req, operands[i], operands_value[i]);
+    }
     xed3_operand_set_encode_force(&req, encode_force);
 
     xed_encode_request_print(&req, buf, 5000);
@@ -299,7 +300,7 @@ static void usage(char* prog) {
 #endif
       "\t-s32          (32b stack addressing, default, not in LONG_64 mode)",
       "\t-s16          (16b stack addressing, not in LONG_64 mode)",
-      "\t-set OP VAL   (Set a XED operand to some integer value)",
+      "\t-set OP VAL   (Set a XED operands to some integer value, repeatable)",
 
 #if defined(XED_USING_DEBUG_HELP)
       "",
@@ -407,8 +408,9 @@ main(int argc, char** argv)
     xed_bool_t histo = 0;
     xed_bool_t line_numbers = 0;
     xed_chip_enum_t xed_chip = XED_CHIP_INVALID;
-    xed_operand_enum_t operand = XED_OPERAND_INVALID;
-    xed_uint32_t operand_value = 0;
+    xed_operand_enum_t operands[XED_MAX_INPUT_OPERNADS] = {XED_OPERAND_INVALID};
+    xed_uint32_t operands_value[XED_MAX_INPUT_OPERNADS] = {0};
+    xed_uint8_t operands_index = 0;
     xed_bool_t filter = 0;
     xed_bool_t just_decode_first_pattern=0;
 #if defined(XED_LINUX)
@@ -702,9 +704,15 @@ main(int argc, char** argv)
         }
         else if (strcmp(argv[i],"-set")==0) {
             test_argc(i+1,argc); // need 2 args
-            operand = str2xed_operand_enum_t(argv[i+1]);
-            operand_value = XED_STATIC_CAST(xed_uint32_t,
+            if (operands_index >= XED_MAX_INPUT_OPERNADS) {
+                printf("ERROR: too many -set operands, max is %d\n", XED_MAX_INPUT_OPERNADS);
+                exit(1);
+            }
+
+            operands[operands_index] = str2xed_operand_enum_t(argv[i+1]);
+            operands_value[operands_index] = XED_STATIC_CAST(xed_uint32_t,
                                             xed_atoi_general(argv[i+2],1000));
+            operands_index++;
             i += 2;
         }
 #if 0
@@ -795,10 +803,10 @@ main(int argc, char** argv)
     decode_info.cet_mode         = cet_mode;
     decode_info.emit_isa_set     = emit_isa_set;
     decode_info.format_options   = format_options;
-    decode_info.operand          = operand;
-    decode_info.operand_value    = operand_value;
     decode_info.encode_force     = encode_force;
     decode_info.dot_graph_output = 0;
+    memcpy(decode_info.operands, operands, sizeof(decode_info.operands));
+    memcpy(decode_info.operands_value, operands_value, sizeof(decode_info.operands_value));
     
     if (dot)
     {
@@ -845,8 +853,8 @@ main(int argc, char** argv)
         assert(encode_text != 0);
         obytes = disas_encode(&dstate,
                               encode_text,
-                              operand,
-                              operand_value,
+                              operands,
+                              operands_value,
                               encode_force);
 #endif
     }

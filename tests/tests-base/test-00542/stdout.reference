@@ -1,0 +1,5 @@
+Request: PUSH MODE:1, REG0:RBP, SMODE:1
+OPERAND ORDER: REG0 
+Could not encode: PUSH RBP 
+Error code was: GENERAL_ERROR
+[XED CLIENT ERROR] Dying
