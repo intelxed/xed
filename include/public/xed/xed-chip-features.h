@@ -24,7 +24,7 @@ END_LEGAL */
 #include "xed-isa-set-enum.h"     /* generated */
 #include "xed-chip-enum.h"        /* generated */
 
-#define XED_FEATURE_VECTOR_MAX 5
+#define XED_FEATURE_VECTOR_MAX 6
 /// @ingroup ISASET
 typedef struct 
 {

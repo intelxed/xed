@@ -62,6 +62,7 @@ xed_modify_chip_features(xed_chip_features_t* p,
     {
         const unsigned int f = XED_CAST(unsigned int,isa_set);
         const unsigned int n = f / 64;
+        xed_assert(n < XED_FEATURE_VECTOR_MAX);
         set_bit(p->f+n, f-(64*n), present);
    }
 }
@@ -73,6 +74,7 @@ xed_test_chip_features(xed_chip_features_t* p,
     const xed_uint64_t one = 1;
     const unsigned int n = XED_CAST(unsigned int,isa_set) / 64;
     const unsigned int r = XED_CAST(unsigned int,isa_set) - (64*n);
+    xed_assert(n < XED_FEATURE_VECTOR_MAX);
     if (p->f[n] & (one<<r))
         return 1;
     return 0;

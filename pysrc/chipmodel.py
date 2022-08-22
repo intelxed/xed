@@ -274,18 +274,20 @@ def work(arg):
                                      private_gendir,
                                      chip_features_hfn, 
                                      shell_file=False)
-    for header in [ 'xed-isa-set-enum.h', 'xed-chip-enum.h' ]:
+    for header in [ 'xed-isa-set-enum.h', 'xed-chip-enum.h', 'xed-chip-features.h' ]:
         cfe.add_header(header)
         hfe.add_header(header)
     cfe.start()
     hfe.start()
 
     
-    cfe.write("xed_uint64_t xed_chip_features[XED_CHIP_LAST][6];\n")
-    hfe.write("extern xed_uint64_t xed_chip_features[XED_CHIP_LAST][6];\n")
+    cfe.write("xed_uint64_t xed_chip_features[XED_CHIP_LAST][XED_FEATURE_VECTOR_MAX];\n")
+    hfe.write("extern xed_uint64_t xed_chip_features[XED_CHIP_LAST][XED_FEATURE_VECTOR_MAX];\n")
 
     fo = codegen.function_object_t('xed_init_chip_model_info', 'void')    
     fo.add_code_eol("const xed_uint64_t one=1")
+    fo.add_comment('Check that the vector can include all available ISA_SETs')
+    fo.add_code_eol('xed_assert(XED_ISA_SET_LAST <= (XED_FEATURE_VECTOR_MAX*64))')
     # make a set for each machine name
     spacing = "\n      |"
     for c in chips:
@@ -312,6 +314,8 @@ def work(arg):
             elif feature_index < 384:
                 s5.append('(one<<(XED_ISA_SET_%s-320))' % (f))
             else:
+                # Increase XED_FEATURE_VECTOR_MAX (xed-chip-features.h) and add support
+                # for larger indexes (above)
                 _die("Feature index > 384. Need another features array")
 
         s0s = spacing.join(s0)
