@@ -608,6 +608,7 @@ def mkenv():
                                  future=True,
                                  knl=True,
                                  knm=True,
+                                 lakefield=True,
                                  bdw=True,
                                  dbghelp=False,
                                  install_dir=None,
@@ -826,7 +827,11 @@ def xed_args(env):
     env.parser.add_option("--no-via",
                           action="store_false",
                           dest="via_enabled",
-                          help="Disable VIA public instructions")
+                          help="Disable VIA public instructions")                  
+    env.parser.add_option("--no-lakefield",
+                          action="store_false",
+                          dest="lakefield",
+                          help="Disable lakefield public instructions")
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -1250,7 +1255,6 @@ def _configure_libxed_extensions(env):
         env.add_define('XED_AMD_ENABLED')
     if env['via_enabled']:
         env.add_define('XED_VIA_ENABLED')
-
     if env['avx']:
         env.add_define('XED_AVX')
 
@@ -1336,8 +1340,11 @@ def _configure_libxed_extensions(env):
     _add_normal_ext(env,'movdir')
     _add_normal_ext(env,'waitpkg')
     _add_normal_ext(env,'cldemote')
-    _add_normal_ext(env,'sgx-enclv') 
 
+        
+    if env['lakefield']:
+        _add_normal_ext(env,'lakefield')
+        
     if env['avx']:
         _add_normal_ext(env,'avx')
         _add_normal_ext(env,'xsaveopt')
@@ -1430,6 +1437,7 @@ def _configure_libxed_extensions(env):
 
         if env['future']:
             _add_normal_ext(env,'future')
+
 
     env['extf'] = newstuff + env['extf']
 
@@ -2625,6 +2633,7 @@ def verify_args(env):
         env['icl'] = False
     if not env['icl']:
         env['tgl'] = False
+        env['lakefield'] = False
     if not env['tgl']:
         env['cet'] = False
         env['spr'] = False
