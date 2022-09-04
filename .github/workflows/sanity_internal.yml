@@ -22,8 +22,8 @@ env:
 
 on:
   pull_request:
-    branches:
-      - main
+    branches-ignore:
+      - external
   workflow_dispatch:
     inputs:
       xedext_branch:
