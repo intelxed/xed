@@ -21,6 +21,9 @@ SAPPHIRE_RAPIDS:         \
      ALL_OF(TIGER_LAKE)  \
      NOT(KEYLOCKER)      \
      NOT(KEYLOCKER_WIDE) \
+     NOT(AVX512_VP2INTERSECT_128) \
+     NOT(AVX512_VP2INTERSECT_256) \
+     NOT(AVX512_VP2INTERSECT_512) \
      UINTR               \
      PTWRITE             \
      CLDEMOTE            \
@@ -43,6 +46,4 @@ SAPPHIRE_RAPIDS:         \
      AVX512_FP16_128     \
      AVX512_FP16_256     \
      AVX512_FP16_512     \
-     AVX512_FP16_SCALAR 
-
-     
+     AVX512_FP16_SCALAR  
