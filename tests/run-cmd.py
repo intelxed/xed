@@ -182,9 +182,14 @@ def one_test(env,test_dir):
 
 def find_tests(env):
     test_dirs = []
+    test_pattern = "test-[0-9][0-9]*"
     for d in env['tests']:
-        test_dirs.extend(mbuild.glob(mbuild.join(d,"test-[0-9][0-9]*")))
-    return  test_dirs
+        tests = mbuild.glob(mbuild.join(d, test_pattern))
+        if not tests:
+            mbuild.die(f"Couldn't find tests in: {d}.\n" \
+                       f"Expected tests directory pattern: '{test_pattern}'")
+        test_dirs.extend(tests)
+    return test_dirs
 
 def rebase_tests(env):
     test_dirs = find_tests(env)

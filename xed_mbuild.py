@@ -589,6 +589,7 @@ def mkenv():
                                  ext=[],
                                  extf=[],
                                  xedext_dir='%(xed_dir)s/../xedext',
+                                 tests_ext=[],
                                  default_isa='',
                                  avx=True,
                                  avx512=True,
@@ -742,6 +743,11 @@ def xed_args(env):
                           action="store", 
                           dest="xedext_dir", 
                           help="XED extension dir")
+    
+    env.parser.add_option("--tests-extension", 
+                          action="append", 
+                          dest="tests_ext", 
+                          help="Tests directories extension")
 
     env.parser.add_option("--default-isa-extf", 
                           action="store",
@@ -1216,6 +1222,9 @@ def _parse_extf_files_new(env, gc):
                     fname = _fn_expand(env, edir, _get_check(wrds,2))
                     priority =  int(_get_check(wrds,3, default=1))
                     gc.add_file(ptype, fname, priority)
+                elif cmd == 'add-tests':
+                    test_dir = _fn_expand(env, edir, _get_check(wrds,1))
+                    env['tests_ext'].append(test_dir)
                 else: # default is to add "keytype: file" (optional priority)
                     if len(wrds) not in [2,3]:
                         xbc.cdie('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
@@ -2513,6 +2522,10 @@ def _run_canned_tests(env,osenv):
     for d in dirs:
         x  = aq(mbuild.join(env['test_dir'],d))
         cmd += " --tests %s " % (x)
+    # Add additional tests (from cmd knob or layer's config files)
+    for d in env['tests_ext']:
+        mbuild.vmsgb(1, "ADDED TESTS EXT", d)
+        cmd += f" --tests {aq(d)}"
 
     # add test restriction/subetting codes
     codes = []
