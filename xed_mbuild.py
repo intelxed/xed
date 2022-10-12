@@ -102,6 +102,7 @@ class generator_inputs_t(object):
                        'conversion-table',
                        'cpuid',
                        'map-descriptions',
+                       'errors',
                        ]
         self.encoder_chip = encoder_chip
         self.files = {} # lists of input files per field type
@@ -148,12 +149,16 @@ class generator_inputs_t(object):
 
     def remove_file(self, file_type, file_name):
         """Remove a specific  file"""
-        try:
-            self.files[file_type].remove(file_name)
-        except:
+        found = False
+        for f in list(self.files[file_type]):
+            if os.path.samefile(f, file_name):
+                mbuild.vmsgb(1, f"REMOVE FILE ({file_type})", f)
+                self.files[file_type].remove(f)
+                found = True
+        if not found:
             xbc.cdie("Invalid type of file " +
-                       "(%s) or file name (%s) not found: " % (file_type, 
-                                                               file_name) )
+                       "(%s) or file name (%s) not found in: %s" % (file_type, 
+                                                               file_name, self.files[file_type]) )
 
     def clear_files(self,file_type):
         """Remove a specific type of file"""
@@ -224,6 +229,8 @@ class generator_inputs_t(object):
                  aq(self.file_name['cpuid']))
         s.append('--map-descriptions ' +
                  aq(self.file_name['map-descriptions']))
+        s.append('--input-errors ' +
+                 aq(self.file_name['errors']))
         if extra_args:
             s.append(extra_args)
         return ' '.join(s)
@@ -589,6 +596,7 @@ def mkenv():
                                  ext=[],
                                  extf=[],
                                  xedext_dir='%(xed_dir)s/../xedext',
+                                 tests_ext=[],
                                  default_isa='',
                                  avx=True,
                                  avx512=True,
@@ -605,9 +613,13 @@ def mkenv():
                                  tgl=True,
                                  adl=True,
                                  spr=True,
+                                 grr=True,  # grand ridge
+                                 srf=True,  # sierra forest
+                                 gnr=True,  # granite rapids
                                  future=True,
                                  knl=True,
                                  knm=True,
+                                 lakefield=True,
                                  bdw=True,
                                  dbghelp=False,
                                  install_dir=None,
@@ -741,6 +753,11 @@ def xed_args(env):
                           action="store", 
                           dest="xedext_dir", 
                           help="XED extension dir")
+    
+    env.parser.add_option("--tests-extension", 
+                          action="append", 
+                          dest="tests_ext", 
+                          help="Tests directories extension")
 
     env.parser.add_option("--default-isa-extf", 
                           action="store",
@@ -826,7 +843,23 @@ def xed_args(env):
     env.parser.add_option("--no-via",
                           action="store_false",
                           dest="via_enabled",
-                          help="Disable VIA public instructions")
+                          help="Disable VIA public instructions")                  
+    env.parser.add_option("--no-lakefield",
+                          action="store_false",
+                          dest="lakefield",
+                          help="Disable lakefield public instructions")
+    env.parser.add_option("--no-gnr",
+                          action="store_false",
+                          dest="gnr",
+                          help="Disable Granite Rapids public instructions")
+    env.parser.add_option("--no-srf",
+                          action="store_false",
+                          dest="srf",
+                          help="Disable Sierra Forest public instructions")
+    env.parser.add_option("--no-grr",
+                          action="store_false",
+                          dest="grr",
+                          help="Disable Grand Ridge public instructions")
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -1155,6 +1188,9 @@ def _parse_extf_files_new(env, gc):
     sources_to_add = []
     sources_to_replace = []
 
+    # Generator configuration files to remove (key is ptype)
+    gc_files_to_remove = collections.defaultdict(list)
+
     dup_check = {}
     for ext_file in env['extf']:
         mbuild.vmsgb(1, "EXTF PROCESSING", ext_file)
@@ -1185,10 +1221,6 @@ def _parse_extf_files_new(env, gc):
                     ptype = _get_check(wrds,1) # unused
                     fname = _get_check( wrds,2)
                     sources_to_remove.append(fname)
-                #elif cmd == 'remove':
-                #    ptype = _get_check(wrds,1)
-                #    fname = _fn_expand(env, edir, _get_check(wrds,2))
-                #    gc.remove_file(ptype,full_name)
                 elif cmd == 'add-source':
                     ptype = _get_check(wrds,1)
                     fname = _fn_expand(env, edir, _get_check(wrds,2))
@@ -1206,11 +1238,19 @@ def _parse_extf_files_new(env, gc):
                     newfn = _fn_expand(env, edir, _get_check(wrds,3))
                     priority =  int(_get_check(wrds,4, default=1))
                     sources_to_replace.append((oldfn, newfn, ptype, priority))
+                elif cmd == 'remove':
+                    ptype = _get_check(wrds,1)
+                    fname = _fn_expand(env, edir, _get_check(wrds,2))
+                    # Keep in a list and remove after the extf parser loop
+                    gc_files_to_remove[ptype].append(fname)
                 elif cmd == 'add':
                     ptype = _get_check(wrds,1)
                     fname = _fn_expand(env, edir, _get_check(wrds,2))
                     priority =  int(_get_check(wrds,3, default=1))
                     gc.add_file(ptype, fname, priority)
+                elif cmd == 'add-tests':
+                    test_dir = _fn_expand(env, edir, _get_check(wrds,1))
+                    env['tests_ext'].append(test_dir)
                 else: # default is to add "keytype: file" (optional priority)
                     if len(wrds) not in [2,3]:
                         xbc.cdie('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
@@ -1221,6 +1261,10 @@ def _parse_extf_files_new(env, gc):
 
     for v in iter(sources_dict.values()):
         sources_to_add.append(v)
+    
+    for ptype, files in gc_files_to_remove.items():
+        for f in files:
+            gc.remove_file(ptype, f)
 
     return (sources_to_remove, sources_to_add, sources_to_replace )
 
@@ -1250,11 +1294,10 @@ def _configure_libxed_extensions(env):
         env.add_define('XED_AMD_ENABLED')
     if env['via_enabled']:
         env.add_define('XED_VIA_ENABLED')
-
     if env['avx']:
         env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr']):
+    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr', 'gnr']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['mpx']:
         env.add_define('XED_MPX')
@@ -1336,8 +1379,11 @@ def _configure_libxed_extensions(env):
     _add_normal_ext(env,'movdir')
     _add_normal_ext(env,'waitpkg')
     _add_normal_ext(env,'cldemote')
-    _add_normal_ext(env,'sgx-enclv') 
 
+        
+    if env['lakefield']:
+        _add_normal_ext(env,'lakefield')
+        
     if env['avx']:
         _add_normal_ext(env,'avx')
         _add_normal_ext(env,'xsaveopt')
@@ -1424,12 +1470,28 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'enqcmd')
             _add_normal_ext(env,'tsx-ldtrk')
             _add_normal_ext(env,'serialize')
-            _add_normal_ext(env,'tdx')
             _add_normal_ext(env,'avx512-fp16')
             _add_normal_ext(env,'evex-map5-6')
-
+        if env['gnr']:
+            _add_normal_ext(env,'gnr')
+            _add_normal_ext(env,'amx-fp16')
+            _add_normal_ext(env,'iprefetch')
+        if env['srf']:
+            _add_normal_ext(env,'srf')  
+            _add_normal_ext(env,'avx-ifma')
+            _add_normal_ext(env,'avx-ne-convert')
+            _add_normal_ext(env,'avx-vnni-int8')
+            _add_normal_ext(env,'cmpccxadd')
+            _add_normal_ext(env,'msrlist')
+            _add_normal_ext(env,'wrmsrns')
+        if env['grr']:
+            _add_normal_ext(env,'grr')
+            _add_normal_ext(env,'rao-int')
+        
         if env['future']:
             _add_normal_ext(env,'future')
+            _add_normal_ext(env,'tdx')
+
 
     env['extf'] = newstuff + env['extf']
 
@@ -2499,12 +2561,16 @@ def _run_canned_tests(env,osenv):
     wkit = env['wkit']
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
-    dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx']
+    dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx', 'tests-prefetch']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
         x  = aq(mbuild.join(env['test_dir'],d))
         cmd += " --tests %s " % (x)
+    # Add additional tests (from cmd knob or layer's config files)
+    for d in env['tests_ext']:
+        mbuild.vmsgb(1, "ADDED TESTS EXT", d)
+        cmd += f" --tests {aq(d)}"
 
     # add test restriction/subetting codes
     codes = []
@@ -2518,6 +2584,8 @@ def _run_canned_tests(env,osenv):
         codes.append('AVX512X')
     if env['spr']:
         codes.append('AMX')
+    if env['gnr']:
+        codes.append('IPREFETCH') # ICACHE PREFETCH
     if env['knm'] or env['knl']:
         codes.append('AVX512PF')
     if env['hsw']: 
@@ -2572,7 +2640,7 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, ADL, SPR, KNL, KNM Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, ADL, SPR, KNL, KNM, GNR, GRR, SRF, Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
@@ -2587,6 +2655,9 @@ def verify_args(env):
         env['icl'] = False
         env['knl'] = False
         env['knm'] = False
+        env['gnr'] = False
+        env['grr'] = False
+        env['srf'] = False
         env['future'] = False
 
     # default is enabled. oldest disable disables upstream (younger, newer) stuff.
@@ -2606,6 +2677,7 @@ def verify_args(env):
         env['spr'] = False
         env['knl'] = False
         env['knm'] = False
+        env['gnr'] = False
         env['future'] = False
 
     # turn off downstream (later) stuff logically
@@ -2625,10 +2697,15 @@ def verify_args(env):
         env['icl'] = False
     if not env['icl']:
         env['tgl'] = False
+        env['lakefield'] = False
     if not env['tgl']:
         env['cet'] = False
         env['spr'] = False
+    if not env['srf']:
+        env['grr'] = False
     if not env['spr']:
+        env['gnr'] = False
+    if not env['gnr']:
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:

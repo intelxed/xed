@@ -193,6 +193,11 @@ def setup_arg_parser():
                           dest='input_state', 
                           default='xed-state-bits.txt',
                           help='state input file')
+    arg_parser.add_option('--input-errors',
+                          action='store', 
+                          dest='input_errors', 
+                          default='',
+                          help='new chunk for errors enum')
     arg_parser.add_option('--inst',
                           action='store', 
                           dest='inst_init_file', 
@@ -5985,6 +5990,13 @@ def emit_width_lookup(options, widths_list):
    return fp.full_file_name
 
 
+def gen_errors_enum(agi):
+   """Read in the information about xed errors"""
+   fn = agi.common.options.input_errors
+   msge("MAKING ERRORS ENUM")
+   all_values = agi.handle_prefab_enum(fn)
+   agi.all_enums['xed_error_enum_t'] = all_values
+
 def gen_element_types_base(agi):
    """Read in the information about element base types"""
    fn = agi.common.options.input_element_type_base
@@ -6304,6 +6316,7 @@ def main():
    gen_element_types_base(agi) 
    gen_element_types(agi) # write agi.xtypes dict, agi.xtypes
    gen_pointer_names(options,agi)
+   gen_errors_enum(agi) 
    
    
    # this reads the pattern input, builds a graph, emits the decoder

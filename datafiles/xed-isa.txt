@@ -9359,9 +9359,9 @@ CATEGORY  : SSE
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x51 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:ss MEM0:r:ss
+OPERANDS  : REG0=XMM_R():rw:ss MEM0:r:ss
 PATTERN   : 0x0F 0x51 f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
-OPERANDS  : REG0=XMM_R():w:ss REG1=XMM_B():r:ss
+OPERANDS  : REG0=XMM_R():rw:ss REG1=XMM_B():r:ss
 }
 {
 ICLASS    : RSQRTSS
@@ -9371,9 +9371,9 @@ CATEGORY  : SSE
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
 PATTERN   : 0x0F 0x52 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:ss MEM0:r:ss
+OPERANDS  : REG0=XMM_R():rw:ss MEM0:r:ss
 PATTERN   : 0x0F 0x52 f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
-OPERANDS  : REG0=XMM_R():w:ss REG1=XMM_B():r:ss
+OPERANDS  : REG0=XMM_R():rw:ss REG1=XMM_B():r:ss
 }
 {
 ICLASS    : RCPSS
@@ -9383,9 +9383,9 @@ CATEGORY  : SSE
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
 PATTERN   : 0x0F 0x53 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:ss MEM0:r:ss
+OPERANDS  : REG0=XMM_R():rw:ss MEM0:r:ss
 PATTERN   : 0x0F 0x53 f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
-OPERANDS  : REG0=XMM_R():w:ss REG1=XMM_B():r:ss
+OPERANDS  : REG0=XMM_R():rw:ss REG1=XMM_B():r:ss
 }
 {
 ICLASS    : MOVMSKPD
@@ -9464,9 +9464,9 @@ CATEGORY  : SSE
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x51 f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:sd MEM0:r:sd
+OPERANDS  : REG0=XMM_R():rw:sd MEM0:r:sd
 PATTERN   : 0x0F 0x51 f2_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
-OPERANDS  : REG0=XMM_R():w:sd REG1=XMM_B():r:sd
+OPERANDS  : REG0=XMM_R():rw:sd REG1=XMM_B():r:sd
 }
 {
 ICLASS    : PUNPCKLBW
@@ -14593,9 +14593,9 @@ CATEGORY  : SSE
 EXTENSION : SSE4
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x3A 0x0B osz_refining_prefix REFINING66() MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
-OPERANDS  : REG0=XMM_R():w:q   MEM0:r:q           IMM0:r:b
+OPERANDS  : REG0=XMM_R():rw:q   MEM0:r:q           IMM0:r:b
 PATTERN   : 0x0F 0x3A 0x0B osz_refining_prefix REFINING66() MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:q   REG1=XMM_B():r:q   IMM0:r:b
+OPERANDS  : REG0=XMM_R():rw:q   REG1=XMM_B():r:q   IMM0:r:b
 }
 ############################################################################
 {
@@ -14606,9 +14606,9 @@ CATEGORY  : SSE
 EXTENSION : SSE4
 EXCEPTIONS: SSE_TYPE_3
 PATTERN   : 0x0F 0x3A 0x0A osz_refining_prefix REFINING66() MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
-OPERANDS  : REG0=XMM_R():w:d   MEM0:r:d           IMM0:r:b
+OPERANDS  : REG0=XMM_R():rw:d   MEM0:r:d           IMM0:r:b
 PATTERN   : 0x0F 0x3A 0x0A osz_refining_prefix REFINING66() MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:d   REG1=XMM_B():r:d   IMM0:r:b
+OPERANDS  : REG0=XMM_R():rw:d   REG1=XMM_B():r:d   IMM0:r:b
 }
 ############################################################################
 {
@@ -15085,7 +15085,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : Variable length store and conditional reg read. Reads/writes XSTATE_BV from header.
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix norexw_prefix MODRM()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix norexw_prefix MODRM() XSAVE()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:rw:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -15096,7 +15096,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : variable length load and conditional reg write
 ATTRIBUTES : xmm_state_cw REQUIRES_ALIGNMENT x87_mmx_state_cw NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix norexw_prefix MODRM()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix norexw_prefix MODRM() XSAVE()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:r:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -15109,7 +15109,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : Variable length store and conditional reg read. Reads/writes XSTATE_BV from header.
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix rexw_prefix MODRM()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix rexw_prefix MODRM() XSAVE()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:rw:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -15121,7 +15121,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : variable length load and conditional reg write
 ATTRIBUTES : xmm_state_cw REQUIRES_ALIGNMENT x87_mmx_state_cw NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix rexw_prefix MODRM()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix rexw_prefix MODRM() XSAVE()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:r:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }

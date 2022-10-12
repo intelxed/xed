@@ -44,10 +44,6 @@ typedef struct {xed_uint32_t key; xed_uint32_t value;} lu1_entry_t;
 typedef struct {xed_uint32_t key; xed3_find_func_t l2_func;} lu2_entry_t;
 
 
-#define XED_GRAMMAR_MODE_64 2
-#define XED_GRAMMAR_MODE_32 1
-#define XED_GRAMMAR_MODE_16 0
-
 /*
 Double immediate instructions are special. There are only 3 of them
 and anyway they require a special care. It seems that the simplest way

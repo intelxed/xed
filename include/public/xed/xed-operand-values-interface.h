@@ -223,6 +223,11 @@ xed_operand_values_get_long_mode(const xed_operand_values_t* p);
 XED_DLL_EXPORT xed_bool_t
 xed_operand_values_get_real_mode(const xed_operand_values_t* p);
 
+/// @ingroup OPERANDS
+/// Return the [VEX,EVEX].PP encoding value (2 bits)
+XED_DLL_EXPORT xed_bits_t
+xed_operand_values_get_pp_vex_prefix(const xed_operand_values_t* p);
+
 /// @name Memory Addressing
 //@{
 /// @ingroup OPERANDS    

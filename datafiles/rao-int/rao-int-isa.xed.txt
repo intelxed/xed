@@ -1,0 +1,147 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2022 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING AADD (AADD-N/A-1-32)
+{
+ICLASS:      AADD
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      norexw_prefix 
+OPERANDS:    MEM0:rw:d REG0=GPR32_R():r:d
+IFORM:       AADD_MEM32_GPR32
+}
+
+
+# EMITTING AADD (AADD-N/A-1-64)
+{
+ICLASS:      AADD
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      mode64  rexw_prefix 
+OPERANDS:    MEM0:rw:q REG0=GPR64_R():r:q
+IFORM:       AADD_MEM64_GPR64
+}
+
+
+# EMITTING AAND (AAND-N/A-1-32)
+{
+ICLASS:      AAND
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix      norexw_prefix 
+OPERANDS:    MEM0:rw:d REG0=GPR32_R():r:d
+IFORM:       AAND_MEM32_GPR32
+}
+
+
+# EMITTING AAND (AAND-N/A-1-64)
+{
+ICLASS:      AAND
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix      mode64  rexw_prefix 
+OPERANDS:    MEM0:rw:q REG0=GPR64_R():r:q
+IFORM:       AAND_MEM64_GPR64
+}
+
+
+# EMITTING AOR (AOR-N/A-1-32)
+{
+ICLASS:      AOR
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f2_refining_prefix      norexw_prefix 
+OPERANDS:    MEM0:rw:d REG0=GPR32_R():r:d
+IFORM:       AOR_MEM32_GPR32
+}
+
+
+# EMITTING AOR (AOR-N/A-1-64)
+{
+ICLASS:      AOR
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f2_refining_prefix      mode64  rexw_prefix 
+OPERANDS:    MEM0:rw:q REG0=GPR64_R():r:q
+IFORM:       AOR_MEM64_GPR64
+}
+
+
+# EMITTING AXOR (AXOR-N/A-1-32)
+{
+ICLASS:      AXOR
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f3_refining_prefix      norexw_prefix 
+OPERANDS:    MEM0:rw:d REG0=GPR32_R():r:d
+IFORM:       AXOR_MEM32_GPR32
+}
+
+
+# EMITTING AXOR (AXOR-N/A-1-64)
+{
+ICLASS:      AXOR
+CPL:         3
+CATEGORY:    LEGACY
+EXTENSION:   RAO_INT
+ISA_SET:     RAO_INT
+REAL_OPCODE: Y
+ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
+PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f3_refining_prefix      mode64  rexw_prefix 
+OPERANDS:    MEM0:rw:q REG0=GPR64_R():r:q
+IFORM:       AXOR_MEM64_GPR64
+}
+
+

@@ -22,5 +22,5 @@
 # somethign up. 
 
 FUTURE:                    \
-   ALL_OF(SAPPHIRE_RAPIDS) \
+   ALL_OF(GRANITE_RAPIDS)  \
    TDX

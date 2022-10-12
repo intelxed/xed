@@ -463,3 +463,5 @@ DISP_WIDTH=0 -> nothing
 DISP_WIDTH=8 -> nothing
 DISP_WIDTH=32 -> nothing
 
+XSAVE()::
+otherwise -> nothing

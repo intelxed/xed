@@ -380,3 +380,10 @@ OVERRIDE_SEG1()::
 mode16 | 
 mode32 | 
 mode64 | 
+
+XSAVE()::
+mode16 | 
+mode32 | 
+mode64 | 
+
+

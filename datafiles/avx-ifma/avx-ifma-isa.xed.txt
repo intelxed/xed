@@ -1,0 +1,139 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2022 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING VPMADD52HUQ (VPMADD52HUQ-128-2)
+{
+ICLASS:      VPMADD52HUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB5 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W1   
+OPERANDS:    REG0=XMM_R():rw:dq:u64 REG1=XMM_N():r:dq:u64 REG2=XMM_B():r:dq:u64
+IFORM:       VPMADD52HUQ_XMMu64_XMMu64_XMMu64
+}
+
+{
+ICLASS:      VPMADD52HUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB5 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1   
+OPERANDS:    REG0=XMM_R():rw:dq:u64 REG1=XMM_N():r:dq:u64 MEM0:r:dq:u64
+IFORM:       VPMADD52HUQ_XMMu64_XMMu64_MEMu64
+}
+
+
+# EMITTING VPMADD52HUQ (VPMADD52HUQ-256-2)
+{
+ICLASS:      VPMADD52HUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB5 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W1   
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=YMM_N():r:qq:u64 REG2=YMM_B():r:qq:u64
+IFORM:       VPMADD52HUQ_YMMu64_YMMu64_YMMu64
+}
+
+{
+ICLASS:      VPMADD52HUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB5 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W1   
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=YMM_N():r:qq:u64 MEM0:r:qq:u64
+IFORM:       VPMADD52HUQ_YMMu64_YMMu64_MEMu64
+}
+
+
+# EMITTING VPMADD52LUQ (VPMADD52LUQ-128-2)
+{
+ICLASS:      VPMADD52LUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB4 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W1   
+OPERANDS:    REG0=XMM_R():rw:dq:u64 REG1=XMM_N():r:dq:u64 REG2=XMM_B():r:dq:u64
+IFORM:       VPMADD52LUQ_XMMu64_XMMu64_XMMu64
+}
+
+{
+ICLASS:      VPMADD52LUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB4 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1   
+OPERANDS:    REG0=XMM_R():rw:dq:u64 REG1=XMM_N():r:dq:u64 MEM0:r:dq:u64
+IFORM:       VPMADD52LUQ_XMMu64_XMMu64_MEMu64
+}
+
+
+# EMITTING VPMADD52LUQ (VPMADD52LUQ-256-2)
+{
+ICLASS:      VPMADD52LUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB4 V66 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL256  W1   
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=YMM_N():r:qq:u64 REG2=YMM_B():r:qq:u64
+IFORM:       VPMADD52LUQ_YMMu64_YMMu64_YMMu64
+}
+
+{
+ICLASS:      VPMADD52LUQ
+CPL:         3
+CATEGORY:    AVX_IFMA
+EXTENSION:   AVX_IFMA
+ISA_SET:     AVX_IFMA
+EXCEPTIONS:     avx-type-4
+REAL_OPCODE: Y
+PATTERN:    VV1 0xB4 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL256  W1   
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=YMM_N():r:qq:u64 MEM0:r:qq:u64
+IFORM:       VPMADD52LUQ_YMMu64_YMMu64_MEMu64
+}
+
+

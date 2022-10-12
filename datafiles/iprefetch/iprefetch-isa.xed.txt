@@ -1,0 +1,57 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2022 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+INSTRUCTIONS()::
+# EMITTING PREFETCHIT0 (PREFETCHIT0-N/A-1)
+{
+ICLASS:      PREFETCHIT0
+CPL:         3
+CATEGORY:    PREFETCH
+EXTENSION:   ICACHE_PREFETCH
+ISA_SET:     ICACHE_PREFETCH
+REAL_OPCODE: Y
+ATTRIBUTES:  PREFETCH 
+PATTERN:    0x0F 0x18 MOD[mm] MOD!=3 REG[0b111] RM[nnn]  MODRM()       
+OPERANDS:    MEM0:r:b:u8
+IFORM:       PREFETCHIT0_MEMu8
+}
+
+
+# EMITTING PREFETCHIT1 (PREFETCHIT1-N/A-1)
+{
+ICLASS:      PREFETCHIT1
+CPL:         3
+CATEGORY:    PREFETCH
+EXTENSION:   ICACHE_PREFETCH
+ISA_SET:     ICACHE_PREFETCH
+REAL_OPCODE: Y
+ATTRIBUTES:  PREFETCH 
+PATTERN:    0x0F 0x18 MOD[mm] MOD!=3 REG[0b110] RM[nnn]  MODRM()       
+OPERANDS:    MEM0:r:b:u8
+IFORM:       PREFETCHIT1_MEMu8
+}
+
+

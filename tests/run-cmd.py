@@ -72,6 +72,7 @@ def create_reference(env, test_dir, codes_and_cmd, make_new=True):
     # abspath required for windoze
     build_dir = mbuild.posix_slashes(os.path.abspath(env['build_dir']))
     cmd2 = re.sub('BUILDDIR',build_dir,cmd).strip()
+    cmd2 = re.sub('TESTDIR', test_dir ,cmd2)
     print(cmd2)
 
     (retcode, stdout,stderr) = mbuild.run_command(cmd2,separate_stderr=True)
@@ -116,6 +117,8 @@ def compare_file(reference, this_test):
         if ref.strip() != test.strip():
             if ref.find("XED version") != -1:  # skip the version lines
                 continue
+            if ref.find(" cycles") != -1:     # skip the cycle stats
+                continue
             mbuild.msgb("DIFFERENT", "\n\tref  [%s]\n\ttest [%s]" % (ref, test))
             return False
     return True
@@ -153,6 +156,7 @@ def one_test(env,test_dir):
     # abspath required for windoze
     build_dir = mbuild.posix_slashes(os.path.abspath(env['build_dir']))
     cmd2 = re.sub('BUILDDIR',build_dir,cmd)
+    cmd2 = re.sub('TESTDIR', test_dir ,cmd2)
     cmd2 = cmd2.strip()
     print(cmd2)
 
@@ -182,9 +186,14 @@ def one_test(env,test_dir):
 
 def find_tests(env):
     test_dirs = []
+    test_pattern = "test-[0-9][0-9]*"
     for d in env['tests']:
-        test_dirs.extend(mbuild.glob(mbuild.join(d,"test-[0-9][0-9]*")))
-    return  test_dirs
+        tests = mbuild.glob(mbuild.join(d, test_pattern))
+        if not tests:
+            mbuild.die(f"Couldn't find tests in: {d}.\n" \
+                       f"Expected tests directory pattern: '{test_pattern}'")
+        test_dirs.extend(tests)
+    return test_dirs
 
 def rebase_tests(env):
     test_dirs = find_tests(env)
