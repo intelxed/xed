@@ -2445,7 +2445,7 @@ def get_git_version(env):
             line = stdout[0].strip()
             return line
         else:
-            xbc.dump_lines("git version description", "FAILED")
+            xbc.dump_lines("git version description", ["FAILED"])
             xbc.dump_lines("git description stdout", stdout)
             xbc.dump_lines("git description stderr", stderr)
 
