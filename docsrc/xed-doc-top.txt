@@ -186,7 +186,7 @@ well-defined components:
             comes in two forms. The 2-byte sequence begins with an
             0xC5 byte. The 3-byte sequence begins with an 0xC4 byte.
 
-            <li> EVEX prefix. The EVEX 3-byte sequence used for
+            <li> EVEX prefix. The EVEX 4-byte sequence used for
             encoding Intel AVX512 instructions and begins with an 0x62 byte.
             
          </ul>
