@@ -1,0 +1,59 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING TCMMIMFP16PS (TCMMIMFP16PS-128-1)
+{
+ICLASS:      TCMMIMFP16PS
+CPL:         3
+CATEGORY:    AMX_TILE
+EXTENSION:   AMX_TILE
+ISA_SET:     AMX_COMPLEX
+EXCEPTIONS:  AMX-E4
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     VV1 0x6C V66 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL128 mode64
+OPERANDS:    REG0=TMM_R():rw:tv:f32 REG1=TMM_B():r:tv:f16 REG2=TMM_N():r:tv:f16
+IFORM:       TCMMIMFP16PS_TMMf32_TMMf16_TMMf16
+}
+
+
+# EMITTING TCMMRLFP16PS (TCMMRLFP16PS-128-1)
+{
+ICLASS:      TCMMRLFP16PS
+CPL:         3
+CATEGORY:    AMX_TILE
+EXTENSION:   AMX_TILE
+ISA_SET:     AMX_COMPLEX
+EXCEPTIONS:  AMX-E4
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     VV1 0x6C VNP V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL128 mode64
+OPERANDS:    REG0=TMM_R():rw:tv:f32 REG1=TMM_B():r:tv:f16 REG2=TMM_N():r:tv:f16
+IFORM:       TCMMRLFP16PS_TMMf32_TMMf16_TMMf16
+}
+
+

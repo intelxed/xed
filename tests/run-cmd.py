@@ -2,7 +2,7 @@
 #-*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2018 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -118,6 +118,10 @@ def compare_file(reference, this_test):
             if ref.find("XED version") != -1:  # skip the version lines
                 continue
             if ref.find(" cycles") != -1:     # skip the cycle stats
+                continue
+            if ref.startswith("iform-enum-name-dispatch"):  # skip
+                continue
+            if ref.startswith("iclass-max-iform-dispatch"): # skip
                 continue
             mbuild.msgb("DIFFERENT", "\n\tref  [%s]\n\ttest [%s]" % (ref, test))
             return False

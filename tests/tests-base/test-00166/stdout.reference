@@ -19,7 +19,7 @@ Operands
 Memory Operands
   MemopBytes = 0
 ATTRIBUTES: 
-ANY 66 PREFIX
+MANDATORY 66 PREFIX
 EXCEPTION TYPE: SSE_TYPE_5
 SSE
 Vector length: 128

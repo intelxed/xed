@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ class flag_action_t(object):
       self.flag = None
       self.action = None # Could be mod,tst,u,0,1, ah, pop
       if s != 'nothing':
-         (self.flag,self.action) = s.split('-')
+         (self.flag,self.action) = s.lower().split('-')
          if self.action not in flag_action_t.valid_flag_actions:
             die("Invalid flag_action_t in %s" % s)
    def __str__(self):

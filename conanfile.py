@@ -1,6 +1,6 @@
-# BEGIN_LEGAL
+#BEGIN_LEGAL
 #
-# Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-# END_LEGAL
+#  
+#END_LEGAL
 
 import os
 
@@ -25,8 +25,8 @@ from conans.errors import ConanInvalidConfiguration
 class XedConan(ConanFile):
     name = "xed"
     description = "The X86 Encoder Decoder (XED) library for encoding/decoding X86 instructions."
-    url = "https://gitlab.devtools.intel.com/xed-group/xed"
-    homepage = "http://mjc.intel.com/xeddoc/doc-build-internal"
+    url = "https://github.com/intelxed/xed"
+    homepage = "https://intelxed.github.io/"
     license = "Apache License 2.0"
     topics = ("intel", "xed", "encoder", "decoder", "x86")
 

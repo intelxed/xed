@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15060,7 +15060,7 @@ PATTERN:    EVV 0xC5 V66 V0F MOD[0b11] MOD=3 BCRC=0 UBIT=1 REG[rrr] RM[nnn]  VL1
 OPERANDS:    REG0=GPR32_R():w:d:u16 REG1=XMM_B3():r:dq:u16 IMM0:r:b
 IFORM:       VPEXTRW_GPR32u16_XMMu16_IMM8_AVX512_C5
 
-PATTERN:    EVV 0xC5 V66 V0F MOD[0b11] MOD=3 BCRC=0 UBIT=1 REG[rrr] RM[nnn]  VL128    NOEVSR  ZEROING=0 MASK=0 UIMM8() mode64 EVEXRR_ONE
+PATTERN:    EVV 0xC5 V66 V0F MOD[0b11] MOD=3 BCRC=0 UBIT=1 REG[rrr] RM[nnn]  VL128    NOEVSR  ZEROING=0 MASK=0 UIMM8() mode64 EVEXR4_ONE()
 OPERANDS:    REG0=GPR32_R():w:d:u16 REG1=XMM_B3():r:dq:u16 IMM0:r:b
 IFORM:       VPEXTRW_GPR32u16_XMMu16_IMM8_AVX512_C5
 }

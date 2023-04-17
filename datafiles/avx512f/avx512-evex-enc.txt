@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ SEQUENCE EVEX_ENC_BIND
          EVEX_62_REXR_ENC_BIND
          EVEX_REXX_ENC_BIND
          EVEX_REXB_ENC_BIND
-         EVEX_REXRR_ENC_BIND
+         EVEX_REXR4_ENC_BIND
          EVEX_MAP_ENC_BIND
          EVEX_REXW_VVVV_ENC_BIND
          EVEX_U_ENC_BIND
@@ -57,7 +57,7 @@ SEQUENCE EVEX_ENC_EMIT
          EVEX_62_REXR_ENC_EMIT
          EVEX_REXX_ENC_EMIT
          EVEX_REXB_ENC_EMIT
-         EVEX_REXRR_ENC_EMIT
+         EVEX_REXR4_ENC_EMIT
          EVEX_MAP_ENC_EMIT
          EVEX_REXW_VVVV_ENC_EMIT
          EVEX_U_ENC_EMIT
@@ -84,11 +84,11 @@ mode64 REXB=0 -> 0b1
 mode32 REXB=1 -> error
 mode32 REXB=0 -> 0b1
 
-EVEX_REXRR_ENC()::
-mode64 REXRR=1 -> 0b0
-mode64 REXRR=0 -> 0b1
-mode32 REXRR=1 -> error
-mode32 REXRR=0 -> 0b1
+EVEX_REXR4_ENC()::
+mode64 REXR4=1 -> 0b0
+mode64 REXR4=0 -> 0b1
+mode32 REXR4=1 -> error
+mode32 REXR4=0 -> 0b1
 
 EVEX_MAP_ENC()::
 MAP=0  -> 0b0000
@@ -110,9 +110,12 @@ VF3 -> 0b10
 VF2 -> 0b11
 
 EVEX_LL_ENC()::
-ROUNDC=0 SAE=0 VL128 -> LLRC=0
-ROUNDC=0 SAE=0 VL256 -> LLRC=1
-ROUNDC=0 SAE=0 VL512 -> LLRC=2
+VL_IGN=0 ROUNDC=0 SAE=0 VL128 -> LLRC=0
+VL_IGN=0 ROUNDC=0 SAE=0 VL256 -> LLRC=1
+VL_IGN=0 ROUNDC=0 SAE=0 VL512 -> LLRC=2
+
+# Zero the LL bits if SAE/ROUNDC are legal but ignored
+VL_IGN=1 ROUNDC=0 SAE=0 -> LLRC=0
 
 # scalars (XED has scalars as VL128)
 ROUNDC=0 SAE=1 VL128 -> LLRC=0 BCRC=1 # sae only, no rounding 
@@ -165,3 +168,9 @@ ROUNDC=4 -> LLRC=3 BCRC=1
 SAE()::
 SAE=1 -> BCRC=1
 SAE=0 -> BCRC=0
+
+# REXR4 is EVEX.R' stored inverted.  EVEX.R'=0 (or REXR4=1) implies
+# #UD in 64b mode and gpr encoded in modrm.reg.
+EVEXR4_ONE()::
+REXR4=0   -> nothing
+otherwise -> error

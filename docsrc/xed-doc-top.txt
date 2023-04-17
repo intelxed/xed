@@ -1,5 +1,6 @@
 #BEGIN_LEGAL
-#Copyright (c) 2019 Intel Corporation
+#
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -12,6 +13,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
+#  
 #END_LEGAL
 
 // This file does not contain any code
@@ -122,10 +124,10 @@ where "xed-kit-name" is the place you've unpacked the Intel XED kit.
 
 Your Linux or Mac OS X* link statement must reference the libxed library:
 @code
--lxed-kit-name/lib/libxed.a
+-Lxed-kit-name/lib -lxed
 @endcode
 
-(or link against libxed.lib for Windows).
+(or link against xed.lib for Windows).
 
 Intel XED uses base types with the following names: xed_uint8_t,
 xed_uint16_t, xed_uint32_t, xed_uint64_t xed_int8_t, xed_int16_t,
@@ -186,7 +188,7 @@ well-defined components:
             comes in two forms. The 2-byte sequence begins with an
             0xC5 byte. The 3-byte sequence begins with an 0xC4 byte.
 
-            <li> EVEX prefix. The EVEX 3-byte sequence used for
+            <li> EVEX prefix. The EVEX 4-byte sequence used for
             encoding Intel AVX512 instructions and begins with an 0x62 byte.
             
          </ul>

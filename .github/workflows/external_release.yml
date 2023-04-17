@@ -1,3 +1,20 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2022 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
 name: External release
 on:
   push:
@@ -33,7 +50,7 @@ jobs:
           path: main
       - name: Get version
         id: get-version
-        run: echo "::set-output name=version::$(cat external/VERSION)"
+        run: echo "version=$(cat external/VERSION)" >> $GITHUB_OUTPUT
       - name: Git config
         uses: ./main/.github/actions/set-git-credentials
         with:

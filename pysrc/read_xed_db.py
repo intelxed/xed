@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -477,6 +477,7 @@ class xed_reader_t(object):
             v.has_imm8 = False
             v.has_immz = False #  16/32b imm. (32b in 64b EOSZ)
             v.has_imm8_2 = False
+            v.has_imm32 = False
             v.imm_sz = '0'
             for op in v.parsed_operands:
                 if _op_imm8(op):
@@ -488,6 +489,7 @@ class xed_reader_t(object):
                 elif _op_immv(op):
                     v.imm_sz = 'v'                    
                 elif _op_immd(op):
+                    v.has_imm32 = True
                     v.imm_sz = '4'
                 elif _op_immw(op):
                     v.imm_sz = '2'

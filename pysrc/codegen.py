@@ -3,7 +3,7 @@
 # Code generation support: emitting files, emitting functions, etc.
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import sys
 import os
 import re
 import glob
+import datetime
 
 from genutil import *
 def find_dir(d):
@@ -256,8 +257,11 @@ class xed_file_emitter_t(file_emitter_t):
       self.emit_header(full_header)
       ip_header_file_name = mbuild.join(self.xeddir,
                                         'misc',
-                                        'apache-header.txt')
+                                        'legal-header.txt')
+      curr_year = datetime.date.today().strftime("%Y")
       for line in self.emit_ip_header(ip_header_file_name):
+         if "<CURRENT_YEAR>" in line:
+            line = line.replace("<CURRENT_YEAR>", curr_year)
          self.emit(line)
       if not self.shell_file:
          self.system_headers_emit()

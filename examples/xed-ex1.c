@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2022 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -57,7 +57,11 @@ void print_misc(xed_decoded_inst_t* xedd) {
         /* this 66 prefix is not part of the opcode */
         printf("66-OSZ PREFIX\n");
     }
-    if (xed_operand_values_has_66_prefix(ov)) {
+    if (xed_operand_values_mandatory_66_prefix(ov)) {
+        /* this 66 prefix is mandatory */
+        printf("MANDATORY 66 PREFIX\n");
+    }
+    else if (xed_operand_values_has_66_prefix(ov)) {
         /* this is any 66 prefix including the above */
         printf("ANY 66 PREFIX\n");
     }

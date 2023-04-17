@@ -1,0 +1,10 @@
+6690
+ICLASS:     NOP
+CATEGORY:   NOP
+EXTENSION:  BASE
+IFORM:      NOP_90
+ISA_SET:    I86
+ATTRIBUTES: NOP 
+SHORT:      data16 nop
+Encodable! 6690
+Identical re-encoding

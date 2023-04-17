@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -322,10 +322,10 @@ BCRC=0b1  ELEMENT_SIZE=32 VL128 | NELEM=1    EMX_BROADCAST_1TO2_32
 # For reg/reg ops with rounding control, we have to avoid having the
 #  RC bits mes up the length. So we fix them here.
 FIX_ROUND_LEN512()::
-mode16 | VL512
-mode32 | VL512
-mode64 | VL512
+mode16 | VL512 VL_IGN=1
+mode32 | VL512 VL_IGN=1
+mode64 | VL512 VL_IGN=1
 FIX_ROUND_LEN128()::
-mode16 | VL128
-mode32 | VL128
-mode64 | VL128
+mode16 | VL128 VL_IGN=1
+mode32 | VL128 VL_IGN=1
+mode64 | VL128 VL_IGN=1

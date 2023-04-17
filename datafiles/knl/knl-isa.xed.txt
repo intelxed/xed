@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -731,8 +731,8 @@ EXTENSION:   PREFETCHWT1
 ISA_SET:     PREFETCHWT1
 REAL_OPCODE: Y
 ATTRIBUTES:  PREFETCH 
-PATTERN:     0x0F 0x0D MOD[mm] MOD!=3 REG[0b010] RM[nnn]  MODRM()       
-OPERANDS:    MEM0:r:b:u8
+PATTERN:     0x0F 0x0D MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM()       
+OPERANDS:    MEM0:r:mprefetch
 IFORM:       PREFETCHWT1_MEMu8
 }
 

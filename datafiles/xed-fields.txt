@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -85,7 +85,8 @@ ASZ            SCALAR     xed_bits_t 1       SUPPRESSED  NOPRINT INTERNAL DO EO
 EOSZ           SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT PUBLIC DO EI 
 EASZ           SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT PUBLIC DO EI 
 
-
+# "DS" means "decoder skip". It is ignored during parsing by the decoder.	
+SKIP_OSZ       SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DS EO
 
 #MODRM fields
 MOD            SCALAR     xed_bits_t 2             SUPPRESSED  NOPRINT INTERNAL DO EO

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -64,8 +64,8 @@ def _find_common():
     _fatal("Could not find xed_build_common.py")
 
 def setup():
-    if sys.version_info[0] == 3 and sys.version_info[1] < 4:        
-        _fatal("Need python version 3.4 or later.")
+    if sys.version_info[0] == 3 and sys.version_info[1] < 6:        
+        _fatal("Need python version 3.6 or later.")
     elif sys.version_info[0] == 2 and sys.version_info[1] < 7:        
         _fatal("Need python version 2.7 or later.")
     _find_mbuild_import()

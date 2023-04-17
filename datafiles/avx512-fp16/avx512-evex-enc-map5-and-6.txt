@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@
 # augment EVEX_MAP_ENC() in avx512f
 
 EVEX_MAP_ENC()::
-MAP=4  -> error
 MAP=5  -> 0b0101
 MAP=6  -> 0b0110
 

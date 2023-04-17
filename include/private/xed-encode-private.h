@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -172,7 +172,10 @@ xed_encoder_get_group_encoding_function(xed_iclass_enum_t iclass){
 static XED_INLINE xed_uint8_t
 xed_encoder_get_iclasses_index_in_group(const xed_encoder_request_t* p){
     xed_iclass_enum_t iclass = xed_encoder_request_get_iclass(p);
-    return xed_enc_iclass2index_in_group[iclass];
+    if (iclass < XED_ICLASS_LAST)
+        return xed_enc_iclass2index_in_group[iclass];
+    xed_assert(iclass < XED_ICLASS_LAST);
+    return 0;
 }
 
 

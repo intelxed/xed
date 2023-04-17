@@ -1,3 +1,20 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27b49c0   # TILEZERO
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2784900   # LDTILECFG
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27b4b0410 # TILELOADD
@@ -8,3 +25,5 @@ DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2795ed1   # TDPBUSD
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2785ed1   # TDPBUUD
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2725cd0   # TDPBF16PS
 DEC AMX              ; BUILDDIR/xed-ex1 -64 c4e2725cd0
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2696cc1   # TCMMIMFP16PS
+DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2686cc1   # TCMMRLFP16PS

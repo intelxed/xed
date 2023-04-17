@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -38,6 +38,3 @@ EMX_BROADCAST_2TO4_32  BCAST=12   #         128
 EMX_BROADCAST_2TO8_32  BCAST=21   #     256
 EMX_BROADCAST_1TO2_32  BCAST=22   #     128
 
-# REXRR is EVEX.RR stored inverted.  EVEX.RR=0 (or REXRR=1) implies
-# #UD in 64b mode and gpr encoded in modrm.reg.
-EVEXRR_ONE REXRR=0

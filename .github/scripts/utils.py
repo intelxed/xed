@@ -1,6 +1,6 @@
-# BEGIN_LEGAL
+#BEGIN_LEGAL
 #
-# Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-# END_LEGAL
+#  
+#END_LEGAL
 
 import argparse
 from collections import defaultdict
@@ -46,7 +46,7 @@ def get_compiler_build_flags(env):
     """
     os_ver = platform.system()
     compiler = env['compiler']
-    version = env['compiler_version'] if env['compiler_version'] else get_latest_version(compiler)
+    version = env['compiler_version'] if env['compiler_version'] else get_latest_version(compiler, os_ver)
 
     if compiler == MSVS:
         # Let mbuild find the needed toolchain
@@ -61,7 +61,7 @@ def get_compiler_build_flags(env):
         if os_ver == "Linux":
             tool = f'/usr/local/{compiler}-{version}/bin/'
         elif os_ver == "Windows":
-            tool = f'C:\\tools\\LLVM\\bin\\'
+            tool = f'C:\\tools\\LLVM_{version}\\bin\\'
         assert tool, 'Could not find CLANG path'
         build_args = f'--toolchain={tool} '
         build_args += f'--compiler={compiler}'

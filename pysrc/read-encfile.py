@@ -3,7 +3,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@
 
 
 
+import importlib.util
+from pathlib import Path
 import re
 import sys
 import os
@@ -91,6 +93,8 @@ import actions
 import ins_emit
 import encutil
 from patterns import *
+
+EXT_MODULE = None
 
 storage_fields = {}
 def outreg():
@@ -1081,7 +1085,15 @@ class iform_t(object):
         
         #the FB actions pattern
         self.fb_ptrn = None
+
+        self.encspace=0 # legacy 
+        for act in self.enc_actions:
+            if act.field_name == 'VEXVALID':
+                self.encspace=act.value
+                break
         
+        # Use extension module constructor, if exists
+        if EXT_MODULE: EXT_MODULE.ext_iform_t.extend_init(self)
         self._fixup_vex_conditions()
         self._find_legacy_map(map_info)
         self.rule = self.make_rule()
@@ -1116,15 +1128,10 @@ class iform_t(object):
                 genutil.die("Could not set legacy map.")
             
     def _fixup_vex_conditions(self):
-        """if action has VEXVALID=1, add modal_pattern MUST_USE_AVX512=0. 
+        """if action has VEXVALID=1, add modal_pattern MUST_USE_EVEX=0. 
            The modal_patterns become conditions later on."""
-        self.encspace=0 # legacy 
-        for act in self.enc_actions:
-            if act.field_name == 'VEXVALID':
-                self.encspace=act.value
-                if act.value == 1:
-                    self.modal_patterns.append( "MUST_USE_EVEX=0" )
-
+        if self.encspace == 1: # VEX
+            self.modal_patterns.append("MUST_USE_EVEX=0")
     
     def make_operand_name_list(self):
         """Make an ordered list of operand storage field names that
@@ -2050,6 +2057,8 @@ class encoder_configuration_t(object):
     def force_vl_encoder_output(self, iclass, operand_str, pattern_str):
         """Return true if we should treat VL as an encoder_output (EO)"""
         if 'VEXVALID=1' in pattern_str or 'VEXVALID=2' in pattern_str:
+            if ':zd0' in operand_str:
+                return True
             if 'XMM' in operand_str or 'YMM' in operand_str or 'ZMM' in operand_str:
                 return False
             if ':vv' in operand_str:
@@ -2127,8 +2136,11 @@ class encoder_configuration_t(object):
                 # FIXME: 2016-01-28: MJC: HACK TO ENCODE ROUNDC/SAE CONSTRAINTS
                 if 'SAE' in pattern_str:
                     modal_patterns.append("SAE!=0")
-                elif 'AVX512_ROUND' in pattern_str:
+                elif '_ROUND()' in pattern_str:
                     modal_patterns.append("ROUNDC!=0")
+                elif 'FIX_ROUND_LEN' in pattern_str:
+                    # Catches SAE and ROUNDC ignored instructions
+                    modal_patterns.append("VL_IGN!=0")
             
             # The pattern_list is a list of blot_t's covering the
             # pattern.  The extra_bindings_list is a list of
@@ -3150,7 +3162,10 @@ def setup_arg_parser():
     arg_parser.add_option('--xeddir',
                       action='store', dest='xeddir', default='.',
                       help='Directory for generated files')
-
+    arg_parser.add_option('--xedext-dir',
+                      action='store', dest='xedext_dir', default='',
+                      help='Directory for extension')
+    
     arg_parser.add_option('--input-fields',
                       action='store', dest='input_fields', default='',
                       help='Operand storage description  input file')
@@ -3193,12 +3208,35 @@ def setup_arg_parser():
                                 limits what encode will produce to
                                 only those instructions valid for that
                                 chip.''')
-    return arg_parser
+    
+    options, args = arg_parser.parse_args()
+
+    if options.xedext_dir: 
+        extdir_path = Path(options.xedext_dir).resolve()
+        if extdir_path.exists(): 
+            # Catch read-encfile.py extension
+            try:
+                global EXT_MODULE
+                fname = Path(__file__).name
+                ext_file = 'ext-' + fname
+                ext_module = 'ext-' + Path(__file__).stem
+
+                ext_path = extdir_path.joinpath('pysrc', ext_file).resolve(strict=True)
+                spec = importlib.util.spec_from_file_location(ext_module, ext_path)
+                EXT_MODULE = importlib.util.module_from_spec(spec)
+                sys.modules[ext_module] = EXT_MODULE
+                spec.loader.exec_module(EXT_MODULE)
+                mbuild.msgb(f'PYSRC: Extending "{fname}" with "{ext_file}"')
+            except:
+                die('(read-encfile.py) couldn\'t find an expected extension module')
+        else:
+            warn(f'Provided --xedext-dir does not exists: "{options.xedext_dir}"')
+
+    return options, args
 
 
 if __name__ == '__main__':
-    arg_parser = setup_arg_parser()
-    (options, args) = arg_parser.parse_args()
+    (options, args) = setup_arg_parser()
     set_verbosity_options(options.verbosity)
     enc_inputs = encoder_input_files_t(options)
     enc = encoder_configuration_t(enc_inputs, options.chip, options.amd_enabled)

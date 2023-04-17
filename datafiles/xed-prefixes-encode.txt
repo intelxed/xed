@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -129,10 +129,10 @@ otherwise                                                        -> error
 
 PREFIX_ENC()::
 # create an "OR" of REFINING=2 and REP=2
-REP=2 -> 0xf2 no_return
-REP=3 -> 0xf3 no_return
+VV0 REP=2 -> 0xf2 no_return
+VV0 REP=3 -> 0xf3 no_return
 #
-66_prefix                  -> 0x66 no_return
+VV0 66_prefix              -> 0x66 no_return
 67_prefix                  -> 0x67 no_return
 lock_prefix                -> 0xf0 no_return
 fs_prefix                  -> 0x64 no_return
@@ -195,6 +195,7 @@ VEXVALID=0 mode64 EOSZ=3 DF64=1 -> nothing
 #VEXVALID=0 mode64 EOSZ=3 DF64=0 SKIP_OSZ=1 -> nothing
 #VEXVALID=0 mode64 EOSZ=3 DF64=0 SKIP_OSZ=0 -> REXW=1
 VEXVALID=0 mode64 EOSZ=3 DF64=0 -> REXW=1
+
 otherwise -> nothing
 
 # The REFINING66() decode version is required for when we have a 66

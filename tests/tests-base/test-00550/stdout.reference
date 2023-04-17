@@ -1,0 +1,10 @@
+660F1F440000
+ICLASS:     NOP
+CATEGORY:   WIDENOP
+EXTENSION:  BASE
+IFORM:      NOP_MEMv_0F1F
+ISA_SET:    FAT_NOP
+ATTRIBUTES: NOP SCALABLE 
+SHORT:      nop word ptr [eax+eax*1]
+Encodable! 660F1F440000
+Identical re-encoding

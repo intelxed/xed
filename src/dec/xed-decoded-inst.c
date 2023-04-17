@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -493,7 +493,10 @@ xed_decoded_inst_operand_length_bits_register(
     mode = xed_decoded_inst_get_machine_mode_bits(p);
     if (mode == 64) 
         idx = 1;
-    return xed_reg_width_bits[r][idx];
+    if (r < XED_REG_LAST) 
+        return xed_reg_width_bits[r][idx];
+    xed_assert(r < XED_REG_LAST);
+    return 0;
 }
 
 

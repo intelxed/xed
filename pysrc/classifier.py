@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -42,18 +42,39 @@ def _emit_function(fe, isa_sets, name):
     fo.emit_file_emitter(fe)
 
 
+def find_avx512_insts(agi) -> set:
+    """pre-processing step, where all AVX512 main ISA are assembled"""
+    avx512_main_isa = set()
+    for generator in agi.generator_list:
+      for ii in generator.parser_output.instructions:
+         if genutil.field_check(ii, 'iclass'):
+             # if the instruction has 512 VL variant or AVX512 prefix
+             if re.search('^AVX512_|_512$',ii.isa_set):
+                avx512_main_isa.add(ii.isa_set.rsplit('_', 1)[0])
+    return avx512_main_isa
+
+
+def is_avx512_inst(isa_set: str, avx512_main_isa: set):
+    """Checks whether the given ISA belongs to the AVX512 family"""
+    # removes the suffix from the ISA-SET
+    return isa_set.rsplit('_', 1)[0] in avx512_main_isa
+
+
 def work(agi):
     sse_isa_sets = set([])
     avx_isa_sets = set([])
     avx512_isa_sets = set([])
     avx512_kmask_op = set([])
     amx_isa_sets = set([])
+
+    avx512_main_isa = find_avx512_insts(agi)    # contains the main forms of AVX512 ISA
+
     for generator in agi.generator_list:
       for ii in generator.parser_output.instructions:
          if genutil.field_check(ii, 'iclass'):
              if re.search('AMX',ii.isa_set):
                  amx_isa_sets.add(ii.isa_set)
-             elif re.search('AVX512',ii.isa_set):
+             elif is_avx512_inst(ii.isa_set, avx512_main_isa):
                  avx512_isa_sets.add(ii.isa_set)
                  if re.search('KOP',ii.isa_set):
                      avx512_kmask_op.add(ii.isa_set)

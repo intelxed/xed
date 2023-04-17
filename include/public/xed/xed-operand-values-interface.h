@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2022 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -197,6 +197,11 @@ xed_operand_values_has_operand_size_prefix(const xed_operand_values_t* p);
 /// This includes any 66 prefix that shows up even if it is ignored.
 XED_DLL_EXPORT xed_bool_t 
 xed_operand_values_has_66_prefix(const xed_operand_values_t* p);
+
+/// @ingroup OPERANDS    
+/// This is exclusive to cases whereby the 66 prefix is mandatory.
+XED_DLL_EXPORT xed_bool_t 
+xed_operand_values_mandatory_66_prefix(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS    
 /// This instruction has a REX prefix with the W bit set.

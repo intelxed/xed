@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,13 +20,14 @@ ZEROING      SCALAR xed_bits_t 1         SUPPRESSED    NOPRINT INTERNAL DO EO
 LLRC         SCALAR xed_bits_t 2         SUPPRESSED    NOPRINT INTERNAL DO EO
 BCRC         SCALAR xed_bits_t 1         SUPPRESSED    NOPRINT INTERNAL DO EO
 
-REXRR      SCALAR xed_bits_t 1           SUPPRESSED    NOPRINT INTERNAL DO EO
+REXR4      SCALAR xed_bits_t 1           SUPPRESSED    NOPRINT INTERNAL DO EO
 VEXDEST4    SCALAR xed_bits_t 1           SUPPRESSED    NOPRINT INTERNAL DO EO
 
 MASK       SCALAR xed_bits_t 3           SUPPRESSED    NOPRINT INTERNAL DO EO
 
 ROUNDC        SCALAR xed_bits_t  3       SUPPRESSED NOPRINT INTERNAL DO EI
 SAE           SCALAR xed_bits_t  1       SUPPRESSED NOPRINT INTERNAL DO EI
+VL_IGN        SCALAR xed_bits_t  1       SUPPRESSED NOPRINT INTERNAL DO EI
 
 UBIT          SCALAR xed_bits_t 1         SUPPRESSED    NOPRINT INTERNAL DO EO
 

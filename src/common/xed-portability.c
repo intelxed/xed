@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -72,14 +72,14 @@ int xed_strncat(char* dst, const char* src, int len) {
     // len is the maximum number of bytes to copy.
 #if defined(_WIN32) && !defined(__GNUC__)
 # if defined(XED_MSVC6) || defined(XED_MSVC7) || defined(XED_IPF) || defined(PIN_CRT)
-    strncat(dst, src, len);
+    strncat(dst, src, len-1);
 # else
     // MS wants the total length of the dst buffer and not the number of
     // bytes to copy.
     strcat_s(dst, xed_strlen(dst)+len, src);
 # endif
 #else
-    strncat(dst,src,len);
+    strncat(dst,src,len-1);
 #endif
     return orig_max - XED_STATIC_CAST(int,xed_strlen(dst));
 }

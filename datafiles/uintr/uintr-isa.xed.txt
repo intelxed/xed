@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ CATEGORY:    UINTR
 EXTENSION:   UINTR
 ISA_SET:     UINTR
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b110]  f3_refining_prefix      mode64 
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b101] RM[0b110] f3_refining_prefix mode64
 OPERANDS:    REG0=XED_REG_UIF:w:SUPP:i1
 IFORM:       CLUI
 }
@@ -47,9 +47,9 @@ CATEGORY:    UINTR
 EXTENSION:   UINTR
 ISA_SET:     UINTR
 REAL_OPCODE: Y
-PATTERN:    0x0F 0xC7 MOD[0b11] MOD=3  REG[0b110] RM[nnn]  f3_refining_prefix      mode64 
-OPERANDS:    REG0=GPR32_B():r:d:u32
-IFORM:       SENDUIPI_GPR32u32
+PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3 REG[0b110] RM[nnn] f3_refining_prefix mode64
+OPERANDS:    REG0=GPR64_B():r:q:u32
+IFORM:       SENDUIPI_GPR64u32
 }
 
 
@@ -61,7 +61,7 @@ CATEGORY:    UINTR
 EXTENSION:   UINTR
 ISA_SET:     UINTR
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b111]  f3_refining_prefix      mode64 
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b101] RM[0b111] f3_refining_prefix mode64
 OPERANDS:    REG0=XED_REG_UIF:w:SUPP:i1
 IFORM:       STUI
 }
@@ -76,7 +76,7 @@ EXTENSION:   UINTR
 ISA_SET:     UINTR
 REAL_OPCODE: Y
 FLAGS:       MUST [  cf-mod  ]
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b101]  f3_refining_prefix      mode64 
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b101] RM[0b101] f3_refining_prefix mode64
 OPERANDS:    REG0=XED_REG_UIF:r:SUPP:i1
 IFORM:       TESTUI
 }
@@ -91,7 +91,7 @@ EXTENSION:   UINTR
 ISA_SET:     UINTR
 REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b100]  f3_refining_prefix      mode64 
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b101] RM[0b100] f3_refining_prefix mode64
 OPERANDS:    REG0=rIP():w:SUPP REG1=XED_REG_STACKPOP:rw:SUPP:spw
 IFORM:       UIRET
 }

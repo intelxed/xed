@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ MASK=0x7  | OUTREG=XED_REG_K7
 
 # used for compares in EVEX
 xed_reg_enum_t MASK_R()::
-REXRR=0 REXR=0 REG=0x0 | OUTREG=XED_REG_K0
-REXRR=0 REXR=0 REG=0x1 | OUTREG=XED_REG_K1
-REXRR=0 REXR=0 REG=0x2 | OUTREG=XED_REG_K2
-REXRR=0 REXR=0 REG=0x3 | OUTREG=XED_REG_K3
-REXRR=0 REXR=0 REG=0x4 | OUTREG=XED_REG_K4
-REXRR=0 REXR=0 REG=0x5 | OUTREG=XED_REG_K5
-REXRR=0 REXR=0 REG=0x6 | OUTREG=XED_REG_K6
-REXRR=0 REXR=0 REG=0x7 | OUTREG=XED_REG_K7
+REXR4=0 REXR=0 REG=0x0 | OUTREG=XED_REG_K0
+REXR4=0 REXR=0 REG=0x1 | OUTREG=XED_REG_K1
+REXR4=0 REXR=0 REG=0x2 | OUTREG=XED_REG_K2
+REXR4=0 REXR=0 REG=0x3 | OUTREG=XED_REG_K3
+REXR4=0 REXR=0 REG=0x4 | OUTREG=XED_REG_K4
+REXR4=0 REXR=0 REG=0x5 | OUTREG=XED_REG_K5
+REXR4=0 REXR=0 REG=0x6 | OUTREG=XED_REG_K6
+REXR4=0 REXR=0 REG=0x7 | OUTREG=XED_REG_K7
 
 # MASK_B is used by VEX and EVEX encodings. SDM (rev 062) states in
 # EVEX, EVEX.B (REXB) is ignored. SDM does not (yet) say what happens

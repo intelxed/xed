@@ -1,4 +1,4 @@
-./run-cmd.py --build-dir ../obj/wkit/bin  -b bulk-tests/bulk-tests.txt  -b bulk-tests/avx-bulk-tests.txt -b  bulk-tests/hsw-bulk-tests.txt -b bulk-tests/new-tests.txt --otests tests-base
+./run-cmd.py --build-dir ../obj/wkit/bin  -b bulk-tests/bulk-tests.txt  -b bulk-tests/avx-bulk-tests.txt -b  bulk-tests/hsw-bulk-tests.txt -b bulk-tests/new-tests.txt -b bulk-tests/ild-tests.txt --otests tests-base
 
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-avx512   -b bulk-tests/avx512x-bulk-tests.txt
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-avx512pf -b bulk-tests/avx512pf-bulk-tests.txt 

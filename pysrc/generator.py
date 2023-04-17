@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -2165,28 +2165,37 @@ def renumber_bitpos(ilist):
     for i in ilist:
         renumber_one_ipattern(i)
 
+def is_repleaceable(bitpos, bit_list):
+   """Checks whether an operand decider can be moved to the current bitpos
+   without causing disarray and messing with sequential bits such as  MOD[mm] REG[rrr] RM[nnn]"""
+   if bitpos == 0 or bit_list[bitpos].is_operand_decider() or bit_list[bitpos].is_nonterminal():
+      return True
+   
+   curr_bit, prev_bit = bit_list[bitpos], bit_list[bitpos - 1]
+
+   # if not the beginning of sequential don't cares;[r r r] or [n n n] or [m m]
+   if curr_bit == prev_bit:
+      return False
+   
+   if curr_bit.is_one_or_zero() and prev_bit.is_one_or_zero():
+      return False
+
+   return True
+
 def rearrange_at_conflict(ilist,bitpos):
    """Try to rearrange ODs at a conflict"""
 
    # build up a list of candidate ods
 
-   # FIXME 2008-11-12 Mark Charney: could search for all sequential
-   # ODs rather than just one neighboring OD.
+   # search for all sequential ODs rather than just one neighboring OD.
    
    candidate_ods = []
    for i in ilist:
       if bitpos >= len(i.ipattern.bits):
          return False
-      if i.ipattern.bits[bitpos].is_operand_decider():
-         t = i.ipattern.bits[bitpos].token
-         if t not in candidate_ods:
-            candidate_ods.append(t)
-            
-         # look ahead one spot too...
-         nbitpos = bitpos+1
-         if nbitpos < len(i.ipattern.bits):
-            if i.ipattern.bits[nbitpos].is_operand_decider():
-               t = i.ipattern.bits[nbitpos].token
+      for k in range(bitpos, len(i.ipattern.bits)):
+         if i.ipattern.bits[k].is_operand_decider():
+               t = i.ipattern.bits[k].token
                if t not in candidate_ods:
                   candidate_ods.append(t)
 
@@ -2201,11 +2210,10 @@ def rearrange_at_conflict(ilist,bitpos):
       msge("REARRANGE ATTEMPT  using %s" % (candidate_od))
       retry = False
       for i in ilist:
-         if i.ipattern.bits[bitpos].is_operand_decider():
-            if candidate_od == i.ipattern.bits[bitpos].token:
+         if i.ipattern.bits[bitpos].is_operand_decider() and candidate_od == i.ipattern.bits[bitpos].token:
                msge("\tSKIPPING %s inum %d -- already fine" %
                     ( i.get_iclass(), i.inum))
-            else:
+         elif is_repleaceable(bitpos, i.ipattern.bits):
                msge("\tREARRANGE needs to juggle: %s inum %d" % 
                     ( i.get_iclass(), i.inum))
                # attempt to juggle ODs in i.ipattern.bits to get

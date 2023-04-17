@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -53,8 +53,8 @@ def ex_compile_and_link(env, dag, src, objs):
 
 def mkenv():
     """External entry point: create the environment"""
-    if sys.version_info[0] == 3 and sys.version_info[1] < 4:        
-        _fatal("Need python version 3.4 or later.")
+    if sys.version_info[0] == 3 and sys.version_info[1] < 6:        
+        _fatal("Need python version 3.6 or later.")
     elif sys.version_info[0] == 2 and sys.version_info[1] < 7:        
         _fatal("Need python version 2.7 or later.")
     # create an environment, parse args
@@ -435,7 +435,7 @@ def build_examples(env, work_queue):
                                                 example,
                                                 cc_shared_objs + [ link_libxed ]))
     # compile & link ild_examples
-    if os.path.exists(env['link_libild']):
+    if os.path.exists(env.expand_string(env['link_libild'])):
         for example in env.src_dir_join(ild_examples):
             example_exes.append(ex_compile_and_link(env_c,
                                                     examples_dag,

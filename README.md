@@ -20,7 +20,7 @@ cd xed
 ./mfile.py
 ```
 
-then get your libxed.a from the obj directory.
+Then get your libxed.a/libxed.so (Linux) or xed.lib (Windows) from the obj directory.
 Add " --shared" if you want a shared object build.
 Add " install" if you want the headers & libraries put in to a kit in the "kits" directory.
 Add "C:/python3/python " before "./mfile.py" if on windows.

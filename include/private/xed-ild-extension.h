@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -32,19 +32,12 @@ END_LEGAL */
 #define XED_GRAMMAR_MODE_32 1
 #define XED_GRAMMAR_MODE_16 0
 
-xed_bool_t xed_ild_ext_handle_ubit_avx512(xed_decoded_inst_t *d);
-// Map
-void xed_ild_ext_set_legacy_map(xed_decoded_inst_t *d);
-void xed_ild_ext_catch_invalid_legacy_map(xed_decoded_inst_t* d);
-// Prefix
-xed_uint_t xed_ild_ext_init_internal_prefixes(xed_uint8_t* prefixes_ext);
-void xed_ild_ext_catch_invalid_rex_prefixes(xed_decoded_inst_t* d);
-xed_bool_t xed_ild_ext_internal_prefix_scanner(
-    xed_decoded_inst_t* d, 
-    xed_uint8_t* const nprefixes, 
-    xed_uint8_t* const inst_length, 
-    xed_uint8_t rex);
-
+void xed_ild_ext_internal_scanner(xed_decoded_inst_t *d);
+xed_bool_t xed_ild_ext_opcode_scanner_needed(xed_decoded_inst_t *d);
+// EVEX
+void xed_ild_ext_set_ubit(xed_decoded_inst_t *d, xed_uint8_t ubit);
+xed_uint8_t xed_ild_ext_set_evex_map(xed_decoded_inst_t* d, xed_uint8_t map);
+void xed_ild_ext_finalize_evex(xed_decoded_inst_t *d, xed_uint_t length);
 
 static XED_INLINE xed_uint_t xed_ild_ext_mode_64b(xed_decoded_inst_t* d) 
 {

@@ -1,3 +1,20 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
 import argparse
 from collections import defaultdict
 import dataclasses
@@ -36,6 +53,7 @@ class Matrix:
 
 sanity_matrix = Matrix(
     include=[
+        # Linux
         Axis(
             os='Linux',
             compiler='gcc',
@@ -44,12 +62,13 @@ sanity_matrix = Matrix(
         Axis(
             os='Linux',
             compiler='clang',
-            ver='14.0.6'
+            ver='15.0.4'
         ),
+        # Windows
         Axis(
             os='Windows',
             compiler='clang',
-            ver='14.0.6'
+            ver='15.0.2'
         ),
         Axis(
             os='Windows',
@@ -63,6 +82,7 @@ sanity_matrix = Matrix(
 nightly_matrix = Matrix(
     include=sanity_matrix.include +
     [
+        # Linux
         Axis(
             os='Linux',
             compiler='gcc',
@@ -71,7 +91,13 @@ nightly_matrix = Matrix(
         Axis(
             os='Linux',
             compiler='clang',
-            ver='13.0.1'
+            ver='14.0.6'
+        ),
+        # Windows
+        Axis(
+            os='Windows',
+            compiler='clang',
+            ver='14.0.6'
         ),
         Axis(
             os='Windows',
@@ -85,33 +111,50 @@ nightly_matrix = Matrix(
 
 
 def setup():
-  parser = argparse.ArgumentParser(
+    parser = argparse.ArgumentParser(
       description='Generate test matrix for GitHub Actions workflows')
-  group = parser.add_mutually_exclusive_group(required=True)
-  group.add_argument('--sanity',
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--sanity',
                      help='Print test matrix for sanity workflows',
                      action="store_true")
-  group.add_argument('--nightly',
+    group.add_argument('--coverity',
+                     help='Print test matrix for coverity check',
+                     action="store_true")
+    group.add_argument('--nightly',
                      help='Print test matrix for nightly workflows',
                      action="store_true")
-  parser.add_argument('--html',
+    parser.add_argument('--html',
                   help='Generate html table to stdout',
                   action='store_true', 
                   default=False)
-  args = parser.parse_args()
-  return args
+    args = parser.parse_args()
+    return args
 
 
-def get_latest_version(compiler):
-  '''return a string of the latest supported compiler version'''
+def get_latest_version(compiler, os):
+  '''return a string of the latest supported compiler version for the given os'''
   zero_v = '0'
   latest = Axis(os='', compiler=compiler, ver=zero_v)
   for d in nightly_matrix.include:
-    if d.compiler == compiler and latest < d:
+    if d.compiler == compiler and d.os == os and latest < d:
       latest = d
 
   assert latest.ver != zero_v, f'Could not find latest version of {compiler}'
   return str(latest.ver)
+
+
+def get_coverity_matrix() -> Matrix:
+    """iterates over the sanity matrix and yields the desired Coverity environments
+    with the latest compiler version"""
+    coverity_matrix = Matrix(
+        include=[
+            Axis(os='Linux', compiler='gcc', ver=''),
+            Axis(os='Windows',compiler='msvs',ver='')
+        ]
+    )
+    for config in coverity_matrix.include:  #retrieve the latest version defined in our nightly matrix
+        config.ver = get_latest_version(config.compiler, config.os)
+    return coverity_matrix
 
 
 def gen_tests_table(matrix):
@@ -141,12 +184,16 @@ def gen_tests_table(matrix):
     return html
 
 if __name__ == "__main__":
-  args = setup()
-  matrix = sanity_matrix if args.sanity else nightly_matrix
+    args = setup()
+    if args.sanity:
+        matrix = sanity_matrix
+    elif args.nightly:
+        matrix = nightly_matrix
+    else:
+        matrix = get_coverity_matrix()
   
-  if args.html:
-    print(gen_tests_table(matrix.include))
-  else:
-    print(json.dumps(dataclasses.asdict(matrix)))
+    if args.html:
+        print(gen_tests_table(matrix.include))
+    else:
+        print(json.dumps(dataclasses.asdict(matrix)))
 
-  

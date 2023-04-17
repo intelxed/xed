@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2022 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -26,9 +26,16 @@ SAE()::
 BCRC=1 | SAE=1
 BCRC=0 | error
 
+# REXR4 is EVEX.R' stored inverted.  EVEX.R'=0 (or REXR4=1) implies
+# #UD in 64b mode and gpr encoded in modrm.reg.
+EVEXR4_ONE()::
+REXR4=0   | 
+otherwise | error
+
+
 # NEWKEY: VEXPFX_OP == 0x62
 # NEWKEY: MBITS --> REXR, REXX (complemented MBITS)
-# NEWKEY: BRR -> REXB, REXRR (complemented BRR bits)
+# NEWKEY: BRR -> REXB, REXR4 (complemented BRR bits)
 # NEWKEY: EVMAP -> V0F, V0F38, V0F3A or error
 # NEWKEY: REXW
 # NEWKEY: VEXDEST3

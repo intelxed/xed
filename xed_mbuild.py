@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,14 +25,13 @@
 
 ## START OF IMPORTS SETUP
 from __future__ import print_function
+from pathlib import Path
 import sys
 import os
 import re
 import shutil
 import copy
 import time
-import types
-import optparse
 import collections
 import stat
 
@@ -235,10 +234,10 @@ class generator_inputs_t(object):
             s.append(extra_args)
         return ' '.join(s)
 
-    def encode_command(self, xedsrc, extra_args=None, amd_enabled=True, chip='ALL'):
+    def encode_command(self, env, xedsrc, extra_args=None):
         """Produce an encoder generator command"""
         s = []
-        s.append( '%(pythonarg)s' )
+        s.append( env['pythonarg'] )
         # s.append("-3") # python3.0 compliance checking using python2.6
         s.append( aq(mbuild.join(xedsrc,'pysrc', 'read-encfile.py')))
         s.append('--isa %s' % aq(self.file_name['enc-instructions']))
@@ -252,10 +251,14 @@ class generator_inputs_t(object):
         s.append('--chip-models ' + aq(self.file_name['chip-models']))
         s.append('--chip ' + aq(self.encoder_chip))
 
-        if not amd_enabled:
+        if not env['amd_enabled']:
             s.append('--no-amd')
         if extra_args:
             s.append( extra_args)
+        ext = Path(env['xedext_dir']).resolve()
+        if ext.exists():
+            s.append('--xedext-dir ' + str(ext))
+
         return ' '.join(s)
     
 
@@ -351,10 +354,7 @@ def run_encode_generator(gc, env):
     build_dir = aq(env['build_dir'])
         
     gen_extra_args = "--gendir %s --xeddir %s" % (build_dir, xedsrc)
-    cmd = env.expand(gc.encode_command(xedsrc,
-                                       gen_extra_args,
-                                       env['amd_enabled'],
-                                       env['encoder_chip']))
+    cmd = gc.encode_command(env, xedsrc, gen_extra_args)
     mbuild.vmsgb(3, "ENC-GEN", cmd)
     (retval, output, error_output) = mbuild.run_command(cmd,
                                                         separate_stderr=True)
@@ -460,8 +460,9 @@ def legal_header_tagging(env):
         xbc.cdie("[ERROR], TAGGING THE IN-USE PYTHON FILES DOES " +
                    "NOT WORK ON WINDOWS.")
 
-    legal_header = open(mbuild.join(env['src_dir'],'misc',
-                                    'apache-header.txt'), 'r').readlines()
+    with open(mbuild.join(env['src_dir'],'misc',
+                                    'legal-header.txt'), 'r') as f:
+        legal_header = f.readlines()
     header_tag_files(env, source_files, legal_header, script_files=False)
     header_tag_files(env, data_files,   legal_header, script_files=True)
     mbuild.msgb("STOPPING", "after %s" % 'header tagging')
@@ -571,14 +572,22 @@ def make_doxygen_api(env, work_queue, install_dir):
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-ref')
 
+def setup_hooks(env):
+    """replaces the local git hook scripts with scripts from this repository"""
+    xed_path = env['src_dir']
+    xed_pre_commit = Path(xed_path, 'scripts', 'git-hooks', 'pre-commit.py').resolve(strict=True)
+    pre_commit = Path(xed_path, '.git', 'hooks', 'pre-commit').resolve()
+    mbuild.msgb('setup pre-commit hook', f'copy {xed_pre_commit} to {pre_commit}')
+    shutil.copyfile(xed_pre_commit, pre_commit)
+    shutil.copymode(xed_pre_commit, pre_commit)
     
 def mkenv():
     """External entry point: create the environment"""
     if not mbuild.check_python_version(2,7):
         xbc.cdie("Need python 2.7 or later.  Suggested >= 3.7")
     if sys.version_info.major >= 3:
-        if not mbuild.check_python_version(3,4):
-            xbc.cdie("Need python 3.4 or later.  Suggested >= 3.7")
+        if not mbuild.check_python_version(3,6):
+            xbc.cdie("Need python 3.6 or later.  Suggested >= 3.7")
 
     # create an environment, parse args
     env = mbuild.env_t()
@@ -660,7 +669,8 @@ def mkenv():
                                  enc2_test=False,
                                  enc2_test_checked=False,
                                  first_lib=None,
-                                 last_lib=None)
+                                 last_lib=None,
+                                 setup_hooks=False)
 
     env['xed_defaults'] = standard_defaults
     env.set_defaults(env['xed_defaults'])
@@ -989,6 +999,10 @@ def xed_args(env):
                           action="store",
                           dest="encoder_chip",
                           help="Specific encoder chip. Default is ALL")
+    env.parser.add_option("--setup-hooks", 
+                          action="store_true",
+                          dest="setup_hooks",
+                          help="Copies git hook scripts locally and exits. Does NOT build XED")
     env.parse_args(env['xed_defaults'])
 
 def init_once(env):
@@ -1081,7 +1095,8 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
                        'xed-ild-disp-l3.c',         # generated
                        'xed-ild-eosz.c',            # generated
                        'xed-ild-easz.c',            # generated
-                       'xed-ild-imm-l3.c']          # generated
+                       'xed-ild-imm-l3.c',          # generated
+                       'xed-error-enum.c',]         # generated
     common_objs = lib_env.make_obj(common_sources)
     
     ild_objs += xbc.build_dir_join(lib_env, common_objs)
@@ -1458,6 +1473,7 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'hreset')
             _add_normal_ext(env,'avx-vnni')
             _add_normal_ext(env,'keylocker')
+            _add_normal_ext(env,'cldemote')
         if env['spr']:
             _add_normal_ext(env,'spr')
             _add_normal_ext(env,'hreset')
@@ -1475,6 +1491,7 @@ def _configure_libxed_extensions(env):
         if env['gnr']:
             _add_normal_ext(env,'gnr')
             _add_normal_ext(env,'amx-fp16')
+            _add_normal_ext(env,'amx-complex')
             _add_normal_ext(env,'iprefetch')
         if env['srf']:
             _add_normal_ext(env,'srf')  
@@ -2173,7 +2190,7 @@ def _get_legal_header(env):
     if env['legal_header'] == 'default' or env['legal_header'] == None:
         env['legal_header'] = mbuild.join(env['src_dir'],
                                           'misc',
-                                          'apache-header.txt')
+                                          'legal-header.txt')
     legal_header = open(env['legal_header'],'r').readlines()
     return legal_header
 
@@ -2445,7 +2462,7 @@ def get_git_version(env):
             line = stdout[0].strip()
             return line
         else:
-            xbc.dump_lines("git version description", "FAILED")
+            xbc.dump_lines("git version description", ["FAILED"])
             xbc.dump_lines("git description stdout", stdout)
             xbc.dump_lines("git description stderr", stderr)
 
@@ -2753,6 +2770,9 @@ def work(env):
     update_version(env)
     init_once(env)
     init(env)
+    if env['setup_hooks']:
+        setup_hooks(env)
+        xbc.cexit(0)
     if 'clean' in env['targets'] or env['clean']:
         xbc.xed_remove_files_glob(env)
         if len(env['targets'])<=1:
