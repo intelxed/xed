@@ -1,6 +1,6 @@
-# BEGIN_LEGAL
+#BEGIN_LEGAL
 #
-# Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -13,8 +13,8 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
-# END_LEGAL
+#  
+#END_LEGAL
 """"XED External Sanity Check"""
 from pathlib import Path
 import platform
@@ -35,22 +35,29 @@ def main(env):
     xed_builder = 'mfile.py'
     flags='test'
     # {32b,64b} x {shared,dynamic} link
-    for size in ['ia32', 'x86-64']:
+    for host in ['ia32', 'x86-64']:
         link_options = [('static', ''), ('dynamic', ' --shared')]
         if env['compiler'] == utils.CLANG and platform.system() == 'Windows':
-            # TODO - Fix clang dynamic build on windows (Jira SDE-3049)
+            # TODO - Fix clang dynamic build on windows
             link_options = [('static', '')]
         for linkkind, link in link_options:
-            dir = f'obj-general-{env["pyver"]}-{size}-{linkkind}'
+            dir = f'obj-general-{env["pyver"]}-{host}-{linkkind}'
             build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
-            cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + link)
+            cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host, flags + link)
             commands.append(cmd)
 
     # do a build with asserts enabled
-    size = 'x86-64'
-    dir = f'obj-assert-{env["pyver"]}-{size}'
+    host = 'x86-64'
+    dir = f'obj-assert-{env["pyver"]}-{host}'
     build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
-    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, size, flags + ' --assert')
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host, flags + ' --assert')
+    commands.append(cmd)
+
+    # Test opt=3 build
+    host = 'x86-64'
+    dir = f'obj-opt3-{env["pyver"]}-{host}'
+    build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host, flags + ' --opt=3')
     commands.append(cmd)
 
     # enc2test - test encode-decode path of all instructions

@@ -34,6 +34,7 @@ END_LEGAL */
 
 void xed_ild_ext_internal_scanner(xed_decoded_inst_t *d);
 xed_bool_t xed_ild_ext_opcode_scanner_needed(xed_decoded_inst_t *d);
+void xed_ild_ext_finalize(xed_decoded_inst_t *d);
 // EVEX
 void xed_ild_ext_set_ubit(xed_decoded_inst_t *d, xed_uint8_t ubit);
 xed_uint8_t xed_ild_ext_set_evex_map(xed_decoded_inst_t* d, xed_uint8_t map);

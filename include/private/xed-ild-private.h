@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -153,6 +153,18 @@ static XED_INLINE
 xed_uint32_t xed3_operand_get_mask_zero(const xed_decoded_inst_t *d) {
     /* aaa == 0  */
     return xed3_operand_get_mask(d) == 0;
+}
+static XED_INLINE 
+xed_uint32_t xed3_operand_get_vexdest_1f(const xed_decoded_inst_t* d) {
+    /* vvvvv == 0x1F */
+    if (xed3_operand_get_vexdest210_7(d)) {
+        if (xed3_operand_get_vexdest3(d) == 1) {
+            if (xed3_operand_get_vexdest4(d) == 0) { // decoded bit is inverted by XED-ILD
+                return 1;
+            }
+        }
+    }
+    return 0; 
 }
 #endif
 

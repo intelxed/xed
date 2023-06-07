@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+from enum import Enum, auto
+from typing import Dict, List
 import math
 import copy
 import collections
@@ -28,6 +30,7 @@ import ild_codegen
 import ild_eosz
 import ild_easz
 import ild_nt
+import ild
 import actions_codegen
 import actions
 import verbosity
@@ -168,7 +171,8 @@ def get_state_op_widths(agi, state_space):
     #Special, "compressed" operands
     #FIXME: we can add these special operands widths in grammar
     widths_dict[_bin_MOD3] = 1
-    widths_dict[_vd_token_7] = 1
+    widths_dict[_vd_token_7_ones] = 1
+    widths_dict[_vd_token_1f_ones] = 1
     widths_dict[_rm_token_4] = 1
     widths_dict[_mask_token_n0] = 1
     widths_dict[_mask_token_zero] = 1
@@ -196,46 +200,157 @@ def _replace_MOD_with_MOD3(cnames, ptrn_list):
         else:
             ptrn.constraints[_bin_MOD3] = {0: True}
 
-_vd_token = 'VEXDEST210'
-_vd_token_7 = 'VEXDEST210_7'
+_vd_token = 'VEXDEST'
+_vd_token210 = f'{_vd_token}210'
+_vd_token3 = f'{_vd_token}3'
+_vd_token4 = f'{_vd_token}4'
+
+_vd_token_7_ones   = f'{_vd_token}210_7'
+_vd_token_1f_ones = f'{_vd_token}_1F'
 
 def _has_VEXDEST210_equals_7_restriction(cnames, ptrn_list):
     """Return true if some pattern in the list of input pattern_t's has a
        VVVV=1111 restriction. If that occurs, we can replace all
        VEXDEST210 restricions since there are no other kinds of VVVV
        restrictions.    """
-    if _vd_token not in cnames:
+    if _vd_token210 not in cnames:
         return False
     
     for ptrn in ptrn_list:
-        if _vd_token_7 in ptrn.constraints:
+        if _vd_token_7_ones in ptrn.constraints:
             genutil.die("XXX VEXDEST210_7 already exists in the patterns.")
             
     for ptrn in ptrn_list:
-        if _vd_token in ptrn.constraints:
-            cvals = ptrn.constraints[_vd_token]
+        if _vd_token210 in ptrn.constraints:
+            cvals = ptrn.constraints[_vd_token210]
             if len(cvals) == 1 and 7 in cvals:
                 return True
 
     return False
 
-
-
 def _replace_VEXDEST210_with_VD2107(cnames, ptrn_list):
-    cnames.remove(_vd_token)
-    cnames.add(_vd_token_7)
+    ''' Replace VEXDEST210 with all-ones optimized constraint '''
+    cnames.remove(_vd_token210)
+    cnames.add(_vd_token_7_ones)
     
     for ptrn in ptrn_list:
         found = False
         for bt in ptrn.ii.ipattern.bits:
-            if bt.token == _vd_token:
+            if bt.token == _vd_token210:
                 if bt.test == 'eq':
                     found = True
-                    ptrn.constraints[_vd_token_7] = {1:True}
+                    ptrn.constraints[_vd_token_7_ones] = {1:True}
                     break
         if not found:
             #vd7==0 says any VD
-            ptrn.constraints[_vd_token_7] = {0:True, 1:True}
+            ptrn.constraints[_vd_token_7_ones] = {0:True, 1:True}
+
+
+# Bit ENUM representation
+class bit(Enum):
+    ONE   = auto()
+    ZERO  = auto()
+    DCARE = auto() # Don't-care
+
+def get_constraint_bit(constraints : Dict[str, dict], op : str,
+                       all_ops_widths: dict ) -> bit:
+    """
+    Represent XED operand constraint as a bit, if possible.
+
+    Args:
+        constraints (Dict[str, dict]): All pattern constraints
+        op (str): Convert this operand constraints into bit representation
+        all_ops_widths (dict): dict of operands width
+
+    Returns:
+        bit Enum: Bit representation of "op" pattern constraint.
+                  None if operand's constraint is not convertible to bit.
+    """
+    if all_ops_widths[op] == 1: # One bit width operand
+        if op not in constraints:
+            # No operand constrains means don't-care
+            return bit.DCARE
+        
+        constr : Dict[int, bool] = constraints[op]
+        if constr == {1:True}:
+                return bit.ONE
+        elif constr == {0:True}:
+                return bit.ZERO
+        elif constr == {0:True, 1:True}:
+                # Explicitly don't-care
+                return bit.DCARE
+    
+    return None 
+
+def _has_VEXDEST_equals_1F_restriction(cnames : set, ptrn_list : 'List[ild.pattern_t]',
+                                       all_ops_widths : dict):
+    """Return true if all patterns includes VVVVV=1F or VVVVV=any restriction.
+       In this case, we can replace all VEXDEST210, VEXDEST3, VEXDEST4 restrictions with one 
+       check since there are no other kinds of VVVVV restrictions.
+       
+       Assumption - This check is executed only after a completed VEXDEST210_7 optimization
+       """
+    if not set([_vd_token_7_ones, _vd_token3, _vd_token4]).issubset(cnames):
+        return False
+    
+    for ptrn in ptrn_list:
+        if _vd_token_1f_ones in ptrn.constraints:
+            genutil.die(f"XXX {_vd_token_1f_ones} already exists in the patterns.")
+        
+        # Treat VEXDEST[0-2] a one bit, see VEXDEST210_7 assumption above
+        bit210 = get_constraint_bit(ptrn.constraints, _vd_token_7_ones, all_ops_widths)
+        bit3 = get_constraint_bit(ptrn.constraints, _vd_token3, all_ops_widths)
+        bit4 = get_constraint_bit(ptrn.constraints, _vd_token4, all_ops_widths)
+        # xed stores the inverted VEXDEST[4] bit value. store the encoding bit value:
+        if bit4 == bit.ONE: bit4 = bit.ZERO
+        if bit4 == bit.ZERO: bit4 = bit.ONE
+        vd_bits = [bit210, bit3, bit4]
+
+        if all(b == bit.ONE for b in vd_bits):
+            # Trivial VVVVV=11111 constraint
+            continue
+        elif all(b == bit.DCARE for b in vd_bits):
+            # Trivial VVVVV=any (Don't-Care) constraint
+            continue
+        else:
+            # Found non-trivial constraint (VVVVV not in [0x1F, don't-care]) 
+            return False
+
+    # At this point, all patterns restrictions are VVVVV trivial (all_ones or don't-care)
+    return True
+
+def _replace_VEXDEST_with_VD1F(cnames : set, ptrn_list : 'List[ild.pattern_t]'):
+    """ Replace VEXDEST210, VEXDEST3, VEXDEST4 constrains with  VEXDEST_1F """    
+    cnames.remove(_vd_token_7_ones)
+    cnames.remove(_vd_token3)
+    cnames.remove(_vd_token4)
+    cnames.add(_vd_token_1f_ones)
+    
+    for ptrn in ptrn_list:
+        found =  dict.fromkeys([_vd_token4, _vd_token3, _vd_token_7_ones], False)
+        
+        if ptrn.constraints[_vd_token_7_ones] == {1:True}:
+            found[_vd_token_7_ones] = True
+        for bt in ptrn.ii.ipattern.bits:
+            if bt.token == _vd_token3:
+                if bt.test == 'eq':
+                    found[_vd_token3] = True
+            if bt.token == _vd_token3:
+                if bt.test == 'eq':
+                    found[_vd_token4] = True
+
+        if all(found.values()):
+            # VVVVV=11111
+            ptrn.constraints[_vd_token_1f_ones] = {1:True}
+        elif any(found.values()):
+            # non-trivial VVVV restriction
+            error = f'XXX VEXDEST210_1F Found unexpected VVVVV restriction, should not reach here:\n'
+            error += f'VEXDEST210_1F={found}'
+            genutil.die(error)
+        else:
+            # VVVVV=any (don't-care)
+            ptrn.constraints[_vd_token_1f_ones] = {1:True, 0:True}
+
 
 _rm_token = 'RM'
 _rm_token_4 = 'RM4'
@@ -296,15 +411,22 @@ def _is_binary_MASK_NOT0(cnames, ptrn_list):
     return True
 
 def _has_MASK_ZERO_restriction(cnames, ptrn_list):
-    """Return true if some pattern_t in the list has a MASK=000 restriction."""
+    """Return true if all pattern_t in the list has MASK=000 or MASK=any restriction."""
     if _mask_token not in cnames:
         return False
     for ptrn in ptrn_list:
         if _mask_token in ptrn.constraints:
-            cvals = ptrn.constraints[_mask_token]
-            if len(cvals)==1 and 0 in cvals:
-                return True
-    return False
+            cvals : Dict[int, bool] = ptrn.constraints[_mask_token]
+            if cvals == {0:True}:
+                for bt in ptrn.ii.ipattern.bits:
+                    if bt.token == _mask_token:
+                        if bt.test != 'eq':
+                            return False # MASK!=000. Optimization is only for MASK=000
+            elif len(cvals.keys())==8 and all(cvals.values()):
+                continue # MASK=Any
+            else:
+                return False
+    return True
 
 
 def _replace_MASK_with_MASK_NOT0(cnames, ptrn_list):
@@ -328,38 +450,12 @@ def _replace_MASK_with_MASK_ZERO(cnames, ptrn_list):
     cnames.remove(_mask_token)
     cnames.add(_mask_token_zero)
     for ptrn in ptrn_list:
-        found = False
-        for bt in ptrn.ii.ipattern.bits:
-            if bt.token == _mask_token:
-                if bt.test == 'eq':   # assume mask == 0 FIXME: Should check!
-                    found = True
-                    ptrn.constraints[_mask_token_zero] = {1:True}
-                    break
-                elif bt.test == 'ne': # assume mask != 0. FIXME: Should check!
-                    found = True
-                    ptrn.constraints[_mask_token_zero] = {0:True}
-                    break
-        if not found:
-            #mask is not in the pattern, all values of MASK_ZERO are valid 
+        if _mask_token in ptrn.constraints and ptrn.constraints[_mask_token] == {0:True}:
+            ptrn.constraints[_mask_token_zero] = {1:True}
+        else:
+            # all values of MASK_ZERO are valid 
             ptrn.constraints[_mask_token_zero] = {0:True, 1:True}
             
-_compressed_ops = [_mask_token_n0,
-                   _mask_token_zero,
-                   _rm_token_4,
-                   _vd_token_7,
-                   _bin_MOD3      ]
-
-def is_compressed_op(opname):
-    """
-    Compressed operands are special - we do not capture them
-    in ILD and do not derive them in NTs. (though we could..
-    FIXME: is it worthy?), hence in order to get their value we can not
-    use regular xed3_operand_get_* function - we use special getters
-    for them.
-    is_compressed_op(opname) helps us to determine whether we need to use a
-    special getter.
-    """
-    return opname in _compressed_ops
 
 def get_compressed_op_getter_fn(opname):
     """
@@ -377,6 +473,7 @@ def get_compressed_op_getter_fn(opname):
 
 mod3_repl=0
 vd7_repl=0
+vd1f_repl=0
 rm4_repl=0
 masknot0_repl=0
 mask0_repl=0
@@ -385,13 +482,15 @@ def replacement_stats():
     s = []
     for x,y in [('MOD3', mod3_repl),
                 ('VD7', vd7_repl),
+                ('VD1F', vd1f_repl),
                 ('RM4', rm4_repl),
                 ('MASK!=0', masknot0_repl),
                 ('MASK=0',mask0_repl)]:
         s.append('{} {}'.format(x,y))
     return ', '.join(s)
 
-def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
+def _get_united_cdict(ptrn_list : list, state_space : Dict[str, Dict[int,bool]], 
+                      vexvalid : str, all_ops_widths : dict):
     """@param ptrn_list: list of ild.pattern_t
     @param state_space: all legal values for xed operands:
                         state_space['REXW'][1] = True,
@@ -406,7 +505,7 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
     This gets called with all the patterns for a specific map &
     opcode, but for all encoding spaces. So first we filter based on
     encoding space (vexvalid).    """
-    global mod3_repl, vd7_repl, rm4_repl, masknot0_repl, mask0_repl
+    global mod3_repl, vd7_repl, vd1f_repl, rm4_repl, masknot0_repl, mask0_repl
     cnames = []
 
     # FIXME: 2019-10-30: patterns now know their vexvalid value and
@@ -414,7 +513,7 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
     # avoid the following filtering by vexvalid.
     
     #filter by encoding space (vexvalid)
-    ptrns = []
+    ptrns : List[ild.pattern_t] = []
     ivv = int(vexvalid)
     for ptrn in ptrn_list:
         #FIXME: 2019-10-30: if vexvalid in list(ptrn.special_constraints['VEXVALID'].keys()):
@@ -434,15 +533,19 @@ def _get_united_cdict(ptrn_list, state_space, vexvalid, all_ops_widths):
 
     if _has_VEXDEST210_equals_7_restriction(cnames, ptrns): 
         vd7_repl += 1
-        _replace_VEXDEST210_with_VD2107(cnames, ptrns)
-                
+        _replace_VEXDEST210_with_VD2107(cnames, ptrns)            
+        if _has_VEXDEST_equals_1F_restriction(cnames, ptrns, all_ops_widths):
+            vd7_repl -= 1
+            vd1f_repl += 1
+            _replace_VEXDEST_with_VD1F(cnames, ptrns)
+
     if _is_binary_RM_4(cnames, ptrns):
         rm4_repl += 1
         _replace_RM_with_RM4(cnames, ptrns)
-
-    if _is_binary_MASK_NOT0(cnames, ptrns):
-        masknot0_repl += 1
-        _replace_MASK_with_MASK_NOT0(cnames, ptrns)
+    # Hint for disabled optimization (Replaced with MASKNOT0())
+    # if _is_binary_MASK_NOT0(cnames, ptrns):
+    #     masknot0_repl += 1
+    #     _replace_MASK_with_MASK_NOT0(cnames, ptrns)
 
     if _has_MASK_ZERO_restriction(cnames, ptrns): 
         mask0_repl += 1
@@ -837,6 +940,7 @@ def gen_ph_fos(agi,
     _log(log_f,"cnames: %s\n" %cnames)
     for key in sorted(stats.keys()):
         _log(log_f,"%s %s\n" % (key,stats[key]))
+    _log(log_f, f'Restriction replacements stats:\n {replacement_stats()}')
     log_f.close()
     return phash_lu, lu_fo_list, list(op_lu_map.values())
 

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import glob
 import re
 import optparse
 import collections
+from typing import Dict, List
 
 def find_dir(d):
     directory = os.getcwd()
@@ -934,15 +935,15 @@ class partitionable_info_t(object):
       self.input_str = ''
 
       self.ipattern_input = ipattern_input
-      self.ipattern =  None # bits_list_t()
-      self.prebindings = None # dictionary 
+      self.ipattern : bits_list_t = None
+      self.prebindings : Dict[str, prebinding_t] = {}
 
       if operands_input:
           self.operands_input = operands_input
       else:
           self.operands_input = []
 
-      self.operands = [] # list of opnds.operand_info_t's 
+      self.operands : List[opnds.operand_info_t] = []
 
       # FOR HIERARCHICAL RECORDS -- THESE GET SPLIT OFF AFTER RECORD-READ
       self.extra_ipatterns = []
@@ -4942,7 +4943,7 @@ class generator_info_t(generator_common_t):
       if self.common.options == None:
          die("Bad init")
       #old style generator_common_t.__init__(self,generator_common)
-      self.parser_output = None # class parser_t
+      self.parser_output : parser_t = None
       self.graph = None
       # unique list of iclasses
       self.iclasses = {}
@@ -4984,7 +4985,7 @@ class all_generator_info_t(object):
       self.common.options = options
       self.common.open_all_files()
       
-      self.generator_list = []
+      self.generator_list : List[generator_info_t] = []
       self.generator_dict = {} # access by NT name
       self.nonterminal_dict = nonterminal_dict_t()
 

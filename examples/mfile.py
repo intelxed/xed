@@ -64,10 +64,11 @@ def _find_common():
     _fatal("Could not find xed_build_common.py")
 
 def setup():
-    if sys.version_info[0] == 3 and sys.version_info[1] < 6:        
-        _fatal("Need python version 3.6 or later.")
-    elif sys.version_info[0] == 2 and sys.version_info[1] < 7:        
-        _fatal("Need python version 2.7 or later.")
+    if sys.version_info[0] == 3:
+        if sys.version_info[1] < 7:
+            _fatal("Need python version 3.7 or later.")
+    else:
+        _fatal("Need python version 3.7 or later.")
     _find_mbuild_import()
     # when building in the source tree the xed_build_common.py file is
     # in the parent directory of the examples. When building in the

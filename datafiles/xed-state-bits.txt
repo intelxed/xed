@@ -67,8 +67,6 @@ W1                     REXW=1 SKIP_OSZ=1
 W0                     REXW=0 SKIP_OSZ=1
 
 norexb_prefix             REXB=0
-norexx_prefix             REXX=0
-norexr_prefix             REXR=0
 ############################################################3333
 f2_prefix              REP=2  # REPNZ, REPNE
 f3_prefix              REP=3  # REPZ,  REPE

@@ -28,11 +28,7 @@ import argparse
 from collections import defaultdict, Counter
 import subprocess
 
-import find_dir
-XED_ROOT = find_dir.find_dir('xed')
-sys.path.append(XED_ROOT)
-sys.path.append(find_dir.find_dir('mbuild'))    #git-hook don't recognize this
-import mbuild
+XED_ROOT = Path(__file__).parents[1]
 
 TEMPLATE_PATH = Path(XED_ROOT, 'misc','legal-header.txt')
 CURRENT_YEAR = datetime.date.today().strftime("%Y")
@@ -40,16 +36,20 @@ CURRENT_YEAR = datetime.date.today().strftime("%Y")
 HEADER_SKIP_COMMITS = ['5d594f8b09224e77524098bbac43e8f7f680d9f9']
 
 def print_final_lines(output):
-   mbuild.msgb('FINAL COMMAND OUTPUT')
+   print('[FINAL COMMAND OUTPUT]')
    for line in output:
       print("\t" + line)
+
+def die(s):
+    sys.stdout.write("ERROR: {0}\n".format(s))
+    sys.exit(1)
 
 def cond_die(v, cmd, msg, lines=[]):
    if v:
       if lines:
          print_final_lines(lines)
       s = msg + "\n  [CMD] " + cmd
-      mbuild.die(s)
+      die(s)
 
 def ensure_string(x):
     """handle non unicode output"""
@@ -80,7 +80,7 @@ def run_shell_command(cmd, **kwargs):
                "Child was terminated by signal {0:d}".format(-returncode), lines)
         return (returncode, lines)
    except OSError as e:
-     mbuild.die("Execution failed: {0}".format(str(e)))
+     die("Execution failed: {0}".format(str(e)))
 
 def get_mode(fn):
     "get the mode of the file named fn, suitable for os.chmod() or open() calls"

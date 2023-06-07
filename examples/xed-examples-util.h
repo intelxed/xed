@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -172,6 +172,7 @@ typedef struct xed_str_list_s {
 
 xed_str_list_t* xed_tokenize(char const* const p, char const* const sep);
 xed_uint_t xed_str_list_size(xed_str_list_t* p); // counts chunks
+void xed_free_token_list(xed_str_list_t* token_list);
 
 void xed_print_intel_asm_emit(const xed_uint8_t* array, unsigned int olen);
 void xed_print_bytes_pseudo_op(const xed_uint8_t* array, unsigned int olen);

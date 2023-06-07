@@ -44,6 +44,7 @@ SEG_OVD        SCALAR     xed_bits_t 3       SUPPRESSED   NOPRINT INTERNAL DO EO
 #       2=DS PREFIX OBSERVED (TAKEN) 
 #       3=NOT TAKEN HINT VALIDATED for a BRANCH
 #       4=TAKEN HINT VALIDATED for a BRANCH
+#       5=CET NO-TRACK for Near Indirect CALL/JMP
 HINT           SCALAR     xed_bits_t 3       SUPPRESSED   NOPRINT PUBLIC   DO EI
 # do not do encoder chip checking for the encode request
 ENCODE_FORCE   SCALAR     xed_bits_t 1       SUPPRESSED   NOPRINT INTERNAL  DO EI

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ END_LEGAL */
 #include "xed-examples-util.h"
 #include "xed-enc-lang.h"
 
+#define BUF_LEN 50
 
 static void upcase(char* s) {
     (void)xed_upcase_buf(s);
@@ -39,9 +40,17 @@ tokenize(char const* const s,
     return slist;
 }
 
+xed_bool_t is_empty_buf(char const* const buffer)
+{
+    // indicate whether given buffer is empty by insuring first element is \0
+    if (*buffer == '\0')
+        return 1;
+    return 0;
+}
+
 void slash_split(char const* const src,
-                 char** first, // output
-                 char** second) //output
+                 char* first, // output
+                 char* second) //output
 {
     xed_str_list_t* sv = tokenize(src, "/");
     xed_str_list_t* p = sv;
@@ -51,12 +60,13 @@ void slash_split(char const* const src,
     for(; p ; i++, p=p->next)
     {
         if (i==0) {
-            *first = p->s;
+            xed_strncpy(first, p->s, BUF_LEN-1);
         }
         else if (i==1) {
-            *second = p->s;
+            xed_strncpy(second, p->s, BUF_LEN-1);
         }
     }
+    xed_free_token_list(sv);
 }
 
 
@@ -80,7 +90,9 @@ static void immed_parser_init(immed_parser_t* self,
         for(; p ; i++, p=p->next)
         {
             if (i == 0 && strcmp(p->s,tok0) != 0)
-                return;
+            {
+                break;
+            }
             else if (i == 1) {
                 self->immed_val = convert_ascii_hex_to_int(p->s);
                 // nibbles to bits
@@ -89,6 +101,7 @@ static void immed_parser_init(immed_parser_t* self,
             }
         }
     }
+    xed_free_token_list(sv);
 }
 
 
@@ -135,6 +148,7 @@ static void seg_parser_init(seg_parser_t* self,
             }
         }
     }
+    xed_free_token_list(sv);
         
 }
 
@@ -167,11 +181,11 @@ typedef struct
     xed_bool_t mem;
     xed_bool_t agen;
     xed_bool_t disp_valid;
-    char const* segment;
-    char const* base;
-    char const* indx;
-    char const* scale;
-    char const* disp; //displacement
+    char segment[BUF_LEN];
+    char base[BUF_LEN];
+    char indx[BUF_LEN];
+    char scale[BUF_LEN];
+    char disp[BUF_LEN]; //displacement
     xed_reg_enum_t segment_reg;
     xed_reg_enum_t base_reg;
     xed_reg_enum_t index_reg;
@@ -196,8 +210,8 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
     xed_str_list_t* sv=0;
     xed_uint_t ntokens=0;
     xed_uint_t n_addr_tokens=0;
-    char* addr_token=0;
-    char* main_token=0;
+    char addr_token[BUF_LEN]={0};
+    char main_token[BUF_LEN]={0};
     xed_uint_t i=0;
     xed_str_list_t* p = 0;
     xed_str_list_t* sa = 0;
@@ -208,11 +222,11 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
     self->mem = 0;
     self->agen = 0;
     self->disp_valid = 0;
-    self->segment = "INVALID";
-    self->base = "INVALID";
-    self->indx = "INVALID";
-    self->scale = "1";
-    self->disp = "";
+    xed_strncpy(self->segment, "INVALID", BUF_LEN-1);
+    xed_strncpy(self->base, "INVALID", BUF_LEN-1);
+    xed_strncpy(self->indx, "INVALID", BUF_LEN-1);
+    xed_strncpy(self->scale, "1", BUF_LEN-1);
+    xed_strncpy(self->disp, "", BUF_LEN-1);
     self->segment_reg = XED_REG_INVALID;
     self->base_reg = XED_REG_INVALID;
     self->index_reg = XED_REG_INVALID;
@@ -228,24 +242,30 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
         
     i=0;
     p = sv;
-    if (ntokens !=2 && ntokens != 3) // 3 has segbase
+    if (ntokens !=2 && ntokens != 3)
+    {
+        xed_free_token_list(sv);
         return;
+    }
+
     for( ; p ; i++, p=p->next) {
         if (i==0)
-            main_token = p->s;
+            xed_strncpy(main_token, p->s, BUF_LEN-1);
         else if (i==1 && ntokens == 3)
-            self->segment = p->s;
+            xed_strncpy(self->segment, p->s, BUF_LEN-1);
         else if (i==1 && ntokens == 2)
-            addr_token = p->s;
+            xed_strncpy(addr_token, p->s, BUF_LEN-1);
         else if (i==2)
-            addr_token = p->s;
+            xed_strncpy(addr_token, p->s, BUF_LEN-1);
     }
-    assert(main_token != 0);
+    xed_free_token_list(sv);
+
+    assert(!is_empty_buf(main_token));
+
     if (strcmp(main_token,"AGEN")==0)
         self->agen=1;
-    else if (strncmp(main_token,"MEM",3)==0) {
+    else if (strncmp(main_token,"MEM",3)==0)
         self->mem = 1;
-    }
     else 
         return;
     if (self->mem && strlen(main_token) > 3) {
@@ -265,16 +285,17 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
     list2array(astr, sa, n_addr_tokens);
 
     if (!skip(astr[0]))
-        self->base = astr[0];
+        xed_strncpy(self->base, astr[0], BUF_LEN-1);
+
 
     if (n_addr_tokens >= 2)
         if (!skip(astr[1]))
-            self->indx = astr[1];
+            xed_strncpy(self->indx, astr[1], BUF_LEN-1);
 
     if (n_addr_tokens > 2) 
-        self->scale = astr[2];
+        xed_strncpy(self->scale, astr[2], BUF_LEN-1);
     if (skip(self->scale))
-        self->scale = "1";
+        xed_strncpy(self->scale, "1", BUF_LEN-1);
     if (match(self->scale,"1") || match(self->scale,"2") ||
         match(self->scale,"4") || match(self->scale,"8") ) {
         self->valid=1;
@@ -287,7 +308,7 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
         if (n_addr_tokens == 4 && strcmp(astr[3], "-") != 0) {
             xed_uint64_t unsigned64_disp=0;
             unsigned int nibbles = 0;
-            self->disp = astr[3];
+            xed_strncpy(self->disp, astr[3], BUF_LEN-1);
             self->disp_valid = 1;
             nibbles = xed_strlen(self->disp);
             if (nibbles & 1) 
@@ -306,6 +327,7 @@ static void mem_bis_parser_init(mem_bis_parser_t* self, char* s)
             }               
         }
     }
+    xed_free_token_list(sa);
 }
 
 static void find_vl(xed_reg_enum_t reg, xed_int_t* vl)
@@ -340,9 +362,9 @@ parse_encode_request(ascii_encode_request_t areq)
 {
     unsigned int i;
     xed_encoder_request_t req;
-    char* cfirst=0;
-    char* csecond=0;
     xed_str_list_t* tokens = 0;
+    char cfirst[BUF_LEN]={0};
+    char csecond[BUF_LEN]={0};
     unsigned int token_index = 0;
     xed_str_list_t* p = 0;
     xed_uint_t memop = 0;
@@ -353,7 +375,6 @@ parse_encode_request(ascii_encode_request_t areq)
     xed_int_t eow = -1;
     xed_int_t uvl = -1;  // take VL from cmd
     xed_int_t ueow = -1; // take effective operand width from cmd
-    
     
     
     // this calls xed_encoder_request_zero()
@@ -388,14 +409,14 @@ parse_encode_request(ascii_encode_request_t areq)
     p = tokens;
 
     for ( ; p ; token_index++, p=p->next ) {
-        slash_split(p->s, &cfirst, &csecond);
-        if(cfirst == 0)
+        slash_split(p->s, cfirst, csecond);
+        if(is_empty_buf(cfirst))
             break;
         upcase(cfirst);
         if (CLIENT_VERBOSE3)
             printf( "[%s][%s][%s]\n", p->s,
-                    (cfirst?cfirst:"NULL"),
-                    (csecond?csecond:"NULL"));
+                    (!is_empty_buf(cfirst)?cfirst:"NULL"),
+                    (!is_empty_buf(cfirst)?csecond:"NULL"));
 
         // consumed token, advance & exit
         p = p->next;
@@ -403,7 +424,7 @@ parse_encode_request(ascii_encode_request_t areq)
     }
 
     // we can attempt to override the mode
-    if (csecond)
+    if (!is_empty_buf(csecond))
     {
         if (strcmp(csecond,"8")==0) 
             ueow = 8;
@@ -426,7 +447,7 @@ parse_encode_request(ascii_encode_request_t areq)
         }
     }
 
-    assert(cfirst != 0);
+    assert(!is_empty_buf(cfirst));
     iclass =  str2xed_iclass_enum_t(cfirst);
     if (iclass == XED_ICLASS_INVALID) {
         fprintf(stderr,"[XED CLIENT ERROR] Bad instruction name: %s\n",
@@ -449,10 +470,10 @@ parse_encode_request(ascii_encode_request_t areq)
         xed_reg_enum_t reg = XED_REG_INVALID;
         xed_operand_enum_t r;
                     
-        char* cres_reg=0;
-        char* csecond_x=0; //FIXME: not used
-        slash_split(p->s, &cres_reg, &csecond_x);
-        if (cres_reg == 0)
+        char cres_reg[BUF_LEN]={0};
+        char csecond_x[BUF_LEN]={0}; //FIXME: not used
+        slash_split(p->s, cres_reg, csecond_x);
+        if (is_empty_buf(cres_reg))
             continue;
 
         upcase(cres_reg);
@@ -685,5 +706,6 @@ parse_encode_request(ascii_encode_request_t areq)
             xed_encoder_request_set_effective_operand_width(&req, XED_CAST(xed_uint_t, ueow));
         }
     }
+    xed_free_token_list(tokens);
     return req;
 }

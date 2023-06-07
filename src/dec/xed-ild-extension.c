@@ -57,3 +57,8 @@ void xed_ild_ext_finalize_evex(xed_decoded_inst_t *d, xed_uint_t length)
     (void)d;
     (void)length;
 }
+
+void xed_ild_ext_finalize(xed_decoded_inst_t *d)
+{
+    (void)d;
+}

@@ -22,20 +22,13 @@ from pathlib import Path
 import sys
 import os
 
-def find_dir(d):
-    dir, last = os.getcwd(), ''
-    while dir != last:
-        target_dir = os.path.join(dir,d)
-        if os.path.exists(target_dir):
-            return target_dir
-        last = dir
-        (dir,_) = os.path.split(dir)
-    return None
 
-XED_ROOT = find_dir('xed')
-sys.path.append(XED_ROOT)
-sys.path.append(find_dir('scripts'))
-from scripts import apply_legal_header
+XED_ROOT : Path = None
+p = Path(__file__).resolve().parents
+if len(p)>2: XED_ROOT = p[2]  # whether located in git-hooks or xed/script
+assert XED_ROOT, 'Couldn\'t locate XED root directory'
+sys.path.append(str(XED_ROOT/'scripts'))
+import apply_legal_header
 
 def get_interesting_files():
     """returns a list of staged files that should get their legal header checked/changed"""

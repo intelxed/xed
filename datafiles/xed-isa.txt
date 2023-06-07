@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -6300,6 +6300,7 @@ IFORM     : DEC_GPRv_48
 }
 {
 ICLASS    : PUSH
+UNAME     : PUSH_50
 CPL       : 3
 CATEGORY  : PUSH
 EXTENSION : BASE
@@ -6310,6 +6311,7 @@ IFORM     : PUSH_GPRv_50
 }
 {
 ICLASS    : POP
+UNAME     : POP_58
 CPL       : 3
 CATEGORY  : POP
 EXTENSION : BASE
@@ -7168,6 +7170,7 @@ COMMENT   : 2008-06-11 Ignores REX completely. Introduced on PENTIUM4
 }
 {
 ICLASS    : NOP
+UNAME     : NOPF390
 CPL       : 3
 CATEGORY  : NOP
 EXTENSION : BASE

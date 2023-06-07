@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ class xed_exception_t(Exception):
         self.value = value
         self.msg = msg
     def __str__(self):
-        return "KIND: %s VALUE: %d MSG: %s" % (kind, value, msg)
+        return "KIND: %s VALUE: %d MSG: %s" % (self.kind, self.value, self.msg)
 
 def handle_exception_and_die(e):
     if hasattr(e,'kind'):

@@ -1425,6 +1425,8 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     sib_scanner(ild);
     disp_scanner(ild);
     imm_scanner(ild);
+
+    xed_ild_ext_finalize(ild);
 }
 
 #include "xed-chip-modes.h"

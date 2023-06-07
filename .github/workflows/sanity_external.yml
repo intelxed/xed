@@ -16,6 +16,11 @@
 #  
 #END_LEGAL
 name: External Sanity
+
+env:
+  # XED minimal python version requirement
+  MIN_PY_VER: "3.7.16"
+
 on:
   pull_request:
     branches:
@@ -65,3 +70,32 @@ jobs:
           cd xed
           python3 .github/scripts/sanity_external.py --compiler=${{matrix.compiler}} --version=${{matrix.ver}}
 
+  test_min_python_version:
+    needs: init
+    runs-on:
+      - self-hosted
+      - xed-runners
+      - Linux
+    steps:
+    - name: Checkout xed
+      uses: actions/checkout@v3
+      with:
+        path: xed
+    - name: Checkout mbuild
+      uses: actions/checkout@v3
+      with:
+        repository: intelxed/mbuild
+        ref: main
+        path: mbuild
+        token: ${{ secrets.PAT }}
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: ${{env.MIN_PY_VER}}
+    - name: Parse python version setup
+      id: python_ver
+      run: echo "version=$(python3 --version)" >> $GITHUB_OUTPUT      
+    - name: 'Test ${{ steps.python_ver.outputs.version }}'
+      run: |
+        cd xed
+        python3 .github/scripts/sanity_external.py

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2021 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -324,6 +324,8 @@ xed_decoded_inst_dump_common(xed_print_info_t* pi)
         xed_prefixes(pi,"hint-not-taken");
     else if (xed_operand_values_branch_taken_hint(ov))
         xed_prefixes(pi,"hint-taken");
+    else if (xed_operand_values_cet_no_track(ov))
+        xed_prefixes(pi,"notrack");
 
     if (xed_operand_values_has_address_size_prefix(ov)) {
         if (xed_decoded_inst_explicit_memop(pi->p) == 0) {

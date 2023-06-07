@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import genutil
 import ildutil
 import codegen
 import opnds
+import generator
+from typing import Dict
 
 
 def is_target_op(agi, op, target_op):
@@ -554,7 +556,9 @@ def add_op_deciders_temp(ipattern, state_space, argnames): # NOT USED
                                 ipattern)
     return
 
-def add_op_deciders(ipattern, state_space, argnames):
+def add_op_deciders(ipattern    : generator.instruction_info_t, 
+                    state_space : dict, 
+                    argnames    : Dict[str, Dict[int, bool]]):
     """
     @param ipattern: the ipattern member of instruction_info_t
     @param state_space: dictionary from op deciders tokens to list 
@@ -566,7 +570,7 @@ def add_op_deciders(ipattern, state_space, argnames):
     for bt in ipattern.bits:
         if bt.is_operand_decider():
             if bt.token not in argnames:
-               argnames[bt.token] = {}
+               argnames[bt.token] : Dict[int, bool] = {}
 
             if bt.test == 'eq':
                argnames[bt.token][bt.requirement]=True

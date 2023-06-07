@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -1650,6 +1650,22 @@ xed_str_list_t* xed_tokenize(char const* const p, char const* const sep)
     return head;
 }
 
+void xed_free_token_list(xed_str_list_t* token_list)
+{
+    // frees a list of tokens where all tokens share one dynamically allocated string
+    // First of all, free the common string s (look at xed_tokenize for further info)
+    // Then, iterate over the list and free the nodes
+    xed_str_list_t* temp = 0;
+    if (token_list && token_list->s)
+        free(token_list->s);
+    
+    while (token_list)
+    {
+        temp = token_list->next;
+        free(token_list);
+        token_list = temp;
+    }
+}
 
 xed_uint_t xed_str_list_size(xed_str_list_t* p) { //count chunks
     unsigned int c = 0;

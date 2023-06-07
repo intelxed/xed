@@ -85,6 +85,7 @@ class generator_inputs_t(object):
                  encoder_chip='ALL'):
         self.fields = ['dec-spine',
                        'dec-instructions',
+                       'enc2-instructions',
                        'enc-instructions',
                        'dec-patterns',
                        'enc-patterns',
@@ -583,11 +584,11 @@ def setup_hooks(env):
     
 def mkenv():
     """External entry point: create the environment"""
-    if not mbuild.check_python_version(2,7):
-        xbc.cdie("Need python 2.7 or later.  Suggested >= 3.7")
-    if sys.version_info.major >= 3:
-        if not mbuild.check_python_version(3,6):
-            xbc.cdie("Need python 3.6 or later.  Suggested >= 3.7")
+    if sys.version_info[0] == 3:
+        if sys.version_info[1] < 7:
+            xbc.cdie("Need python version 3.7 or later.")
+    else:
+        xbc.cdie("Need python version 3.7 or later.")
 
     # create an environment, parse args
     env = mbuild.env_t()
@@ -1197,6 +1198,7 @@ def _parse_extf_files_new(env, gc):
     comment_pattern = re.compile(r'[#].*$')
     source_prio = collections.defaultdict(int)
     sources_dict = {}
+    enc2_exclude = set()
     
     # returned
     sources_to_remove = []
@@ -1266,6 +1268,11 @@ def _parse_extf_files_new(env, gc):
                 elif cmd == 'add-tests':
                     test_dir = _fn_expand(env, edir, _get_check(wrds,1))
                     env['tests_ext'].append(test_dir)
+                elif cmd == 'no-enc2-instructions':
+                    fname = _fn_expand(env, edir, _get_check(wrds,1))
+                    enc2_exclude.add(fname)
+                elif cmd == 'enc2-instructions':
+                    xbc.cdie(f'"{cmd}" is a subset of "dec-instructions". Shouldn\'t be in use from cfg file')
                 else: # default is to add "keytype: file" (optional priority)
                     if len(wrds) not in [2,3]:
                         xbc.cdie('badly formatted extension line. expected 2 or 3 arguments: {}'.format(line))
@@ -1280,6 +1287,15 @@ def _parse_extf_files_new(env, gc):
     for ptype, files in gc_files_to_remove.items():
         for f in files:
             gc.remove_file(ptype, f)
+
+    # enc2-instructions files are subset of dec-instructions.
+    # Set implicitly by inherit all dec-instructions, excluding 'no-enc2-instructions' files
+    if env['enc2']:
+        for f in gc.files['dec-instructions']:
+            if f not in enc2_exclude:
+                gc.add_file('enc2-instructions', f)
+            else:
+                mbuild.vmsgb(1, f'[ENC2] EXCLUDED ISA FILE: {f}')
 
     return (sources_to_remove, sources_to_add, sources_to_replace )
 
