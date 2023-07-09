@@ -1,0 +1,72 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING VSHA512MSG1 (VSHA512MSG1-256-1)
+{
+ICLASS:      VSHA512MSG1
+CPL:         3
+CATEGORY:    SHA512
+EXTENSION:   SHA512
+ISA_SET:     SHA512
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xCC VF2 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL256 NOVSR
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=XMM_B():r:dq:u64
+IFORM:       VSHA512MSG1_YMMu64_XMMu64
+}
+
+
+# EMITTING VSHA512MSG2 (VSHA512MSG2-256-1)
+{
+ICLASS:      VSHA512MSG2
+CPL:         3
+CATEGORY:    SHA512
+EXTENSION:   SHA512
+ISA_SET:     SHA512
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xCD VF2 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL256 NOVSR
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=YMM_B():r:qq:u64
+IFORM:       VSHA512MSG2_YMMu64_YMMu64
+}
+
+
+# EMITTING VSHA512RNDS2 (VSHA512RNDS2-256-1)
+{
+ICLASS:      VSHA512RNDS2
+CPL:         3
+CATEGORY:    SHA512
+EXTENSION:   SHA512
+ISA_SET:     SHA512
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xCB VF2 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL256
+OPERANDS:    REG0=YMM_R():rw:qq:u64 REG1=YMM_N():r:qq:u64 REG2=XMM_B():r:dq:u64
+IFORM:       VSHA512RNDS2_YMMu64_YMMu64_XMMu64
+}
+
+

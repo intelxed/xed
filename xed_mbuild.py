@@ -626,6 +626,8 @@ def mkenv():
                                  grr=True,  # grand ridge
                                  srf=True,  # sierra forest
                                  gnr=True,  # granite rapids
+                                 arl=True,  # arrow lake
+                                 lnl=True,  # lunar lake
                                  future=True,
                                  knl=True,
                                  knm=True,
@@ -871,6 +873,14 @@ def xed_args(env):
                           action="store_false",
                           dest="grr",
                           help="Disable Grand Ridge public instructions")
+    env.parser.add_option("--no-arl",
+                          action="store_false",
+                          dest="arl",
+                          help="Disable Arrow Lake public instructions")
+    env.parser.add_option("--no-lnl",
+                          action="store_false",
+                          dest="lnl",
+                          help="Disable Lunar Lake public instructions")
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -1517,9 +1527,25 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'cmpccxadd')
             _add_normal_ext(env,'msrlist')
             _add_normal_ext(env,'wrmsrns')
+            _add_normal_ext(env,'uintr')
+            _add_normal_ext(env,'enqcmd')
         if env['grr']:
             _add_normal_ext(env,'grr')
             _add_normal_ext(env,'rao-int')
+        if env['arl']:
+            _add_normal_ext(env,'arrow-lake')
+            _add_normal_ext(env, 'uintr')
+            _add_normal_ext(env,'avx-ifma')
+            _add_normal_ext(env,'avx-ne-convert')
+            _add_normal_ext(env,'avx-vnni-int8')
+            _add_normal_ext(env,'cmpccxadd')
+            _add_normal_ext(env,'avx-vnni-int16')
+            _add_normal_ext(env,'sha512')
+            _add_normal_ext(env,'sm3')
+            _add_normal_ext(env,'sm4')
+        if env['lnl']:
+            _add_normal_ext(env,'lunar-lake')
+            _add_normal_ext(env,'pbndkb')
         
         if env['future']:
             _add_normal_ext(env,'future')
@@ -2673,7 +2699,7 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, ADL, SPR, KNL, KNM, GNR, GRR, SRF, Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, ADL, SPR, KNL, KNM, GNR, GRR, SRF, ARL, LNL, Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
@@ -2691,6 +2717,8 @@ def verify_args(env):
         env['gnr'] = False
         env['grr'] = False
         env['srf'] = False
+        env['arl'] = False
+        env['lnl'] = False
         env['future'] = False
 
     # default is enabled. oldest disable disables upstream (younger, newer) stuff.
@@ -2734,10 +2762,14 @@ def verify_args(env):
     if not env['tgl']:
         env['cet'] = False
         env['spr'] = False
+    if not env['adl']:
+        env['arl'] = False
     if not env['srf']:
         env['grr'] = False
     if not env['spr']:
         env['gnr'] = False
+    if not env['arl']:
+        env['lnl'] = False
     if not env['gnr']:
         env['future'] = False
         

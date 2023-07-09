@@ -99,3 +99,49 @@ jobs:
       run: |
         cd xed
         python3 .github/scripts/sanity_external.py
+
+  # Malware scan
+  anti_virus_scan:
+    needs: init
+    runs-on:
+      - self-hosted
+      - xed-runners
+      - Linux
+    env:
+      AV_SCAN_PATH: ${{ secrets.AV_SCAN_PATH }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        path: xed
+        fetch-depth: 0
+    - name: Checkout mbuild
+      uses: actions/checkout@v3
+      with:
+        repository: intel-innersource/libraries.isa.xed.mbuild
+        ref: ${{ needs.init.outputs.mbuild_branch }}
+        path: mbuild
+        token: ${{ secrets.PAT }}
+    - name: anti-virus check
+      run: |
+          cd xed
+          python3 .github/scripts/antivirus_scan.py --path "${AV_SCAN_PATH}"
+    - name: upload full results # uploads anti-virus scan results as artifact
+      id: upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: anti-virus-sum
+        path: xed/logs/avscan.txt
+    - name: add comment   # uploads anti-virus scan summary as pull-request comment
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'   # add scan summary as comment only if there is a PR
+      with:
+        script: |
+          const fs = require('fs');
+          const antivirusSummary = fs.readFileSync('xed/logs/antivirus_summary.txt', 'utf8');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: "Anti-virus scan summary: " + antivirusSummary
+          })

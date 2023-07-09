@@ -1,0 +1,139 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING VSM4KEY4 (VSM4KEY4-128-1)
+{
+ICLASS:      VSM4KEY4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF3 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL128
+OPERANDS:    REG0=XMM_R():w:dq:u32 REG1=XMM_N():r:dq:u32 REG2=XMM_B():r:dq:u32
+IFORM:       VSM4KEY4_XMMu32_XMMu32_XMMu32
+}
+
+{
+ICLASS:      VSM4KEY4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF3 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() W0 VL128
+OPERANDS:    REG0=XMM_R():w:dq:u32 REG1=XMM_N():r:dq:u32 MEM0:r:dq:u32
+IFORM:       VSM4KEY4_XMMu32_XMMu32_MEMu32
+}
+
+
+# EMITTING VSM4KEY4 (VSM4KEY4-256-1)
+{
+ICLASS:      VSM4KEY4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF3 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL256
+OPERANDS:    REG0=YMM_R():w:qq:u32 REG1=YMM_N():r:qq:u32 REG2=YMM_B():r:qq:u32
+IFORM:       VSM4KEY4_YMMu32_YMMu32_YMMu32
+}
+
+{
+ICLASS:      VSM4KEY4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF3 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() W0 VL256
+OPERANDS:    REG0=YMM_R():w:qq:u32 REG1=YMM_N():r:qq:u32 MEM0:r:qq:u32
+IFORM:       VSM4KEY4_YMMu32_YMMu32_MEMu32
+}
+
+
+# EMITTING VSM4RNDS4 (VSM4RNDS4-128-1)
+{
+ICLASS:      VSM4RNDS4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF2 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL128
+OPERANDS:    REG0=XMM_R():w:dq:u32 REG1=XMM_N():r:dq:u32 REG2=XMM_B():r:dq:u32
+IFORM:       VSM4RNDS4_XMMu32_XMMu32_XMMu32
+}
+
+{
+ICLASS:      VSM4RNDS4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF2 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() W0 VL128
+OPERANDS:    REG0=XMM_R():w:dq:u32 REG1=XMM_N():r:dq:u32 MEM0:r:dq:u32
+IFORM:       VSM4RNDS4_XMMu32_XMMu32_MEMu32
+}
+
+
+# EMITTING VSM4RNDS4 (VSM4RNDS4-256-1)
+{
+ICLASS:      VSM4RNDS4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF2 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL256
+OPERANDS:    REG0=YMM_R():w:qq:u32 REG1=YMM_N():r:qq:u32 REG2=YMM_B():r:qq:u32
+IFORM:       VSM4RNDS4_YMMu32_YMMu32_YMMu32
+}
+
+{
+ICLASS:      VSM4RNDS4
+CPL:         3
+CATEGORY:    VEX
+EXTENSION:   SM4
+ISA_SET:     SM4
+EXCEPTIONS:  avx-type-6
+REAL_OPCODE: Y
+PATTERN:     VV1 0xDA VF2 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() W0 VL256
+OPERANDS:    REG0=YMM_R():w:qq:u32 REG1=YMM_N():r:qq:u32 MEM0:r:qq:u32
+IFORM:       VSM4RNDS4_YMMu32_YMMu32_MEMu32
+}
+
+
