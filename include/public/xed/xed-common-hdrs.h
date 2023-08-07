@@ -25,7 +25,7 @@ END_LEGAL */
 
 
 
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 # define XED_BSD
 #endif
 #if defined(__linux__)
