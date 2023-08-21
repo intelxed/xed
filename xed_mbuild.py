@@ -1344,6 +1344,8 @@ def _configure_libxed_extensions(env):
         env.add_define('XED_MPX')
     if env['cet']:
         env.add_define('XED_CET')
+    if env['future']:
+        env.add_define('XED_APX')
     #SHA on GLM & CNL, support by default
     env.add_define('XED_SUPPORTS_SHA')
     if env['icl']:
@@ -1550,6 +1552,7 @@ def _configure_libxed_extensions(env):
         if env['future']:
             _add_normal_ext(env,'future')
             _add_normal_ext(env,'tdx')
+            _add_normal_ext(env,'apx-f')
 
 
     env['extf'] = newstuff + env['extf']
@@ -2620,7 +2623,8 @@ def _run_canned_tests(env,osenv):
     wkit = env['wkit']
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
-    dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx', 'tests-prefetch']
+    dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx', 'tests-prefetch',
+            'tests-apx']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2645,6 +2649,7 @@ def _run_canned_tests(env,osenv):
         codes.append('AMX')
     if env['gnr']:
         codes.append('IPREFETCH') # ICACHE PREFETCH
+        codes.append('AVX10')
     if env['knm'] or env['knl']:
         codes.append('AVX512PF')
     if env['hsw']: 
@@ -2655,6 +2660,8 @@ def _run_canned_tests(env,osenv):
         codes.append('VIA')
     if env['amd_enabled']:
         codes.append('AMD')
+    if env['future']:
+        codes.append('APX')
     for c in codes:
         cmd += ' -c ' + c
 
@@ -2770,7 +2777,7 @@ def verify_args(env):
         env['gnr'] = False
     if not env['arl']:
         env['lnl'] = False
-    if not env['gnr']:
+    if not env['gnr'] or not env['lnl']:
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:

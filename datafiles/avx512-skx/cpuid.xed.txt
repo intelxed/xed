@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@
   XED_ISA_SET_AVX512BW_128N:    avx512bw.7.0.ebx.30
   XED_ISA_SET_AVX512BW_256:     avx512bw.7.0.ebx.30  avx512vl.7.0.ebx.31
   XED_ISA_SET_AVX512BW_512:     avx512bw.7.0.ebx.30
-  XED_ISA_SET_AVX512BW_KOP:     avx512bw.7.0.ebx.30
+  XED_ISA_SET_AVX512BW_KOPD:    avx512bw.7.0.ebx.30
+  XED_ISA_SET_AVX512BW_KOPQ:    avx512bw.7.0.ebx.30
 
   XED_ISA_SET_AVX512DQ_128:     avx512dq.7.0.ebx.17  avx512vl.7.0.ebx.31
   XED_ISA_SET_AVX512DQ_128N:    avx512dq.7.0.ebx.17
   XED_ISA_SET_AVX512DQ_256:     avx512dq.7.0.ebx.17  avx512vl.7.0.ebx.31
   XED_ISA_SET_AVX512DQ_512:     avx512dq.7.0.ebx.17
-  XED_ISA_SET_AVX512DQ_KOP:     avx512dq.7.0.ebx.17
+  XED_ISA_SET_AVX512DQ_KOPB:    avx512dq.7.0.ebx.17
+  XED_ISA_SET_AVX512DQ_KOPW:    avx512dq.7.0.ebx.17
   XED_ISA_SET_AVX512DQ_SCALAR:  avx512dq.7.0.ebx.17

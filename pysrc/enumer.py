@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -477,8 +477,8 @@ typedef struct {
         top = """
 %(type)s str2%(type)s(const char* s)
 {
-   return %(prefix)s%(invalid)s;
    (void)s;
+   return %(prefix)s%(invalid)s;
 }"""
         invalid = self._invalid_or_last()
         d =  {'type':self.type_name,
@@ -491,8 +491,8 @@ typedef struct {
         s = """
 const char* %(type)s2str(const %(type)s p)
 {
-   return "INVALID";
    (void)p;
+   return "INVALID";
 }"""
         invalid = self._invalid_or_last()
         self.cf.emit_eol(s % {'type':self.type_name,

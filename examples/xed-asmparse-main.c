@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2021 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -32,6 +32,9 @@ static xed_uint_t intel_asm_emits=0;
 
 static xed_bool_t test_has_relbr(const xed_inst_t* p);
 static xed_bool_t has_relbr(xed_iclass_enum_t iclass);
+static xed_bool_t test_has_absbr(const xed_inst_t* p);
+static xed_bool_t has_absbr(xed_iclass_enum_t iclass);
+
 
 static void delete_string_list(xed_str_list_t* h) {
     // clean up memory allocated
@@ -344,9 +347,9 @@ static int process_rc_sae(char const* s,xed_encoder_operand_t* operand, xed_uint
     }
 #endif
     asp_error_printf("Unhandled decorator: %s\n",s);
+    (void) operand; (void) pos;
     exit(1);
     return 0;
-    (void) operand; (void) pos;
 }
 
 
@@ -545,6 +548,11 @@ static void process_operand(xed_enc_line_parsed_t* v,
             asp_dbg_printf("The literal is treated as relbranch\n");
             check_too_many_operands(i);
             operands[i++] = xed_relbr(literal_val, nbits);
+        }
+        else if (has_absbr(v->iclass_e)) {
+            asp_dbg_printf("The literal is treated as absolute branch\n");
+            check_too_many_operands(i);
+            operands[i++] = xed_absbr(literal_val, nbits);
         }
         else { // literal immediate
             if (*has_imm0 == 0) {
@@ -971,22 +979,47 @@ static xed_bool_t test_has_relbr(const xed_inst_t* p) {
     return 0;
 }
 
-/* relbr_table is an array initialized at startup that tells us if we have
- * a relative branch displacement */
-static xed_bool_t relbr_table[XED_ICLASS_LAST];
+/* Return true if the instruction accepts absolute branch as an operand */
+static xed_bool_t test_has_absbr(const xed_inst_t* p) {
+    const unsigned noperands = xed_inst_noperands(p);
+    for (unsigned i = 0; i < noperands; i++) {
+        const xed_operand_t* o = xed_inst_operand(p, i);
+        if (xed_operand_name(o) == XED_OPERAND_ABSBR) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* brdisp_table is an array initialized at startup that tells us if we have
+ * an absolute or a relative branch displacement */
+static xed_encoder_operand_type_t brdisp_table[XED_ICLASS_LAST];
 
 static xed_bool_t has_relbr(xed_iclass_enum_t iclass) {
     assert(iclass < XED_ICLASS_LAST);
-    return relbr_table[iclass];
+    if (brdisp_table[iclass] == XED_ENCODER_OPERAND_TYPE_REL_BRDISP)
+        return 1;
+    return 0;
 }
+
+static xed_bool_t has_absbr(xed_iclass_enum_t iclass) {
+    assert(iclass < XED_ICLASS_LAST);
+    if (brdisp_table[iclass] == XED_ENCODER_OPERAND_TYPE_ABS_BRDISP)
+        return 1;
+    return 0;
+}
+
 static void setup(void) {
-    memset(relbr_table, 0, sizeof(xed_bool_t)*XED_ICLASS_LAST);
+    memset(brdisp_table, 0, sizeof(xed_bool_t)*XED_ICLASS_LAST);
     
     for (unsigned i = 0; i < XED_MAX_INST_TABLE_NODES; i++) {
         const xed_inst_t *inst = xed_inst_table_base() + i;
         xed_iclass_enum_t ic = xed_inst_iclass(inst);
         assert(ic < XED_ICLASS_LAST);
-        relbr_table[ic] =  test_has_relbr(inst);
+        if (test_has_relbr(inst))
+            brdisp_table[ic] = XED_ENCODER_OPERAND_TYPE_REL_BRDISP;
+        else if (test_has_absbr(inst))
+            brdisp_table[ic] = XED_ENCODER_OPERAND_TYPE_ABS_BRDISP;
     }
 }
 

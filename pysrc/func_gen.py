@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ class func_gen_t(object):
     
     def _gen_empty_function(self,fname):
         ''' generate a function without constraints  '''
-        
+        returned = False
         return_type = 'xed_uint32_t'
         fo = codegen.function_object_t(fname,
                                        return_type=return_type,
@@ -47,12 +47,16 @@ class func_gen_t(object):
         
         lines = self.cvg.action_codegen.emit_default()
         for line in lines:
-            if line == 'return ':
+            if line.startswith('return'):
+                fo.add_code_eol('(void)%s' % obj_str)
                 fo.add_code_eol('return 1')
+                returned = True
             else:
                 fo.add_code_eol(line)
-        fo.add_code_eol('(void)%s' % obj_str)
-        fo.add_code_eol('return 1')
+
+        if not returned:
+            fo.add_code_eol('(void)%s' % obj_str)
+            fo.add_code_eol('return 1')
         return fo
 
     def gen_function(self):

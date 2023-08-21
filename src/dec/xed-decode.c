@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -95,6 +95,17 @@ static void check_src2_dest_match(xed_decoded_inst_t* xds) {
 }
 #endif
 
+#if defined(XED_APX)
+static XED_INLINE void check_reg0_reg1_match(xed_decoded_inst_t* xds) {
+    /* Check that the first and second registers do not match */
+    xed_reg_enum_t reg0 = xed3_operand_get_reg0(xds);
+    xed_reg_enum_t reg1 = xed3_operand_get_reg1(xds);
+
+    if (reg0 == reg1)
+        xed3_operand_set_error(xds,XED_ERROR_BAD_REG_MATCH);
+}
+#endif
+
 static XED_INLINE void
 xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
 {
@@ -106,6 +117,15 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
         xed3_operand_set_error(xds,XED_ERROR_BAD_LOCK_PREFIX);
         return;
     }
+
+#if defined(XED_APX)
+    xed_iclass_enum_t iclass  = xed_decoded_inst_get_iclass(xds);
+    /* FIXME: for now this is tailored solely for POP2{,P}. A more generic solution with broader restrictions is on the horizon */
+    if (iclass == XED_ICLASS_POP2 || iclass == XED_ICLASS_POP2P) {
+        /* POP2 and POP2P don't allow matching destination registers (first two regs)*/
+        check_reg0_reg1_match(xds);
+    }
+#endif
 
     /* We only keep real reps, MPX reps, HLE reps. Refining reps can just
      mess up subsequent encodes if the iclass or operands get changed by
@@ -213,6 +233,12 @@ xed_decode_with_features(xed_decoded_inst_t* xedd,
             if (!xed_decoded_inst_valid_for_chip(xedd, chip))  {
                 return XED_ERROR_INVALID_FOR_CHIP;
             }
+#if defined(XED_APX)
+            // Check APX instructions with no-APX ISA-SET
+            if (!chip_supports_apx(xedd) && xed_classify_apx(xedd)){
+                return XED_ERROR_INVALID_FOR_CHIP;
+            }
+#endif
         }
         if (features) {
             const xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(xedd);

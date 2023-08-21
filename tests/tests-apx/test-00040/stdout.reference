@@ -1,0 +1,33 @@
+Setting chip to FUTURE
+Attempting to decode: 66 d5 80 12 4c 83 00 
+iclass MOVLPD	category DATAXFER	ISA-extension SSE2	ISA-set SSE2
+instruction-length 7
+operand-width 32
+effective-operand-width 32
+effective-address-width 64
+stack-address-width 64
+iform-enum-name MOVLPD_XMMsd_MEMq
+iform-enum-name-dispatch (zero based) 1
+iclass-max-iform-dispatch 2
+Nominal opcode position 3
+Nominal opcode 0x12
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0             REG0=XMM1   EXPLICIT  RW        SD   64     8     1     64     DOUBLE        XMM
+1   MEM0           (see below)   EXPLICIT   R         Q   64     8     1     64        INT    INVALID
+Memory Operands
+  0    read BASE= RBX/GPR INDEX= RAX/GPR SCALE= 4 DISPLACEMENT_BYTES= 1 0x0000000000000000 base10=0 ASZ0=64
+  MemopBytes = 8
+ATTRIBUTES: 
+MANDATORY 66 PREFIX
+REX2 PREFIX
+EXCEPTION TYPE: SSE_TYPE_5
+[APX] 
+SSE
+Vector length: 128
+Number of legacy prefixes: 1 
+ISA SET: [SSE2]
+0	CPUID GROUP NAME: [SSE2]
+	0	CPUID RECORD NAME: [SSE2]
+		{Leaf 0x00000001, subleaf 0x00000000, EDX[26:26]} = 1

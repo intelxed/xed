@@ -242,7 +242,7 @@ def skip_file(file):
                 return True
     
     #skip pattern
-    skip_patterns = ['*.gitignore', '*README.*', 'tests/tests-*/*/*', '*tests/test-*/*']
+    skip_patterns = ['*.gitignore', '*README.*', 'tests/test*/*', 'tests/test*/**/*']
     for pattern in skip_patterns:
         if f.match(pattern):
             return True

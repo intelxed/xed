@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@
 # No BDW SMAP
 KNL: ALL_OF(IVYBRIDGE) \
        AVX512F_SCALAR  \
-       AVX512F_KOP     \
+       AVX512F_KOPW    \
        AVX512F_512     \
        AVX512F_128N    \
        AVX512CD_512    \

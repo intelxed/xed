@@ -1,0 +1,48 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+###################################################
+# Extends avx512-evex-dec.txt XED NT
+# This NT enables EGPRs encoding using the EVEX.R4 bit when APX enabled. 
+# We're using NT in order to imply #UD on non-apx mode with EGPRs EVEX.R4 instructions
+
+EVEXR4_ONE()::
+    ### Extend an existing NT ###
+    ############# New rules: #############
+    NO_APX=0 REXR4=1   | 
+    NO_APX=1 REXR4=1   | error       # Not mandatory, but easy to understand
+    ##### Origin NT will expends to: #####
+    # NO_APX=0 REXR4=0   | 
+    # NO_APX=1 REXR4=0   | 
+    # Default: otherwise | error 
+
+###################################################
+
+EVAPX()::
+    # 1. Clean legacy-EVEX operands which reinterpreted with APX-promoted instructions.
+    # 2. Set the EVVSPACE to APX so the encoder will choose the right EVEX path
+    # 3. Check that the lower MASK bits are zeroed.
+    #
+    # (MASK[0-1] == 0) & (MASK[2] == NF) & (APX Enabled)
+    NO_APX=0 NF=0 MASK=0 | EVEX_APX         SCC=0 BCRC=0
+    NO_APX=0 NF=1 MASK=4 | EVEX_APX  MASK=0 SCC=0 BCRC=0
+    # Default: otherwise | error 
+
+EVAPX_SCC()::
+    # Clear Legacy reinterpreted bits by the SCC field and set EVEX sub-encoding space
+    true  | EVEX_APX_SCC MASK=0 VEXDEST4=0 NF=0 BCRC=0

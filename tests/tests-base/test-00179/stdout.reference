@@ -27,5 +27,6 @@ SSE
 SCALAR
 Number of legacy prefixes: 11 
 ISA SET: [SSE]
-0	CPUID BIT NAME: [SSE]
-	Leaf 0x00000001, subleaf 0x00000000, EDX[25]
+0	CPUID GROUP NAME: [SSE]
+	0	CPUID RECORD NAME: [SSE]
+		{Leaf 0x00000001, subleaf 0x00000000, EDX[25:25]} = 1

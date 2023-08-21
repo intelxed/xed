@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -78,7 +78,8 @@ class ild_info_t(object):
                  easz_nt_seq=None,
                  imm_nt_seq=None, disp_nt_seq=None,ext_opcode=None, 
                  mode=None,
-                 priority=storage_priority):
+                 priority=storage_priority,
+                 ptrn_wrds=[]):
         self.vexvalid = vexvalid # numeric
         self.insn_map = insn_map
         self.opcode = opcode
@@ -120,6 +121,10 @@ class ild_info_t(object):
         #For example storage's objects have priority 10 and objects
         #obtained from grammar parsing have priority 0.
         self.priority = priority
+
+        # Store all pattern's tokens, use for exceptional checks and not for object 
+        # comparing
+        self.ptrn_wrds = ptrn_wrds
         
     #This method is important because it defines which objects conflict
     # NOTE: SKIPPING vexvalid field in comparison
@@ -166,6 +171,7 @@ class ild_info_t(object):
         printed_members.append('EOSZ_SEQ:\t %s' % self.eosz_nt_seq)
         printed_members.append('IMM_SEQ\t: %s' % self.imm_nt_seq)
         printed_members.append('DISP_SEQ\t: %s' % self.disp_nt_seq)
+        printed_members.append('PATTERN\t: %s' % ', '.join(self.ptrn_wrds))
         
         return "{\n"+ ",\n".join(printed_members) + "\n}"
 
@@ -183,7 +189,8 @@ def ptrn_to_info(pattern, prio=storage_priority):
                       disp_nt_seq=pattern.disp_nt_seq,
                       ext_opcode=pattern.ext_opcode,
                       mode=pattern.mode,
-                      priority=prio)
+                      priority=prio,
+                      ptrn_wrds=pattern.ptrn_wrds)
     
 #Get pattern_t object and set of infos , create info_t object and add it
 #to the set

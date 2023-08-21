@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ CATEGORY  : XSAVEOPT
 EXTENSION : XSAVEOPT
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT  x87_mmx_state_r NOTSX
 COMMENT   :  Variable length Store and conditional reg read. reads/modifies header.
-PATTERN   : 0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]  no_refining_prefix norexw_prefix MODRM() XSAVE()
+PATTERN   : 0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]  no_refining_prefix norex2_prefix norexw_prefix MODRM()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XSAVEOPT/XRSTOR
 OPERANDS  : MEM0:rw:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -37,7 +37,7 @@ CATEGORY  : XSAVEOPT
 EXTENSION : XSAVEOPT 
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT  x87_mmx_state_r NOTSX
 COMMENT   :  Variable length Store and conditional reg read. reads/modifies header.
-PATTERN   : 0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn] no_refining_prefix rexw_prefix MODRM() XSAVE()
+PATTERN   : 0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn] no_refining_prefix norex2_prefix rexw_prefix MODRM()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XSAVEOPT/XRSTOR
 OPERANDS  : MEM0:rw:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -5473,6 +5473,9 @@ def work():
     set_dbg_output(open(dbg_fn,"w"))
     
     gen_setup.make_paths(args)
+    # Use a dedicated enc2 generated instructions file
+    args.instructions_filename  = gen_setup.check_exist(os.path.join(args.prefix, 
+                                                                     'all-enc2-instructions.txt'))
     msge('Reading XED db...')
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
                                      args.instructions_filename,

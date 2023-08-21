@@ -1,0 +1,116 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+
+# This overrides EVEX_ENC_BIND/EMIT SEQUENCE defined by the AVX512F layer
+#################################################
+SEQUENCE EVEX_ENC_BIND
+         # R,X,B R map(mmm) (byte 1)
+         # W, vvvv, U, pp  (byte 2)
+         #     AVX512       -> z, LL/RC, b    V', aaa    ( byte 3)
+         #     APX          -> 0, LL   , nd   V', nf, 00 ( byte 3)
+         #     EVEX_APX_SCC -> 0, 00   , nd   ssss       ( byte 3)
+         EVEX_62_REXR_ENC_BIND
+         EVEX_REXX_ENC_BIND
+         EVEX_REXB_ENC_BIND
+         EVEX_REXR4_ENC_BIND
+         EVEX_MAP_ENC_BIND
+         EVEX_REXW_VVVV_ENC_BIND
+         EVEX_U_ENC_BIND
+         EVEX_PP_ENC_BIND
+         EVEX_LL_ENC_BIND
+         EVEX_BYTE3_ENC_BIND
+
+
+SEQUENCE EVEX_ENC_EMIT
+         EVEX_62_REXR_ENC_EMIT
+         EVEX_REXX_ENC_EMIT
+         EVEX_REXB_ENC_EMIT
+         EVEX_REXR4_ENC_EMIT
+         EVEX_MAP_ENC_EMIT
+         EVEX_REXW_VVVV_ENC_EMIT
+         EVEX_U_ENC_EMIT
+         EVEX_PP_ENC_EMIT
+         EVEX_LL_ENC_EMIT
+         EVEX_BYTE3_ENC_EMIT
+
+
+EVEX_BYTE3_ENC()::
+EVVSPACE=0      -> AVX512_EVEX_BYTE3_ENC()      # NON-APX instructions
+EVEX_APX        -> APX_EVEX_BYTE3_ENC()         # Default APX EVEX instructions
+EVEX_APX_SCC    -> APX_CC_EVEX_BYTE3_ENC()      # APX CCMP/CTEST instructions
+
+
+APX_EVEX_BYTE3_ENC()::
+# New EVEX interpretation for APX instructions
+# EVEX.B      -> APX.ND
+# EVEX.aaa[2] -> APX.NF
+VL[ll] ND[d] VEXDEST4=0 NF[f]  -> 0b0 ll_d 0b1 f 0b00
+VL[ll] ND[d] VEXDEST4=1 NF[f]  -> 0b0 ll_d 0b0 f 0b00
+
+APX_CC_EVEX_BYTE3_ENC()::
+# New EVEX interpretation for APX CCMP/CTESTinstructions
+# EVEX.V4 + EVEX.aaa  -> APX.SCC
+true ND[d] SCC[ssss] -> 0b000 d ssss
+
+
+EVEX_MAP_ENC()::
+### Extend an existing NT ###
+MAP=4  -> 0b0100
+
+
+################ Pattern NTs ################ 
+
+OSZ_NONTERM_ENC()::
+### Extend an existing NT ###
+# EVEX.W can be used as an opcode extension (mandatory) OR as EOSZ var (scalable
+# operand size instructions). SKIP_OSZ=1 means that Wbit is handled as opcode extension.
+EVV mode64 EOSZ=3 SKIP_OSZ=1 -> nothing
+EVV mode64 EOSZ=3 SKIP_OSZ=0 -> REXW=1
+
+
+######################################################
+# Mark APX instructions with a spacial APX-EVEX sub-encoding space
+#
+# The encoder uses it to choose the right EVEX bind/emit 
+# path (Mainly for Payload #3).
+
+EVAPX()::
+    true      -> EVEX_APX
+
+EVAPX_SCC()::
+    # SSC reinterprets the original EVEX encoding bits (VEXDEST4(V4) and MASK(aaaa)).
+    # Note the ILD store the inverted VEXDEST4 value, just like the encoded bit.
+    #                     -> SCC     EVEX encoding sub-space  Clear original interpretation
+    VEXDEST4=1  MASK=0    ->  SCC=0        EVEX_APX_SCC                VEXDEST4=0
+    VEXDEST4=1  MASK=1    ->  SCC=1        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=1  MASK=2    ->  SCC=2        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=1  MASK=3    ->  SCC=3        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=1  MASK=4    ->  SCC=4        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=1  MASK=5    ->  SCC=5        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=1  MASK=6    ->  SCC=6        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=1  MASK=7    ->  SCC=7        EVEX_APX_SCC         MASK=0 VEXDEST4=0
+    VEXDEST4=0  MASK=0    ->  SCC=8        EVEX_APX_SCC
+    VEXDEST4=0  MASK=1    ->  SCC=9        EVEX_APX_SCC         MASK=0
+    VEXDEST4=0  MASK=2    ->  SCC=10       EVEX_APX_SCC         MASK=0
+    VEXDEST4=0  MASK=3    ->  SCC=11       EVEX_APX_SCC         MASK=0
+    VEXDEST4=0  MASK=4    ->  SCC=12       EVEX_APX_SCC         MASK=0
+    VEXDEST4=0  MASK=5    ->  SCC=13       EVEX_APX_SCC         MASK=0
+    VEXDEST4=0  MASK=6    ->  SCC=14       EVEX_APX_SCC         MASK=0
+    VEXDEST4=0  MASK=7    ->  SCC=15       EVEX_APX_SCC         MASK=0
+######################################################

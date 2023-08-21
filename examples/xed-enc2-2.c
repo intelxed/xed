@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -119,6 +119,6 @@ int main(int argc, char** argv) {
     retval =  decode(output_buffer, enclen);
     printf("decode returned %d\n",retval);
 #endif
-    return retval;
     (void)argc; (void)argv;
+    return retval;
 }

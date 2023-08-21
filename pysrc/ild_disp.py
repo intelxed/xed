@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -140,7 +140,8 @@ def _is_disp_conflict(info_list, disp_dict):
 #a list of conflict resolution functions to use when we have conflicts 
 #between info objects in the same map-opcode
 _resolution_functions = [ ild_codegen.gen_l1_byreg_resolution_function,
-                          ild_codegen.gen_l1_bymode_resolution_function ]
+                          ild_codegen.gen_l1_bymode_resolution_function,
+                          ild_codegen.gen_l1_byrex2_resolution_function ]
 
 def _resolve_conflicts(agi, info_list, disp_dict):
     """Try to resolve conflicts by applying the conflict resolution

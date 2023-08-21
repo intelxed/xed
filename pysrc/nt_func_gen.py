@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ _xed_reg_invalid = 'XED_REG_INVALID'
 # those operand are very wide but the real values they may have are few
 # specifying here the valid values for the operands and the number bits
 # needed to represent each one  
-_valid_width = {'BRDISP_WIDTH' :[8, 16, 32],
+_valid_width = {'BRDISP_WIDTH' :[8, 16, 32, 64],
                 'DISP_WIDTH'   :[0, 8, 16, 32, 64],
                 'IMM_WIDTH'    :[8, 16, 32, 64],
                 }

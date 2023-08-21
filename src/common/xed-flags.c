@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -72,8 +72,8 @@ xed_flag_action_get_flag_name(const xed_flag_action_t* p)  {
 /// return the action
 xed_flag_action_enum_t
 xed_flag_action_get_action(const xed_flag_action_t* p, unsigned int i)   {
-    return p->action;
     (void)i; // pacify compiler warnings
+    return p->action;
 }
 
 /// returns 1 if the specified action is invalid. Only the 2nd flag might

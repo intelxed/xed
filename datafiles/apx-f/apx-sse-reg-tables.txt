@@ -1,0 +1,66 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+# Promoted-from-SSE EVEX instructions
+# Enables ONLY 16 lower XMMs
+xed_reg_enum_t XMM_L_R3()::  
+mode64 | OUTREG=XMM_L_R3_64()
+
+xed_reg_enum_t XMM_L_R3_64()::
+REXR4=0 REXR=0 REG=0 | OUTREG=XED_REG_XMM0
+REXR4=0 REXR=0 REG=1 | OUTREG=XED_REG_XMM1
+REXR4=0 REXR=0 REG=2 | OUTREG=XED_REG_XMM2
+REXR4=0 REXR=0 REG=3 | OUTREG=XED_REG_XMM3
+REXR4=0 REXR=0 REG=4 | OUTREG=XED_REG_XMM4
+REXR4=0 REXR=0 REG=5 | OUTREG=XED_REG_XMM5
+REXR4=0 REXR=0 REG=6 | OUTREG=XED_REG_XMM6
+REXR4=0 REXR=0 REG=7 | OUTREG=XED_REG_XMM7
+
+REXR4=0 REXR=1 REG=0 | OUTREG=XED_REG_XMM8
+REXR4=0 REXR=1 REG=1 | OUTREG=XED_REG_XMM9
+REXR4=0 REXR=1 REG=2 | OUTREG=XED_REG_XMM10
+REXR4=0 REXR=1 REG=3 | OUTREG=XED_REG_XMM11
+REXR4=0 REXR=1 REG=4 | OUTREG=XED_REG_XMM12
+REXR4=0 REXR=1 REG=5 | OUTREG=XED_REG_XMM13
+REXR4=0 REXR=1 REG=6 | OUTREG=XED_REG_XMM14
+REXR4=0 REXR=1 REG=7 | OUTREG=XED_REG_XMM15
+
+
+# Enables ONLY 16 lower XMMs
+xed_reg_enum_t XMM_L_B3()::
+mode64 | OUTREG=XMM_L_B3_64()
+
+xed_reg_enum_t XMM_L_B3_64()::
+REXX=0 REXB=0 RM=0 | OUTREG=XED_REG_XMM0
+REXX=0 REXB=0 RM=1 | OUTREG=XED_REG_XMM1
+REXX=0 REXB=0 RM=2 | OUTREG=XED_REG_XMM2
+REXX=0 REXB=0 RM=3 | OUTREG=XED_REG_XMM3
+REXX=0 REXB=0 RM=4 | OUTREG=XED_REG_XMM4
+REXX=0 REXB=0 RM=5 | OUTREG=XED_REG_XMM5
+REXX=0 REXB=0 RM=6 | OUTREG=XED_REG_XMM6
+REXX=0 REXB=0 RM=7 | OUTREG=XED_REG_XMM7
+
+REXX=0 REXB=1 RM=0 | OUTREG=XED_REG_XMM8
+REXX=0 REXB=1 RM=1 | OUTREG=XED_REG_XMM9
+REXX=0 REXB=1 RM=2 | OUTREG=XED_REG_XMM10
+REXX=0 REXB=1 RM=3 | OUTREG=XED_REG_XMM11
+REXX=0 REXB=1 RM=4 | OUTREG=XED_REG_XMM12
+REXX=0 REXB=1 RM=5 | OUTREG=XED_REG_XMM13
+REXX=0 REXB=1 RM=6 | OUTREG=XED_REG_XMM14
+REXX=0 REXB=1 RM=7 | OUTREG=XED_REG_XMM15
+

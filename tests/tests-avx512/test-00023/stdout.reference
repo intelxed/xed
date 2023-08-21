@@ -1,0 +1,39 @@
+Attempting to decode: 62 f5 74 28 58 c2 
+iclass VADDPH	category FP16	ISA-extension AVX512EVEX	ISA-set AVX512_FP16_256
+instruction-length 6
+operand-width 32
+effective-operand-width 32
+effective-address-width 64
+stack-address-width 64
+iform-enum-name VADDPH_YMMf16_MASKmskw_YMMf16_YMMf16_AVX512
+iform-enum-name-dispatch (zero based) 3
+iclass-max-iform-dispatch 6
+Nominal opcode position 4
+Nominal opcode 0x58
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0             REG0=YMM0   EXPLICIT   W        QQ  256    32    16     16    FLOAT16        YMM
+1   REG1               REG1=K0   EXPLICIT   R      MSKW   64     8    64      1        INT       MASK
+2   REG2             REG2=YMM1   EXPLICIT   R        QQ  256    32    16     16    FLOAT16        YMM
+3   REG3             REG3=YMM2   EXPLICIT   R        QQ  256    32    16     16    FLOAT16        YMM
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: MASKOP_EVEX MXCSR 
+EXCEPTION TYPE: AVX512_E2
+AVX512
+Vector length: 256
+AVX512 vector elements: 16
+ISA SET: [AVX512_FP16_256]
+0	CPUID GROUP NAME: [AVX512_FP16_256_AVX10]
+	0	CPUID RECORD NAME: [AVX10_ENABLED]
+		{Leaf 0x00000007, subleaf 0x00000001, EDX[19:19]} = 1
+	1	CPUID RECORD NAME: [AVX10_VER1]
+		{Leaf 0x00000024, subleaf 0x00000000, EBX[0:7]} = 1
+	2	CPUID RECORD NAME: [AVX10_256VL]
+		{Leaf 0x00000024, subleaf 0x00000000, EBX[17:17]} = 1
+1	CPUID GROUP NAME: [AVX512_FP16_256]
+	0	CPUID RECORD NAME: [AVX512_FP16]
+		{Leaf 0x00000007, subleaf 0x00000000, EDX[23:23]} = 1
+	1	CPUID RECORD NAME: [AVX512VL]
+		{Leaf 0x00000007, subleaf 0x00000000, EBX[31:31]} = 1

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -552,6 +552,43 @@ def _gen_byreg_fun_dict(info_list, nt_dict, is_conflict_fun,
         fun_dict[reg] = l2_fn
     return fun_dict
 
+def _gen_byrex2_fun_dict(info_list, nt_dict, is_conflict_fun,
+                         gen_l2_fn_fun):
+    REX2_REF_PATT = 'rex2_refining_prefix'
+    NO_REX2_REF_PATT = 'norex2_prefix'
+    fun_dict = {0: [], 1: []}  # Keys are the REX2 required value
+    insn_map = info_list[0].insn_map
+    opcode = info_list[0].opcode
+
+    #get info objects with REX2 refining constraint
+    for info in info_list:
+        if REX2_REF_PATT in info.ptrn_wrds:
+            fun_dict[1].append(info)
+        elif NO_REX2_REF_PATT in info.ptrn_wrds:
+            fun_dict[0].append(info)
+        else:
+            # no REX2 constraint, can not resolve conflict
+            return None
+
+    for rex2_ref, infos in fun_dict.items():
+        if len(infos) == 0:
+            ildutil.ild_warn('BY REX2 resolving: No infos for rex2_refining:' +
+                             '%s opcode %s map %s' % (rex2_ref==1, opcode, insn_map))
+            return None
+        #if these info objects conflict, we cannot refine by REX2 refining prefix
+        is_conflict = is_conflict_fun(infos, nt_dict)
+        if is_conflict == None:
+            return None
+        if is_conflict:
+            ildutil.ild_warn('BY REX2 resolving:Still conflict for rex2_refining:' +
+                             '%s opcode %s map %s' % (rex2_ref==1, opcode, insn_map))
+            return None
+        l2_fn = gen_l2_fn_fun(infos[0], nt_dict)
+        if not l2_fn:
+            return None
+        fun_dict[rex2_ref] = l2_fn
+    return fun_dict
+
 def _gen_intervals_dict(fun_dict):
     """If there are keys that map to the same value, we want to unite
     them to intervals in order to have less conditional branches in
@@ -722,6 +759,54 @@ def gen_l1_bymode_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
         _add_switch_dispatching(fo, fun_dict, mode_var, data_name)
 
     return fo
+
+
+def gen_l1_byrex2_resolution_function(agi,info_list, nt_dict, is_conflict_fun,
+                                      gen_l2_fn_fun, fn_suffix):
+    if len(info_list) == 0:
+        ildutil.ild_warn("Trying to resolve conflict for empty info_list")
+        return None
+    insn_map = info_list[0].insn_map
+    opcode = info_list[0].opcode
+    ildutil.ild_warn('generating by REX2 fun_dict for opcode %s map %s' %
+                          (opcode, insn_map))
+    fun_dict: dict = _gen_byrex2_fun_dict(info_list, nt_dict, is_conflict_fun,
+                                    gen_l2_fn_fun)
+    if not fun_dict or not all(fun_dict.values()):
+        #it is not ild_err because we might have other conflict resolution
+        #functions to try.
+        #In general we have a list of different conflict resolution functions
+        #that we iterate over and try to resolve the conflict
+        ildutil.ild_warn('Failed to generate by REX2 fun_dict for opcode '+
+                         '%s map %s' % (opcode, insn_map))
+        return None
+
+    lufn = ild_nt.gen_lu_names(['RESOLVE_BYREX2'], fn_suffix)[2]
+    lufn += '_map%s_op%s_l1' % (insn_map, opcode)
+    return_type = 'void'
+    fo = codegen.function_object_t(lufn, return_type,
+                                       static=True, inline=True)
+    data_name = 'x'
+    fo.add_arg(ildutil.ild_c_type + ' %s' % data_name)
+
+
+    mode_type = ildutil.ild_c_op_type
+    rex2_var = '_rex2'
+    fo.add_code_eol(mode_type + ' %s' % rex2_var)
+    #get MODE value
+    access_call = emit_ild_access_call("REX2", data_name)
+    if not access_call:
+          return None
+
+    fo.add_code_eol('%s = (%s)%s' %(rex2_var, mode_type, access_call))
+
+    #now emit the resolution code, that checks conditions from dict
+    #(in this case the REX2 condition)
+    #and calls appropriate L2 function for each condition
+    _add_switch_dispatching(fo, fun_dict, rex2_var, data_name)
+
+    return fo
+
 
 def print_defines(file, define_dict):
     for def_name in sorted(define_dict.keys()):

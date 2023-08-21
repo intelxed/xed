@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -129,7 +129,7 @@ main(int argc, char** argv)
 
     /* patch the displacements or immediates */
        
-    ok = xed_patch_relbr(xedd+0, itext[0], xed_relbr(0x55667788,32));
+    ok = xed_patch_brdisp(xedd+0, itext[0], xed_relbr(0x55667788,32));
     if (!ok) fprintf(stderr,"Patching failed for 1st instr\n");
     
     ok = xed_patch_disp(xedd+1, itext[1], xed_disp(0x55,8));
@@ -157,7 +157,7 @@ main(int argc, char** argv)
         else 
             fprintf(stderr,"DISASSEMBLY ERROR\n");
     }
-    return 0;
     (void) argc;
     (void) argv;
+    return 0;
 }

@@ -94,8 +94,6 @@ import ins_emit
 import encutil
 from patterns import *
 
-EXT_MODULE = None
-
 storage_fields = {}
 def outreg():
     return operand_storage.get_op_getter_full_func('outreg',
@@ -1092,9 +1090,8 @@ class iform_t(object):
                 self.encspace=act.value
                 break
         
-        # Use extension module constructor, if exists
-        if EXT_MODULE: EXT_MODULE.ext_iform_t.extend_init(self)
-        self._fixup_vex_conditions()
+        self._fixup_non_evex_conditions()
+        self._fixup_evex_scalable_operands()
         self._find_legacy_map(map_info)
         self.rule = self.make_rule()
 
@@ -1126,11 +1123,51 @@ class iform_t(object):
                     self.legacy_map = default_map
             if not self.legacy_map:
                 genutil.die("Could not set legacy map.")
-            
-    def _fixup_vex_conditions(self):
-        """if action has VEXVALID=1, add modal_pattern MUST_USE_EVEX=0. 
+                
+    def _fixup_evex_scalable_operands(self):
+        """
+        Some EVEX instructions are defined with scalable width operand. For them,
+        the EVEX.PP=1 is equivalent to 66 OSZ prefix.
+        In this case, the function adds EOSZ restriction according to the PP field.
+        This is true for a full VAR scalability level (excluding y,z...)
+
+        Args:
+            iform_t (iform_t): the iform_t self object
+        """
+        
+        evex_scalable_op = False
+        mode64 = 'MODE=2' in self.modal_patterns
+        if self.encspace == 2: # EVEX
+            for e in self.enc_conditions:
+                if e.lencode in ['v']:
+                    evex_scalable_op = True
+                    break
+        
+        support_evex_scalable_op = evex_scalable_op and mode64
+        if not support_evex_scalable_op:
+            return
+        
+        pp = None
+        for e in self.enc_actions:
+            if e.field_name == 'VEX_PREFIX':
+                pp = e.value
+                break
+
+        # mode64   66_pp REXW=0 | EOSZ=1
+        # mode64 no66_pp REXW=0 | EOSZ=2
+        # mode64   66_pp REXW=1 | EOSZ=3
+        # mode64 no66_pp REXW=1 | EOSZ=3            
+        pp_cond = {0 : 'EOSZ!=1', # EVEX.PP=0 (VNP) is treated as "no66_pp"
+                   1 : 'EOSZ!=2'} # EVEX.PP=1 (V66) is treated as "66_pp"
+
+        assert pp in pp_cond, "Unhandled EVEX prefix for scalable operands"
+        self.modal_patterns.append(pp_cond[pp])
+        return
+    
+    def _fixup_non_evex_conditions(self):
+        """if instruction is not EVEX add modal_pattern MUST_USE_EVEX=0. 
            The modal_patterns become conditions later on."""
-        if self.encspace == 1: # VEX
+        if self.encspace != 2: # Not EVEX
             self.modal_patterns.append("MUST_USE_EVEX=0")
     
     def make_operand_name_list(self):
@@ -1411,9 +1448,9 @@ class nonterminal_t(object):
                 iform_builder.remember_iforms(nt_name)
             else:
                 # nothing to emit, so skip this...
-                fo.add_code_eol('return 1')
                 fo.add_code_eol('(void) okay')
                 fo.add_code_eol('(void) xes')
+                fo.add_code_eol('return 1')
                 return fo
 
         #_vmsgb("EMITTING RULES FOR", nt_name)
@@ -1432,15 +1469,17 @@ class nonterminal_t(object):
         default_rule = self._default_rule()
         lines = default_rule.emit_rule(bind_or_emit,0, nt_name)
         fo.add_lines(lines)
-        
-        fo.add_code('return 0; /*pacify the compiler*/')
+        fo.add_comment('pacify the compiler')
         fo.add_code_eol('(void) okay')
         fo.add_code_eol('(void) xes')
+
         if bind_or_emit == 'EMIT':
             fo.add_code_eol('(void) iform')
 
         if bind_or_emit == 'BIND' or bind_or_emit == 'NTLUF':
             fo.add_code_eol("(void) conditions_satisfied")
+
+        fo.add_code('return 0;')
         return fo
 
 class sequencer_t(object):
@@ -2638,9 +2677,9 @@ class encoder_configuration_t(object):
             fo.add_code(pad4 + '} // initial conditions')
             fo.add_code('} // xed_enc_chip_check ')
         
-        fo.add_code_eol('return 0')
         fo.add_code_eol("(void) okay")
         fo.add_code_eol("(void) xes")
+        fo.add_code_eol('return 0')
         return fo
     
     def emit_encode_function_table_init(self):
@@ -3210,28 +3249,6 @@ def setup_arg_parser():
                                 chip.''')
     
     options, args = arg_parser.parse_args()
-
-    if options.xedext_dir: 
-        extdir_path = Path(options.xedext_dir).resolve()
-        if extdir_path.exists(): 
-            # Catch read-encfile.py extension
-            try:
-                global EXT_MODULE
-                fname = Path(__file__).name
-                ext_file = 'ext-' + fname
-                ext_module = 'ext-' + Path(__file__).stem
-
-                ext_path = extdir_path.joinpath('pysrc', ext_file).resolve(strict=True)
-                spec = importlib.util.spec_from_file_location(ext_module, ext_path)
-                EXT_MODULE = importlib.util.module_from_spec(spec)
-                sys.modules[ext_module] = EXT_MODULE
-                spec.loader.exec_module(EXT_MODULE)
-                mbuild.msgb(f'PYSRC: Extending "{fname}" with "{ext_file}"')
-            except:
-                die('(read-encfile.py) couldn\'t find an expected extension module')
-        else:
-            warn(f'Provided --xedext-dir does not exists: "{options.xedext_dir}"')
-
     return options, args
 
 

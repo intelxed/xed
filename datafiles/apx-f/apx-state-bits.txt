@@ -1,0 +1,48 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+MAP4   MAP=4 
+
+EVEX_APX          EVVSPACE=1  # APX Promoted-like EVEX encoding (ND/ZU/NF)
+EVEX_APX_SCC      EVVSPACE=2  # APX CCMP/CTEST encoding
+
+##############  SCC  ##############
+# (VEXDEST4=~EVEX.V4 -> the inverted encoding bit)
+SCC0     VEXDEST4=1  MASK=0
+SCC1     VEXDEST4=1  MASK=1
+SCC2     VEXDEST4=1  MASK=2
+SCC3     VEXDEST4=1  MASK=3
+SCC4     VEXDEST4=1  MASK=4
+SCC5     VEXDEST4=1  MASK=5
+SCC6     VEXDEST4=1  MASK=6
+SCC7     VEXDEST4=1  MASK=7
+SCC8     VEXDEST4=0  MASK=0
+SCC9     VEXDEST4=0  MASK=1
+SCC10    VEXDEST4=0  MASK=2
+SCC11    VEXDEST4=0  MASK=3
+SCC12    VEXDEST4=0  MASK=4
+SCC13    VEXDEST4=0  MASK=5
+SCC14    VEXDEST4=0  MASK=6
+SCC15    VEXDEST4=0  MASK=7
+
+# Use NO_SSC pattern conditions for instructions that share (enc-space, mapId, opcode) combination 
+# with APX/SCC instructions.
+# Explicitly define a MASK condition to prevent it from being "don't-care" and increase
+# code-size (with all MASK={0-7} options).
+NO_SCC_NF0   NF=0 MASK=0
+NO_SCC_NF1   NF=1 MASK=4

@@ -2893,7 +2893,7 @@ def collect_immediate_operand_bit_positions(options, opnd, ii):
 
 ################################
          
-uninteresting_operand_types_list = ['imm_const', 'reg', 'relbr', 'ptr', 'error',
+uninteresting_operand_types_list = ['imm_const', 'reg', 'relbr', 'absbr', 'ptr', 'error',
                                     'nt_lookup_fn', 'mem', 'xed_reset', 
                                     'flag', 'agen']
 
@@ -5665,100 +5665,113 @@ def call_chipmodel(agi):
         agi.add_file_name(f,is_header(f))
 
 ################################################
-def read_cpuid_mappings(fn):
-    return cpuid_rdr.read_file(fn)
+def make_cpuid_mappings(agi,fn):
+    """
+    Make CPUID C tables and headers
 
-def make_cpuid_mappings(agi,mappings):
+    Args:
+        agi (all_generator_info_t): All generator info
+        fn (str): cpuid input file name
+    """    
+    isaset_cpuid_map : cpuid_rdr.isaset_cpuid_map_t = cpuid_rdr.read_file(fn)
+    cpuid_recs : cpuid_rdr.cpuid_rec_info_map_t = cpuid_rdr.make_cpuid_rec_info_map(isaset_cpuid_map)
+    cpuid_grps : cpuid_rdr.cpuid_group_info_map_t = cpuid_rdr.make_cpuid_group_info_map(isaset_cpuid_map)
+    cpuid_rec_string_names = sorted(cpuid_recs.keys())
+    cpuid_group_string_names = sorted(cpuid_grps.keys())
 
-    # 'mappings' is a dict of isa_set -> list of cpuid_bit_names 
-    
-    # collect all unique list of cpuid bit names
-    cpuid_bits = {}
-    for vlist in mappings.values():
-        for bit in vlist:
-            if bit == 'N/A':
-                data = bitname = 'INVALID'
-            else:
-                try:
-                    bitname,orgdata = bit.split('.',1)
-                    data = re.sub('[.]','_',orgdata)
-                except:
-                    die("splitting problem with {}".format(bit))
-                if bitname in cpuid_bits:
-                    if cpuid_bits[bitname] != data:
-                        die("Mismatch on cpuid bit specification for bit {}: {} vs {}".format(
-                            bitname, cpuid_bits[bitname], data))
-            cpuid_bits[bitname]=data
+    ### CPUID Record Enum ##
+    # Move INVALID to 0th element:
+    p = cpuid_rec_string_names.index('INVALID')
+    del cpuid_rec_string_names[p]
+    cpuid_rec_string_names = ['INVALID'] + cpuid_rec_string_names 
 
-    
-    cpuid_bit_string_names = sorted(cpuid_bits.keys())
-
-    # move INVALID to 0th element:
-    p = cpuid_bit_string_names.index('INVALID')
-    del cpuid_bit_string_names[p]
-    cpuid_bit_string_names = ['INVALID'] + cpuid_bit_string_names 
-
-    # emit enum for cpuid bit names
-    cpuid_bit_enum =  enum_txt_writer.enum_info_t(cpuid_bit_string_names,
+    # Emit enum for cpuid rec names
+    cpuid_rec_enum =  enum_txt_writer.enum_info_t(cpuid_rec_string_names,
                                                   agi.common.options.xeddir,
                                                   agi.common.options.gendir,
-                                                  'xed-cpuid-bit',
-                                                  'xed_cpuid_bit_enum_t',
-                                                  'XED_CPUID_BIT_', 
+                                                  'xed-cpuid-rec',
+                                                  'xed_cpuid_rec_enum_t',
+                                                  'XED_CPUID_REC_', 
                                                   cplusplus=False)
-    cpuid_bit_enum.print_enum()
-    cpuid_bit_enum.run_enumer()
-    agi.add_file_name(cpuid_bit_enum.src_full_file_name)
-    agi.add_file_name(cpuid_bit_enum.hdr_full_file_name,header=True)
+    cpuid_rec_enum.print_enum()
+    cpuid_rec_enum.run_enumer()
+    agi.add_file_name(cpuid_rec_enum.src_full_file_name)
+    agi.add_file_name(cpuid_rec_enum.hdr_full_file_name,header=True)
+
+    ### CPUID Group Enum ##
+    # Move INVALID to 0th element:
+    p = cpuid_group_string_names.index('INVALID')
+    del cpuid_group_string_names[p]
+    cpuid_group_string_names = ['INVALID'] + cpuid_group_string_names 
+
+    # Emit enum for cpuid group names
+    cpuid_grp_enum =  enum_txt_writer.enum_info_t(cpuid_group_string_names,
+                                                  agi.common.options.xeddir,
+                                                  agi.common.options.gendir,
+                                                  'xed-cpuid-group',
+                                                  'xed_cpuid_group_enum_t',
+                                                  'XED_CPUID_GROUP_', 
+                                                  cplusplus=False)
+    cpuid_grp_enum.print_enum()
+    cpuid_grp_enum.run_enumer()
+    agi.add_file_name(cpuid_grp_enum.src_full_file_name)
+    agi.add_file_name(cpuid_grp_enum.hdr_full_file_name,header=True)
 
     fp = agi.open_file('xed-cpuid-tables.c')
 
     fp.add_code('const xed_cpuid_rec_t xed_cpuid_info[] = {')
     # emit initialized structure mapping cpuid enum values to descriptive structures
-    for bitname in cpuid_bit_string_names:
-        cpuid_bit_data = cpuid_bits[bitname]
-        if bitname == 'INVALID':
-            leaf = subleaf = bit  = 0
-            reg = 'INVALID'
-        else:
-            (leaf,subleaf,reg,bit) = cpuid_bit_data.split('_')
+    for recname in cpuid_rec_string_names:
+        data : cpuid_rdr.cpuid_record_t = cpuid_recs[recname]
             
-        s = "/* {:18s} */ {{ 0x{}, {}, {}, XED_REG_{} }},".format(
-            bitname, leaf,subleaf, bit, reg)
+        s = "/* {:18s} */ {{ 0x{}, {}, XED_REG_{}, {}, {}, {} }},".format(
+            recname, data.leaf, data.s_leaf, data.reg, data.bit_start, 
+            data.bit_end, data.value)
         fp.add_code(s)
     fp.add_code('};')
 
     # check that each isa set in the cpuid files has a corresponding XED_ISA_SET_ value
     fail = False
-    for cisa in mappings.keys():
+    for cisa in isaset_cpuid_map.keys():
         t = re.sub('XED_ISA_SET_','',cisa)
         if t not in agi.all_enums['xed_isa_set_enum_t']:
             fail = True
             genutil.warn("bad isa_set referenced cpuid file: {}".format(cisa))
     if fail:
         die("Found bad isa_sets in cpuid input files.")
-                    
-
-        
     
-    # emit initialized structure of isa-set mapping to array of cpuid bit string enum.
+    # emit initialized structure of cpuid group mapping to array of cpuid rec string enum.
     n = 4
-    fp.add_code('const xed_cpuid_bit_enum_t xed_isa_set_to_cpuid_mapping[][XED_MAX_CPUID_BITS_PER_ISA_SET] = {')
+    fp.add_code('const xed_cpuid_rec_enum_t xed_cpuid_group_to_rec_mapping[][XED_MAX_CPUID_RECS_PER_GROUP] = {')
+    for group_name in cpuid_group_string_names:
+        print("CPUID Group: ", group_name)
+        raw = n*['XED_CPUID_REC_INVALID']
+        if group_name in cpuid_grps:
+            group: cpuid_rdr.group_record_t = cpuid_grps[group_name]
+            for i, rec in enumerate(group.get_records()):
+                rec_symbolic_name = rec.fname
+                if i >= n:
+                    die("Make XED_MAX_CPUID_RECS_PER_GROUP bigger")
+                raw[i] = 'XED_CPUID_REC_' + rec_symbolic_name
+        recs = ", ".join(raw)
+        s = '/* {} */ {{ {}  }} ,'.format(group_name, recs)
+        fp.add_code(s)
+    fp.add_code('};')
 
+    # emit initialized structure of isa-set mapping to array of cpuid group string enum.
+    n = 2
+    fp.add_code('const xed_cpuid_group_enum_t xed_isa_set_to_cpuid_group_mapping[][XED_MAX_CPUID_GROUPS_PER_ISA_SET] = {')
     for isaset in agi.all_enums['xed_isa_set_enum_t']:
         print("ISASET: ", isaset)
         x = 'XED_ISA_SET_' + isaset
-        raw = n*['XED_CPUID_BIT_INVALID']
-        if x in mappings:
-            for i,v in enumerate(mappings[x]):
-                if v == 'N/A':
-                    bit_symbolic_name = 'INVALID'
-                else:
-                    (bit_symbolic_name,leaf,subleaf,reg,bit) = v.split('.')
+        raw = n*['XED_CPUID_GROUP_INVALID']
+        if x in isaset_cpuid_map:
+            for i,v in enumerate(isaset_cpuid_map[x]):
+                grp_symbolic_name = v.get_name()
 
                 if i >= n:
-                    die("Make XED_MAX_CPUID_BITS_PER_ISA_SET bigger")
-                raw[i] = 'XED_CPUID_BIT_' + bit_symbolic_name
+                    die("Make XED_MAX_CPUID_GROUPS_PER_ISA_SET bigger")
+                raw[i] = 'XED_CPUID_GROUP_' + grp_symbolic_name
         bits = ", ".join(raw)
         s = '/* {} */ {{ {}  }} ,'.format(isaset, bits)
         fp.add_code(s)
@@ -5769,8 +5782,7 @@ def gen_cpuid_map(agi):
     fn = agi.common.options.cpuid_input_fn
     if fn:
         if os.path.exists(fn):
-            mappings = read_cpuid_mappings(fn)
-            make_cpuid_mappings(agi, mappings)
+            make_cpuid_mappings(agi, fn)
             return
     die("Could not read cpuid input file: {}".format(str(fn)))
     

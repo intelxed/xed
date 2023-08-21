@@ -390,7 +390,7 @@ parse_encode_request(ascii_encode_request_t areq)
     the operands:
     
            operand kind (XED_OPERAND_{AGEN,MEM0,MEM1,IMM0,IMM1,
-           RELBR,PTR,REG0...REG15}
+           RELBR,ABSBR,PTR,REG0...REG15}
            
            operand order
            
@@ -408,19 +408,19 @@ parse_encode_request(ascii_encode_request_t areq)
     tokens = tokenize(areq.command," ");
     p = tokens;
 
-    for ( ; p ; token_index++, p=p->next ) {
+    if (p) 
+    {
         slash_split(p->s, cfirst, csecond);
-        if(is_empty_buf(cfirst))
-            break;
-        upcase(cfirst);
-        if (CLIENT_VERBOSE3)
-            printf( "[%s][%s][%s]\n", p->s,
-                    (!is_empty_buf(cfirst)?cfirst:"NULL"),
-                    (!is_empty_buf(cfirst)?csecond:"NULL"));
+        if (! is_empty_buf(cfirst))
+        {
+            upcase(cfirst);
+            if (CLIENT_VERBOSE3)
+                printf("[%s][%s][%s]\n", p->s,
+                       (!is_empty_buf(cfirst)?cfirst:"NULL"),
+                       (!is_empty_buf(cfirst)?csecond:"NULL"));
 
-        // consumed token, advance & exit
-        p = p->next;
-        break;
+        p = p->next; // consumed token, advance
+        }
     }
 
     // we can attempt to override the mode
@@ -605,19 +605,35 @@ parse_encode_request(ascii_encode_request_t areq)
         }
 
 
-        immed_parser_init(&disp,cres_reg, "BRDISP");
+        immed_parser_init(&disp,cres_reg, "RELBR");
         if (disp.valid) {
             if (CLIENT_VERBOSE3) 
                 printf("Setting  displacement value to " XED_FMT_LX "\n",
                        disp.immed_val);
             xed_encoder_request_set_branch_displacement(
                 &req,
-                XED_STATIC_CAST(xed_int32_t,disp.immed_val),
+                XED_STATIC_CAST(xed_int64_t,disp.immed_val),
                 disp.width_bits/8); //FIXME
             xed_encoder_request_set_operand_order(&req,
                                                   operand_index,
                                                   XED_OPERAND_RELBR);
             xed_encoder_request_set_relbr(&req);
+            continue;
+        }
+
+        immed_parser_init(&disp,cres_reg, "ABSBR");
+        if (disp.valid) {
+            if (CLIENT_VERBOSE3) 
+                printf("Setting  displacement value to " XED_FMT_LX "\n",
+                       disp.immed_val);
+            xed_encoder_request_set_branch_displacement(
+                &req,
+                XED_STATIC_CAST(xed_int64_t,disp.immed_val),
+                disp.width_bits/8); //FIXME
+            xed_encoder_request_set_operand_order(&req,
+                                                  operand_index,
+                                                  XED_OPERAND_ABSBR);
+            xed_encoder_request_set_absbr(&req);
             continue;
         }
 
@@ -629,7 +645,7 @@ parse_encode_request(ascii_encode_request_t areq)
                        ptr_disp.immed_val);
             xed_encoder_request_set_branch_displacement(
                 &req,
-                XED_STATIC_CAST(xed_int32_t,ptr_disp.immed_val),
+                XED_STATIC_CAST(xed_int64_t,ptr_disp.immed_val),
                 ptr_disp.width_bits/8); //FIXME
             xed_encoder_request_set_operand_order(&req,
                                                   operand_index,

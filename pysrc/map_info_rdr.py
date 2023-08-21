@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -309,8 +309,8 @@ def emit_map_info_tables(agi):
                 constant = 0
             f.add_code('/* {} */'.format(codes))
             if set(codes) == {0}:  # all zero values...
-                f.add_code_eol('return 0')
                 f.add_code_eol('(void)m')
+                f.add_code_eol('return 0')
             else:
                 if required_chunks <= 1:
                     f.add_code_eol('const xed_uint64_t data_const = 0x{:x}ULL'.format(constant))

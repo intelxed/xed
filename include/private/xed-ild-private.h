@@ -36,6 +36,9 @@ static XED_INLINE xed_uint_t xed_sib_base(xed_uint8_t m) { return m&7; }
 static XED_INLINE xed_uint_t bits2bytes(xed_uint_t bits) { return bits>>3; }
 static XED_INLINE xed_uint_t bytes2bits(xed_uint_t bytes) { return bytes<<3; }
 
+#if defined(XED_APX)
+xed_bool_t chip_supports_apx(xed_decoded_inst_t* d);
+#endif
 
 typedef void(*xed_ild_l1_func_t)(xed_decoded_inst_t*);
 typedef xed_uint32_t(*xed3_find_func_t)(const xed_decoded_inst_t*);

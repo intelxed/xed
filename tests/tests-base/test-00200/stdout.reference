@@ -14,7 +14,7 @@ Nominal opcode 0xe0
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0  RELBR BRANCH_DISPLACEMENT_BYTES= 1 ffffffaa   EXPLICIT   R         B    8     1     1      8        INT    INVALID
+0  RELBR BRANCH_DISPLACEMENT_BYTES=1 0xaa   EXPLICIT   R         B    8     1     1      8        INT    INVALID
 1   REG0              REG0=ECX SUPPRESSED  RW       ASZ   32     4     1     32        INT        GPR
 2   REG1              REG1=EIP SUPPRESSED  RW         Y   32     4     1     32        INT         IP
 3   REG2           REG2=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
@@ -26,7 +26,7 @@ FLAGS:
     written:                                mask=0x0
   undefined:                                mask=0x0
 READS ZF
-ATTRIBUTES: UNDOCUMENTED
+ATTRIBUTES: UNDOCUMENTED 
 F3 PREFIX
 Number of legacy prefixes: 2 
 ISA SET: [I86]

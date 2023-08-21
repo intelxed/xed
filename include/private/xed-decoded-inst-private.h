@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -64,13 +64,13 @@ xed_decoded_inst_inc_length(xed_decoded_inst_t* p) {
 
 static XED_INLINE xed_uint32_t
 xed_phash_invalid(xed_decoded_inst_t* d) {
-    return 0;
     (void) d; 
+    return 0;
 }
 static XED_INLINE xed_uint32_t
 xed_phash_invalid_const(const xed_decoded_inst_t* d) {
-    return 0;
     (void) d; 
+    return 0;
 }
 
 static XED_INLINE void xed_ild_set_has_modrm(xed_decoded_inst_t* d, xed_uint8_t v) {

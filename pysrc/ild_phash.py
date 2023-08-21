@@ -218,11 +218,11 @@ class phash_t(object):
         
         if self.hash_f.kind() == 'trivial':
             operand_lu_fo = None
-            # rule is a pattern_t
-            fo.add_code_eol("return {}".format(self.cdict.rule.ii.inum))
             # avoid parmameter-not-used warnings with compilers that
             # care (like MSVS)
             fo.add_code_eol("(void)d") 
+            # rule is a pattern_t
+            fo.add_code_eol("return {}".format(self.cdict.rule.ii.inum))
         else:
             operand_lu_fo = codegen.function_object_t(lu_operands_fn,
                                            return_type=key_ctype,

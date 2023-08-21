@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -233,7 +233,6 @@ int xed_itoa_hex_zeros(char* buf,
                        int buflen) {
     const xed_bool_t lowercase=1;
     return xed_itoa_hex_ul(buf,f,bits_to_print, leading_zeros, buflen, lowercase);
-    (void) leading_zeros;
 }
 
 int xed_itoa_hex(char* buf, 
@@ -536,8 +535,8 @@ xed_uint8_t xed_get_byte(xed_uint64_t x, unsigned int i, unsigned int len) {
     // (The least significant byte is  00)
 
     xed_assert (i < len);
-    return XED_BYTE_CAST(x >> (i*8));
     (void)len; //pacify compiler
+    return XED_BYTE_CAST(x >> (i*8));
 }
 
 

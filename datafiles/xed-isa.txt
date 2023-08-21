@@ -6300,23 +6300,31 @@ IFORM     : DEC_GPRv_48
 }
 {
 ICLASS    : PUSH
-UNAME     : PUSH_50
 CPL       : 3
 CATEGORY  : PUSH
 EXTENSION : BASE
 ISA_SET   : I86
-PATTERN   : 0b0101_0 SRM[rrr] DF64()
+
+PATTERN   : 0b0101_0 SRM[rrr] norex2_prefix DF64()
+OPERANDS  : REG0=GPRv_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
+IFORM     : PUSH_GPRv_50
+
+PATTERN   : 0b0101_0 SRM[rrr] rex2_refining_prefix norexw_prefix mode64 DF64()
 OPERANDS  : REG0=GPRv_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
 IFORM     : PUSH_GPRv_50
 }
 {
 ICLASS    : POP
-UNAME     : POP_58
 CPL       : 3
 CATEGORY  : POP
 EXTENSION : BASE
 ISA_SET   : I86
-PATTERN   : 0b0101_1 SRM[rrr] DF64()
+
+PATTERN   : 0b0101_1 SRM[rrr] norex2_prefix DF64()
+OPERANDS  : REG0=GPRv_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
+IFORM     : POP_GPRv_58
+
+PATTERN   : 0b0101_1 SRM[rrr] mode64 rex2_refining_prefix norexw_prefix DF64()
 OPERANDS  : REG0=GPRv_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
 IFORM     : POP_GPRv_58
 }
@@ -7153,7 +7161,7 @@ CATEGORY  : NOP
 EXTENSION : BASE
 ATTRIBUTES: NOP
 ISA_SET   : I86
-PATTERN   : 0b1001_0 SRM[0b000] SRM=0  not_refining_f3 norexb_prefix
+PATTERN   : 0b1001_0 SRM[0b000] SRM=0  not_refining_f3 norexb_prefix norexb4_prefix
 OPERANDS  :
 IFORM     : NOP_90
 }
@@ -7195,6 +7203,9 @@ OPERANDS  : REG0=GPRv_SB():rw REG1=OrAX():rw:IMPL
 
 # This is strange. REG0 is r8w, r8d or r8 depending on the EOSZ. mode64
 PATTERN   : 0b1001_0 SRM[rrr] SRM=0 not_refining_f3 rexb_prefix
+OPERANDS  : REG0=GPRv_SB():rw REG1=OrAX():rw:IMPL
+
+PATTERN   : 0b1001_0 SRM[rrr] SRM=0 not_refining_f3 norexb_prefix rexb4_prefix
 OPERANDS  : REG0=GPRv_SB():rw REG1=OrAX():rw:IMPL
 }
 {
@@ -7429,7 +7440,7 @@ CATEGORY  : DATAXFER
 EXTENSION : BASE
 ISA_SET   : I86
 ATTRIBUTES : fixed_base0
-PATTERN   : 0xA1 MEMDISPv() OVERRIDE_SEG0()
+PATTERN   : 0xA1 norex2_prefix MEMDISPv() OVERRIDE_SEG0()
 OPERANDS  : REG0=OrAX():w:IMPL MEM0:r:v SEG0=FINAL_DSEG():r:SUPP BASE0=XED_REG_INVALID:r:ECOND INDEX=XED_REG_INVALID:r:ECOND
 }
 {
@@ -15155,7 +15166,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : Variable length store and conditional reg read. Reads/writes XSTATE_BV from header.
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix norexw_prefix MODRM() XSAVE()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix norex2_prefix norexw_prefix MODRM() 
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:rw:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -15166,7 +15177,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : variable length load and conditional reg write
 ATTRIBUTES : xmm_state_cw REQUIRES_ALIGNMENT x87_mmx_state_cw NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix norexw_prefix MODRM() XSAVE()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix norex2_prefix norexw_prefix MODRM()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:r:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -15179,7 +15190,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : Variable length store and conditional reg read. Reads/writes XSTATE_BV from header.
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix rexw_prefix MODRM() XSAVE()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b100] RM[nnn] no_refining_prefix norex2_prefix rexw_prefix MODRM()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:rw:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
@@ -15191,7 +15202,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVE
 COMMENT   : variable length load and conditional reg write
 ATTRIBUTES : xmm_state_cw REQUIRES_ALIGNMENT x87_mmx_state_cw NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix rexw_prefix MODRM() XSAVE()
+PATTERN   : 0x0F 0xAE MOD[mm]  MOD!=3 REG[0b101] RM[nnn] no_refining_prefix norex2_prefix rexw_prefix MODRM()
 #FIXME 2007-06-25 need a meaningful width code for XSAVE/XRSTOR
 OPERANDS  : MEM0:r:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }

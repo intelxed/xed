@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -27,8 +27,9 @@ int main(int argc, char** argv) {
     printf("xed_decoded_inst_t         %12d\n", (int)sizeof(xed_decoded_inst_t));
     printf("xed_inst_t                 %12d\n", (int)sizeof(xed_inst_t));    
     printf("xed_operand_t              %12d\n", (int)sizeof(xed_operand_t));
-    printf("xed_iform_info_t           %12d\n", (int)sizeof(xed_iform_info_t));    
-    return 0;
+    printf("xed_iform_info_t           %12d\n", (int)sizeof(xed_iform_info_t));
     (void) argc; (void) argv; //pacify compiler
-    (void) x;
+    (void) x;    
+    return 0;
+
 }

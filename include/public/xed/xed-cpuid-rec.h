@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,35 +20,53 @@ END_LEGAL */
 # define XED_CPUID_REC_H
 #include "xed-types.h"
 #include "xed-portability.h"
-#include "xed-cpuid-bit-enum.h"
+#include "xed-cpuid-rec-enum.h"
+#include "xed-cpuid-group-enum.h"
 #include "xed-isa-set-enum.h"
 
 
 typedef struct {
-    xed_uint32_t leaf;    // cpuid leaf
-    xed_uint32_t subleaf; // cpuid subleaf
-    xed_uint32_t bit;     // the bit number for the feature
-    xed_reg_enum_t reg;   // the register containing the bit (EAX,EBX,ECX,EDX)
+    xed_uint32_t leaf;      // cpuid leaf
+    xed_uint32_t subleaf;   // cpuid subleaf
+    xed_reg_enum_t reg;     // the register containing the bit (EAX,EBX,ECX,EDX)
+    xed_uint8_t bit_start;  // the bit start index for the feature
+    xed_uint8_t bit_end;    // the bit end index for the feature
+    xed_uint32_t value;     // the required feature value
 } xed_cpuid_rec_t;
 
-#define XED_MAX_CPUID_BITS_PER_ISA_SET (4)
+#define XED_MAX_CPUID_GROUPS_PER_ISA_SET (2)
+#define XED_MAX_CPUID_RECS_PER_GROUP     (4)
 
-/// Returns the name of the i'th cpuid bit associated with this isa-set.
+/// Returns the name of the i'th cpuid group associated with this isa-set.
 /// Call this repeatedly, with 0 <= i <
-/// XED_MAX_CPUID_BITS_PER_ISA_SET. Give up when i ==
-/// XED_MAX_CPUID_BITS_PER_ISA_SET or the return value is
-/// XED_CPUID_BIT_INVALID.
+/// XED_MAX_CPUID_GROUPS_PER_ISA_SET. Give up when i ==
+/// XED_MAX_CPUID_GROUPS_PER_ISA_SET or the return value is
+/// XED_CPUID_GROUP_INVALID.
+/// An ISA-SET is supported by a chip if CPUID match is found for a single CPUID 
+/// group (OR relationship between groups).
 XED_DLL_EXPORT
-xed_cpuid_bit_enum_t
-xed_get_cpuid_bit_for_isa_set(xed_isa_set_enum_t isaset,
-                              xed_uint_t i);
+xed_cpuid_group_enum_t 
+xed_get_cpuid_group_enum_for_isa_set(xed_isa_set_enum_t isaset, 
+                                     xed_uint_t i);
 
-/// This provides the details of the CPUID bit specification, if the
-/// enumeration value is not sufficient.  Returns 1 on success and fills in
+/// Returns the name of the i'th cpuid record associated with this cpuid group.
+/// Call this repeatedly, with 0 <= i <
+/// XED_MAX_CPUID_RECS_PER_GROUP. Give up when i ==
+/// XED_MAX_CPUID_RECS_PER_GROUP or the return value is
+/// XED_CPUID_REC_INVALID.
+/// A cpuid group is satisfied if all of its cpuid records are 
+/// set (AND relationship between records).
+XED_DLL_EXPORT
+xed_cpuid_rec_enum_t 
+xed_get_cpuid_rec_enum_for_group(xed_cpuid_group_enum_t group, 
+                             xed_uint_t i);
+
+/// This provides the details of the CPUID specification, if the
+/// enumeration value is not sufficient. Returns 1 on success and fills in
 /// the structure pointed to by p. Returns 0 on failure.
 XED_DLL_EXPORT
-xed_int_t
-xed_get_cpuid_rec(xed_cpuid_bit_enum_t cpuid_bit,
+xed_bool_t
+xed_get_cpuid_rec(xed_cpuid_rec_enum_t cpuid_bit,
                   xed_cpuid_rec_t* p);
 
 #endif

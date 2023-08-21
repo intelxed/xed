@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -27,8 +27,29 @@ END_LEGAL */
 #include <string.h>
 
 int main(int argc, char** argv);
+
+#if defined(XED_APX)
+xed_reg_enum_t get_dfv_reg(const xed_decoded_inst_t* xedd){
+    /* returns default flag values reg if a decoded instruction uses DFV and INVALID reg otherwise.*/
+    const xed_inst_t* inst = xedd->_inst;
+    const unsigned int noperands = xed_inst_noperands(inst);
+    unsigned int i;
+    for( i=0;i<noperands;i++)
+    {
+        const xed_operand_t* o = xed_inst_operand(inst,i);
+        const xed_operand_enum_t op_name = xed_operand_name(o);
+        xed_reg_enum_t r = xed_decoded_inst_get_reg(xedd, op_name);
+        if (r >= XED_REG_DFV0 && r <= XED_REG_DFV15)
+        {
+            return r;
+        }
+    }
+    return XED_REG_INVALID;
+}
+#endif
+
 void print_misc(xed_decoded_inst_t* xedd) {
-    xed_uint_t i=0;
+    xed_uint_t i=0, j=0;
     const xed_operand_values_t* ov = xed_decoded_inst_operands_const(xedd);
     const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
     xed_exception_enum_t e = xed_inst_exception(xi);
@@ -65,6 +86,11 @@ void print_misc(xed_decoded_inst_t* xedd) {
         /* this is any 66 prefix including the above */
         printf("ANY 66 PREFIX\n");
     }
+    if (xed3_operand_get_rex2(xedd)) {
+        /* Legacy instructions with REX2 prefix have no new iforms. This function returns a non-zero
+        number if REX2 prefix is detected for a Legacy instruction */
+        printf("REX2 PREFIX\n");
+    }
 
     if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_RING0)) {
         printf("RING0 only\n");
@@ -75,6 +101,27 @@ void print_misc(xed_decoded_inst_t* xedd) {
     }
     if (xed_decoded_inst_is_broadcast(xedd))
         printf("BROADCAST\n");
+#if defined(XED_APX)
+    if (xed_classify_apx(xedd))
+    {
+        printf("[APX] ");
+        if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_APX_NDD)) {
+            printf("New-Data-Destination ");
+        }
+        if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_APX_NF)) {
+            printf("No-Flags ");
+        }
+        if (xed3_operand_get_has_egpr(xedd)) {
+            /* returns a non-zero number if one of the register/memory-structure operands of a decoded
+            instruction is an extended GPR(EGPR) (valid for both Legacy and EVEX instructions) */
+            printf("Uses-EGPR ");
+        }
+        if (xed_decoded_inst_is_apx_zu(xedd)) {
+            printf("Zero-Upper ");
+        }
+        printf("\n");
+    }
+#endif
     
     if (xed_classify_sse(xedd) || xed_classify_avx(xedd) || xed_classify_avx512(xedd) || 
         xed_classify_amx(xedd))
@@ -119,24 +166,33 @@ void print_misc(xed_decoded_inst_t* xedd) {
         printf("Number of legacy prefixes: %u \n", np);
 
     printf("ISA SET: [%s]\n", xed_isa_set_enum_t2str(isaset));
-    for(i=0; i<XED_MAX_CPUID_BITS_PER_ISA_SET; i++)
+    for(i=0; i<XED_MAX_CPUID_GROUPS_PER_ISA_SET; i++)
     {
-        xed_cpuid_bit_enum_t cpuidbit;
-        xed_cpuid_rec_t crec;
-        int r;
-        cpuidbit = xed_get_cpuid_bit_for_isa_set(isaset,i);
-        if (cpuidbit == XED_CPUID_BIT_INVALID)
+        xed_cpuid_group_enum_t cpuidgrp;
+        cpuidgrp = xed_get_cpuid_group_enum_for_isa_set(isaset,i);
+        if (cpuidgrp == XED_CPUID_GROUP_INVALID)
             break;
-        printf("%d\tCPUID BIT NAME: [%s]\n", i, xed_cpuid_bit_enum_t2str(cpuidbit));
+        printf("%d\tCPUID GROUP NAME: [%s]\n", i, xed_cpuid_group_enum_t2str(cpuidgrp));
 
-        r = xed_get_cpuid_rec(cpuidbit, &crec);
-        if (r) {
-            printf("\tLeaf 0x%08x, subleaf 0x%08x, %s[%u]\n",
-                   crec.leaf, crec.subleaf, xed_reg_enum_t2str(crec.reg),
-                   crec.bit);
-        }
-        else {
-            printf("Could not find cpuid leaf information\n");
+        for(j=0; j<XED_MAX_CPUID_RECS_PER_GROUP; j++)
+        {
+            xed_cpuid_rec_enum_t cpuidrec;
+            xed_cpuid_rec_t crec;
+            xed_bool_t r;
+            cpuidrec = xed_get_cpuid_rec_enum_for_group(cpuidgrp,j);
+            if (cpuidrec == XED_CPUID_REC_INVALID)
+                break;
+            printf("\t%d\tCPUID RECORD NAME: [%s]\n", j, xed_cpuid_rec_enum_t2str(cpuidrec));
+
+            r = xed_get_cpuid_rec(cpuidrec, &crec);
+            if (r) {
+                printf("\t\t{Leaf 0x%08x, subleaf 0x%08x, %s[%u:%u]} = %u\n",
+                    crec.leaf, crec.subleaf, xed_reg_enum_t2str(crec.reg),
+                    crec.bit_start, crec.bit_end, crec.value);
+            }
+            else {
+                printf("Could not find cpuid leaf information\n");
+            }
         }
     }
 
@@ -238,6 +294,19 @@ void print_flags(xed_decoded_inst_t* xedd) {
                    buf,
                    xed_flag_set_mask(undefined_set));
         }
+#if defined(XED_APX)
+        /* print Default Flags Values based on the DFV pseudo register*/
+        xed_reg_enum_t dfv_reg = get_dfv_reg(xedd);
+        if (dfv_reg != XED_REG_INVALID){
+            xed_uint32_t dfv_idx = dfv_reg - XED_REG_DFV0;
+            printf("    default:%13sof=%d, sf=%d, zf=%d, cf=%d\n",
+                    "",
+                    (dfv_idx >> 3) & 0x1, 
+                    (dfv_idx >> 2) & 0x1, 
+                    (dfv_idx >> 1) & 0x1, 
+                    (dfv_idx >> 0) & 0x1);
+        }
+#endif
     }
 }
 
@@ -332,21 +401,28 @@ void print_operands(xed_decoded_inst_t* xedd) {
             // we print memops in a different function
             xed_strcpy(tbuf, "(see below)");
             break;
-          case XED_OPERAND_PTR:  // pointer (always in conjunction with a IMM0)
-          case XED_OPERAND_RELBR: { // branch displacements
-              xed_uint_t disp_bits =
+          case XED_OPERAND_PTR:     // pointer (always in conjunction with a IMM0)
+          case XED_OPERAND_ABSBR:   // Absolute branch displacements
+          case XED_OPERAND_RELBR: { // Relative branch displacements
+              xed_uint_t disp_bytes =
                   xed_decoded_inst_get_branch_displacement_width(xedd);
-              if (disp_bits) {
-                  xed_int32_t disp =
+              if (disp_bytes) {
+              char buf[40];
+              const unsigned int no_leading_zeros=0;
+              const xed_bool_t lowercase = 1;
+              xed_uint_t disp_bits =
+                  xed_decoded_inst_get_branch_displacement_width_bits(xedd);
+                  xed_int64_t disp =
                       xed_decoded_inst_get_branch_displacement(xedd);
+                  xed_itoa_hex_ul(buf, disp, disp_bits, no_leading_zeros, 40, lowercase);
 #if defined (_WIN32) && !defined(PIN_CRT)
                   _snprintf_s(tbuf, TBUFSZ, TBUFSZ,
-                           "BRANCH_DISPLACEMENT_BYTES= %d %08x",
-                           disp_bits,disp);
+                           "BRANCH_DISPLACEMENT_BYTES=%d 0x%s",
+                           disp_bytes,buf);
 #else
                   snprintf(tbuf, TBUFSZ,
-                           "BRANCH_DISPLACEMENT_BYTES= %d %08x",
-                           disp_bits,disp);
+                           "BRANCH_DISPLACEMENT_BYTES=%d 0x%s",
+                           disp_bytes,buf);
 #endif
               }
             }

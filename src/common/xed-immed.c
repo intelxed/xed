@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ xed_int64_t xed_immed_from_bytes(xed_int8_t* bytes, xed_uint_t n) {
     if (n == 0) 
         return 0;
     else if (n == 4) {
-        r = (ub[3]<<24) | (ub[2]<<16) | (ub[1] << 8) | ub[0];
+        r = ((xed_uint64_t)ub[3] << 24) | ((xed_uint64_t)ub[2] << 16) | ((xed_uint64_t)ub[1] << 8) | (xed_uint64_t)ub[0];
         if (bytes[3] < 0) {
             r = r | m1.i64;
         }

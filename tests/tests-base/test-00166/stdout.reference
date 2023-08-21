@@ -25,5 +25,6 @@ SSE
 Vector length: 128
 Number of legacy prefixes: 1 
 ISA SET: [SSE4]
-0	CPUID BIT NAME: [SSE4]
-	Leaf 0x00000001, subleaf 0x00000000, ECX[19]
+0	CPUID GROUP NAME: [SSE4]
+	0	CPUID RECORD NAME: [SSE4]
+		{Leaf 0x00000001, subleaf 0x00000000, ECX[19:19]} = 1

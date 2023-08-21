@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ BAD_LOCK_PREFIX   ///< A lock prefix was found where none is allowed.
 BAD_REP_PREFIX    ///< An F2 or F3 prefix was found where none is allowed.
 BAD_LEGACY_PREFIX ///< A 66, F2 or F3 prefix was found where none is allowed.
 BAD_REX_PREFIX    ///< A REX prefix was found where none is allowed.
-BAD_EVEX_UBIT    ///< An illegal value for the EVEX.U bit was present in the instruction.
 BAD_MAP          ///< An illegal value for the MAP field was detected in the instruction.
 BAD_EVEX_V_PRIME  ///< EVEX.V'=0  was detected in a non-64b mode instruction.
 BAD_EVEX_Z_NO_MASKING  ///< EVEX.Z!=0 when EVEX.aaa==0
@@ -45,4 +44,4 @@ GATHER_REGS       ///< The index, dest and mask regs for AVX2 gathers must be di
 INSTR_TOO_LONG    ///< Full decode of instruction would exeed 15B.
 INVALID_MODE      ///< The instruction was not valid for the specified mode
 BAD_EVEX_LL       ///< EVEX.LL must not ==3 unless using embedded rounding
-BAD_REG_MATCH     ///< Source registers must not match the destination register for this instruction.
+BAD_REG_MATCH     ///< Some registers must not match for this instruction (e.g. source with dest or dest with dest).

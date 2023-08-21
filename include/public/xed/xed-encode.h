@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -128,9 +128,11 @@ xed_encoder_request_operand_order_entries(xed_encoder_request_t* p)
 /// @ingroup ENC
 XED_DLL_EXPORT void xed_encoder_request_set_relbr(xed_encoder_request_t* p);
 /// @ingroup ENC
+XED_DLL_EXPORT void xed_encoder_request_set_absbr(xed_encoder_request_t* p);
+/// @ingroup ENC
 XED_DLL_EXPORT void
 xed_encoder_request_set_branch_displacement(xed_encoder_request_t* p,
-                                            xed_int32_t brdisp,
+                                            xed_int64_t brdisp,
                                             xed_uint_t nbytes);
 /// @ingroup ENC
 XED_DLL_EXPORT void xed_encoder_request_set_ptr(xed_encoder_request_t* p);

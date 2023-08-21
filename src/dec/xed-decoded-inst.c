@@ -136,9 +136,9 @@ xed_decoded_inst_get_modrm(const xed_decoded_inst_t* p)
 }
 
 /////////////////////////////////////////////////////////////////////////
-xed_int32_t
+xed_int64_t
 xed_decoded_inst_get_branch_displacement(const xed_decoded_inst_t* p) {
-  return xed_operand_values_get_branch_displacement_int32(p);
+  return xed_operand_values_get_branch_displacement_int64(p);
 }
 xed_uint_t
 xed_decoded_inst_get_branch_displacement_width(const xed_decoded_inst_t* p) {
@@ -443,8 +443,8 @@ xed_decoded_inst_compute_variable_width(const xed_decoded_inst_t* p,
                                         const xed_operand_t* o) {
     const xed_uint32_t        nelem = xed3_operand_get_nelem(p);
     const xed_uint32_t element_size = xed3_operand_get_element_size(p);
-    return nelem*element_size;
     (void)o; // pacify compiler
+    return nelem*element_size;
 }
 
 
@@ -525,7 +525,7 @@ xed_decoded_inst_operand_length_bits(
         
         return len;
     }
-    // MEM0, MEM1,PTR, IMM0, IMM1, and RELBR use the width codes now.
+    // MEM0, MEM1,PTR, IMM0, IMM1, RELBR, and ABSBR use the width codes now.
     // use the "scalable" width codes from the operand template.
 
     len =  xed_decoded_inst_get_operand_width_bits(p,o);
@@ -755,7 +755,7 @@ void xed_decoded_inst_set_memory_displacement(xed_decoded_inst_t* p,
     xed_operand_values_set_memory_displacement(p, disp, length_bytes);
 }
 void xed_decoded_inst_set_branch_displacement(xed_decoded_inst_t* p,
-                                              xed_int32_t disp,
+                                              xed_int64_t disp,
                                               xed_uint_t length_bytes) {
     xed_operand_values_set_branch_displacement(p, disp, length_bytes);
 }
@@ -779,7 +779,7 @@ void xed_decoded_inst_set_memory_displacement_bits(xed_decoded_inst_t* p,
     xed_operand_values_set_memory_displacement_bits(p, disp, length_bits);
 }
 void xed_decoded_inst_set_branch_displacement_bits(xed_decoded_inst_t* p,
-                                                   xed_int32_t disp,
+                                                   xed_int64_t disp,
                                                    xed_uint_t length_bits) {
     xed_operand_values_set_branch_displacement_bits(p, disp, length_bits);
 }
@@ -833,8 +833,8 @@ xed_decoded_inst_vector_length_bits(xed_decoded_inst_t const* const p)
     /* 0->128, 1->256, 2->512 */
     vl_bits = 1 << (vl_encoded+7);
 #endif
-    return  vl_bits;
     (void)p; // pacify (msvs) compiler for noavx builds
+    return  vl_bits;
 }
 
 xed_bool_t
@@ -879,8 +879,8 @@ xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
     if (xed3_operand_get_mask(p) != 0)
         return 1;
 #endif
-    return 0;
     (void)p; //pacify compiler
+    return 0;
 }
 
 xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
@@ -897,8 +897,8 @@ xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
                 return 1;
     }
 #endif
-    return 0;
     (void)p; //pacify compiler
+    return 0;
 }
 xed_bool_t xed_decoded_inst_zeroing(const xed_decoded_inst_t* p) {
 #if defined(XED_SUPPORTS_AVX512)
@@ -906,8 +906,8 @@ xed_bool_t xed_decoded_inst_zeroing(const xed_decoded_inst_t* p) {
         if (xed3_operand_get_zeroing(p) == 1)
             return 1;
 #endif
-    return 0;
     (void)p; //pacify compiler
+    return 0;
 }
 
 xed_uint_t xed_decoded_inst_avx512_dest_elements(const xed_decoded_inst_t* p) {
@@ -989,8 +989,8 @@ xed_decoded_inst_uses_embedded_broadcast(const xed_decoded_inst_t* p)
         if (xed3_operand_get_bcast(p))  
             return 1;
 #endif
-    return 0;
     (void) p;
+    return 0;
 }
 xed_bool_t
 xed_decoded_inst_is_broadcast_instruction(const xed_decoded_inst_t* p)
@@ -999,8 +999,8 @@ xed_decoded_inst_is_broadcast_instruction(const xed_decoded_inst_t* p)
     if (xed_decoded_inst_get_category(p) == XED_CATEGORY_BROADCAST)
         return 1;
 #endif
-    return 0;
     (void) p;
+    return 0;
 }
 xed_bool_t
 xed_decoded_inst_is_broadcast(const xed_decoded_inst_t* p)
@@ -1011,4 +1011,22 @@ xed_decoded_inst_is_broadcast(const xed_decoded_inst_t* p)
     if (xed_decoded_inst_uses_embedded_broadcast(p))
         return 1;
      return 0;
+}
+
+xed_bool_t 
+xed_decoded_inst_is_apx_zu(const xed_decoded_inst_t* p)
+{
+    /* APX-Promoted instructions with ZU(zero-upper) behavior are:
+    - NDD instructions
+    - Subgroup of promoted IMUL instructions with 0x69 and 0x6B opcodes
+    - Subgroup of promoted SETcc instructions */
+    
+#if defined(XED_APX)
+    if (xed_decoded_inst_get_extension(p) == XED_EXTENSION_APXEVEX) {
+        // APX EVEX instructions
+        return xed3_operand_get_nd(p);
+    }
+#endif
+    (void) p;
+    return 0;
 }

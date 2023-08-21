@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
         xed_iclass_enum_t xr  = xed_rep_map(norep);
         r |= xtest(rep[i],xr);
     }
-
-    return r;
     (void) argc; (void) argv; //pacify compiler
+    return r;
+
 }

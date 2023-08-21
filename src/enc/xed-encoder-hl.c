@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -52,12 +52,21 @@ xed_bool_t xed_convert_to_encoder_request(xed_encoder_request_t* out,
             real_operands++;
             break;
 
-          case XED_ENCODER_OPERAND_TYPE_BRDISP:
+          case XED_ENCODER_OPERAND_TYPE_REL_BRDISP:
             xed_encoder_request_set_branch_displacement(out,
                                                         op->u.brdisp,
                                                         op->width_bits/8); //FIXME: bits interface
             xed_encoder_request_set_operand_order(out, real_operands, XED_OPERAND_RELBR);
             xed_encoder_request_set_relbr(out);
+            real_operands++;
+            break;
+          
+          case XED_ENCODER_OPERAND_TYPE_ABS_BRDISP:
+            xed_encoder_request_set_branch_displacement(out,
+                                                        op->u.brdisp,
+                                                        op->width_bits/8); //FIXME: bits interface
+            xed_encoder_request_set_operand_order(out, real_operands, XED_OPERAND_ABSBR);
+            xed_encoder_request_set_absbr(out);
             real_operands++;
             break;
 

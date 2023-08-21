@@ -1,0 +1,36 @@
+Attempting to decode: 62 54 f5 02 39 c8 
+iclass CCMPB	category APX	ISA-extension APXEVEX	ISA-set APX_F
+instruction-length 6
+operand-width 64
+effective-operand-width 64
+effective-address-width 64
+stack-address-width 64
+iform-enum-name CCMPB_GPRv_GPRv_DFV_APX
+iform-enum-name-dispatch (zero based) 3
+iclass-max-iform-dispatch 12
+Nominal opcode position 4
+Nominal opcode 0x39
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0               REG0=R8   EXPLICIT   R         V   64     8     1     64        INT        GPR
+1   REG1               REG1=R9   EXPLICIT   R         V   64     8     1     64        INT        GPR
+2   REG2            REG2=DFV14   EXPLICIT   R   INVALID    4     1     1      4        INT     PSEUDO
+3   REG3           REG3=RFLAGS SUPPRESSED   W         Y   64     8     1     64        INT      FLAGS
+Memory Operands
+  MemopBytes = 0
+FLAGS:
+  must-write-rflags of-mod sf-mod zf-mod af-mod pf-mod cf-mod 
+       read:                                mask=0x0
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                                mask=0x0
+    default:             of=1, sf=1, zf=1, cf=0
+ATTRIBUTES: SCALABLE 
+66-OSZ PREFIX
+MANDATORY 66 PREFIX
+EXCEPTION TYPE: APX_EVEX_CCMP
+[APX] 
+ISA SET: [APX_F]
+0	CPUID GROUP NAME: [APX_F]
+	0	CPUID RECORD NAME: [APX_F]
+		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1

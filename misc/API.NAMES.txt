@@ -2,7 +2,7 @@ str2xed_address_width_enum_t
 str2xed_attribute_enum_t
 str2xed_category_enum_t
 str2xed_chip_enum_t
-str2xed_cpuid_bit_enum_t
+str2xed_cpuid_rec_enum_t
 str2xed_error_enum_t
 str2xed_exception_enum_t
 str2xed_extension_enum_t
@@ -42,8 +42,9 @@ xed_category_enum_t_last
 xed_chip_enum_t2str
 xed_chip_enum_t_last
 xed_convert_to_encoder_request
-xed_cpuid_bit_enum_t2str
-xed_cpuid_bit_enum_t_last
+xed_cpuid_rec_enum_t2str
+xed_cpuid_group_enum_t2str
+xed_cpuid_rec_enum_t_last
 xed_decode
 xed_decoded_inst_conditionally_writes_registers
 xed_decoded_inst_dump
@@ -132,6 +133,7 @@ xed_encoder_request_set_operand_order
 xed_encoder_request_set_ptr
 xed_encoder_request_set_reg
 xed_encoder_request_set_relbr
+xed_encoder_request_set_absbr
 xed_encoder_request_set_rep
 xed_encoder_request_set_repne
 xed_encoder_request_set_scale
@@ -169,7 +171,8 @@ xed_format_generic
 xed_format_set_options
 xed_get_byte
 xed_get_copyright
-xed_get_cpuid_bit_for_isa_set
+xed_get_cpuid_group_enum_for_isa_set
+xed_get_cpuid_rec_enum_for_group
 xed_get_cpuid_rec
 xed_get_largest_enclosing_register
 xed_get_largest_enclosing_register32
@@ -280,7 +283,7 @@ xed_operand_values_dump
 xed_operand_values_get_atomic
 xed_operand_values_get_base_reg
 xed_operand_values_get_branch_displacement_byte
-xed_operand_values_get_branch_displacement_int32
+xed_operand_values_get_branch_displacement_int64
 xed_operand_values_get_branch_displacement_length
 xed_operand_values_get_branch_displacement_length_bits
 xed_operand_values_get_displacement_for_memop
@@ -347,6 +350,7 @@ xed_operand_values_set_memory_operand_length
 xed_operand_values_set_mode
 xed_operand_values_set_operand_reg
 xed_operand_values_set_relbr
+xed_operand_values_set_absbr
 xed_operand_values_set_scale
 xed_operand_values_set_seg_reg
 xed_operand_values_using_default_segment
@@ -415,7 +419,7 @@ xed_decoded_inst_is_broadcast
 xed3_get_generic_operand
 xed3_set_generic_operand
 xed_patch_imm0
-xed_patch_relbr
+xed_patch_brdisp
 xed_patch_disp
 xed_enc2_error
 xed_enc2_set_error_handler

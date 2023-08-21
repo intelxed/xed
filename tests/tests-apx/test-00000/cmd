@@ -1,0 +1,1 @@
+ BUILDDIR/xed -64 -ih TESTDIR/../rex2-mod0-dec-in.txt

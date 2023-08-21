@@ -76,6 +76,15 @@ REXR           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO E
 REXX           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
 REXB           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
 
+REX2           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXB4          SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXX4          SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+REXR4          SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+
+# True if one of the instruction's operands is EGPR (GPR16 and above).
+# Can be used for optimizations
+HAS_EGPR        SCALAR     xed_bits_t 1        SUPPRESSED   PRINT INTERNAL DO EO
+
 # refining must be used to interpret the REP output of decode
 REP            SCALAR     xed_bits_t 2       SUPPRESSED  PRINT   PUBLIC   DO EO # 0=no-rep, 2=F2, 3=F3
 OSZ            SCALAR     xed_bits_t 1       SUPPRESSED  NOPRINT INTERNAL DO EO 
@@ -165,6 +174,8 @@ AGEN           SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   
 
 # RELBR is used as a decode operand, but it is not required for encode
 RELBR          SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI   
+# ABSBR is used as a decode operand. For Absolute near jump (See JMPABS)
+ABSBR          SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI   
 #  for CALL_FAR & JMP_FAR. Note UIM0 is also set by these
 PTR            SCALAR     xed_bits_t 1             EXPLICIT    PRINT   PUBLIC   DO EI
 
@@ -224,3 +235,5 @@ DUMMY          SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DO EI
 # Disable decoder VEX/EVEX space
 NO_EVEX        SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DI EO
 NO_VEX         SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DI EO
+NO_APX         SCALAR     xed_bits_t      1    SUPPRESSED NOPRINT INTERNAL DI EI
+

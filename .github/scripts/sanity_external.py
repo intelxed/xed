@@ -47,17 +47,22 @@ def main(env):
             commands.append(cmd)
 
     # do a build with asserts enabled
-    host = 'x86-64'
-    dir = f'obj-assert-{env["pyver"]}-{host}'
+    host64 = 'x86-64'
+    dir = f'obj-assert-{env["pyver"]}-{host64}'
     build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
-    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host, flags + ' --assert')
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host64, flags + ' --assert')
+    commands.append(cmd)
+
+    # No-future build (For no-APX validation)
+    dir = f'obj-no-future-{env["pyver"]}-{host64}'
+    build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host64, flags + ' --no-future --assert')
     commands.append(cmd)
 
     # Test opt=3 build
-    host = 'x86-64'
-    dir = f'obj-opt3-{env["pyver"]}-{host}'
+    dir = f'obj-opt3-{env["pyver"]}-{host64}'
     build_dir = Path(kits_dir, utils.KIT_PREFIX_PATT + dir)
-    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host, flags + ' --opt=3')
+    cmd = utils.gen_build_cmd(env, xed_builder, '', build_dir, host64, flags + ' --opt=3')
     commands.append(cmd)
 
     # enc2test - test encode-decode path of all instructions

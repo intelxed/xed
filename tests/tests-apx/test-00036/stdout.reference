@@ -1,0 +1,26 @@
+Attempting to decode: d5 00 a1 01 23 45 67 89 01 23 45 
+iclass JMPABS	category UNCOND_BR	ISA-extension APX_F	ISA-set APX_F
+instruction-length 11
+operand-width 32
+effective-operand-width 32
+effective-address-width 64
+stack-address-width 64
+iform-enum-name JMPABS_ABSBRu64_APX
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Nominal opcode position 2
+Nominal opcode 0xa1
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0  ABSBR BRANCH_DISPLACEMENT_BYTES=8 0x4523018967452301   EXPLICIT   R       U64   64     8     1     64       UINT    INVALID
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: 
+REX2 PREFIX
+EXCEPTION TYPE: APX_LEGACY_JMPABS
+[APX] 
+ISA SET: [APX_F]
+0	CPUID GROUP NAME: [APX_F]
+	0	CPUID RECORD NAME: [APX_F]
+		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1

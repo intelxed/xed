@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -105,6 +105,11 @@ xed_decoded_inst_is_xrelease(const xed_decoded_inst_t* p);
 /// Returns 1 if the instruction has mpx prefix.
 XED_DLL_EXPORT xed_uint32_t
 xed_decoded_inst_has_mpx_prefix(const xed_decoded_inst_t* p);
+
+/// @ingroup DEC
+// Return non-zero value for APX-Promtoed zero-upper instructions
+XED_DLL_EXPORT xed_bool_t 
+xed_decoded_inst_is_apx_zu(const xed_decoded_inst_t* p);
 
 /// @ingroup DEC
 /// Returns the modrm byte
@@ -481,7 +486,7 @@ XED_DLL_EXPORT xed_uint_t
 xed_decoded_inst_get_memory_displacement_width_bits(const xed_decoded_inst_t* p,
                                                     unsigned int mem_idx);
 /// @ingroup DEC
-XED_DLL_EXPORT xed_int32_t
+XED_DLL_EXPORT xed_int64_t
 xed_decoded_inst_get_branch_displacement(const xed_decoded_inst_t* p);
 /// @ingroup DEC
 /// Result in BYTES
@@ -615,7 +620,7 @@ xed_decoded_inst_set_memory_displacement(xed_decoded_inst_t* p,
 /// Set the branch  displacement using a BYTE length
 XED_DLL_EXPORT void
 xed_decoded_inst_set_branch_displacement(xed_decoded_inst_t* p,
-                                         xed_int32_t disp,
+                                         xed_int64_t disp,
                                          xed_uint_t length_bytes);
 /// @ingroup DEC
 /// Set the signed immediate a BYTE length
@@ -641,7 +646,7 @@ xed_decoded_inst_set_memory_displacement_bits(xed_decoded_inst_t* p,
 /// Set the branch displacement a BITS length
 XED_DLL_EXPORT void
 xed_decoded_inst_set_branch_displacement_bits(xed_decoded_inst_t* p,
-                                              xed_int32_t disp,
+                                              xed_int64_t disp,
                                               xed_uint_t length_bits);
 /// @ingroup DEC
 /// Set the signed immediate a BITS length
@@ -678,9 +683,15 @@ xed_decoded_inst_set_user_data(xed_decoded_inst_t* p,
 /// @name xed_decoded_inst_t Classifiers
 //@{
 /// @ingroup DEC
+/// True for APX instructions, includes instructions with EGPRs, REX2 and 
+/// encodings that are treated as illegal on non-APX systems
+XED_DLL_EXPORT xed_bool_t
+xed_classify_apx(const xed_decoded_inst_t* d);
+/// @ingroup DEC
 /// True for AMX instructions
 XED_DLL_EXPORT xed_bool_t
 xed_classify_amx(const xed_decoded_inst_t* d);
+/// @ingroup DEC
 /// True for AVX512 (EVEX-encoded) SIMD and (VEX encoded) K-mask instructions
 XED_DLL_EXPORT xed_bool_t
 xed_classify_avx512(const xed_decoded_inst_t* d);
@@ -696,7 +707,6 @@ xed_classify_avx(const xed_decoded_inst_t* d);
 /// True for SSE/SSE2/etc. SIMD operations.  Includes AES and PCLMULQDQ
 XED_DLL_EXPORT xed_bool_t
 xed_classify_sse(const xed_decoded_inst_t* d);
-
 //@}
 #endif
 

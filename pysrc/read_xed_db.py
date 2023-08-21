@@ -21,6 +21,7 @@
 import sys
 import re
 import collections
+from typing import List
 import patterns
 import slash_expand
 import genutil
@@ -209,7 +210,7 @@ class xed_reader_t(object):
         self._summarize_vsib()
         self._summarize_sibmem()
         
-        self.cpuid_map = {}
+        self.cpuid_map : cpuid_rdr.isaset_cpuid_map_t = {}
         if cpuid_filename:
             self.cpuid_map = cpuid_rdr.read_file(cpuid_filename)
             self._add_cpuid()
@@ -396,10 +397,10 @@ class xed_reader_t(object):
     def _add_cpuid(self):
         '''set v.cpuid with list of cpuid bits for this instr'''
         for v in self.recs:
-            v.cpuid = []
+            v.cpuid_groups: List[cpuid_rdr.group_record_t] = []
             ky = 'XED_ISA_SET_{}'.format(v.isa_set.upper())
             if ky in self.cpuid_map:
-                v.cpuid = self.cpuid_map[ky]
+                v.cpuid_groups = self.cpuid_map[ky]
                 
     def _add_broadcasting(self):
         broadcast_attr  = re.compile(r'BROADCAST_ENABLED')

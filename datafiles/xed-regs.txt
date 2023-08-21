@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -110,6 +110,87 @@ R15D gpr 32  R15/R15D  15
 R15W gpr 16  R15/R15D  15
 R15B gpr 8   R15/R15D  15
 
+##### EGPRs #####
+R16  gpr 64  R16      16
+R16D gpr 32  R16/R16D 16
+R16W gpr 16  R16/R16D 16
+R16B gpr 8   R16/R16D 16
+
+R17  gpr 64  R17      17
+R17D gpr 32  R17/R17D 17
+R17W gpr 16  R17/R17D 17
+R17B gpr 8   R17/R17D 17
+
+R18  gpr 64  R18      18
+R18D gpr 32  R18/R18D 18
+R18W gpr 16  R18/R18D 18
+R18B gpr 8   R18/R18D 18
+
+R19  gpr 64  R19      19
+R19D gpr 32  R19/R19D 19
+R19W gpr 16  R19/R19D 19
+R19B gpr 8   R19/R19D 19
+
+R20  gpr 64  R20      20
+R20D gpr 32  R20/R20D 20
+R20W gpr 16  R20/R20D 20
+R20B gpr 8   R20/R20D 20
+
+R21  gpr 64  R21      21
+R21D gpr 32  R21/R21D 21
+R21W gpr 16  R21/R21D 21
+R21B gpr 8   R21/R21D 21
+
+R22  gpr 64  R22      22
+R22D gpr 32  R22/R22D 22
+R22W gpr 16  R22/R22D 22
+R22B gpr 8   R22/R22D 22
+
+R23  gpr 64  R23      23
+R23D gpr 32  R23/R23D 23
+R23W gpr 16  R23/R23D 23
+R23B gpr 8   R23/R23D 23
+
+R24  gpr 64  R24      24
+R24D gpr 32  R24/R24D 24
+R24W gpr 16  R24/R24D 24
+R24B gpr 8   R24/R24D 24
+
+R25  gpr 64  R25      25
+R25D gpr 32  R25/R25D 25
+R25W gpr 16  R25/R25D 25
+R25B gpr 8   R25/R25D 25
+
+R26  gpr 64  R26      26
+R26D gpr 32  R26/R26D 26
+R26W gpr 16  R26/R26D 26
+R26B gpr 8   R26/R26D 26
+
+R27  gpr 64  R27      27
+R27D gpr 32  R27/R27D 27
+R27W gpr 16  R27/R27D 27
+R27B gpr 8   R27/R27D 27
+
+R28  gpr 64  R28      28
+R28D gpr 32  R28/R28D 28
+R28W gpr 16  R28/R28D 28
+R28B gpr 8   R28/R28D 28
+
+R29  gpr 64  R29      29
+R29D gpr 32  R29/R29D 29
+R29W gpr 16  R29/R29D 29
+R29B gpr 8   R29/R29D 29
+
+R30  gpr 64  R30      30
+R30D gpr 32  R30/R30D 30
+R30W gpr 16  R30/R30D 30
+R30B gpr 8   R30/R30D 30
+
+R31  gpr 64  R31      31
+R31D gpr 32  R31/R31D 31
+R31W gpr 16  R31/R31D 31
+R31B gpr 8   R31/R31D 31
+##################################
 
 RIP  ip    64  RIP
 EIP  ip    32  RIP/EIP 

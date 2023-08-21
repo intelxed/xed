@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -381,8 +381,8 @@ xed_operand_values_get_branch_displacement_length_bits(
     const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS    
-XED_DLL_EXPORT xed_int32_t
-xed_operand_values_get_branch_displacement_int32(const xed_operand_values_t* p);
+XED_DLL_EXPORT xed_int64_t
+xed_operand_values_get_branch_displacement_int64(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS    
 XED_DLL_EXPORT xed_uint8_t 
@@ -457,16 +457,20 @@ xed_operand_values_set_memory_displacement_bits(xed_operand_values_t* p,
 XED_DLL_EXPORT void xed_operand_values_set_relbr(xed_operand_values_t* p);
 
 /// @ingroup OPERANDS    
+/// Indicate that we have an absolute branch.
+XED_DLL_EXPORT void xed_operand_values_set_absbr(xed_operand_values_t* p);
+
+/// @ingroup OPERANDS    
 /// Set the branch displacement using a BYTES length
 XED_DLL_EXPORT void
 xed_operand_values_set_branch_displacement(xed_operand_values_t* p,
-                                           xed_int32_t x,
+                                           xed_int64_t x,
                                            unsigned int len);
 /// @ingroup OPERANDS    
 /// Set the branch displacement using a BITS length
 XED_DLL_EXPORT void
 xed_operand_values_set_branch_displacement_bits(xed_operand_values_t* p,
-                                                xed_int32_t x,
+                                                xed_int64_t x,
                                                 unsigned int len_bits);
 
 /// @ingroup OPERANDS    

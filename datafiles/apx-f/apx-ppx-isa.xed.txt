@@ -1,0 +1,51 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+# ***** Manually GENERATED FILE *****
+# ***** Define PUSH/POP PPX *****
+#
+#
+#
+INSTRUCTIONS()::
+{
+ICLASS:     PUSHP
+CPL:        3
+CATEGORY:   PUSH
+EXTENSION:  APX_F
+ISA_SET:    APX_F
+COMMENT:    PUSH PPX
+
+PATTERN:    0b0101_0 SRM[rrr] rex2_refining_prefix rexw_prefix mode64 DF64()
+OPERANDS:   REG0=GPRv_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
+IFORM:      PUSHP_GPRv
+}
+
+{
+ICLASS:     POPP
+CPL:        3
+CATEGORY:   POP
+EXTENSION:  APX_F
+ISA_SET:    APX_F
+COMMENT:    POP PPX
+
+PATTERN:    0b0101_1 SRM[rrr] mode64 rex2_refining_prefix rexw_prefix DF64()
+OPERANDS:   REG0=GPRv_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
+IFORM:      POPP_GPRv
+}

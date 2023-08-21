@@ -60,13 +60,20 @@ rexb_prefix             REXB=1
 rexx_prefix             REXX=1
 rexr_prefix             REXR=1
 
-
 rexw_prefix            REXW=1  # Legacy encoding space
 norexw_prefix          REXW=0  # Legacy encoding space
 W1                     REXW=1 SKIP_OSZ=1
 W0                     REXW=0 SKIP_OSZ=1
 
-norexb_prefix             REXB=0
+rexb4_prefix            REXB4=1
+
+norexb_prefix          REXB=0
+norexb4_prefix         REXB4=0
+
+rex2_refining_prefix    REX2=1
+norex2_prefix           REX2=0
+
+
 ############################################################3333
 f2_prefix              REP=2  # REPNZ, REPNE
 f3_prefix              REP=3  # REPZ,  REPE

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,4 +23,11 @@
 
 FUTURE:                    \
    ALL_OF(GRANITE_RAPIDS)  \
-   TDX
+   ALL_OF(LUNAR_LAKE)      \
+   TDX                     \
+   APX_F                   \
+   APX_F_AMX               \
+   APX_F_KOPB              \
+   APX_F_KOPW              \
+   APX_F_KOPD              \
+   APX_F_KOPQ

@@ -1,0 +1,33 @@
+Setting chip to FUTURE
+Attempting to decode: 62 d2 fc 00 f3 d9 
+iclass BLSI	category BMI1	ISA-extension APXEVEX	ISA-set APX_F
+instruction-length 6
+operand-width 64
+effective-operand-width 64
+effective-address-width 64
+stack-address-width 64
+iform-enum-name BLSI_GPR64i64_GPR64i64_APX
+iform-enum-name-dispatch (zero based) 2
+iclass-max-iform-dispatch 8
+Nominal opcode position 4
+Nominal opcode 0xf3
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=R16   EXPLICIT   W         Q   64     8     1     64        INT        GPR
+1   REG1               REG1=R9   EXPLICIT   R         Q   64     8     1     64        INT        GPR
+2   REG2           REG2=RFLAGS SUPPRESSED   W         Y   64     8     1     64        INT      FLAGS
+Memory Operands
+  MemopBytes = 0
+FLAGS:
+  must-write-rflags of-0 sf-mod zf-mod af-u pf-u cf-0 
+       read:                                mask=0x0
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                         af pf  mask=0x14
+ATTRIBUTES: 
+EXCEPTION TYPE: APX_EVEX_BMI
+[APX] Uses-EGPR 
+ISA SET: [APX_F]
+0	CPUID GROUP NAME: [APX_F]
+	0	CPUID RECORD NAME: [APX_F]
+		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1

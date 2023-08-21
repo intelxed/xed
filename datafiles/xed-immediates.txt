@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -61,10 +61,13 @@ UIMM32()::
  UIMM0[i/32]  | IMM_WIDTH=32
 
 BRDISP8()::
- DISP[d/8]  |BRDISP_WIDTH=8
+ DISP[d/8]  |  BRDISP_WIDTH=8
 
 BRDISP32()::
  DISP[d/32] |  BRDISP_WIDTH=32
+
+BRDISP64()::
+ DISP[d/64] |  BRDISP_WIDTH=64
 
 BRDISPz()::
 EOSZ=1 DISP[d/16]  | BRDISP_WIDTH=16

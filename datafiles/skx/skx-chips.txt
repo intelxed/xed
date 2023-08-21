@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ SKYLAKE_SERVER: ALL_OF(SKYLAKE)  PKU \
               AVX512F_128        \
               AVX512F_128N       \
               AVX512F_256        \
-              AVX512F_KOP        \
+              AVX512F_KOPW       \
               AVX512F_SCALAR     \
               AVX512BW_128       \
               AVX512BW_128N      \
               AVX512BW_256       \
               AVX512BW_512       \
-              AVX512BW_KOP       \
+              AVX512BW_KOPD      \
+              AVX512BW_KOPQ      \
               AVX512CD_128       \
               AVX512CD_256       \
               AVX512CD_512       \
@@ -37,7 +38,8 @@ SKYLAKE_SERVER: ALL_OF(SKYLAKE)  PKU \
               AVX512DQ_128N      \
               AVX512DQ_256       \
               AVX512DQ_512       \
-              AVX512DQ_KOP       \
+              AVX512DQ_KOPB      \
+              AVX512DQ_KOPW      \
               AVX512DQ_SCALAR    
 
 

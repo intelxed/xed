@@ -110,16 +110,15 @@ jobs:
     env:
       AV_SCAN_PATH: ${{ secrets.AV_SCAN_PATH }}
     steps:
-    - name: Checkout
+    - name: Checkout xed
       uses: actions/checkout@v3
       with:
         path: xed
-        fetch-depth: 0
     - name: Checkout mbuild
       uses: actions/checkout@v3
       with:
-        repository: intel-innersource/libraries.isa.xed.mbuild
-        ref: ${{ needs.init.outputs.mbuild_branch }}
+        repository: intelxed/mbuild
+        ref: main
         path: mbuild
         token: ${{ secrets.PAT }}
     - name: anti-virus check
@@ -145,3 +144,46 @@ jobs:
             repo: context.repo.repo,
             body: "Anti-virus scan summary: " + antivirusSummary
           })
+  
+  protex_scan:
+    needs: init
+    runs-on:
+      - self-hosted
+      - xed-runners
+      - Linux
+    env:
+      PROTEX_BDSTOOL:  ${{ secrets.PROTEX_BDSTOOL }}
+      PROTEX_USERNAME: ${{ secrets.PROTEX_USERNAME }}
+      PROTEX_PASSWORD: ${{ secrets.PROTEX_PASSWORD }}
+      PROTEX_SERVER:   ${{ secrets.PROTEX_SERVER }}
+      PROTEX_PROJ_ID:  ${{ secrets.PROTEX_PROJECT_ID }}
+    steps:
+    - name: Checkout xed
+      uses: actions/checkout@v3
+      with:
+        path: xed
+    - name: Checkout mbuild
+      uses: actions/checkout@v3
+      with:
+        repository: intelxed/mbuild
+        ref: main
+        path: mbuild
+        token: ${{ secrets.PAT }}
+    - name: protex scan
+      run: |
+          cd xed
+          python3 .github/scripts/protex.py --project-id "${PROTEX_PROJ_ID}" --url "${PROTEX_SERVER}" \
+            --user "${PROTEX_USERNAME}" --pass "${PROTEX_PASSWORD}" --tool-path "${PROTEX_BDSTOOL}"
+    - name: add comment   # uploads protex guidance as pull-request comment
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'   # add scan summary as comment only if there is a PR
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: "Protex scan finished; view results at ${{env.PROTEX_SERVER}}"
+          })
+
+

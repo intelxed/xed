@@ -1,0 +1,96 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+########################## REX2 ########################## 
+# Check MODRM.mod=0, [rm] addressing form instructions
+DEC APX     ; BUILDDIR/xed -64 -ih TESTDIR/../rex2-mod0-dec-in.txt
+
+# Check MODRM.mod=1 instructions (All register combinations)
+DEC APX     ; BUILDDIR/xed -64 -ih TESTDIR/../rex2-mod1-dec-in.txt
+
+DEC APX     ; BUILDDIR/xed -64 -d 66d580124C8300    # REX2 MAP1
+DEC APX     ; BUILDDIR/xed -64 -d 66d5b3124C8301    # REX2 MAP1 EGPRs
+DEC APX     ; BUILDDIR/xed -64 -d d50080C401        # No [A,C,D,B]h on REX2 (tests SPL)
+DEC APX     ; BUILDDIR/xed -64 -d 66d5C0124C8300    # Ignore non-reg rex2.r4 bit
+DEC APX     ; BUILDDIR/xed -64 -d 440f2203          # mov_cr cr8, rbx (REX Prefix)
+DEC APX     ; BUILDDIR/xed -64 -d d5842203          # mov_cr cr8, rbx (REX2 Prefix)
+DEC APX     ; BUILDDIR/xed -64 -d d5c42203          # mov_cr cr8, rbx (illegal REX2.R4=1)
+DEC APX     ; BUILDDIR/xed -64 -d f36467d598aef7    # UMONITOR A_GPR_B()
+DEC APX     ; BUILDDIR/xed -64 -d 66d5cdc5db08      # PEXTRW    (0xC5 opcode)
+DEC APX     ; BUILDDIR/xed -64 -d d598c4fe77        # PINSRW    (0xC4 opcode)
+DEC APX     ; BUILDDIR/xed -64 -d d5986212          # PUNPCKLDQ (0x62 opcode) 
+DEC APX     ; BUILDDIR/xed -64 -d d51890            # REX2 (B4=1,B3=0) | 0x90 -> XCHG
+DEC APX     ; BUILDDIR/xed -64 -d d50190            # REX2 (B4=0,B3=1) | 0x90 -> XCHG
+DEC APX     ; BUILDDIR/xed -64 -d d50890            # REX2 (B4=0,B3=0) | 0x90 -> NOP
+
+# Test XSAVE EGPRs limitations
+DEC APX     ; BUILDDIR/xed -64 -d 0fae2411          # No prefix
+DEC APX     ; BUILDDIR/xed -64 -d 4b0fae2411        # REX prefix
+DEC APX     ; BUILDDIR/xed -64 -d d588ae2411        # REX2 prefix Error
+
+# Test REX2 opcode applicability restriction
+DEC APX     ; BUILDDIR/xed -64 -d d5 00 a4
+
+# Disable APX decode support
+DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d d5 84 67 0f  # REX2 prefix
+
+
+########################## EVEX EGPRs ########################## 
+# Test EGPRs accessability using EVEX.R4 and reinterpreted EVEX.B4 and EVEX.X4 bits
+
+DEC APX     ; BUILDDIR/xed -64 -d 62B1E10A580C38  # MODRM()   using X4 
+DEC APX     ; BUILDDIR/xed -64 -d 62D9742854041f  # MODRM()   using B4
+DEC APX     ; BUILDDIR/xed -64 -d 62DB7D0814C706  # GPR32_B() using B4
+DEC APX     ; BUILDDIR/xed -64 -d 62B9E10A580C38  # MODRM()   using B4 and X4
+DEC APX     ; BUILDDIR/xed -64 -d 6265FE082DC0    # GPR64_R() using R4 bit
+
+DEC APX     ; BUILDDIR/xed -64 -d 62fa7d49a02c00  # VSCATTER VSIB memory pattern
+
+DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d 6265FE082DC0        # R4 | no-APX + EGPR -> error
+DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d 62 61 fa 48 7a f7   # Check Ubit error w/o APX
+
+########################## EVEX Promoted ISA ###################
+DEC APX     ; BUILDDIR/xed -64 -isa-set -ih TESTDIR/../gen-enc-layer-apx-f.txt    # Decode all iforms
+
+# Test scalable operand size NT e.g GPRv()/SIMMz().  (pp=1 -> OSZ 66 prefix)
+DEC APX     ; BUILDDIR/xed -64 -d 62D4 FC 0881EC33C00003  # EOSZ=3 (w=1, pp=0)
+DEC APX     ; BUILDDIR/xed -64 -d 62D4 FD 0881EC33C00003  # EOSZ=3 (w=1, pp=1)
+DEC APX     ; BUILDDIR/xed -64 -d 62D4 7C 0881EC33C00003  # EOSZ=2 (w=0, pp=0)
+DEC APX     ; BUILDDIR/xed -64 -d 62D4 7D 0881EC33C0      # EOSZ=1 (w=0, pp=1)
+
+DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d 62F2E408F2C2 # NO_APX + promoted-from-vex -> error
+
+########################## JMPABS ################### 
+DEC APX     ; BUILDDIR/xed -64 -d  67 D500 A10123456789012345  # JMPABS, EASZ=2 -> illegal
+DEC APX     ; BUILDDIR/xed-ex1 -64    D500 A10123456789012345  # JMPABS, EASZ=3
+DEC APX     ; BUILDDIR/xed -64 -d          A10123456789012345  # MOV,    EASZ=3
+DEC APX     ; BUILDDIR/xed -64 -d  67      A101234567          # MOV,    EASZ=2
+
+################### APX chip-check ################### 
+DEC APX     ; BUILDDIR/xed-ex1 -64 -chip FUTURE   62D2FC00F3D9       # EGPR
+DEC APX     ; BUILDDIR/xed-ex1 -64 -chip FUTURE   66d580124C8300     # REX2
+DEC APX     ; BUILDDIR/xed-ex1 -64 -chip ICE_LAKE 62B9E10A580C38     # using B4 and X4
+DEC APX     ; BUILDDIR/xed-ex1 -64 -chip FUTURE   62B9E10A580C38     # using B4 and X4
+
+################## miscellaneous Example1 Tests ################
+DEC APX     ; BUILDDIR/xed-ex1 -64 6254F50239C8             # DFV
+DEC APX     ; BUILDDIR/xed-ex1 -64 62D4BC1883D001           # NDD + ZU
+DEC APX     ; BUILDDIR/xed-ex1 -64 6254FC0CF4C0             # NF
+
+################## Instruction Restrictions Tests ################
+DEC APX     ; BUILDDIR/xed-ex1 -64 62D434188FC1             # POP2 has dest1!=dest2 restriction

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2021 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -54,8 +54,8 @@ BOOL CALLBACK dbg_help_client_t::enum_sym(
     xst_add_global_symbol(&pthis->sym_tab,
                           addr,
                           xed_strdup(pSymInfo->Name));
-    return TRUE;
     (void)SymbolSize; //pacify compiler warning about unused param
+    return TRUE;
 }
 
 

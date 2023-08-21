@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ class operand_info_t(object):
    decimal_number_pattern = re.compile(r'[0-9]+')
    
    operand_types = [ 'reg', 'imm', 'imm_const', 'error',
-                     'relbr', 'ptr', 'nt_lookup_fn', 'mem', 'xed_reset',
+                     'relbr', 'absbr', 'ptr', 'nt_lookup_fn', 'mem', 'xed_reset',
                      'flag', 'agen' ]
    
    def __init__(self,
@@ -279,6 +279,7 @@ mem_pattern = re.compile(r'MEM[01]')
 imm_token_pattern = re.compile(r'IMM[0123]')
 agen_pattern = re.compile(r'AGEN')
 relative_branch_pattern = re.compile(r'RELBR')
+absolute_branch_pattern = re.compile(r'ABSBR')
 pointer_pattern = re.compile(r'PTR')
 xed_reset_pattern = re.compile(r'XED_RESET')
 double_parens_pattern = re.compile(r'[(][)]')
@@ -303,7 +304,7 @@ def parse_one_operand(w,
    name=xxxxxy:{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
    name=NTLUR():{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
           oc2 can be before EXPL/IMPL/SUPP. oc2 is the width code.
-          MEM{0,1}, PTR, RELBR, AGEN, IMM{0,1,2,3}
+          MEM{0,1}, PTR, RELBR, ABSBR, AGEN, IMM{0,1,2,3}
 
           xtype describes the number of data type and width of each element.
           If the xtype is omitted, xed will attempt to infer it from the oc2 code.
@@ -460,6 +461,10 @@ def parse_one_operand(w,
       optype ='imm_const'
       rhs = '1'
    elif relative_branch_pattern.search(a):
+      name = a
+      optype ='imm_const'
+      rhs = '1'
+   elif absolute_branch_pattern.search(a):
       name = a
       optype ='imm_const'
       rhs = '1'

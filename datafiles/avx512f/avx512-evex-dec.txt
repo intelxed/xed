@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ BCRC=0 | error
 # #UD in 64b mode and gpr encoded in modrm.reg.
 EVEXR4_ONE()::
 REXR4=0   | 
-otherwise | error
+# Default: otherwise | error
 
 
 # NEWKEY: VEXPFX_OP == 0x62

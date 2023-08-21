@@ -695,7 +695,7 @@ in the #xed_encoder_request_t.
            <ol>
 
            <li>operand kind
-            (XED_OPERAND_{AGEN,MEM0,MEM1,IMM0,IMM1,RELBR,PTR,REG0...REG15}
+            (XED_OPERAND_{AGEN,MEM0,MEM1,IMM0,IMM1,RELBR,ABSBR,PTR,REG0...REG15}
 
            <li>operand order <BR>
        xed_encoder_request_set_operand_order(&req,operand_index, XED_OPERAND_*);

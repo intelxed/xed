@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import re
 import enum_txt_writer
 import codegen
 import genutil
+from typing import List, Tuple, Dict
 
 def _die(s):
     genutil.die(s)
@@ -140,7 +141,7 @@ def recursive_expand(d):
         expand_chip(chip,d)
             
 
-def read_database(filename):
+def read_database(filename) -> Tuple[List[str], Dict[str,str]]:
     lines = open(filename,'r').readlines()
     lines = filter_comments(lines)
     lines = genutil.process_continuations(lines)
@@ -210,6 +211,28 @@ def _check_in_instructions_not_chip_hierarchy(isaset_ch, isaset_inst):
             genutil.warn("isa_set referenced by instructions, " +
                          "but not part of any chip: {}".format(v))
     return missing
+
+def get_chip_supports_feature_dict(feature: str, chip2isa: dict) -> dict:
+    """
+    returns a dictionary indicating whether each chip supports the given feature (chip -> feature is supported)
+
+    Args:
+        feature (str): name of feature (APX, AVX512...)
+        chip2isa (dict): maps chip to list of features/ISA
+    
+    Returns:
+        dict: keys are the given chips and values indicate whether corresponding chip supports the given feature
+    """ 
+    feature_support_table = {}  
+    for c in chip2isa.keys():
+        supports_feature=False
+        for f in  chip2isa[c]:
+            if feature in f:
+                supports_feature=True
+                break
+        feature_support_table[c] = '1' if supports_feature else '0'
+
+    return feature_support_table
 
 def work(arg):
     (chips,chip_features_dict) = read_database(arg.input_file_name) 
@@ -328,20 +351,18 @@ def work(arg):
         for i,x in enumerate([s0s, s1s, s2s,s3s, s4s, s5s]):
             fo.add_code_eol("xed_chip_features[XED_CHIP_{}][{}] = {}".format(c, i, x))
 
+    features = ['AVX512', 'APX']
+    # declare tables, where each entry indicates whether the chip supports the corrisponding feature
+    for feature in features:
+        cfe.write(f"xed_bool_t xed_chip_supports_{feature.lower()}[XED_CHIP_LAST];\n")
+        hfe.write(f"extern xed_bool_t xed_chip_supports_{feature.lower()}[XED_CHIP_LAST];\n")
 
-    # figure out  which chips support  AVX512 for ILD evex processing
-    cfe.write("xed_bool_t xed_chip_supports_avx512[XED_CHIP_LAST];\n")
-    hfe.write("extern xed_bool_t xed_chip_supports_avx512[XED_CHIP_LAST];\n")
-    for c in chips:
-        supports_avx512=False
-        for f in  chip_features_dict[c]:
-            if 'AVX512' in f:
-                supports_avx512=True
-                break
-        v = '1' if supports_avx512 else '0'
-        fo.add_code_eol('xed_chip_supports_avx512[XED_CHIP_{}]={}'.
-                        format(c, v))
-                
+    for feature in features:
+        # populate the chip support tables with appropriate values then pour into dynamic function
+        feature_support_table = get_chip_supports_feature_dict(feature, chip_features_dict)
+        for chip, is_supported in feature_support_table.items():
+            fo.add_code_eol(f'xed_chip_supports_{feature.lower()}[XED_CHIP_{chip}]={is_supported}')
+
     cfe.write(fo.emit())
     hfe.write(fo.emit_header())
     cfe.close()    

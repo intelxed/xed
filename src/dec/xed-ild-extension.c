@@ -19,46 +19,18 @@ END_LEGAL */
 /// instruction length decoder extension
 
 #include "xed-ild-extension.h"
-#include "xed-error-enum.h"
-#include "xed-ild-enum.h"
 
-void xed_ild_ext_internal_scanner(xed_decoded_inst_t *d)
-{
-    (void)d;
-}
-
-xed_bool_t xed_ild_ext_opcode_scanner_needed(xed_decoded_inst_t *d)
-{
-    xed_bool_t yes = !xed3_operand_get_error(d);
-#if defined(XED_AVX)
-    return (yes && !xed3_operand_get_vexvalid(d));
-#else
-    return yes;
-#endif
-}
 
 void xed_ild_ext_set_ubit(xed_decoded_inst_t *d, xed_uint8_t ubit)
 {
-    xed3_operand_set_ubit(d, ubit & 1);
-    xed3_operand_set_vexvalid(d, 2);
+#if defined(XED_APX)
+    if (xed_ild_ext_apx_supported(d)) {
+        // APX reinterprets the Ubit with memory fourth index EGPR bit.
+        xed3_operand_set_rexx4(d, ~ubit & 1);
+        xed3_operand_set_ubit(d, 1);  // Satisfies instruction pattern's UBIT condition
+        return;
+    }
+#endif // XED_APX
     
-    if (ubit==0)
-        xed3_operand_set_error(d, XED_ERROR_BAD_EVEX_UBIT);
-}
-
-xed_uint8_t xed_ild_ext_set_evex_map(xed_decoded_inst_t* d, xed_uint8_t map)
-{
-    xed3_operand_set_map(d, map);
-    return map;
-}
-
-void xed_ild_ext_finalize_evex(xed_decoded_inst_t *d, xed_uint_t length)
-{
-    (void)d;
-    (void)length;
-}
-
-void xed_ild_ext_finalize(xed_decoded_inst_t *d)
-{
-    (void)d;
+    xed3_operand_set_ubit(d, ubit & 1);
 }

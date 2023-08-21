@@ -1,0 +1,26 @@
+Attempting to decode: 62 54 fc 0c f4 c0 
+iclass TZCNT	category BMI1	ISA-extension APXEVEX	ISA-set APX_F
+instruction-length 6
+operand-width 64
+effective-operand-width 64
+effective-address-width 64
+stack-address-width 64
+iform-enum-name TZCNT_GPRv_GPRv_APX
+iform-enum-name-dispatch (zero based) 1
+iclass-max-iform-dispatch 4
+Nominal opcode position 4
+Nominal opcode 0xf4
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0               REG0=R8   EXPLICIT   W         V   64     8     1     64        INT        GPR
+1   REG1               REG1=R8   EXPLICIT   R         V   64     8     1     64        INT        GPR
+Memory Operands
+  MemopBytes = 0
+ATTRIBUTES: APX_NF SCALABLE 
+EXCEPTION TYPE: APX_EVEX_INT
+[APX] No-Flags 
+ISA SET: [APX_F]
+0	CPUID GROUP NAME: [APX_F]
+	0	CPUID RECORD NAME: [APX_F]
+		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1

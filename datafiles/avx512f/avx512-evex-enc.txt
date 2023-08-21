@@ -169,8 +169,6 @@ SAE()::
 SAE=1 -> BCRC=1
 SAE=0 -> BCRC=0
 
-# REXR4 is EVEX.R' stored inverted.  EVEX.R'=0 (or REXR4=1) implies
-# #UD in 64b mode and gpr encoded in modrm.reg.
+
 EVEXR4_ONE()::
-REXR4=0   -> nothing
-otherwise -> error
+otherwise -> nothing

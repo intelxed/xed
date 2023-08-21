@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -251,13 +251,16 @@ xed_encoder_request_set_effective_address_size( xed_encoder_request_t* p,
 }
 
 void xed_encoder_request_set_branch_displacement(xed_encoder_request_t* p,
-                                                 xed_int32_t brdisp,
+                                                 xed_int64_t brdisp,
                                                  xed_uint_t nbytes) {
     xed_operand_values_set_branch_displacement(p, brdisp, nbytes);
 }
 
 void xed_encoder_request_set_relbr(xed_encoder_request_t* p) {
     xed3_operand_set_relbr(p,1);
+}
+void xed_encoder_request_set_absbr(xed_encoder_request_t* p) {
+    xed3_operand_set_absbr(p,1);
 }
 void xed_encoder_request_set_ptr(xed_encoder_request_t* p) {
     xed3_operand_set_ptr(p,1);

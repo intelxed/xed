@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -60,7 +60,8 @@ typedef struct {
 
 typedef enum {
     XED_ENCODER_OPERAND_TYPE_INVALID,
-    XED_ENCODER_OPERAND_TYPE_BRDISP,
+    XED_ENCODER_OPERAND_TYPE_REL_BRDISP,
+    XED_ENCODER_OPERAND_TYPE_ABS_BRDISP,
     XED_ENCODER_OPERAND_TYPE_REG,
     XED_ENCODER_OPERAND_TYPE_IMM0,
     XED_ENCODER_OPERAND_TYPE_SIMM0,
@@ -104,7 +105,21 @@ typedef struct {
 static XED_INLINE  xed_encoder_operand_t xed_relbr(xed_int32_t brdisp,
                                                    xed_uint_t width_bits) {
     xed_encoder_operand_t o;
-    o.type = XED_ENCODER_OPERAND_TYPE_BRDISP;
+    o.type = XED_ENCODER_OPERAND_TYPE_REL_BRDISP;
+    o.u.brdisp = brdisp;
+    o.width_bits = width_bits;
+    return o;
+}
+
+/// @ingroup ENCHL
+/// an absolute branch displacement operand
+/// @param brdisp The branch displacement
+/// @param width_bits The width of the displacement in bits.
+/// @returns xed_encoder_operand_t An operand.
+static XED_INLINE  xed_encoder_operand_t xed_absbr(xed_int32_t brdisp,
+                                                   xed_uint_t width_bits) {
+    xed_encoder_operand_t o;
+    o.type = XED_ENCODER_OPERAND_TYPE_ABS_BRDISP;
     o.u.brdisp = brdisp;
     o.width_bits = width_bits;
     return o;

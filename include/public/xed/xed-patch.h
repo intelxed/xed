@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ xed_patch_disp(xed_decoded_inst_t* xedd,
                xed_uint8_t* itext,
                xed_enc_displacement_t disp);
 
-/// Replace a branch displacement.
+/// Replace a relative/absolute branch displacement.
 /// The widths of original displacement and replacement must match.
 /// @param xedd A decoded instruction.
 /// @param itext The corresponding encoder output, byte array.
@@ -43,7 +43,7 @@ xed_patch_disp(xed_decoded_inst_t* xedd,
 /// @returns xed_bool_t  1=success, 0=failure
 /// @ingroup ENCHLPATCH
 XED_DLL_EXPORT xed_bool_t
-xed_patch_relbr(xed_decoded_inst_t* xedd,
+xed_patch_brdisp(xed_decoded_inst_t* xedd,
                 xed_uint8_t* itext,
                 xed_encoder_operand_t disp);
 

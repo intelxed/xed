@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVEC
 COMMENT   : Variable length store and conditional reg read. does not read header
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b100] RM[nnn] MODRM() norexw_prefix no_refining_prefix XSAVE()
+PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b100] RM[nnn] MODRM() norexw_prefix no_refining_prefix norex2_prefix
 OPERANDS  : MEM0:w:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
 
@@ -37,7 +37,7 @@ CATEGORY  : XSAVE
 EXTENSION : XSAVEC
 COMMENT   : Variable length store and conditional reg read. does not read header
 ATTRIBUTES : xmm_state_r REQUIRES_ALIGNMENT x87_mmx_state_r  NOTSX SPECIAL_AGEN_REQUIRED
-PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b100] RM[nnn] MODRM() rexw_prefix no_refining_prefix XSAVE()
+PATTERN   : 0x0F 0xC7 MOD[mm]  MOD!=3 REG[0b100] RM[nnn] MODRM() rexw_prefix no_refining_prefix norex2_prefix
 OPERANDS  : MEM0:w:mxsave REG0=XED_REG_EDX:r:SUPP REG1=XED_REG_EAX:r:SUPP REG2=XED_REG_XCR0:r:SUPP
 }
 

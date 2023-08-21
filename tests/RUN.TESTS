@@ -1,1 +1,1 @@
-./run-cmd.py --build-dir ../obj/wkit/bin     --tests tests-base  --tests tests-avx512 --tests tests-avx512pf --tests tests-cet --tests tests-via --tests tests-amx --tests tests-prefetch
+./run-cmd.py --build-dir ../obj/wkit/bin     --tests tests-base  --tests tests-avx512 --tests tests-avx512pf --tests tests-cet --tests tests-via --tests tests-amx --tests tests-prefetch --tests tests-apx
