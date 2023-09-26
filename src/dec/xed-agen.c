@@ -108,11 +108,11 @@ xed_error_enum_t xed_agen(xed_decoded_inst_t* xedd,
     }
 
     if (addr_width == 64) {
-        xed_int64_t base64 = base_value;
+        xed_uint64_t base64 = base_value;
         xed_int64_t disp64 = displacement;
-        xed_int64_t lin64 = 0;
+        xed_uint64_t lin64 = 0;
         if  (base_reg == XED_REG_RIP) {
-            xed_int64_t inst_len =  xed_decoded_inst_get_length(xedd);
+            xed_uint64_t inst_len =  xed_decoded_inst_get_length(xedd);
             lin64 = base64 + inst_len  + displacement;
             if (xed3_operand_get_asz(xedd)) {
                 // handle 67 address size prefix: truncate to 32b
@@ -120,27 +120,27 @@ xed_error_enum_t xed_agen(xed_decoded_inst_t* xedd,
             }
         }
         else  {
-            xed_int64_t index64 = index_value;
-            xed_int64_t ea64 = base64  + index64 * scale + disp64;
+            xed_uint64_t index64 = index_value;
+            xed_uint64_t ea64 = base64  + index64 * scale + disp64;
             lin64 = segment_base + ea64;
         }
         out = lin64;
     }
     else if (addr_width == 32) {
-        xed_int32_t base32 = base_value;
-        xed_int32_t index32 = index_value;
+        xed_uint32_t base32 = base_value;
+        xed_uint32_t index32 = index_value;
         xed_int32_t disp32 = displacement;
-        xed_int32_t ea32 = base32  + index32 * scale + disp32;
-        xed_int32_t lin32 = segment_base + ea32;
+        xed_uint32_t ea32 = base32  + index32 * scale + disp32;
+        xed_uint32_t lin32 = segment_base + ea32;
         out = lin32;
         // FIXME: big real mode!
     }
     else if (addr_width == 16) {
-        xed_int16_t base16 = base_value;
-        xed_int16_t index16 = index_value;
+        xed_uint16_t base16 = base_value;
+        xed_uint16_t index16 = index_value;
         xed_int16_t disp16 = displacement;
-        xed_int16_t ea16 = base16  + index16 * scale + disp16;
-        xed_int32_t lin32 = segment_base + ea16;
+        xed_uint16_t ea16 = base16  + index16 * scale + disp16;
+        xed_uint32_t lin32 = segment_base + ea16;
         if (real_mode) {
             xed_uint32_t masked20 = lin32 & 0x000FFFFF;
             out = masked20;
