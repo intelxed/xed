@@ -1342,59 +1342,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
 }
 
 #if defined(XED_APX)
-static XED_INLINE void check_rex2_opcode(xed_decoded_inst_t *d)
-{
-    /* Check REX2 opcode applicability restrictions */
-    //
-    // assumption: REX2 prefix detected.
-    //
-    // This should be called right after a completed REX2 opcode scanning
-    // to get the right illegal instructions length
-    //
-    // TBD: Move to instructions PATTERN restriction
-    //
-    xed_ild_map_enum_t const map = xed3_operand_get_map(d);
-    xed_bits_t const opcode = xed3_operand_get_nominal_opcode(d);
-    xed_bits_t const opcode_upper_nibble = (opcode & 0xf0) >> 4;
-
-    if (map == XED_ILD_LEGACY_MAP0) {
-        switch (opcode_upper_nibble)
-        {
-        case 0x4:
-        case 0x7:
-        case 0xE:
-            /* opcode in [0x4*, 0x7*, 0xE*] */
-            xed3_operand_set_error(d, XED_ERROR_BAD_REX2_PREFIX);
-            break;
-
-        case 0xA:
-            /* opcode in [0xA*] */
-            if (opcode != 0xA1)  // (0xA1 for JMPABS)
-                xed3_operand_set_error(d, XED_ERROR_BAD_REX2_PREFIX);
-            break;
-
-        default:
-            break;
-        }
-    }
-    else if (map == XED_ILD_LEGACY_MAP1) {
-        switch (opcode_upper_nibble)
-        {
-        case 0x3:
-        case 0x8:
-            /* opcode in [0x3*, 0x8*] */
-            xed3_operand_set_error(d, XED_ERROR_BAD_REX2_PREFIX);
-            break;
-
-        default:
-            break;
-        }
-    } 
-    else {
-        xed_derror("Illegal mapId for REX2 prefix");
-    }
-}
-
 static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
 {
     /* assumption: length < max_bytes  
@@ -1459,9 +1406,6 @@ static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
             xed3_operand_set_srm(d, xed_modrm_rm(b));
             xed_decoded_inst_set_length(d, length+1); // We saw D5 xx opc
             xed_set_downstream_info(d,0);
-
-            /* REX2 legal Opcode checker*/
-            check_rex2_opcode(d);
         }
         else
         {

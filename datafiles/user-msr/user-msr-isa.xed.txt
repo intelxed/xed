@@ -1,0 +1,88 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+AVX_INSTRUCTIONS()::
+# EMITTING URDMSR (URDMSR-128-1)
+{
+ICLASS:      URDMSR
+CPL:         3
+CATEGORY:    USER_MSR
+EXTENSION:   USER_MSR
+ISA_SET:     USER_MSR
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     VV1 0xF8 VF2 MAP7 MOD[0b11] MOD=3 REG[0b000] RM[nnn] W0 VL128 mode64 NOVSR UIMM32()
+OPERANDS:    REG0=GPR64_B():w:q:u64 IMM0:r:d
+IFORM:       URDMSR_GPR64u64_IMM32
+}
+
+
+# EMITTING UWRMSR (UWRMSR-128-1)
+{
+ICLASS:      UWRMSR
+CPL:         3
+CATEGORY:    USER_MSR
+EXTENSION:   USER_MSR
+ISA_SET:     USER_MSR
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     VV1 0xF8 VF3 MAP7 MOD[0b11] MOD=3 REG[0b000] RM[nnn] W0 VL128 mode64 NOVSR UIMM32()
+OPERANDS:    IMM0:r:d REG0=GPR64_B():r:q:u64
+IFORM:       UWRMSR_IMM32_GPR64u64
+}
+
+
+INSTRUCTIONS()::
+# EMITTING URDMSR (URDMSR-N/A-1)
+{
+ICLASS:      URDMSR
+CPL:         3
+CATEGORY:    USER_MSR
+EXTENSION:   USER_MSR
+ISA_SET:     USER_MSR
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     0x0F 0x38 0xF8 MOD[0b11] MOD=3 REG[rrr] RM[nnn] f2_refining_prefix mode64
+OPERANDS:    REG0=GPR64_B():w:q:u64 REG1=GPR64_R():r:q:u64
+IFORM:       URDMSR_GPR64u64_GPR64u64
+}
+
+
+# EMITTING UWRMSR (UWRMSR-N/A-1)
+{
+ICLASS:      UWRMSR
+CPL:         3
+CATEGORY:    USER_MSR
+EXTENSION:   USER_MSR
+ISA_SET:     USER_MSR
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     0x0F 0x38 0xF8 MOD[0b11] MOD=3 REG[rrr] RM[nnn] f3_refining_prefix mode64
+OPERANDS:    REG0=GPR64_R():r:q:u64 REG1=GPR64_B():r:q:u64
+IFORM:       UWRMSR_GPR64u64_GPR64u64
+}
+
+

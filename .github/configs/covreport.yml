@@ -1,0 +1,298 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+# This is an example configuration file for Coverity report generators. It
+# tells report generators how to generate reports. You can make and modify a
+# copy of it for use in configuring a report generator.
+#
+# Its initial sections apply to all report generators. Later sections,
+# marked with "#######" comments, are intended for specific report
+# generators.
+#
+# This file is In YAML format, version 1.2. See
+# https://yaml.org/spec/1.2/spec.html for documentation on the format.
+# If you simply modify a copy of this file you probably do not need to
+# know details about YAML, however, be aware that structure is
+# determined by indentation, i.e., the number of spaces at the beginning
+# of the line. Multi-line text should be placed inside double quotes ("").
+#
+# The YAML constructs used here are "mappings" or key: value pairs. Some
+# mappings' values are file pathnames. Pathnames may use a slash or
+# backslash, whichever is appropriate for the platform, as a separator.
+# (Note that according to YAML's quoting rules, backslashes are not
+# special unless they are in a character sequence enclosed in double
+# quotes.) A relative pathname here is interpreted as relative to the
+# directory containing this configuration file. If the configuration did
+# not come from a file (e.g., was read on standard input), then the
+# pathname would be relative to the report generator process's working
+# directory.
+#
+
+################## IPAS ################## 
+# Please use this YAML file to Generate SDL Evidence. 
+# This file is configured to meet the SDL Requiremnts.
+# IMPORTANT: Some of the fields are populated via script (e.g. username: {user}; the actual username is assigned via script)
+
+################## Sections that apply to all reports #############
+# Describes information needed in interpreting the rest of the config.
+version:   
+    # The version of this file's schema.
+    # Mandatory field
+    schema-version: 6
+
+# Describes settings needed for connecting to Coverity Connect.
+connection:   
+    # The URL of the Coverity Connect instance.
+    # Mandatory field
+    # Please update the Coverity Connect Server
+    url: {url}
+
+    # Coverity Connect username. Password or other authentication key
+    # is passed in to the application from the command line.
+    # Mandatory field
+    # Please use your idsid/ faceless account
+    username: {user}
+
+    # Path to an optional file containing additional CA certificates for
+    # use in establishing a secure HTTPS connection. These must be in PEM
+    # format.
+    ssl-ca-certs: 
+
+# The name of the Coverity Connect project.
+# Mandatory field
+project: "XED main"
+
+# Describes the fields in the title page of the report.
+title-page:   
+    # Name of your company
+    # Mandatory field
+    company-name: "Intel"
+
+    # Name of the software development project. May be distinct from the
+    # Coverity Connect project name.
+    # Mandatory field
+    project-name: "XED"
+
+    # e.g. project-version: v.1.2.3
+    # Mandatory field
+    project-version: {version}
+
+    # Optional path to a logo file for your company. Valid image types
+    # are bmp, gif, jpg, and png. The maximum allowed image size is 210
+    # pixels wide by 70 pixels high
+    # Note that backslash characters in a path must be doubled
+    # e.g. logo: C:\\logo\\ourlogo.jpg
+    # e.g. logo: /var/logo/ourlogo.png
+    logo: 
+
+    # Name of your division, group, team or other organizational unit.
+    # Mandatory field
+    organizational-unit-name: "SDE"
+
+    # Organizational unit term (e.g., division, group, team).
+    # Mandatory field
+    organizational-unit-term: "IPAS"
+
+    # Name of the entity for which the report was prepared.
+    # This is also known as project-contact-name for
+    # CIR, CVSS, PCIDSS, MobileOwasp, and Owasp2017
+    # Mandatory field
+    prepared-for: "SDL"
+
+    # Project contact email address. It is used for
+    # CIR, CVSS, PCIDSS, MobileOwasp, and Owasp2017
+    # Mandatory field
+    project-contact-email: "xed.team@intel.com"
+
+    # Name of the entity that prepared the report.
+    # Mandatory field
+    prepared-by: "xed.team@intel.com"
+
+# Locale of the report. Valid values are
+#     en_US (English)
+#     ja_JP (Japanese)
+#     ko_KR (Korean)
+#     zh_CN (Simplified Chinese)
+# Default is en_US
+locale: en_US
+
+# Some reports display information about individual issues. These reports
+# bound the number of issues displayed in order to control the size of the
+# report. This bound is called the issue cutoff count. It is used for CVSS,
+# Security, PCIDSS, MobileOwasp, Owasp2017 and DISA-STIG reports.
+# Default is 200. Maximum is 10000 for report.
+issue-cutoff-count: 4000
+# If your project have more than 4000 issues, please modify this number
+
+# Used for retrieving the defects of specific snapshot id, instead of using the latest snapshot id of
+# all the streams associated with project(default behaviour).
+# It is not supported for CIR report.
+#snapshot-id: 32843
+
+# The most recent snapshot of each stream in the project whose date is less than or equal to the given date,
+# will be used to collect the defects instead of latest snapshot
+# Snapshot-id will get the highest priority if both snapshot-id and snapshot-date is present.
+# Snapshot date should be in MM/DD/YYYY format
+# It is not supported for CIR report.
+#snapshot-date: 03/29/2022
+
+# An optional comma-separated list of Coverity Connect issue kinds
+# if issue kinds are listed here, the report will include issues only for
+# the listed issue kinds.
+# Possible values fore Issue Kind :
+# Quality
+# Security
+# example: Quality
+# example: Quality, Security
+# Default: Include issues for both Quality and Security
+#issue-kind: SECURITY
+
+# Components specification
+# An optional comma-separated list of Coverity Connect component names,
+# including component map name.
+# If components are listed here, the report will include data only for
+# the listed components.
+# example: Default.lib,Default.src
+components: {component}
+
+################## CERT report #############
+cert-report:   
+    # Used for CERT config for target level. Valid values are
+    # F ==> Fully Compliant
+    # L2 ==> L2 Compliant
+    # L1 ==> L1 Compliant
+    # Default is F
+    # DO NOT CHANGE THIS
+    target-level: L1
+
+################## Synopsys Software Integrity Report #############
+ssir-report:   
+    # analysis date should be in MM/DD/YYYY format
+    # Mandatory field
+    analysis-date: 
+
+    # Optional legal text to display in the report
+    # e.g:
+    #     "This is the first line of multiline legal text
+    #     and this is the second line."
+    #
+    legal-text: ""
+
+################## Coverity Integrity Report #############
+cir-report:   
+    # Project-related fields
+    # The project-description defaults to its description in Coverity
+    # Connect, if any.
+    # e.g. project-details: Some details for this project
+    #      project-description: A short description of the project
+    project-description: ""
+    project-details: ""
+
+    # Target integrity level.
+    # 1 ==> < 1 defect per thousand lines of code
+    # 2 ==> < .1 defects per thousand lines of code
+    # 3 ==> < .01 defects per thousand lines of code, and other requirements
+    # Default is 1
+    target-integrity-level: 
+
+    # Name of the highest severity value.
+    # Default is "Major".
+    high-severity-name: 
+
+    # Name of the unspecified severity value.
+    # Default is "Unspecified".
+    unspecified-severity-name: 
+
+    # Trial flag. Use "true" if page 3 of the report should not be generated.
+    # Page 3 contains severity data which is not relevant for projects that
+    # do not use severity.
+    # Default is false
+    trial: 
+
+    # LOC multiplier for the number of lines of code that have been
+    # inspected.
+    # Default is 1
+    loc-multiplier:
+
+    # Whether to include Low impact defects for calculating the defect density
+    # Possible values can be true, false
+    # Default is false
+    include-low-impact:
+
+################## Coverity Security Report #############
+security-report:   
+    # There are four Assurance Levels, representing Security Scores of greater
+    # than or equal to 60, 70, 80, and 90. When choosing the Assurance Level,
+    # consider the potential for damage to life, property, or reputation.
+    # An application with high damage potential should have a
+    # high Assurance Level.
+    # Default is 90 without plugin
+    # if plugin yaml is available in the environment, values will come from plugin
+    # and the highest score will be the default
+    # DO NOT CHANGE THIS
+    assurance-level-score: 90
+
+    # A level indicating the minimum acceptable score for the report to
+    # be considered passing.
+    # Possible values can be (AL1, AL2, AL3, AL4) without plugin
+    # and default will be AL1, if plugin yaml is available in the environment, values will come from plugin
+    # and the highest score value will be the default
+    # DO NOT CHANGE THIS
+    assurance-level: AL1
+
+    # The name of the set of severity mappings used to determine the score
+    # of each issue. See the documentation for a description of the severity
+    # mapping. The first three mappings are built-in. "Custom" indicates
+    # that the mapping identified by "custom-severity-mapping" and
+    # "severity-mapping-description" should be used.
+    # Valid values:
+    #    Carrier Grade
+    #    Web application
+    #    Desktop application
+    #    Custom
+    # Default : Carrier Grade, if plugin yaml is available in the environment, values will come from plugin
+    # and the first severity-mapping will be the default
+    # DO NOT CHANGE THIS
+    severity-mapping: Carrier grade
+
+    # Optional descriptive text for custom severity mapping
+    severity-mapping-description: ""
+
+    # If severity-mapping is Custom then set the below severity map
+    custom-severity-mapping:   
+        # Possible values are
+        #    very high
+        #    high
+        #    medium
+        #    low
+        #    very low
+        #    informational
+        # Default is very high
+        modify-data: Very High
+        read-data: Very High
+        dos-unreliable-execution: Very High
+        dos-resource-consumption: Very High
+        execute-unauthorized-code: Very High
+        gain-privileges: Very High
+        bypass-protection-mechanism: Very High
+        hide-activities: Very High
+
+disa-stig:   
+    # DISA-STIG version
+    # default version: V4
+
+    version: V5

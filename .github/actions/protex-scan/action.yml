@@ -1,0 +1,55 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+name: Protex scan
+description: performs Protex scan
+inputs:
+  bdstool_path:
+    description: 'Path to Protex bdstool'
+    required: true
+  username:
+    description: 'Protex username'
+    required: true
+  password:
+    description: 'Protex password'
+    required: true
+  server:
+    description: 'URL to the Protex server'
+    required: true
+  proj_id:
+    description: 'Protex project ID'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: protex scan
+      run: |
+          python3 .github/scripts/protex.py --project-id ${{ inputs.proj_id }} --url ${{ inputs.server }} \
+            --user ${{ inputs.username }} --pass ${{ inputs.password }} --tool-path ${{ inputs.bdstool_path }}
+      shell: bash
+    - name: add comment   # uploads protex guidance as pull-request comment
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'   # add scan summary as comment only if there is a PR
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: "Protex scan finished; view results at ${{ inputs.server }}"
+          })

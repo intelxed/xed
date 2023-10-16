@@ -16,4 +16,11 @@
 #  
 #END_LEGAL
 
-BAD_REX2_PREFIX   ///< A REX2 prefix was found where none is allowed.
+
+# augment the AVX NTs
+
+VEX_MAP_ENC()::
+VEX_C4=1  MAP=7 REXW[w] -> 0b0_0111 w
+
+VEX_TYPE_ENC()::
+MAP=7       -> 0xC4 VEX_C4=1

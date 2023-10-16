@@ -1,6 +1,4 @@
-# Intel X86 Encoder Decoder  (Intel XED)
-
-![.github/workflows/ci.yml](https://github.com/intelxed/xed/workflows/.github/workflows/ci.yml/badge.svg)
+# Intel&reg; X86 Encoder Decoder  (Intel&reg; XED)
 
 ## Doxygen API manual and source build manual:
 
@@ -58,3 +56,10 @@ Concerned about large libraries or binaries? There are several options:
 2. Strip the binaries
 3. Consider doing an encoder-only or decoder-only build if you only need one or the other.
 
+## Contribute to Intel&reg; XED:
+
+In order to contribute, please:
+
+1. Read the [Contribution Agreement](CONTRIBUTING.md)
+2. Sign your commit message to show your agreement
+3. Submit a Pull-Request

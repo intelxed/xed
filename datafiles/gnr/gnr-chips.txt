@@ -17,7 +17,7 @@
 #END_LEGAL
 
 GRANITE_RAPIDS:              \  
-     ALL_OF(SAPPHIRE_RAPIDS) \
+     ALL_OF(EMERALD_RAPIDS)  \
      ALL_OF(ALDER_LAKE)      \
      NOT(KEYLOCKER)          \
      NOT(KEYLOCKER_WIDE)     \

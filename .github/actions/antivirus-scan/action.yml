@@ -1,0 +1,60 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+name: Anti-virus scan
+description: performs malware scan
+inputs:
+  av_scan_path:
+    description: 'Path to antivirus scan tool'
+    required: true
+outputs:
+  summary:
+    description: 'summary of anti-virus scan'
+    value: ${{ steps.gen_av_scan_sum.outputs.summary }}
+runs:
+  using: "composite"
+  steps:
+    - name: protex scan
+      run: |
+          python3 .github/scripts/antivirus_scan.py --path ${{ inputs.av_scan_path }}
+      shell: bash
+    - name: upload full results # uploads anti-virus scan results as artifact
+      id: upload
+      uses: actions/upload-artifact@v3
+      with:
+        name: anti-virus-sum
+        path: ./logs/avscan.txt
+    - name: Generate anti-virus scan summary
+      id: gen_av_scan_sum
+      run: |
+          av_sum=$( cat "./logs/antivirus_summary.txt" )
+          echo "summary=$av_sum" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: add PR comment   # uploads anti-virus scan summary as pull-request comment
+      uses: actions/github-script@v6
+      if: github.event_name == 'pull_request'   # add scan summary as comment only if there is a PR
+      with:
+        script: |
+          const fs = require('fs');
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: "Anti-virus scan summary: ${{ steps.gen_av_scan_sum.outputs.summary }}"
+          })
+

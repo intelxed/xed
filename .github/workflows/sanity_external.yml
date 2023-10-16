@@ -15,11 +15,19 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+
 name: External Sanity
 
+defaults:
+  run:
+    shell: bash
 env:
+  BASH_ENV: "/tmp_proj/sde_admin/.bashrc_xed"
+
   # XED minimal python version requirement
   MIN_PY_VER: "3.7.16"
+###########################################################
+
 
 on:
   pull_request:
@@ -35,6 +43,7 @@ jobs:
       - Linux
     outputs:
       test_matrix: ${{ steps.load_matrix.outputs.matrix }}
+      coverity_matrix: ${{ steps.load_coverity_matrix.outputs.matrix }}
     steps:
       - name: Checkout xed for reusable actions
         uses: actions/checkout@v3
@@ -43,6 +52,11 @@ jobs:
         uses: ./.github/actions/load-matrix
         with:
           matrix_kind: nightly
+      - name: Set Coverity matrix
+        id: load_coverity_matrix
+        uses: ./.github/actions/load-matrix
+        with:
+          matrix_kind: coverity   
 
   test:
     needs: init
@@ -107,83 +121,99 @@ jobs:
       - self-hosted
       - xed-runners
       - Linux
-    env:
-      AV_SCAN_PATH: ${{ secrets.AV_SCAN_PATH }}
     steps:
-    - name: Checkout xed
+    - name: Checkout xed for reusable actions
       uses: actions/checkout@v3
+    - name: Perform Anti-virus scan
+      uses: ./.github/actions/antivirus-scan
       with:
-        path: xed
-    - name: Checkout mbuild
-      uses: actions/checkout@v3
-      with:
-        repository: intelxed/mbuild
-        ref: main
-        path: mbuild
-        token: ${{ secrets.PAT }}
-    - name: anti-virus check
-      run: |
-          cd xed
-          python3 .github/scripts/antivirus_scan.py --path "${AV_SCAN_PATH}"
-    - name: upload full results # uploads anti-virus scan results as artifact
-      id: upload
-      uses: actions/upload-artifact@v3
-      with:
-        name: anti-virus-sum
-        path: xed/logs/avscan.txt
-    - name: add comment   # uploads anti-virus scan summary as pull-request comment
-      uses: actions/github-script@v6
-      if: github.event_name == 'pull_request'   # add scan summary as comment only if there is a PR
-      with:
-        script: |
-          const fs = require('fs');
-          const antivirusSummary = fs.readFileSync('xed/logs/antivirus_summary.txt', 'utf8');
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: "Anti-virus scan summary: " + antivirusSummary
-          })
-  
+          av_scan_path: ${{ secrets.AV_SCAN_PATH }}
+
   protex_scan:
     needs: init
     runs-on:
       - self-hosted
       - xed-runners
       - Linux
-    env:
-      PROTEX_BDSTOOL:  ${{ secrets.PROTEX_BDSTOOL }}
-      PROTEX_USERNAME: ${{ secrets.PROTEX_USERNAME }}
-      PROTEX_PASSWORD: ${{ secrets.PROTEX_PASSWORD }}
-      PROTEX_SERVER:   ${{ secrets.PROTEX_SERVER }}
-      PROTEX_PROJ_ID:  ${{ secrets.PROTEX_PROJECT_ID }}
+    steps:
+    - name: Checkout xed for reusable actions
+      uses: actions/checkout@v3
+    - name: Perform Protex scan
+      uses: ./.github/actions/protex-scan
+      with:
+          bdstool_path: ${{ secrets.PROTEX_BDSTOOL_PATH }}
+          username    : ${{ secrets.PROTEX_USERNAME     }}
+          password    : ${{ secrets.PROTEX_PASSWORD     }}
+          server      : ${{ secrets.PROTEX_SERVER_URL   }}
+          proj_id     : ${{ secrets.PROTEX_PROJECT_ID   }}
+
+  coverity_scan:
+    needs: init
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.init.outputs.coverity_matrix)}}
+    runs-on:
+      - self-hosted
+      - xed-runners
+      - ${{ matrix.os }}
+    outputs:
+      Windows_cov_sum: ${{ steps.gen_coverity_sum.outputs.Windows_cov_sum }}
+      Linux_cov_sum  : ${{ steps.gen_coverity_sum.outputs.Linux_cov_sum }}
     steps:
     - name: Checkout xed
       uses: actions/checkout@v3
       with:
-        path: xed
+          path: xed
     - name: Checkout mbuild
       uses: actions/checkout@v3
       with:
-        repository: intelxed/mbuild
-        ref: main
-        path: mbuild
-        token: ${{ secrets.PAT }}
-    - name: protex scan
+          repository: intelxed/mbuild
+          ref: main
+          path: mbuild
+          token: ${{ secrets.PAT }}
+    - name: Perform Coverity scan
+      id: run_cov_scan
+      uses: ./xed/.github/actions/coverity-scan
+      with:
+          linux_auth_key    : ${{secrets.COVERITY_AUTH_KEY_LINUX }}
+          windows_auth_key  : ${{secrets.COVERITY_AUTH_KEY_WINDOWS }}
+          os                : ${{ matrix.os }}
+          compiler          : ${{ matrix.compiler }}
+          version           : ${{ matrix.ver }}
+          server            : ${{ secrets.COVERITY_SERVER_URL }}
+          additional_knobs  : '--external'
+    - name: Generate Coverity summary
+      id: gen_coverity_sum
       run: |
-          cd xed
-          python3 .github/scripts/protex.py --project-id "${PROTEX_PROJ_ID}" --url "${PROTEX_SERVER}" \
-            --user "${PROTEX_USERNAME}" --pass "${PROTEX_PASSWORD}" --tool-path "${PROTEX_BDSTOOL}"
-    - name: add comment   # uploads protex guidance as pull-request comment
+          echo "${{matrix.os}}_cov_sum=${{ steps.run_cov_scan.outputs.cov_sum }}" >> $GITHUB_OUTPUT
+
+  coverity_report:
+    needs: [init, coverity_scan]
+    runs-on:
+      - self-hosted
+      - xed-runners
+      - Windows
+    steps:
+    - name: Checkout xed for reusable actions
+      uses: actions/checkout@v3
+    - name: gen and upload reports
+      uses: ./.github/actions/coverity-report
+      with:
+          auth_key: ${{ secrets.COVERITY_AUTH_KEY_WINDOWS }}
+          username: ${{ secrets.COVERITY_USER }}
+          server: ${{ secrets.COVERITY_SERVER_URL }}
+          components: "CM-XED main.External"
+    - name: add PR comment   # uploads coverity report summary as pull-request comment
       uses: actions/github-script@v6
       if: github.event_name == 'pull_request'   # add scan summary as comment only if there is a PR
       with:
         script: |
+          const fs = require('fs');
           github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
-            body: "Protex scan finished; view results at ${{env.PROTEX_SERVER}}"
+            body: "Linux Coverity scan: ${{needs.coverity_scan.outputs.Linux_cov_sum}}\n" +
+                  "Windows Coverity scan: ${{needs.coverity_scan.outputs.Windows_cov_sum}}\n" +
+                  "Please inspect Coverity CVSS and Security reports and validate passing SDL criteria."
           })
-
-

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #  
 #END_LEGAL
 
-GRAND_RIDGE:             \
-  ALL_OF(SIERRA_FOREST)  \
-  RAO_INT
+#  name     space   esc  mapopc mapno modrm disp imm opcpos pattern
+vex-map7    vex    N/A  N/A    7     yes    no   4    1     'MAP7'
+
+

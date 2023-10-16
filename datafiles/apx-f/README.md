@@ -1,9 +1,9 @@
 # General
-Intel® Advanced Performance Extensions (Intel® APX) expands the Intel® 64 instruction set architecture with
+Intel&reg; Advanced Performance Extensions (Intel&reg; APX) expands the Intel&reg; 64 instruction set architecture with
 access to more registers and adds various new features that improve general-purpose performance. The
 extensions are designed to provide efficient performance gains across a variety of workloads without
 significantly increasing silicon area or power consumption of the core.
-The main features of Intel® APX include:
+The main features of Intel&reg; APX include:
 • 16 additional general-purpose registers (GPRs) R16–R31, also referred to as Extended GPRs (EGPRs)
 in this document;
 • Three-operand instruction formats with a new data destination (NDD) register for many integer
@@ -15,18 +15,18 @@ with an option for the compiler to suppress the status flags writes of common in
 
 This file describes XED's support status and comments for APX
 
-## APX instructions definition by XED
+## APX instructions definition by Intel&reg; XED
 #### Legacy
 - Instructions with REX2 prefix are not defined with new iforms or new ISA-SETs
 #### EVEX
 - Existing (non-APX) EVEX instructions with EGPRs are not defined with new iforms or new ISA-SETs
 - Promoted and new instructions are defined with new iforms, using the `_apx` suffix
-- Introduce new `APX_NDD` XED attribute For NDD (new data destination) instructions with 3 operands
-- Introduce new `APX_NF` XED attribute For No-Flags instructions
+- Introduce new `APX_NDD` attribute For NDD (new data destination) instructions with 3 operands
+- Introduce new `APX_NF` attribute For No-Flags instructions
 
-# XED support status
+# Intel&reg; XED support status
 ## Decoder support
-XED decoder currently supports:
+Intel&reg; XED decoder currently supports:
 #### Legacy
 - REX2 prefix and APX extended GPRs (EGPRs)
 #### EVEX 
@@ -35,26 +35,26 @@ XED decoder currently supports:
 - All APX new instructions
 
 ## Encoder support
-XED encoder supports status:
+Intel&reg; XED encoder supports status:
 #### Legacy
 - :x: No REX2 support
 #### EVEX 
 - :x: No EGPRs support
 - All APX-Promoted instructions
 - All APX new instructions. Note:
-  - {CF,}CMOVcc - Partial support, need to set the NF XED operand for forms with EVEX.NF=1
-#### ENC2 XED module
+  - {CF,}CMOVcc - Partial support, need to set the NF operand for forms with EVEX.NF=1
+#### ENC2 module
 - :x: No ENC2 support for APX. Users should not use this module for APX encoding
 
 
 ## APX CPUID support
-XED defines only the Foundational APX CPUID bit for promoted/new EVEX instructions.
+Intel&reg; XED defines only the Foundational APX CPUID bit for promoted/new EVEX instructions.
 APX-Promoted instructions require the equivalent Legacy CPUID as well - Those Legacy 
-CPUIDs are not listed by XED yet (TBD)
+CPUIDs are not listed by Intel&reg; XED yet (TBD)
 
 
 ## Chip-Check support
-XED's chip-check supports the detection of all APX instructions and flavors.
+Intel&reg; XED chip-check supports the detection of all APX instructions and flavors.
 APX instruction can be:
 - New APX instruction
 - Legacy instruction with REX2 prefix
@@ -113,5 +113,5 @@ Numerous examples and vivid explanations regarding APX features can be found in 
     .byte 0x62,0x54,0x74,0x02,0x38,0xc8
     ```
 - the official APX assembly syntax is not support yet. 
-Current XED syntax is: `<MNEMONIC> <reg/mem>, <reg/mem/imm>, <dfv>`
+Current syntax is: `<MNEMONIC> <reg/mem>, <reg/mem/imm>, <dfv>`
 

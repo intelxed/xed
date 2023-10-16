@@ -623,11 +623,13 @@ def mkenv():
                                  tgl=True,
                                  adl=True,
                                  spr=True,
-                                 grr=True,  # grand ridge
                                  srf=True,  # sierra forest
                                  gnr=True,  # granite rapids
                                  arl=True,  # arrow lake
                                  lnl=True,  # lunar lake
+                                 cwf=True,  # clearwater forest
+                                 ptl=True,  # panther lake
+                                 emr=True,  # emerald rapids
                                  future=True,
                                  knl=True,
                                  knm=True,
@@ -869,10 +871,18 @@ def xed_args(env):
                           action="store_false",
                           dest="srf",
                           help="Disable Sierra Forest public instructions")
-    env.parser.add_option("--no-grr",
+    env.parser.add_option("--no-cwf",
                           action="store_false",
-                          dest="grr",
-                          help="Disable Grand Ridge public instructions")
+                          dest="cwf",
+                          help="Disable Clearwater Forest public instructions")
+    env.parser.add_option("--no-ptl",
+                          action="store_false",
+                          dest="ptl",
+                          help="Disable Panther Lake public instructions")
+    env.parser.add_option("--no-emr",
+                          action="store_false",
+                          dest="emr",
+                          help="Disable Emerald Rapids public instructions")
     env.parser.add_option("--no-arl",
                           action="store_false",
                           dest="arl",
@@ -1516,6 +1526,9 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'serialize')
             _add_normal_ext(env,'avx512-fp16')
             _add_normal_ext(env,'evex-map5-6')
+        if env['emr']:
+            _add_normal_ext(env,'emr')
+            _add_normal_ext(env,'tdx')
         if env['gnr']:
             _add_normal_ext(env,'gnr')
             _add_normal_ext(env,'amx-fp16')
@@ -1531,9 +1544,15 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'wrmsrns')
             _add_normal_ext(env,'uintr')
             _add_normal_ext(env,'enqcmd')
-        if env['grr']:
-            _add_normal_ext(env,'grr')
-            _add_normal_ext(env,'rao-int')
+        if env['cwf']:
+            _add_normal_ext(env,'cwf')
+            _add_normal_ext(env,'user-msr')
+            _add_normal_ext(env,'iprefetch')
+            _add_normal_ext(env,'avx-vnni-int16')
+            _add_normal_ext(env,'sha512')
+            _add_normal_ext(env,'sm3')
+            _add_normal_ext(env,'sm4')
+            _add_normal_ext(env,'vex-map7')
         if env['arl']:
             _add_normal_ext(env,'arrow-lake')
             _add_normal_ext(env, 'uintr')
@@ -1548,11 +1567,16 @@ def _configure_libxed_extensions(env):
         if env['lnl']:
             _add_normal_ext(env,'lunar-lake')
             _add_normal_ext(env,'pbndkb')
-        
+        if env['ptl']:
+            _add_normal_ext(env,'ptl')
+            _add_normal_ext(env,'iprefetch')
+            _add_normal_ext(env,'msrlist')
+            _add_normal_ext(env,'wrmsrns')
+            _add_normal_ext(env,'fred')
         if env['future']:
             _add_normal_ext(env,'future')
-            _add_normal_ext(env,'tdx')
             _add_normal_ext(env,'apx-f')
+            _add_normal_ext(env,'rao-int')
 
 
     env['extf'] = newstuff + env['extf']
@@ -2706,7 +2730,8 @@ def run_tests(env):
 
 def verify_args(env):
     if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, TGL, ADL, SPR, KNL, KNM, GNR, GRR, SRF, ARL, LNL, Future\n\n\n")
+        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, "
+                    "TGL, ADL, SPR, KNL, KNM, GNR, SRF, ARL, LNL, CWF, PTL, EMR, Future\n\n\n")
         env['ivb'] = False
         env['hsw'] = False
         env['bdw'] = False
@@ -2722,10 +2747,12 @@ def verify_args(env):
         env['knl'] = False
         env['knm'] = False
         env['gnr'] = False
-        env['grr'] = False
         env['srf'] = False
         env['arl'] = False
         env['lnl'] = False
+        env['cwf'] = False
+        env['ptl'] = False
+        env['emr'] = False
         env['future'] = False
 
     # default is enabled. oldest disable disables upstream (younger, newer) stuff.
@@ -2771,13 +2798,17 @@ def verify_args(env):
         env['spr'] = False
     if not env['adl']:
         env['arl'] = False
-    if not env['srf']:
-        env['grr'] = False
     if not env['spr']:
+        env['emr'] = False
+    if not env['emr']:
         env['gnr'] = False
     if not env['arl']:
         env['lnl'] = False
-    if not env['gnr'] or not env['lnl']:
+    if not env['srf']:
+        env['cwf'] = False
+    if not env['lnl']:
+        env['ptl'] = False
+    if not env['gnr'] or not env['cwf'] or not env['ptl']: 
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:

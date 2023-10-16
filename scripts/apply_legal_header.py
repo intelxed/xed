@@ -226,7 +226,7 @@ def skip_file(file):
     skip_suffix = ['.pdf', '.msi', '.sln', '.vcproj', '.vcxproj', '.filters',
                    '.xsl', '.rtf', '.reference', '.rc', '.doc', '.html',
                    '.docx', '.msm', '.ico', '.bmp', '.exe', '.a', '.lib', '.csv', '.bz2',
-                   '.zip', '.csproj', '.json', '.js', '.xz', '.TESTS', '.pyc']
+                   '.zip', '.csproj', '.json', '.js', '.xz', '.TESTS', '.pyc', '.md']
     # Path().suffixes return a list of the final component's suffixes, if any.
     # check if the intersection with skip_suffix is empty or not
     if set(f.suffixes).intersection(skip_suffix):

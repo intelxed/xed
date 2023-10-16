@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -735,6 +735,8 @@ void enc_vvvv_reg_tmm(xed_enc2_req_t* r,
 void enc_modrm_reg_tmm(xed_enc2_req_t* r,
                        xed_reg_enum_t dst);
 void enc_modrm_rm_tmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst);
+void enc_evex_modrm_rm_tmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst);
 # endif
 #endif

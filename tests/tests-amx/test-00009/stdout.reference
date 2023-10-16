@@ -1,11 +1,11 @@
 Attempting to decode: c4 e2 72 5c d0 
-iclass TDPBF16PS	category AMX_TILE	ISA-extension AMX_BF16	ISA-set AMX_BF16
+iclass TDPBF16PS	category AMX_TILE	ISA-extension AMX_TILE	ISA-set AMX_BF16
 instruction-length 5
 operand-width 32
 effective-operand-width 32
 effective-address-width 64
 stack-address-width 64
-iform-enum-name TDPBF16PS_TMMf32_TMMu32_TMMu32
+iform-enum-name TDPBF16PS_TMMf32_TMM2bf16_TMM2bf16
 iform-enum-name-dispatch (zero based) 0
 iclass-max-iform-dispatch 1
 Nominal opcode position 3
@@ -14,8 +14,8 @@ Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   REG0             REG0=TMM2   EXPLICIT  RW        TV    0     0     0     32     SINGLE       TREG
-1   REG1             REG1=TMM0   EXPLICIT   R        TV    0     0     0     32       UINT       TREG
-2   REG2             REG2=TMM1   EXPLICIT   R        TV    0     0     0     32       UINT       TREG
+1   REG1             REG1=TMM0   EXPLICIT   R        TV    0     0     0     32   BFLOAT16       TREG
+2   REG2             REG2=TMM1   EXPLICIT   R        TV    0     0     0     32   BFLOAT16       TREG
 Memory Operands
   MemopBytes = 0
 ATTRIBUTES: NOTSX 

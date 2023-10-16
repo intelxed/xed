@@ -16,4 +16,4 @@
 #  
 #END_LEGAL
 
-  XED_ISA_SET_PBNDKB:       tse.7.1.ebx.1
+  XED_ISA_SET_PBNDKB:       pbndkb.7.1.ebx.1

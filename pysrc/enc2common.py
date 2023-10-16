@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ def die(s):
 
 PY3 = sys.version_info > (3,)
 def is_python3():
-    global PY3
     return PY3
 if is_python3() == False:
     die("This script requires python3\n")

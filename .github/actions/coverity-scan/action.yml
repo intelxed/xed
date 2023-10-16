@@ -1,0 +1,67 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+name: Coverity scan
+description: performs Coverity static code analysis
+inputs:
+  linux_auth_key:
+    description: 'Path to Linux authentication key'
+    required: true
+  windows_auth_key:
+    description: 'Path to Windows authentication key'
+    required: true
+  os:
+    description: 'perform Coverity scan on the specified os'
+    required: true
+  compiler:
+    description: 'perform Coverity scan on the specified compiler'
+    required: true
+  version:
+    description: 'compiler version'
+    required: true
+  server:
+    description: 'URL to the Coverity server'
+    required: true
+  additional_knobs:
+    description: 'add additional knobs for the python script (e.g. --external)'
+    required: false
+    default: ""
+outputs:
+  cov_sum:
+    description: 'summary of coverity scan'
+    value: ${{ steps.gen_coverity_sum.outputs.cov_sum }}
+runs:
+  using: "composite"
+  steps:
+    - name: Xed Coverity Scan (Linux)
+      run: |
+          cd xed
+          python3 .github/scripts/coverity.py --compiler=${{inputs.compiler}} --version=${{inputs.version}} --url=${{ inputs.server }} --auth-key=${{ inputs.linux_auth_key }} ${{ inputs.additional_knobs }}
+      if: ${{ matrix.os == 'Linux' }}
+      shell: bash
+    - name: Xed Coverity Scan (Windows)
+      run: |
+          cd xed
+          python3 .github/scripts/coverity.py --compiler=${{inputs.compiler}} --version=${{inputs.version}} --url=${{ inputs.server }} --auth-key=${{ inputs.windows_auth_key }} ${{ inputs.additional_knobs }}
+      if: ${{ matrix.os == 'Windows' }}
+      shell: bash
+    - name: Generate Coverity summary
+      id: gen_coverity_sum
+      run: |
+          cov_issue_sum_${{inputs.os}}=$( cat "xed/logs/coverity/${{inputs.os}}_cov_issue_sum.txt" )
+          echo "cov_sum=$cov_issue_sum_${{inputs.os}}" >> $GITHUB_OUTPUT
+      shell: bash

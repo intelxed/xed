@@ -1,4 +1,4 @@
-# This is a python3 extension to access XED functionality
+# This is a python3 extension to access Intel&reg; XED functionality
 
 # Obtain a shared library xed kit and put it in a directory called
 # xedkit Or link it to a directory here called xedkit

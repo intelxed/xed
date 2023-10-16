@@ -33,13 +33,13 @@
 XED is an acronym for X86 Encoder Decoder. The
 latter part is pronounced like the (British) English "z".
 
-Intel XED is a software library (and associated headers) written in C
-for encoding and decoding X86 (IA-32 instruction set and Intel&reg; 64
-instruction set) instructions. The decoder takes sequences of 1-15
-bytes along with machine mode information and produces a data
-structure describing the opcode and operands, and flags. The generic encoder
-takes a similar data structure and produces a sequence of 1 to 15
-bytes.
+Intel&reg; X86 Encoder Decoder (Intel&reg; XED) is a software library 
+(and associated headers) written in C for encoding and decoding X86 
+(IA-32 instruction set and Intel&reg; 64 instruction set) instructions. 
+The decoder takes sequences of 1-15 bytes along with machine mode information 
+and produces a data structure describing the opcode and operands, and flags. 
+The generic encoder takes a similar data structure and produces a sequence 
+of 1 to 15 bytes.
 
 There another encoder called "enc2" available that is much faster than
 the generic encoder mentioned above.  Rather than using a generic
@@ -56,11 +56,11 @@ a runtime setting. The enc2 encoder is available in builds done with
 the "--enc2" option. Due to the large amount of code generated, that
 build takes longer.
 
-Intel XED is multi-thread safe.
+Intel&reg; XED is multi-thread safe.
 
-Intel XED was designed to be very fast and extensible.
+Intel&reg; XED was designed to be very fast and extensible.
 
-Intel XED compiles with the following compilers:
+Intel&reg; XED compiles with the following compilers:
     <ul>   
     <li> GNU GCC
     <li> Microsoft Visual Studio
@@ -69,7 +69,7 @@ Intel XED compiles with the following compilers:
     </ul>
     
 
-Intel XED works with the following operating systems:
+Intel&reg; XED works with the following operating systems:
     <ul>
     <li> Linux
     <li> Microsoft Windows  (with and without cygwin)
@@ -77,32 +77,32 @@ Intel XED works with the following operating systems:
     <li> FreeBSD
     </ul>
 
-The Intel XED examples (@ref EXAMPLES) also include binary image readers for
+The Intel&reg; XED examples (@ref EXAMPLES) also include binary image readers for
 Windows PECOFF, ELF and Mac OS X* MACHO binary file formats for 32b and
-64b. These allow Intel XED to be used as a simple (not symbolic)
-disassembler. The Intel XED disassembler supports 3 output formats: Intel,
+64b. These allow Intel&reg; XED to be used as a simple (not symbolic)
+disassembler. The Intel&reg; XED disassembler supports 3 output formats: Intel,
 ATT SYSV, and a more detailed internal format describing all resources
 read and written.
 
 
 @section TOC Table of Contents
-    - @ref BUILD    "Building"      Building your program with Intel XED
+    - @ref BUILD    "Building"      Building your program with Intel&reg; XED
     - @ref EXTERN   "External"      External Requirements
     - @ref TERMS    "Terms"         Terminology
-    - @ref OVERVIEW "Overview"      Overview of the Intel XED approach
+    - @ref OVERVIEW "Overview"      Overview of the Intel&reg; XED approach
     - @ref API_REF  "API reference" Detailed descriptions of the API
     - @ref EXAMPLES "Examples"      Examples
     - @ref LEGAL    "Disclaimer and Legal Information"     
 
 
-@section BUILD Building your program using Intel XED.
+@section BUILD Building your program using Intel&reg; XED.
 
-This section describes the requirements for compiling with Intel XED and
+This section describes the requirements for compiling with Intel&reg; XED and
 linking the libxed.a library. It assumes you are building from a
-Intel XED kit, and not directly from the sources. (See the "install"
-option in the Intel XED build manual for information on making kits).
+Intel&reg; XED kit, and not directly from the sources. (See the "install"
+option in the Intel&reg; XED build manual for information on making kits).
 
-The structure of a Intel XED kit is as follows:
+The structure of a Intel&reg; XED kit is as follows:
 @code
 
                               |-bin------
@@ -114,13 +114,13 @@ The structure of a Intel XED kit is as follows:
 @endcode
 
 
-To use Intel XED your sources should include the top-most header file: xed-interface.h. 
+To use Intel&reg; XED your sources should include the top-most header file: xed-interface.h. 
 
 Your compilation statement must include:
 @code
 -Ixed-kit-name/include
 @endcode
-where "xed-kit-name" is the place you've unpacked the Intel XED kit.
+where "xed-kit-name" is the place you've unpacked the Intel&reg; XED kit.
 
 Your Linux or Mac OS X* link statement must reference the libxed library:
 @code
@@ -129,19 +129,19 @@ Your Linux or Mac OS X* link statement must reference the libxed library:
 
 (or link against xed.lib for Windows).
 
-Intel XED uses base types with the following names: xed_uint8_t,
+Intel&reg; XED uses base types with the following names: xed_uint8_t,
 xed_uint16_t, xed_uint32_t, xed_uint64_t xed_int8_t, xed_int16_t,
-xed_int32_t, and xed_int64_t. Intel XED also defines a "xed_uint_t" type
+xed_int32_t, and xed_int64_t. Intel&reg; XED also defines a "xed_uint_t" type
 that is shorthand for "unsigned int".
 
 
 Please see the section @ref INIT for more information about using
-Intel XED, and also the examples in @ref EXAMPLES.
+Intel&reg; XED, and also the examples in @ref EXAMPLES.
 
 @section EXTERN External Requirements
 
-Intel XED was designed to have minimal external requirements. Intel XED makes no
-system calls. Intel XED allocates no memory. (The examples are
+Intel&reg; XED was designed to have minimal external requirements. Intel&reg; XED makes no
+system calls. Intel&reg; XED allocates no memory. (The examples are
 different). The following external functions/symbols are required for
 linking a program with libxed, with one caveat: The functions fprint
 and abort and the data object stderr are optional. If users register
@@ -194,7 +194,7 @@ well-defined components:
          </ul>
 
          There are somewhat complex rules about which prefixes are
-         allowed, in what order, and in what modes. Intel XED handles that
+         allowed, in what order, and in what modes. Intel&reg; XED handles that
          complexity.
          
     <li> 1-3 opcode bytes. When more than one opcode byte is required
@@ -277,7 +277,7 @@ the order of the operands used for encoding.
 The #xed_iclass_enum_t class describes the instruction names. The
 names are (mostly) taken from the Intel manual, with exceptions only
 for certain ambiguities.  This is what is typically thought of as the
-instruction mnemonic. Note, Intel XED does not typically distinguish
+instruction mnemonic. Note, Intel&reg; XED does not typically distinguish
 instructions based on width unless the ISA manuals do so as well.  For
 example, #xed_iclass_enum_t's are not suffixed with "w", "l" or "q"
 typically. There are instructions whose #xed_iclass_enum_t ends in a
@@ -300,9 +300,9 @@ lists the far return as RETF. I call that RET_FAR to be consistent
 with the other far operations.
 
 To distinguish the SSE2 MOVSD instruction from the base string
-instruction MOVSD, Intel XED calls the SSE version MOVSD_XMM.
+instruction MOVSD, Intel&reg; XED calls the SSE version MOVSD_XMM.
 
-In March 2015, a change was made to certain Intel XED iclasses to simplify
+In March 2015, a change was made to certain Intel&reg; XED iclasses to simplify
 the implementation. The changes are as follows:
     <ul>
     <li> XED_ICLASS_JRCXZ was split in to 3 distinct iclasses:
@@ -327,7 +327,7 @@ the implementation. The changes are as follows:
 
 @subsection NOPs
 
-NOPs are very special. Intel XED allows for encoding NOPs of 1 to 9 bytes
+NOPs are very special. Intel&reg; XED allows for encoding NOPs of 1 to 9 bytes
 through the use of the XED_ICLASS_NOP (the one byte nop), and
 XED_ICLASS_NOP2 ... XED_ICLASS_NOP9. These use the recommended NOP
 sequences from the Intel&reg; 64 and IA-32 Architectures Software Developers Manual.
@@ -347,7 +347,7 @@ displacements.
 // @section X86-OPERANDS Operands
 
 
-Intel XED uses the operand order documented in the Intel Programmers'
+Intel&reg; XED uses the operand order documented in the Intel Programmers'
 Reference Manual.  In most cases, the first operand is a source and
 destination (read and written) and the second operand is just a source
 (read).
@@ -418,7 +418,7 @@ p). However because masking, merging and zeroing are properties of the
 instruction, and not just the operand, use of a different function is
 required.
 
-To handle this, Intel XED has a new interface function
+To handle this, Intel&reg; XED has a new interface function
 #xed_decoded_inst_operand_action() which takes a #xed_decoded_inst_t
 pointer and an operand index and indicates how the read/write behavior
 is modified in the presence of masking with merging or masking with
@@ -498,11 +498,11 @@ in the operand order.
 
 The Intel&reg; 64 and IA-32 Architectures Software Developers Manual indicates that "FADDP st2",
 reads st0, st2 writes st2 and pops the x87 stack. The result ends up
-in st1 after the instruction executes. That is not how Intel XED represents
-the operation.  Intel XED will say that "FADDP st2" reads st0 and st2 and
-writes st2. The output register that Intel XED provides is essentially "pre
+in st1 after the instruction executes. That is not how Intel&reg; XED represents
+the operation.  Intel&reg; XED will say that "FADDP st2" reads st0 and st2 and
+writes st2. The output register that Intel&reg; XED provides is essentially "pre
 pop". The pop occurs afterward, conceptually. The actual result ends
-up in the st1 register after the stack pop operation.  Intel XED also lists
+up in the st1 register after the stack pop operation.  Intel&reg; XED also lists
 the pseudo resources indicating that a stack pop has occurred. This
 behavior affects the output register of following instructions: FADDP,
 FMULP, FSUBRP, FSUBP, FDIVRP, FDIVP.
@@ -538,8 +538,8 @@ selectors for far pointers for certain jump or call instructions.
 There is also a second 1B immediate used only for the ENTER
 instruction.
 
-Intel XED will try to use the shortest allowed width for a displacement or
-immediate. You can control Intel XED's selection of allowed widths using a
+Intel&reg; XED will try to use the shortest allowed width for a displacement or
+immediate. You can control Intel&reg; XED's selection of allowed widths using a
 notion of "legal widths".  A "legal width" is a binary number where
 each bit represents a legal desired width. For example, when you have
 a valid base register in 32 or 64b addressing, and a displacement is
@@ -906,9 +906,9 @@ or required fields used during encoding.  They are accessible from a
 
 /*! @defgroup IFORM Iforms
 
-Intel XED classifies instructions as iclasses (ADD, SUB, MUL, etc.) of type
+Intel&reg; XED classifies instructions as iclasses (ADD, SUB, MUL, etc.) of type
 #xed_iclass_enum_t.  To get more information about instructions and
-their operands, Intel XED creates iforms of type #xed_iform_enum_t. The
+their operands, Intel&reg; XED creates iforms of type #xed_iform_enum_t. The
 iforms are supposed to aid in creating dispatch tables for
 instructions. You can often use a flat array indexed by iform. The
 maximum iform is #XED_IFORM_LAST.
@@ -924,12 +924,12 @@ single iform and need to be further refined by the
 
 The names of the iforms are derived from information about the
 #xed_iclass_enum_t and the names of their explicit operands (the name of 
-nonterminals in the Intel XED internal grammar) and the data types of those
+nonterminals in the Intel&reg; XED internal grammar) and the data types of those
 operands. Other information is sometimes included to disambiguate
 similar instructions. For example, there are several opcodes and
 operands for encoding certain a 1-byte register-register ADD
 instruction as well as the 1-byte register-immediate ADD, so to
-differentiate those, Intel XED includes the opcode bytes as suffixes for the
+differentiate those, Intel&reg; XED includes the opcode bytes as suffixes for the
 iform name:
 
 @code
@@ -957,7 +957,7 @@ a YMM register.  In many cases the codes were sufficient to describe
 what is needed; in other cases I had to improvise.
 
 All the iclasses and iforms are listed in the misc/idata.txt file in
-the Intel XED kit.  
+the Intel&reg; XED kit.  
 
 The iform enumeration #xed_iform_enum_t is dense and it has some
 built-in structure. All the iforms for a particular iclass are sequential.
@@ -977,7 +977,7 @@ extension from that table directly.  */
 
 /*! @defgroup ISASET Groupings of features for chips
 
-Every Intel XED iform belongs to one #xed_isa_set_enum_t. Each Intel XED chip of
+Every Intel&reg; XED iform belongs to one #xed_isa_set_enum_t. Each Intel&reg; XED chip of
 type #xed_chip_enum_t represents a collection of xed "isa-sets".  If
 you have a #xed_decoded_inst_t, you can get the isa set via
 the function #xed_decoded_inst_get_isa_set.
@@ -1040,29 +1040,29 @@ the function #xed_decoded_inst_get_isa_set.
  */
 
 
-/*! @defgroup ENUM Intel XED enumerations
+/*! @defgroup ENUM Intel&reg; XED enumerations
 
-Almost all the enumerations in Intel XED are automatically generated and
+Almost all the enumerations in Intel&reg; XED are automatically generated and
 have conversion functions to and from strings. There is also a
 function for finding out what the last element of the enumeration is.
 
  */
 
 
-/*! @defgroup INIT Intel XED initialization
+/*! @defgroup INIT Intel&reg; XED initialization
 
     This section describes the base class used for initializing the
-    encoder / decoder requests and the Intel XED library initialization
+    encoder / decoder requests and the Intel&reg; XED library initialization
     function.
 
-    To use Intel XED, you must
+    To use Intel&reg; XED, you must
     include "xed-interface.h" 
 
     @code
     #include "xed-interface.h"
     @endcode
 
-    If you are calling Intel XED from C++, you must wrap this include:
+    If you are calling Intel&reg; XED from C++, you must wrap this include:
 
     @code
     extern "C" {
@@ -1070,27 +1070,27 @@ function for finding out what the last element of the enumeration is.
     }
     @endcode
 
-    Once, before using Intel XED, you must call #xed_tables_init() to
-    initialize the tables Intel XED uses for encoding and decoding:
+    Once, before using Intel&reg; XED, you must call #xed_tables_init() to
+    initialize the tables Intel&reg; XED uses for encoding and decoding:
     @code
     xed_tables_init();
     @endcode
 
-    Once initialized, Intel XED is reentrant (multithread safe). All values
+    Once initialized, Intel&reg; XED is reentrant (multithread safe). All values
     used for encoding and decoding live on the caller's stack or in
     the passed-in parameters.
 
-    If your program is multithreaded, initialize Intel XED once (and only
+    If your program is multithreaded, initialize Intel&reg; XED once (and only
     once) using the above call before you attempt to decode or encode
-    from any thread. Each thread does NOT need to initialize Intel XED. The
-    idea is to initialize Intel XED before creating your threads. 
+    from any thread. Each thread does NOT need to initialize Intel&reg; XED. The
+    idea is to initialize Intel&reg; XED before creating your threads. 
 
    */
 
-/*! @defgroup CMDLINE Intel XED command interface
+/*! @defgroup CMDLINE Intel&reg; XED command interface
 
 The command line tool called xed or xed.exe is built when you build
-the examples (@ref EXAMPLES) that come with Intel XED. The xed-ex3 is just
+the examples (@ref EXAMPLES) that come with Intel&reg; XED. The xed-ex3 is just
 encode portion of the xed command line tool.
 
 
@@ -1263,7 +1263,7 @@ pieces.
 
  */
 
-/*! @defgroup EXAMPLES  Examples of using Intel XED
+/*! @defgroup EXAMPLES  Examples of using Intel&reg; XED
 
 The source code for the examples is in the "examples" subdirectory.
 
@@ -1286,14 +1286,14 @@ There are several examples:
 
 The examples are described in the following subsections:
     - @ref SMALLEXAMPLES  "Small Examples"  Small Examples
-    - @ref CMDLINE        "Command line"    Intel XED's command line testing tool
+    - @ref CMDLINE        "Command line"    Intel&reg; XED's command line testing tool
     - @ref ENCODE_EXAMPLE "Encode Example"  An example of using the encoder
 
 */
 
-/*! @defgroup SMALLEXAMPLES  Small Examples of using Intel XED
+/*! @defgroup SMALLEXAMPLES  Small Examples of using Intel&reg; XED
 
-Here is a minimal example of using Intel XED from the file examples/xed-min.c.
+Here is a minimal example of using Intel&reg; XED from the file examples/xed-min.c.
 
 \include xed-min.c
 
@@ -1305,7 +1305,7 @@ it from a kit:
 % gcc -o xed-min xed-min.o path-to-xed-kit/lib/libxed.a
 @endcode
 where path-to-xed-kit is where you have your include, examples and
-lib directories from an installed Intel XED kit.
+lib directories from an installed Intel&reg; XED kit.
 
 
 Here is a more detailed example (examples/xed-ex1.c) that walks the

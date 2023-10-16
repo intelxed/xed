@@ -21,13 +21,14 @@
 # time and I had to put the new instructions on some chip so I made
 # somethign up. 
 
-FUTURE:                    \
-   ALL_OF(GRANITE_RAPIDS)  \
-   ALL_OF(LUNAR_LAKE)      \
-   TDX                     \
-   APX_F                   \
-   APX_F_AMX               \
-   APX_F_KOPB              \
-   APX_F_KOPW              \
-   APX_F_KOPD              \
-   APX_F_KOPQ
+FUTURE:                       \
+   ALL_OF(GRANITE_RAPIDS)     \
+   ALL_OF(PANTHER_LAKE)       \
+   ALL_OF(CLEARWATER_FOREST)  \
+   APX_F                      \
+   APX_F_AMX                  \
+   APX_F_KOPB                 \
+   APX_F_KOPW                 \
+   APX_F_KOPD                 \
+   APX_F_KOPQ                 \
+   RAO_INT

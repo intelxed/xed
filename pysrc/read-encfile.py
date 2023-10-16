@@ -835,7 +835,7 @@ class rule_t(object):
         for a in self.actions:
             if a.is_nonterminal():
                 lines += a.emit_code('BIND')
-        
+
         lines.append( "    if (okay) return 1;")
         lines.append( "}")
         return lines
@@ -1412,6 +1412,7 @@ class nonterminal_t(object):
         if bind_or_emit == 'BIND' or bind_or_emit == 'NTLUF':
             fo.add_code_eol( "xed_uint_t conditions_satisfied=0" )
 
+        fo.add_code('(void) xes; // pacify the compiler')
         has_emit_action = False
         if bind_or_emit == 'EMIT':
             for r in self.rules:
@@ -1469,16 +1470,6 @@ class nonterminal_t(object):
         default_rule = self._default_rule()
         lines = default_rule.emit_rule(bind_or_emit,0, nt_name)
         fo.add_lines(lines)
-        fo.add_comment('pacify the compiler')
-        fo.add_code_eol('(void) okay')
-        fo.add_code_eol('(void) xes')
-
-        if bind_or_emit == 'EMIT':
-            fo.add_code_eol('(void) iform')
-
-        if bind_or_emit == 'BIND' or bind_or_emit == 'NTLUF':
-            fo.add_code_eol("(void) conditions_satisfied")
-
         fo.add_code('return 0;')
         return fo
 
