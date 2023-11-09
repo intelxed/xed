@@ -117,7 +117,7 @@ https://intelxed.github.io (or inside Intel http://mjc.intel.com/mjcharne/mbuild
 The XED build using mbuild is dependence driven It uses file and
 command signatures to detect the need to rebuild files.
 
-The mbuild script requires python version 2.7, python 3.4 or later.
+The mbuild script requires python version 3.6 or later.
 
 
 Assuming you checked out the tree as described above, you can build
