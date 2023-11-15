@@ -426,7 +426,7 @@ def parse_one_operand(w,
       elif enum_pattern.match(rhs): 
          # for storing XED_* enum values as RHS's of operand bindings
          optype = 'imm_const'
-      elif (not genutil.numeric(rhs)) and az_cap_pattern.search(rhs): 
+      elif (not genutil.is_numeric(rhs)) and az_cap_pattern.search(rhs):
          genutil.die("THIS SHOULD NOT HAPPEN: %s" % (rhs))
       elif letters_underscore_pattern.match(rhs):   
          rhs = list(rhs.replace('_',''))

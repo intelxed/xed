@@ -2231,7 +2231,7 @@ class encoder_configuration_t(object):
         # from the instruction decode patterns (MOD[mm] etc.). We
         # ignore the ones for constant bindings!
         for (field_name,value) in extra_bindings:
-            if genutil.numeric(value):
+            if genutil.is_numeric(value):
                 #msgerr("IGNORING %s %s" % (field_name, value))
                 pass # we ignore things that are just bits at this point.
             else:

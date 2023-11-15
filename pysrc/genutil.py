@@ -280,7 +280,7 @@ def make_binary(bits: str) -> str:
     # only get 3 bits out. Because this routine is not cognizant of
     # the field width.
 
-    if numeric(bits):
+    if is_numeric(bits):
         v = make_numeric(bits)
         d = decimal_to_binary(v) # a list of bits
         return ''.join(d)
@@ -292,7 +292,7 @@ def is_hex(s: str) -> bool:
         return True
     return False
 
-def numeric(s: str) -> bool:
+def is_numeric(s: str) -> bool:
     if make_numeric_decimal_pattern.match(s):
         return True
     if make_numeric_hex_pattern.match(s):

@@ -449,7 +449,7 @@ class pattern_t(object):
     def parse_opcode(self, op_str):
         # has side effects of settting self.missing_bits and self.incomplete
         val = None
-        if genutil.numeric(op_str):
+        if genutil.is_numeric(op_str):
             val = genutil.make_numeric(op_str)
 
             # special check for partial binary numbers as opcodes
