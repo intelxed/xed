@@ -358,12 +358,6 @@ def find_runs(blist: list[str]) -> list[Tuple[str, int]]:
       output.append( (last, run)  )
    return output
 
-def print_runs(runs):
-   s = []
-   for (val, count)  in runs:
-      s.append("(%s,%d)" % (val,count))
-   msge("Runs: %s" % ' '.join(s) )
-
 def no_underscores(s: str) -> str:
     v = s.replace('_','') # remove underscores
     return v
@@ -402,15 +396,6 @@ def process_continuations(lines: list[str]) -> list[str]:
    del lines
    return olines
 
-def skip_junk(lines):
-   while len(lines) != 0:
-      line = no_comments(lines[0])
-      line = line.strip()
-      if line == '':
-         lines.pop(0)
-      else:
-         break
-   return lines
 def field_check(obj: object, field: str) -> bool:
    "Return true if fld exists in obj"
 
