@@ -182,7 +182,7 @@ def print_resource_usage(i: str = ''):
     msge('RUSAGE: %s %s vmsize: %s' % (str(i), str(s), str(mem[0])))
 
 
-def flatten_sub(retlist, cur_list, rest):
+def flatten_sub(retlist: list[Any], cur_list: list[Any], rest: list[list[Any]]):
     if len(rest) == 0:
         retlist.append(cur_list)
         return
@@ -198,7 +198,7 @@ def flatten_sub(retlist, cur_list, rest):
         flatten_sub(retlist, cur_list, rest[1:])
 
 
-def flatten(list_with_sublists):
+def flatten(list_with_sublists: list[list[Any]]) -> list[Any]:
     """Take a list with some possible sublists, and return a list of
     lists of flat lists. All possible combinations."""
     retval = []
@@ -206,7 +206,7 @@ def flatten(list_with_sublists):
     return retval
 
 
-def flatten_dict_sub(retlist, cur_dict, main_dict_with_lists, rest_keys):
+def flatten_dict_sub(retlist: list[Any], cur_dict: dict[Any, Any], main_dict_with_lists: dict[Any, Any], rest_keys: list[Any]):
     if len(rest_keys) == 0:
         retlist.append(cur_dict)
         return
@@ -225,7 +225,7 @@ def flatten_dict_sub(retlist, cur_dict, main_dict_with_lists, rest_keys):
         flatten_dict_sub(retlist, cur_dict, main_dict_with_lists, rest_keys[1:])
 
 
-def flatten_dict(dict_with_lists):
+def flatten_dict(dict_with_lists: dict[Any, Any]) -> list[dict[Any, Any]]:
     """Take a dict with some possible sublists, and return a list of
     dicts where no rhs is a list. All possible combinations"""
     retval = []
@@ -234,7 +234,7 @@ def flatten_dict(dict_with_lists):
     return retval
 
 
-def cmkdir(path_to_dir):
+def cmkdir(path_to_dir: str):
     """Make a directory if it does not exist"""
     if not os.path.exists(path_to_dir):
         msgb("MKDIR", path_to_dir)
