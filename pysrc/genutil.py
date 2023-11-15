@@ -357,11 +357,9 @@ def make_numeric(s: str, restriction_pattern=None) -> int:
         out = int(just_bits, 2)
         # msgb("MAKE BINARY NUMERIC", "%s -> %d" % (s,out))
     elif make_numeric_old_decimal_pattern.match(s):
-        sys.stderr.write("0m should not occur. Rewrite files!")
-        sys.exit(1)
+        die("0m should not occur. Rewrite files!")
     elif make_numeric_old_binary_pattern.match(s):
-        sys.stderr.write("B' binary specifer should not occur. Rewrite files!")
-        sys.exit(1)
+        die("B' binary specifer should not occur. Rewrite files!")
     else:
         out = int(s)
     return out
