@@ -199,8 +199,15 @@ def flatten_sub(retlist: list[Any], cur_list: list[Any], rest: list[list[Any]]):
 
 
 def flatten(list_with_sublists: list[list[Any]]) -> list[Any]:
-    """Take a list with some possible sublists, and return a list of
-    lists of flat lists. All possible combinations."""
+    """
+    Take a list with some possible sublists, and return a list of
+    lists of flat lists. All possible combinations.
+
+    Example:
+        >>> l = [ [1, 2], [3, 4] ]
+        >>> flatten(l)
+        [ [1, 3], [1, 4], [2, 3], [2, 4] ]
+    """
     retval = []
     flatten_sub(retval, [], list_with_sublists)
     return retval
@@ -226,8 +233,15 @@ def flatten_dict_sub(retlist: list[Any], cur_dict: dict[Any, Any], main_dict_wit
 
 
 def flatten_dict(dict_with_lists: dict[Any, Any]) -> list[dict[Any, Any]]:
-    """Take a dict with some possible sublists, and return a list of
-    dicts where no rhs is a list. All possible combinations"""
+    """
+    Take a dict with some possible sublists, and return a list of
+    dicts where no rhs is a list. All possible combinations.
+
+    Example:
+        >>> d = { 'a': 1, 'b': [1, 2] }
+        >>> flatten_dict(d)
+        [{ 'a': 1, 'b': 1 }, { 'a': 1, 'b': 2 }]
+    """
     retval = []
     kys = list(dict_with_lists.keys())
     flatten_dict_sub(retval, {}, dict_with_lists, kys)
