@@ -39,7 +39,7 @@ if not on_windows:
     import resource
 
 def msgerr(s):
-    "Write to stderr"
+    """Write to stderr"""
     sys.stderr.write("%s\n" % s)
 
 msgout = sys.stdout
@@ -48,16 +48,16 @@ def set_msgs(fp):
     msgout = fp
 
 def msge(s):
-    "Write to msgout"
+    """Write to msgout"""
     msgout.write("%s\n" % s)
 def msg(s):
-    "Write to msgout"
+    """Write to msgout"""
     msgout.write("%s\n" % s)
 def msgn(s):
-    "Write to msgout"
+    """Write to msgout"""
     msgout.write(s)
 def msgb(s,t=''):
-    "Write to msgout"
+    """Write to msgout"""
     msgout.write('[%s] %s\n' % (s,t))
 
 def cond_die(v, cmd, msg):
@@ -72,13 +72,13 @@ def activate_debugger():
     global _debugging
     _debugging = True
     pdb.set_trace()
-    
+
 def die(m):
     global _debugging
     msgerr('[ERROR] ' + m)
     if _debugging:
         pdb.set_trace()
-    else:        
+    else:
         traceback.print_stack()
     sys.exit(1)
 def warn(m):
@@ -89,11 +89,11 @@ def check_python_version(argmaj, argmin):
     tup = sys.version_info
     major = tup[0]
     minor = tup[1]
-    if ( (major > argmaj ) or 
+    if ( (major > argmaj ) or
          (major == argmaj and minor >= argmin) ):
-        return 
+        return
     die('Need Python version %d.%d or later.' % (argmaj, argmin))
-    
+
 def make_readable_by_all_writeable_by_owner(fn, errorname=''):
     try:
         rwx = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
@@ -146,7 +146,7 @@ def get_memory_usage():
         return (dct['VmSize'].strip(), dct['VmRSS'].strip(),  dct['VmData'].strip())
     except:
         return (0,0,0)
-   
+
 def print_resource_usage(i=''):
     # 2014-05-19: disabled for now.
     return
@@ -155,14 +155,14 @@ def print_resource_usage(i=''):
     s = format_resource_usage(x)
     mem = get_memory_usage()
     msge('RUSAGE: %s %s vmsize: %s' % (str(i), str(s), str(mem[0])))
-    
+
 
 
 def flatten_sub(retlist,cur_list,rest):
     if len(rest)==0:
         retlist.append(cur_list)
         return
-        
+
     r0 = rest[0]
     if type(r0) == list:
         for v in r0:
@@ -172,7 +172,7 @@ def flatten_sub(retlist,cur_list,rest):
     else:
         cur_list.append(r0)
         flatten_sub(retlist,cur_list,rest[1:])
-    
+
 
 def flatten(list_with_sublists):
     """Take a list with some possible sublists, and return a list of
@@ -194,12 +194,12 @@ def flatten_dict_sub(retlist,cur_dict,main_dict_with_lists,rest_keys):
         for v in rhs:
             tdict = copy.copy(cur_dict)
             # change the list-valued entry to a scalar-valued entry
-            tdict[r0]=v 
+            tdict[r0]=v
             flatten_dict_sub(retlist,tdict,main_dict_with_lists,rest_keys[1:])
     else:
         cur_dict[r0] = rhs
         flatten_dict_sub(retlist,cur_dict,main_dict_with_lists,rest_keys[1:])
-    
+
 
 def flatten_dict(dict_with_lists):
     """Take a dict with some possible sublists, and return a list of
@@ -218,7 +218,7 @@ def cmkdir(path_to_dir):
 
 
 def convert_binary_to_hex(b):
-   "convert a bit string to hex"
+   """convert a bit string to hex"""
    decimal = 0
    radix = 1
    blist = list(b)
@@ -229,9 +229,9 @@ def convert_binary_to_hex(b):
       radix = radix + radix
    hexnum = hex(decimal)
    return  hexnum
-   
+
 def decimal_to_binary(i):
-   "Take a decimal integer, and return a list of bits MSB to LSB"
+   """Take a decimal integer, and return a list of bits MSB to LSB"""
    if i == 0:
       return [ '0' ]
    rev_out = []
@@ -245,7 +245,7 @@ def decimal_to_binary(i):
    return rev_out
 
 def hex_to_binary(x):
-   "Take a hex number, no 0x prefix required, and return a list of bits MSB to LSB"
+   """Take a hex number, no 0x prefix required, and return a list of bits MSB to LSB"""
    i = int(x,16)
    return decimal_to_binary(i)
 
@@ -260,13 +260,13 @@ def round_up_power_of_two(x):
 
 make_numeric_decimal_pattern = re.compile(r'^[-]?[0-9]+$')
 make_numeric_hex_pattern = re.compile(r'^0[xX][0-9A-Fa-f]+$')
-make_numeric_binary_pattern = re.compile(r'^0b[01_]+$') 
+make_numeric_binary_pattern = re.compile(r'^0b[01_]+$')
 
 make_numeric_old_binary_pattern = re.compile(r"B['](?P<bits>[01_]+)") #   leading "B'"
 make_numeric_old_decimal_pattern = re.compile(r'^0m[0-9]+$') # only base 10 numbers
 
 def make_binary(bits):
-    "return a string of 1s and 0s. Could return letter strings as well"
+    """return a string of 1s and 0s. Could return letter strings as well"""
     # binary numbers must preserve the number of bits. If we are 
     # doing a conversion, then we just go with the number of bits we get.
 
@@ -310,12 +310,12 @@ def make_numeric(s, restriction_pattern=None):
    global make_numeric_hex_pattern
    global make_numeric_binary_pattern
    global make_numeric_old_binary_pattern
-   
+
    if type(s) == int:
        die("Converting integer to integer")
    elif make_numeric_hex_pattern.match(s):
        out = int(s,16)
-   elif make_numeric_binary_pattern.match(s):  
+   elif make_numeric_binary_pattern.match(s):
        # I thought that I could leave the '0b' prefix. Python >= 2.6
        # handles '0b' just fine but Python 2.5 cannot.  As of
        # 2012-06-20 the pin team currently still relies upon python
@@ -327,7 +327,7 @@ def make_numeric(s, restriction_pattern=None):
    elif make_numeric_old_decimal_pattern.match(s):
        sys.stderr.write("0m should not occur. Rewrite files!")
        sys.exit(1)
-   elif make_numeric_old_binary_pattern.match(s): 
+   elif make_numeric_old_binary_pattern.match(s):
        sys.stderr.write("B' binary specifer should not occur. Rewrite files!")
        sys.exit(1)
    else:
@@ -424,7 +424,7 @@ def field_check(obj,fld):
 def generate_lookup_function_basis(gi,state_space):
    """Return a dictionary whose values are dictionaries of all the values
       that the operand decider might have"""
-   argnames = {}  # tokens -> list of all values for that token 
+   argnames = {}  # tokens -> list of all values for that token
    for ii in gi.parser_output.instructions:
       for bt in ii.ipattern.bits:
          if bt.is_operand_decider():
@@ -457,9 +457,9 @@ def uniqueify(values):
 
 
 def is_stringish(x):
-   return isinstance(x,bytes) or isinstance(x,str) 
+   return isinstance(x,bytes) or isinstance(x,str)
 def make_list_of_str(lst):
    return [ str(x) for x in lst]
 def open_readlines(fn):
    return open(fn,'r').readlines()
-           
+
