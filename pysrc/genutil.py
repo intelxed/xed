@@ -26,6 +26,7 @@ import copy
 import re
 import stat
 import platform
+from typing import Tuple, Any
 
 psystem = platform.system()
 if (psystem == 'Microsoft' or
@@ -38,27 +39,27 @@ else:
 if not on_windows:
     import resource
 
-def msgerr(s):
+def msgerr(msg: str):
     """Write to stderr"""
-    sys.stderr.write("%s\n" % s)
+    sys.stderr.write("%s\n" % msg)
 
 msgout = sys.stdout
 def set_msgs(fp):
     global msgout
     msgout = fp
 
-def msge(s):
+def msge(msg: str):
     """Write to msgout"""
-    msgout.write("%s\n" % s)
-def msg(s):
+    msgout.write("%s\n" % msg)
+def msg(msg: str):
     """Write to msgout"""
-    msgout.write("%s\n" % s)
-def msgn(s):
+    msgout.write("%s\n" % msg)
+def msgn(msg: str):
     """Write to msgout"""
-    msgout.write(s)
-def msgb(s,t=''):
+    msgout.write(msg)
+def msgb(prefix: str, text: str =''):
     """Write to msgout"""
-    msgout.write('[%s] %s\n' % (s,t))
+    msgout.write('[%s] %s\n' % (prefix, text))
 
 def cond_die(v, cmd, msg):
     if v != 0:
@@ -73,19 +74,19 @@ def activate_debugger():
     _debugging = True
     pdb.set_trace()
 
-def die(m):
+def die(msg: str):
     global _debugging
-    msgerr('[ERROR] ' + m)
+    msgerr('[ERROR] ' + msg)
     if _debugging:
         pdb.set_trace()
     else:
         traceback.print_stack()
     sys.exit(1)
-def warn(m):
-    msgerr('[WARNING] ' + m)
+def warn(msg: str):
+    msgerr('[WARNING] ' + msg)
 
 
-def check_python_version(argmaj, argmin):
+def check_python_version(argmaj: int, argmin: int):
     tup = sys.version_info
     major = tup[0]
     minor = tup[1]
@@ -94,14 +95,14 @@ def check_python_version(argmaj, argmin):
         return
     die('Need Python version %d.%d or later.' % (argmaj, argmin))
 
-def make_readable_by_all_writeable_by_owner(fn, errorname=''):
+def make_readable_by_all_writeable_by_owner(file_name: str, errorname: str = ''):
     try:
         rwx = stat.S_IRUSR|stat.S_IWUSR|stat.S_IRGRP|stat.S_IROTH
-        os.chmod(fn, rwx)
+        os.chmod(file_name, rwx)
     except IOError:
-        die('Could not chmod: ' + errorname + ' file: [' + fn  + ']' )
+        die('Could not chmod: ' + errorname + ' file: [' + file_name  + ']' )
 
-def open_for_writing(mode):
+def open_for_writing(mode: str) -> bool:
   # The default mode is 'r'.
   mode = mode or 'r'
   for c in mode:
@@ -109,13 +110,13 @@ def open_for_writing(mode):
       return True
   return False
 
-def base_open_file(fn, rw, errorname=''):
+def base_open_file(file_name: str, rw: str, errorname: str =''):
     try:
-        fp = open(fn,rw)
+        fp = open(file_name, rw)
     except IOError:
-        die('Could not open: ' + errorname + ' file: [' + fn  + ']' )
+        die('Could not open: ' + errorname + ' file: [' + file_name  + ']' )
     if open_for_writing(rw):
-      make_readable_by_all_writeable_by_owner(fn,errorname)
+      make_readable_by_all_writeable_by_owner(file_name, errorname)
     return fp
 
 def resource_usage():
@@ -125,7 +126,7 @@ def resource_usage():
         x = resource.getrusage(resource.RUSAGE_SELF)
     return x
 
-def format_resource_usage(x):
+def format_resource_usage(x) -> str:
     s = ''
     s += 'user: ' + str(x[0])
     s += ' sys: ' + str(x[1])
@@ -136,7 +137,7 @@ def format_resource_usage(x):
     #s += ' maxstk: ' + str(x[5])
     return s
 
-def get_memory_usage():
+def get_memory_usage() -> Tuple[int, int, int]:
     """Return a tuple of (vmsize, vmrss, vmdata) on linux systems with
     /proc filesystems."""
     try:
@@ -147,7 +148,7 @@ def get_memory_usage():
     except:
         return (0,0,0)
 
-def print_resource_usage(i=''):
+def print_resource_usage(i: str = ''):
     # 2014-05-19: disabled for now.
     return
 
@@ -217,11 +218,11 @@ def cmkdir(path_to_dir):
 
 
 
-def convert_binary_to_hex(b):
+def convert_binary_to_hex(bit_string: str) -> str:
    """convert a bit string to hex"""
    decimal = 0
    radix = 1
-   blist = list(b)
+   blist = list(bit_string)
    blist.reverse()
    for bit in blist:
       if bit == '1':
@@ -230,7 +231,7 @@ def convert_binary_to_hex(b):
    hexnum = hex(decimal)
    return  hexnum
 
-def decimal_to_binary(i):
+def decimal_to_binary(i: int) -> list[str]:
    """Take a decimal integer, and return a list of bits MSB to LSB"""
    if i == 0:
       return [ '0' ]
@@ -244,15 +245,15 @@ def decimal_to_binary(i):
    rev_out.reverse()
    return rev_out
 
-def hex_to_binary(x):
+def hex_to_binary(x: str) -> list[str]:
    """Take a hex number, no 0x prefix required, and return a list of bits MSB to LSB"""
    i = int(x,16)
    return decimal_to_binary(i)
 
-def stringify_list(lst):
+def stringify_list(lst: list[Any]) -> str:
     return ' '.join([ str(x) for x in lst])
 
-def round_up_power_of_two(x):
+def round_up_power_of_two(x: int) -> int:
    lg = math.ceil(math.log(x,2))
    return 1 << int(lg)
 
@@ -265,7 +266,7 @@ make_numeric_binary_pattern = re.compile(r'^0b[01_]+$')
 make_numeric_old_binary_pattern = re.compile(r"B['](?P<bits>[01_]+)") #   leading "B'"
 make_numeric_old_decimal_pattern = re.compile(r'^0m[0-9]+$') # only base 10 numbers
 
-def make_binary(bits):
+def make_binary(bits: str) -> str:
     """return a string of 1s and 0s. Could return letter strings as well"""
     # binary numbers must preserve the number of bits. If we are 
     # doing a conversion, then we just go with the number of bits we get.
@@ -286,12 +287,12 @@ def make_binary(bits):
     bits = re.sub('_','',bits)
     return bits
 
-def is_hex(s):
+def is_hex(s: str) -> bool:
     if make_numeric_hex_pattern.match(s):
         return True
     return False
 
-def numeric(s):
+def numeric(s: str) -> bool:
     if make_numeric_decimal_pattern.match(s):
         return True
     if make_numeric_hex_pattern.match(s):
@@ -300,12 +301,12 @@ def numeric(s):
         return True
     return False
 
-def is_binary(s):
+def is_binary(s: str) -> bool:
     if make_numeric_binary_pattern.match(s):
         return True
     return False
 
-def make_numeric(s, restriction_pattern=None):
+def make_numeric(s: str, restriction_pattern=None) -> int:
    global make_numeric_old_decimal_pattern
    global make_numeric_hex_pattern
    global make_numeric_binary_pattern
@@ -337,7 +338,7 @@ def make_numeric(s, restriction_pattern=None):
 
 #########################
 
-def find_runs(blist):
+def find_runs(blist: list[str]) -> list[Tuple[str, int]]:
    """Accept a bit list. Return a list tuples (letter,count)
    describing bit runs, the same bit repeated n times"""
    last = None
@@ -363,24 +364,24 @@ def print_runs(runs):
       s.append("(%s,%d)" % (val,count))
    msge("Runs: %s" % ' '.join(s) )
 
-def no_underscores(s):
+def no_underscores(s: str) -> str:
     v = s.replace('_','') # remove underscores
     return v
 
 comment_pattern = re.compile(r'[#].*$')
-def no_comments(line):
+def no_comments(line: str) -> str:
    global comment_pattern
    oline = comment_pattern.sub('',line)
    oline = oline.strip()
    return oline
 
-def blank_line(line):
+def blank_line(line: str) -> bool:
    if line == '':
       return False
    return True
 
 continuation_pattern = re.compile(r'\\$')
-def process_continuations(lines):
+def process_continuations(lines: list[str]) -> list[str]:
    global continuation_pattern
    olines=[]
    while len(lines) != 0:
@@ -410,12 +411,12 @@ def skip_junk(lines):
       else:
          break
    return lines
-def field_check(obj,fld):
+def field_check(obj: object, field: str) -> bool:
    "Return true if fld exists in obj"
 
    try:
       # ignore returned value
-      s = getattr(obj,fld)
+      s = getattr(obj, field)
       return True
    except AttributeError:
       retval = False
@@ -447,7 +448,7 @@ def generate_lookup_function_basis(gi,state_space):
             die("Bad patten bit (not an operand decider) in " + ii.dump_str())
    return argnames
 
-def uniqueify(values):
+def uniqueify(values) -> list[Any]:
    s = {}
    for a in values:
       s[a] = True
@@ -456,10 +457,10 @@ def uniqueify(values):
    return k
 
 
-def is_stringish(x):
+def is_stringish(x) -> bool:
    return isinstance(x,bytes) or isinstance(x,str)
-def make_list_of_str(lst):
+def make_list_of_str(lst: list[Any]) -> list[str]:
    return [ str(x) for x in lst]
-def open_readlines(fn):
-   return open(fn,'r').readlines()
+def open_readlines(file_name: str) -> list[str]:
+   return open(file_name,'r').readlines()
 
