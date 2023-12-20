@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -130,6 +130,8 @@ class instructions_group_t(object):
         groups = []
         #1. generate the groups
         for iclass,iforms in list(iarray.items()):
+            if not iforms:
+                continue # iclass with no iforms (probably u-deleted)
             iforms.sort(key=key_iform_by_bind_ptrn)
             self._put_iclass_in_group(groups,iclass,iforms)
         
@@ -316,14 +318,23 @@ class instruction_codegen_t(object):
         
     def _emit_legacy_map(self, fo, iform):
         # obj_str is the function parameters for the emit function
+        indent = 4*' '
         def _xemit(bits, v):
-            fo.add_code_eol('xed_encoder_request_emit_bytes({},{},0x{:02x})'.format(
+            fo.add_code_eol(indent+'xed_encoder_request_emit_bytes({},{},0x{:02x})'.format(
                 encutil.enc_strings['obj_str'], bits, v))
 
         if iform.legacy_map.legacy_escape != 'N/A':
             bits = 8
-            _xemit(bits, iform.legacy_map.legacy_escape_int)
-            if iform.legacy_map.legacy_opcode != 'N/A':
+            escape_byte = iform.legacy_map.legacy_escape_int
+            if iform.legacy_map.legacy_opcode == 'N/A': # LEGACY_MAP1
+                # No need (and illegal) to emit escape byte if REX2 was emitted
+                obj_name = encutil.enc_strings['obj_str']
+                rex2_getter = "{}_get_rex2({})".format(encutil.enc_strings['op_accessor'], 
+                                                          obj_name)
+                fo.add_code(f'{indent}if (!{rex2_getter})')
+                fo.add_code_eol(f'{indent*2}xed_encoder_request_emit_bytes({obj_name},{bits},0x{escape_byte:02x})')
+            else:
+                _xemit(bits, escape_byte)
                 _xemit(bits, iform.legacy_map.legacy_opcode_int)
 
                 

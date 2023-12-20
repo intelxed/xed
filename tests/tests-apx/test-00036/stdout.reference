@@ -1,5 +1,5 @@
 Attempting to decode: d5 00 a1 01 23 45 67 89 01 23 45 
-iclass JMPABS	category UNCOND_BR	ISA-extension APX_F	ISA-set APX_F
+iclass JMPABS	category UNCOND_BR	ISA-extension APXLEGACY	ISA-set APX_F
 instruction-length 11
 operand-width 32
 effective-operand-width 32
@@ -14,6 +14,7 @@ Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0  ABSBR BRANCH_DISPLACEMENT_BYTES=8 0x4523018967452301   EXPLICIT   R       U64   64     8     1     64       UINT    INVALID
+1   REG0              REG0=RIP SUPPRESSED   W         Q   64     8     1     64        INT         IP
 Memory Operands
   MemopBytes = 0
 ATTRIBUTES: 

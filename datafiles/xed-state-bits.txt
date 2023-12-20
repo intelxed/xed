@@ -71,7 +71,7 @@ norexb_prefix          REXB=0
 norexb4_prefix         REXB4=0
 
 rex2_refining_prefix    REX2=1
-norex2_prefix           REX2=0
+norex2_prefix           REX2=0  NOREX2=1
 
 
 ############################################################3333

@@ -45,7 +45,7 @@ SEQUENCE EVEX_ENC_BIND
          EVEX_REXX_ENC_BIND
          EVEX_REXB_ENC_BIND
          EVEX_REXR4_ENC_BIND
-         EVEX_MAP_ENC_BIND
+         EVEX_REXB4_MAP_ENC_BIND
          EVEX_REXW_VVVV_ENC_BIND
          EVEX_U_ENC_BIND
          EVEX_PP_ENC_BIND
@@ -58,7 +58,7 @@ SEQUENCE EVEX_ENC_EMIT
          EVEX_REXX_ENC_EMIT
          EVEX_REXB_ENC_EMIT
          EVEX_REXR4_ENC_EMIT
-         EVEX_MAP_ENC_EMIT
+         EVEX_REXB4_MAP_ENC_EMIT
          EVEX_REXW_VVVV_ENC_EMIT
          EVEX_U_ENC_EMIT
          EVEX_PP_ENC_EMIT
@@ -90,18 +90,27 @@ mode64 REXR4=0 -> 0b1
 mode32 REXR4=1 -> error
 mode32 REXR4=0 -> 0b1
 
-EVEX_MAP_ENC()::
-MAP=0  -> 0b0000
-MAP=1  -> 0b0001
-MAP=2  -> 0b0010
-MAP=3  -> 0b0011
+
+EVEX_REXB4_MAP_ENC()::
+mode32 REXB4=1 -> error
+
+MAP=0 mode64 REXB4[e] -> e 0b000
+MAP=0 mode32 REXB4=0  -> 0b0000
+MAP=1 mode64 REXB4[e] -> e 0b001
+MAP=1 mode32 REXB4=0  -> 0b0001
+MAP=2 mode64 REXB4[e] -> e 0b010
+MAP=2 mode32 REXB4=0  -> 0b0010
+MAP=3 mode64 REXB4[e] -> e 0b011
+MAP=3 mode32 REXB4=0  -> 0b0011
+
 
 EVEX_REXW_VVVV_ENC()::
 true REXW[w] VEXDEST3[u] VEXDEST210[ddd] -> w u_ddd
 
-EVEX_U_ENC()::
-false     ->  UBIT=1 0b1
-otherwise ->  UBIT=1 0b1
+EVEX_U_ENC():: 
+mode64 MOD!=3 REXX4=1 -> 0b0  # REXX4 for SIB memory operands w/ EGPR
+mode32 MOD!=3 REXX4=1 -> error
+otherwise             -> 0b1
 
 EVEX_PP_ENC()::
 VNP -> 0b00

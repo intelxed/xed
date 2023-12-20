@@ -25,7 +25,7 @@ env:
   BASH_ENV: "/tmp_proj/sde_admin/.bashrc_xed"
 
   # XED minimal python version requirement
-  MIN_PY_VER: "3.7.16"
+  MIN_PY_VER: "3.8.17"
 ###########################################################
 
 

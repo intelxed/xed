@@ -29,7 +29,7 @@ SEQUENCE EVEX_ENC_BIND
          EVEX_REXX_ENC_BIND
          EVEX_REXB_ENC_BIND
          EVEX_REXR4_ENC_BIND
-         EVEX_MAP_ENC_BIND
+         EVEX_REXB4_MAP_ENC_BIND
          EVEX_REXW_VVVV_ENC_BIND
          EVEX_U_ENC_BIND
          EVEX_PP_ENC_BIND
@@ -42,7 +42,7 @@ SEQUENCE EVEX_ENC_EMIT
          EVEX_REXX_ENC_EMIT
          EVEX_REXB_ENC_EMIT
          EVEX_REXR4_ENC_EMIT
-         EVEX_MAP_ENC_EMIT
+         EVEX_REXB4_MAP_ENC_EMIT
          EVEX_REXW_VVVV_ENC_EMIT
          EVEX_U_ENC_EMIT
          EVEX_PP_ENC_EMIT
@@ -69,9 +69,12 @@ APX_CC_EVEX_BYTE3_ENC()::
 true ND[d] SCC[ssss] -> 0b000 d ssss
 
 
-EVEX_MAP_ENC()::
-### Extend an existing NT ###
-MAP=4  -> 0b0100
+EVEX_REXB4_MAP_ENC()::
+### Augment EVEX_REXB4_MAP_ENC() in avx512f ###
+MAP=4 mode64 REXB4[e] -> e 0b100
+MAP=4 mode32 REXB4=0  -> 0b0100
+MAP=7 mode64 REXB4[e] -> e 0b111
+MAP=7 mode32 REXB4=0  -> 0b0111
 
 
 ################ Pattern NTs ################ 

@@ -54,10 +54,10 @@ def ex_compile_and_link(env, dag, src, objs):
 def mkenv():
     """External entry point: create the environment"""
     if sys.version_info[0] == 3:
-        if sys.version_info[1] < 7:
-            _fatal("Need python version 3.7 or later.")
+        if sys.version_info[1] < 8:
+            _fatal("Need python version 3.8 or later.")
     else:
-        _fatal("Need python version 3.7 or later.")
+        _fatal("Need python version 3.8 or later.")
     # create an environment, parse args
     env = mbuild.env_t()
     standard_defaults = dict(    doxygen_install='',

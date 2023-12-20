@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -97,6 +97,30 @@ nt GPR16_SB w
 nt GPR16_SR w
 nt GPR8_SB b
 nt GPR8_SR b
+nt VGPR16_B w
+nt VGPR16_R w
+nt VGPR32_B d
+nt VGPR32_R d
+nt VGPR64_B q
+nt VGPR64_R q
+nt VGPR8_B b
+nt VGPR8_R b
+nt VGPRv_B v
+nt VGPRv_R v
+nt VGPRy_B y
+nt VGPRy_R y
+nt VGPRz_B z
+nt VGPRz_R z
+nt VGPRv_SB v
+nt VGPRv_SR v
+nt VGPR64_SB q
+nt VGPR64_SR q
+nt VGPR32_SB d
+nt VGPR32_SR d
+nt VGPR16_SB w
+nt VGPR16_SR w
+nt VGPR8_SB b
+nt VGPR8_SR b
 nt OeAX v
 nt OeBP v
 nt OeBX v

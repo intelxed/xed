@@ -585,10 +585,10 @@ def setup_hooks(env):
 def mkenv():
     """External entry point: create the environment"""
     if sys.version_info[0] == 3:
-        if sys.version_info[1] < 7:
-            xbc.cdie("Need python version 3.7 or later.")
+        if sys.version_info[1] < 8:
+            xbc.cdie("Need python version 3.8 or later.")
     else:
-        xbc.cdie("Need python version 3.7 or later.")
+        xbc.cdie("Need python version 3.8 or later.")
 
     # create an environment, parse args
     env = mbuild.env_t()
@@ -1042,7 +1042,7 @@ def init(env):
                 xbc.cdie("Cannot build with cygwin python. " +
                            "Please install win32 python")
             if mbuild.is_python3():
-                vers = ['39', '38', '37', '36', '35']
+                vers = ['311', '310', '39', '38', '37', '36', '35']
                 python_commands = [ 'c:/python{}/python.exe'.format(x) for x in vers ]
             else:
                 vers = ['27','26','25']

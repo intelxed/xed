@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1143,7 +1143,7 @@ CATEGORY  : AVX2
 EXTENSION : AVX2
 EXCEPTIONS: avx-type-7
 PATTERN : VV1 0xD7  VL256 V66 V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:u32   REG1=YMM_B():r:qq:i8
+OPERANDS  : REG0=VGPR32_R():w:d:u32   REG1=YMM_B():r:qq:i8
 }
 
 

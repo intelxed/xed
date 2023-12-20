@@ -543,25 +543,25 @@ ATTRIBUTES : simd_scalar MXCSR
 COMMENT   : SNB/IVB/HSW require VEX.L=128. Later processors are LIG
 
 PATTERN : VV1 0x2D   VF2 V0F  NOVSR not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:q:f64
 
 PATTERN : VV1 0x2D   VF2 V0F  NOVSR not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
 
 
 PATTERN : VV1 0x2D   VF2 V0F  NOVSR mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:q:f64
 
 PATTERN : VV1 0x2D   VF2 V0F  NOVSR mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
 
 
 
 PATTERN : VV1 0x2D   VF2 V0F  NOVSR mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR64_R():w:q:i64 MEM0:r:q:f64
+OPERANDS  : REG0=VGPR64_R():w:q:i64 MEM0:r:q:f64
 
 PATTERN : VV1 0x2D   VF2 V0F  NOVSR mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR64_R():w:q:i64 REG1=XMM_B():r:q:f64
+OPERANDS  : REG0=VGPR64_R():w:q:i64 REG1=XMM_B():r:q:f64
 }
 
 {
@@ -575,26 +575,26 @@ COMMENT   : SNB/IVB/HSW require VEX.L=128. Later processors are LIG
 
 
 PATTERN : VV1 0x2C   VF2 V0F  NOVSR not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:q:f64
 
 PATTERN : VV1 0x2C   VF2 V0F  NOVSR not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
 
 
 
 PATTERN : VV1 0x2C   VF2 V0F  NOVSR mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:q:f64
 
 PATTERN : VV1 0x2C   VF2 V0F  NOVSR mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:q:f64
 
 
 
 PATTERN : VV1 0x2C   VF2 V0F  NOVSR mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR64_R():w:q:i64 MEM0:r:q:f64
+OPERANDS  : REG0=VGPR64_R():w:q:i64 MEM0:r:q:f64
 
 PATTERN : VV1 0x2C   VF2 V0F  NOVSR mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR64_R():w:q:i64 REG1=XMM_B():r:q:f64
+OPERANDS  : REG0=VGPR64_R():w:q:i64 REG1=XMM_B():r:q:f64
 }
 
 
@@ -610,25 +610,25 @@ ATTRIBUTES : simd_scalar MXCSR
 COMMENT   : SNB/IVB/HSW require VEX.L=128. Later processors are LIG
 
 PATTERN : VV1 0x2D   VF3 V0F  NOVSR not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:d:f32
 
 PATTERN : VV1 0x2D   VF3 V0F  NOVSR not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
 
 
 
 PATTERN : VV1 0x2D   VF3 V0F  NOVSR mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:d:f32
 
 PATTERN : VV1 0x2D   VF3 V0F  NOVSR mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
 
 
 PATTERN : VV1 0x2D   VF3 V0F  NOVSR mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR64_R():w:q:i64 MEM0:r:d:f32
+OPERANDS  : REG0=VGPR64_R():w:q:i64 MEM0:r:d:f32
 
 PATTERN : VV1 0x2D   VF3 V0F  NOVSR mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR64_R():w:q:i64 REG1=XMM_B():r:d:f32
+OPERANDS  : REG0=VGPR64_R():w:q:i64 REG1=XMM_B():r:d:f32
 }
 
 {
@@ -641,27 +641,27 @@ ATTRIBUTES : simd_scalar MXCSR
 COMMENT   : SNB/IVB/HSW require VEX.L=128. Later processors are LIG
 
 PATTERN : VV1 0x2C   VF3 V0F  NOVSR not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:d:f32
 
 PATTERN : VV1 0x2C   VF3 V0F  NOVSR not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
 
 
 
 PATTERN : VV1 0x2C   VF3 V0F  NOVSR mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR32_R():w:d:i32 MEM0:r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 MEM0:r:d:f32
 
 PATTERN : VV1 0x2C   VF3 V0F  NOVSR mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
+OPERANDS  : REG0=VGPR32_R():w:d:i32 REG1=XMM_B():r:d:f32
 
 
 
 
 PATTERN : VV1 0x2C   VF3 V0F  NOVSR mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPR64_R():w:q:i64 MEM0:r:d:f32
+OPERANDS  : REG0=VGPR64_R():w:q:i64 MEM0:r:d:f32
 
 PATTERN : VV1 0x2C   VF3 V0F  NOVSR mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR64_R():w:q:i64 REG1=XMM_B():r:d:f32
+OPERANDS  : REG0=VGPR64_R():w:q:i64 REG1=XMM_B():r:d:f32
 }
 
 
@@ -696,7 +696,7 @@ PATTERN : VV1 0x2A  VF2 V0F not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 MEM0:r:d:i32
 
 PATTERN : VV1 0x2A  VF2 V0F not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=GPR32_B():r:d:i32
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=VGPR32_B():r:d:i32
 
 
 
@@ -704,7 +704,7 @@ PATTERN : VV1 0x2A  VF2 V0F mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 MEM0:r:d:i32
 
 PATTERN : VV1 0x2A  VF2 V0F mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=GPR32_B():r:d:i32
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=VGPR32_B():r:d:i32
 
 
 
@@ -712,7 +712,7 @@ PATTERN : VV1 0x2A  VF2 V0F mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] M
 OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 MEM0:r:q:i64
 
 PATTERN : VV1 0x2A  VF2 V0F mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=GPR64_B():r:q:i64
+OPERANDS  : REG0=XMM_R():w:dq:f64 REG1=XMM_N():r:dq:f64 REG2=VGPR64_B():r:q:i64
 }
 
 
@@ -728,7 +728,7 @@ PATTERN : VV1 0x2A   VF3 V0F not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 MEM0:r:d:i32
 
 PATTERN : VV1 0x2A   VF3 V0F not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=GPR32_B():r:d:i32
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=VGPR32_B():r:d:i32
 
 
 
@@ -736,7 +736,7 @@ PATTERN : VV1 0x2A   VF3 V0F mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn
 OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 MEM0:r:d:i32
 
 PATTERN : VV1 0x2A   VF3 V0F mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=GPR32_B():r:d:i32
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=VGPR32_B():r:d:i32
 
 
 
@@ -744,7 +744,7 @@ PATTERN : VV1 0x2A   VF3 V0F mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] 
 OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 MEM0:r:q:i64
 
 PATTERN : VV1 0x2A   VF3 V0F mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=GPR64_B():r:q:i64
+OPERANDS  : REG0=XMM_R():w:dq:f32 REG1=XMM_N():r:dq:f32 REG2=VGPR64_B():r:q:i64
 }
 
 
@@ -898,7 +898,7 @@ PATTERN : VV1 0x17  VL128 V66 V0F3A  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM
 OPERANDS  : MEM0:w:d:f32  REG0=XMM_R():r:dq:f32  IMM0:r:b
 
 PATTERN : VV1 0x17  VL128 V66 V0F3A  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR32_B():w  REG1=XMM_R():r:dq:f32  IMM0:r:b
+OPERANDS  : REG0=VGPR32_B():w  REG1=XMM_R():r:dq:f32  IMM0:r:b
 }
 
 
@@ -1544,14 +1544,14 @@ PATTERN : VV1 0x6E  VL128 V66 V0F not64 NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MO
 OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:d
 
 PATTERN : VV1 0x6E  VL128 V66 V0F not64  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq  REG1=GPR32_B():r:d
+OPERANDS  : REG0=XMM_R():w:dq  REG1=VGPR32_B():r:d
 
 # 32b store
 PATTERN : VV1 0x7E  VL128 V66 V0F not64  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : MEM0:w:d           REG0=XMM_R():r:d
 
 PATTERN : VV1 0x7E  VL128 V66 V0F not64  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:d
+OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:d
 
 
 
@@ -1560,14 +1560,14 @@ PATTERN : VV1 0x6E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[
 OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:d
 
 PATTERN : VV1 0x6E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq  REG1=GPR32_B():r:d
+OPERANDS  : REG0=XMM_R():w:dq  REG1=VGPR32_B():r:d
 
 # 32b store
 PATTERN : VV1 0x7E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : MEM0:w:d           REG0=XMM_R():r:d
 
 PATTERN : VV1 0x7E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:d
+OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:d
 
 
 }
@@ -1585,7 +1585,7 @@ OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:q
 IFORM     : VMOVQ_XMMdq_MEMq_6E
 
 PATTERN : VV1 0x6E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=XMM_R():w:dq  REG1=GPR64_B():r:q
+OPERANDS  : REG0=XMM_R():w:dq  REG1=VGPR64_B():r:q
 
 # 64b store
 PATTERN : VV1 0x7E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
@@ -1593,7 +1593,7 @@ OPERANDS  : MEM0:w:q           REG0=XMM_R():r:q
 IFORM     : VMOVQ_MEMq_XMMq_7E
 
 PATTERN : VV1 0x7E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR64_B():w:q REG1=XMM_R():r:q
+OPERANDS  : REG0=VGPR64_B():w:q REG1=XMM_R():r:q
 
 
 # 2nd page of MOVQ forms
@@ -3843,12 +3843,12 @@ CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : AVX
 PATTERN : VV1 0x50  VL128 V66 V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d   REG1=XMM_B():r:dq:f64
+OPERANDS  : REG0=VGPR32_R():w:d   REG1=XMM_B():r:dq:f64
 
 # 256b versions
 
 PATTERN : VV1 0x50  VL256 V66 V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d   REG1=YMM_B():r:qq:f64
+OPERANDS  : REG0=VGPR32_R():w:d   REG1=YMM_B():r:qq:f64
 }
 
 {
@@ -3858,12 +3858,12 @@ CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : AVX
 PATTERN : VV1 0x50  VL128 VNP V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d   REG1=XMM_B():r:dq:f32
+OPERANDS  : REG0=VGPR32_R():w:d   REG1=XMM_B():r:dq:f32
 
 # 256b versions
 
 PATTERN : VV1 0x50  VL256 VNP V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d   REG1=YMM_B():r:qq:f32
+OPERANDS  : REG0=VGPR32_R():w:d   REG1=YMM_B():r:qq:f32
 }
 
 ############################################################################
@@ -3874,7 +3874,7 @@ CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
 PATTERN : VV1 0xD7  VL128 V66 V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
-OPERANDS  : REG0=GPR32_R():w:d:u32   REG1=XMM_B():r:dq:i8
+OPERANDS  : REG0=VGPR32_R():w:d:u32   REG1=XMM_B():r:dq:i8
 }
 
 ############################################################################
@@ -4052,7 +4052,7 @@ PATTERN : VV1 0x14  VL128 V66 V0F3A NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM(
 OPERANDS  : MEM0:w:b           REG0=XMM_R():r:dq:u8 IMM0:r:b
 
 PATTERN : VV1 0x14  VL128 V66 V0F3A NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:dq:u8 IMM0:r:b
+OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:dq:u8 IMM0:r:b
 }
 ############################################################################
 {
@@ -4067,13 +4067,13 @@ PATTERN : VV1 0x15  VL128 V66 V0F3A NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM(
 OPERANDS  : MEM0:w:w           REG0=XMM_R():r:dq:u16 IMM0:r:b
 
 PATTERN : VV1 0x15  VL128 V66 V0F3A NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:dq:u16 IMM0:r:b
+OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:dq:u16 IMM0:r:b
 IFORM     : VPEXTRW_GPR32d_XMMdq_IMMb_15
 
 # special C5 reg-only versions from SSE2:
 
 PATTERN   : VV1 0xC5  VL128 V66 V0F  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR32_R():w:d    REG1=XMM_B():r:dq:u16 IMM0:r:b
+OPERANDS  : REG0=VGPR32_R():w:d    REG1=XMM_B():r:dq:u16 IMM0:r:b
 IFORM     : VPEXTRW_GPR32d_XMMdq_IMMb_C5
 }
 ############################################################################
@@ -4086,7 +4086,7 @@ EXTENSION : AVX
 PATTERN : VV1 0x16  VL128 V66 V0F3A mode64 rexw_prefix  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : MEM0:w:q              REG0=XMM_R():r:dq:u64 IMM0:r:b
 PATTERN : VV1 0x16  VL128 V66 V0F3A mode64 rexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR64_B():w:q    REG1=XMM_R():r:dq:u64 IMM0:r:b
+OPERANDS  : REG0=VGPR64_B():w:q    REG1=XMM_R():r:dq:u64 IMM0:r:b
 }
 ############################################################################
 {
@@ -4101,13 +4101,13 @@ COMMENT   : SNB had an errata where it would #UD of VEX.W=1 outside of 64b mode.
 PATTERN   : VV1 0x16 VL128 V66 V0F3A mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : MEM0:w:d REG0=XMM_R():r:dq:u32 IMM0:r:b
 PATTERN   : VV1 0x16 VL128 V66 V0F3A mode64 norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:dq:u32 IMM0:r:b
+OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:dq:u32 IMM0:r:b
 
 # not64b mode
 PATTERN   : VV1 0x16 VL128 V66 V0F3A not64  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : MEM0:w:d REG0=XMM_R():r:dq:u32 IMM0:r:b
 PATTERN   : VV1 0x16 VL128 V66 V0F3A not64  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=GPR32_B():w:d REG1=XMM_R():r:dq:u32 IMM0:r:b
+OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:dq:u32 IMM0:r:b
 
 }
 ############################################################################
@@ -4127,7 +4127,7 @@ COMMENT: WIG
 PATTERN : VV1 0x20  VL128 V66 V0F3A  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u8     REG1=XMM_N():r:dq:u8  MEM0:r:b:u8            IMM0:r:b
 PATTERN : VV1 0x20  VL128 V66 V0F3A  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:dq:u8     REG1=XMM_N():r:dq:u8  REG2=GPR32_B():r:d:u8  IMM0:r:b
+OPERANDS  : REG0=XMM_R():w:dq:u8     REG1=XMM_N():r:dq:u8  REG2=VGPR32_B():r:d:u8  IMM0:r:b
 }
 
 {
@@ -4141,7 +4141,7 @@ PATTERN : VV1 0xC4  VL128 V66 V0F  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8
 OPERANDS  : REG0=XMM_R():w:dq:u16     REG1=XMM_N():r:dq:u16  MEM0:r:w:u16           IMM0:r:b
 
 PATTERN : VV1 0xC4  VL128 V66 V0F  MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:dq:u16     REG1=XMM_N():r:dq:u16  REG2=GPR32_B():r:d:u16  IMM0:r:b
+OPERANDS  : REG0=XMM_R():w:dq:u16     REG1=XMM_N():r:dq:u16  REG2=VGPR32_B():r:d:u16  IMM0:r:b
 }
 
 {
@@ -4155,13 +4155,13 @@ COMMENT   : SNB had an errata where it would #UD of VEX.W=1 outside of 64b mode.
 PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 norexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  MEM0:r:d:u32            IMM0:r:b
 PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 norexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  REG2=GPR32_B():r:d:u32  IMM0:r:b
+OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  REG2=VGPR32_B():r:d:u32  IMM0:r:b
 
 # 32b mode
 PATTERN : VV1 0x22  VL128 V66 V0F3A not64 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  MEM0:r:d:u32            IMM0:r:b
 PATTERN : VV1 0x22  VL128 V66 V0F3A not64 MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  REG2=GPR32_B():r:d:u32  IMM0:r:b
+OPERANDS  : REG0=XMM_R():w:dq:u32     REG1=XMM_N():r:dq:u32  REG2=VGPR32_B():r:d:u32  IMM0:r:b
 }
 {
 ICLASS    : VPINSRQ
@@ -4172,7 +4172,7 @@ EXTENSION : AVX
 PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 rexw_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
 OPERANDS  : REG0=XMM_R():w:dq:u64     REG1=XMM_N():r:dq:u64  MEM0:r:q:u64            IMM0:r:b
 PATTERN : VV1 0x22  VL128 V66 V0F3A mode64 rexw_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_R():w:dq:u64     REG1=XMM_N():r:dq:u64  REG2=GPR64_B():r:q:u64  IMM0:r:b
+OPERANDS  : REG0=XMM_R():w:dq:u64     REG1=XMM_N():r:dq:u64  REG2=VGPR64_B():r:q:u64  IMM0:r:b
 }
 
 ############################################################################

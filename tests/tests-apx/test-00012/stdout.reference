@@ -6,3 +6,5 @@ IFORM:      PUNPCKLDQ_MMXq_MEMd
 ISA_SET:    PENTIUMMMX
 ATTRIBUTES: NOTSX 
 SHORT:      punpckldq mm2, dword ptr [r18]
+Encodable! D5986212
+Identical re-encoding

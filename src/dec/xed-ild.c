@@ -1021,6 +1021,8 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
 }
 #endif
 
+// indicate whether a decoded instruction should be fed to the opcode scanner
+// as instructions with the REX2 prefix should be fed to a dedicated REX2 scanner
 static XED_INLINE xed_bool_t opcode_scanner_needed(xed_decoded_inst_t *d)
 {
 #if defined(XED_APX)
@@ -1102,6 +1104,10 @@ static void opcode_scanner(xed_decoded_inst_t* d)
 
 #if defined(XED_SUPPORTS_AVX512)
 
+// a union defining the first payload byte of the EVEX prefix
+// different features have different bit interpretations
+// APX for instance, allocates 3 bits for map and 1 bit each for
+// R3, X3, B3, R4 and B4
 typedef union { 
     struct {  // AVX512
         xed_uint32_t map:4;
@@ -1129,6 +1135,8 @@ typedef union {
     xed_uint8_t u8;
 } xed_evex_payload1_t;
 
+// a union defining the second payload byte of the EVEX prefix
+// APX reinterprets the ubit field as X4
 typedef union {
     struct {  // AVX512
         xed_uint32_t pp:2;
@@ -1140,6 +1148,11 @@ typedef union {
     xed_uint8_t u8;
 } xed_evex_payload2_t;
 
+// a union defining the third payload byte of the EVEX prefix
+// APX extends the capability of the EVEX prefix by providing an NF bit
+// and an ND bit (no-flags and new-data-destination respectively).
+// with special CCMP/CTEST instructions, APX provides yet another different
+// bit interpretation, where the four least significant bits represent SCC
 typedef union{
     xed_uint8_t u8;
     struct  {    // AVX512
@@ -1167,7 +1180,8 @@ typedef union{
 #endif // XED_APX
 } xed_evex_payload3_t;
 
-
+// indicate whether the current chip supports AVX512 architecture.
+// Uses a pre-detirmined mapping of chips to boolean values (xed_chip_supports_avx512)
 static XED_INLINE xed_bool_t chip_supports_avx512(xed_decoded_inst_t* d)
 {
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
@@ -1181,6 +1195,8 @@ static XED_INLINE xed_bool_t chip_supports_avx512(xed_decoded_inst_t* d)
 }
 
 #if defined(XED_APX)
+// indicate whether the current chip supports APX architecture.
+// Uses a pre-detirmined mapping of chips to boolean values (xed_chip_supports_apx)
 xed_bool_t chip_supports_apx(xed_decoded_inst_t* d)
 {
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
@@ -1342,6 +1358,10 @@ static void evex_scanner(xed_decoded_inst_t* d)
 }
 
 #if defined(XED_APX)
+// process the REX2 prefix if exists.
+// This function checks for the existence of REX2 prefix (starting with xD5)
+// and sets the first and second payload bytes accordingly (B3,X3,R3,B4...)
+// then scans the instructions' opcode
 static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
 {
     /* assumption: length < max_bytes  

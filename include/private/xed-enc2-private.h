@@ -301,12 +301,14 @@ static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
 
 
 static XED_INLINE void emit_vex_c5(xed_enc2_req_t* r) {
-    xed_uint8_t v = ((~get_rexr(r)) << 7) | (get_vvvv(r) << 3) | (get_vexl(r)<<2) | get_vexpp(r);
+    xed_uint8_t inverted_v = 0x80; // REXR is inverted (MSB; 10000000)
+    xed_uint8_t v = ((get_rexr(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r)<<2) | get_vexpp(r)) ^ inverted_v;
     emit(r,0xC5);
     emit(r,v);
 }
 static XED_INLINE void emit_vex_c4(xed_enc2_req_t* r) {
-    xed_uint8_t v1 = ((~get_rexr(r)) << 7) | ((~get_rexx(r)) << 6) | ((~get_rexb(r)) << 5) | get_map(r);
+    xed_uint8_t inverted_v1 = 0xE0; // REX{R,X,B} are inverted (MS 3 bits; 11100000)
+    xed_uint8_t v1 = ((get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | get_map(r)) ^ inverted_v1;
     xed_uint8_t v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r) << 2) | get_vexpp(r);
     emit(r,0xC4);
     emit(r,v1);
@@ -316,8 +318,10 @@ static XED_INLINE void emit_vex_c4(xed_enc2_req_t* r) {
 
 static XED_INLINE void emit_evex(xed_enc2_req_t* r) {
     xed_uint8_t v1,v2,v3;
+    xed_uint8_t inverted_v1 = 0xF0; // REX{R,X,B} and REXR4/EVEXR are inverted (MS 4 bits; 11110000)
+
     emit(r,0x62);
-    v1 = ((~get_rexr(r)) << 7) | ((~get_rexx(r)) << 6) | ((~get_rexb(r) << 5)) | (~get_evexrr(r) << 4) | get_map(r);
+    v1 = ((get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | (get_evexrr(r) << 4) | get_map(r)) ^ inverted_v1;
     emit(r,v1);
     v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (1 << 2) | get_vexpp(r);
     emit(r,v2);

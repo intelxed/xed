@@ -6309,7 +6309,7 @@ PATTERN   : 0b0101_0 SRM[rrr] norex2_prefix DF64()
 OPERANDS  : REG0=GPRv_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
 IFORM     : PUSH_GPRv_50
 
-PATTERN   : 0b0101_0 SRM[rrr] rex2_refining_prefix norexw_prefix mode64 DF64()
+PATTERN   : 0b0101_0 SRM[rrr] rex2_refining_prefix norexw_prefix DF64()
 OPERANDS  : REG0=GPRv_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
 IFORM     : PUSH_GPRv_50
 }
@@ -6324,7 +6324,7 @@ PATTERN   : 0b0101_1 SRM[rrr] norex2_prefix DF64()
 OPERANDS  : REG0=GPRv_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
 IFORM     : POP_GPRv_58
 
-PATTERN   : 0b0101_1 SRM[rrr] mode64 rex2_refining_prefix norexw_prefix DF64()
+PATTERN   : 0b0101_1 SRM[rrr] rex2_refining_prefix norexw_prefix DF64()
 OPERANDS  : REG0=GPRv_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
 IFORM     : POP_GPRv_58
 }
@@ -8219,7 +8219,7 @@ PATTERN   : 0xAF mode16 66_prefix  repne
 OPERANDS  : REG0=XED_REG_EAX:r:SUPP MEM0:cr:SUPP:d BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP 
 PATTERN   : 0xAF mode32 no66_prefix  repne
 OPERANDS  : REG0=XED_REG_EAX:r:SUPP MEM0:cr:SUPP:d BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP 
-PATTERN   : 0xAF mode64 norexw_prefix no66_prefix  repne 
+PATTERN   : 0xAF mode64 norexw_prefix no66_prefix  repne  norex2_prefix
 OPERANDS  : REG0=XED_REG_EAX:r:SUPP MEM0:cr:SUPP:d BASE0=ArDI():rcw:SUPP SEG0=FINAL_ESEG():r:SUPP REG1=ArCX():rcw:SUPP 
 }
 {
@@ -8858,7 +8858,7 @@ ISA_SET   : LONGMODE
 FLAGS     : MUST [ id-mod vip-mod vif-mod ac-mod vm-0 rf-0 nt-mod iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x05 mode64 FORCE64()
 OPERANDS  : REG0=XED_REG_RIP:w:SUPP REG1=XED_REG_RCX:w:SUPP REG2=XED_REG_R11:w:SUPP
-COMMENT   : 32B VERSION IS ONLY SUPPORTED ON AMD
+COMMENT   : 32B VERSION ONLY SUPPORTED ON Intel FRED or AMD systems
 }
 {
 ICLASS    : CLTS
@@ -15235,7 +15235,7 @@ CPL       : 3
 CATEGORY  : SYSTEM
 ATTRIBUTES: PROTECTED_MODE NOTSX
 EXTENSION : SMX
-PATTERN   : 0x0F 0x37 no_refining_prefix
+PATTERN   : 0x0F 0x37 no_refining_prefix norex2_prefix
 OPERANDS  : REG0=XED_REG_EAX:rcw:SUPP  REG1=XED_REG_EBX:r:SUPP
 }
 

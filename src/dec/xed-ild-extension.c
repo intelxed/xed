@@ -20,7 +20,9 @@ END_LEGAL */
 
 #include "xed-ild-extension.h"
 
-
+// set the UBIT value of a decoded instruction.
+// Requires special care for APX instructions, since the UBIT is reinterpreted
+// as the X4 bit in REX2 prefix
 void xed_ild_ext_set_ubit(xed_decoded_inst_t *d, xed_uint8_t ubit)
 {
 #if defined(XED_APX)

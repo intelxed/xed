@@ -18,6 +18,7 @@
 #  
 #END_LEGAL
 
+import platform
 import sys
 import argparse
 import utils
@@ -53,20 +54,27 @@ if __name__ == '__main__':
 
     env = setup()
 
+    os = platform.system()
+    assert os == 'Linux', 'Protex scan is currently only supported on Linux'
+
     # login
-    login_cmd = login_cmd = '{bdstool} --server {url} --user {user} --password {pass} login'.format(**env)
-    utils.run_subprocess(login_cmd)
+    login_cmd = "{bdstool} --server {url} --user {user} --password '{pass}' login".format(**env)
+    rval, rlines = utils.run_subprocess(login_cmd)
+    assert rval == 0, 'login to protex server failed'
     
     # set XED project (basically chooses which project to analyze and create a new workflow for)
     set_project_cmd = '{bdstool} new-project {project_id}'.format(**env)
-    utils.run_subprocess(set_project_cmd)
+    rval, rlines = utils.run_subprocess(set_project_cmd)
+    assert rval == 0, 'xed protex project checkout failed'
 
     # analyze XED
     analyze_cmd = f'{env["bdstool"]} analyze --verbose --path .'
-    utils.run_subprocess(analyze_cmd)
+    rval, rlines = utils.run_subprocess(analyze_cmd)
+    assert rval == 0, 'protex analysis failed'
 
     # logout
     logout_cmd = f'{env["bdstool"]} logout'
-    utils.run_subprocess(logout_cmd)
+    rval, rlines = utils.run_subprocess(logout_cmd)
+    assert rval == 0, 'logout from protex server failed'
 
     sys.exit(0)

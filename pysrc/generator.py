@@ -3656,7 +3656,8 @@ def compute_iform(options,ii, operand_storage_dict):
             msge("IFORM SKIPPING SUPPRESSED %s" % (operand.name))
 
       elif operand.type == 'nt_lookup_fn':
-         s = operand.lookupfn_name_base 
+         s = operand.lookupfn_name_base
+         s = s.replace('VGPR', 'GPR') # Drop the 'v' (VGPR is a 16-regs VEX NT)
          if operand.oc2 and s not in ['X87'] :
             if operand.oc2 == 'v' and s[-1] == 'v': 
                pass # avoid duplicate v's

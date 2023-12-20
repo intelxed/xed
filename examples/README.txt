@@ -1,6 +1,6 @@
 
 
-To build the examples, a relatively recent version of python 2.7 is required.
+To build the examples, a relatively recent version of python 3.8 is required.
 
 ================================
 STATIC LIBRARY XED BUILD:
@@ -12,7 +12,7 @@ STATIC LIBRARY XED BUILD:
 
   Windows:
 
-   % C:/python27/python mfile.py
+   % C:/python3/python mfile.py
 
 ================================
 DYNAMIC  LIBRARY XED BUILD:
@@ -27,6 +27,6 @@ If you have a a shared-object (or DLL build on windows) you must also include
 
   Windows:
 
-   % C:/python27/python mfile.py --shared
+   % C:/python3/python mfile.py --shared
  
 Add "--help" (no quotes) for more build options.

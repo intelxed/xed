@@ -68,6 +68,7 @@ DF64           SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO E
 # AH/BH/CH/DH registers. It was not used for decoding
 
 NOREX          SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
+NOREX2         SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DS EO
 NEEDREX        SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO
 
 REX            SCALAR     xed_bits_t 1        SUPPRESSED   NOPRINT INTERNAL DO EO

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ udelete_full_pattern = \
 iclass_pattern = re.compile(r'^ICLASS\s*[:]\s*(?P<iclass>[A-Za-z0-9_]+)')
 uname_pattern = re.compile(r'^UNAME\s*[:]\s*(?P<uname>[A-Za-z0-9_]+)')
 ipattern_pattern = re.compile(r'^PATTERN\s*[:]\s*(?P<ipattern>.+)')
+iattribute_pattern = re.compile(r'^ATTRIBUTES\s*[:]\s*(?P<iattribute>.+)')
 operand_pattern = re.compile(r'^OPERANDS\s*[:]\s*(?P<operands>.+)')
 no_operand_pattern = re.compile(r'^OPERANDS\s*[:]\s*$')
 real_opcode_pattern = re.compile(r'^REAL_OPCODE\s*[:]\s*(?P<yesno>[A-Za-z0-9_]+)')

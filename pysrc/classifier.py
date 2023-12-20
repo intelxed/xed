@@ -87,7 +87,11 @@ def find_avx512_insts(agi) -> set:
 def is_avx512_inst(isa_set: str, avx512_main_isa: set):
     """Checks whether the given ISA belongs to the AVX512 family"""
     # removes the suffix from the ISA-SET
-    return isa_set.rsplit('_', 1)[0] in avx512_main_isa
+    if re.search('_(128|256|512|SCALAR|KOP)',isa_set):
+        # rarely, an IFORM exists independently with and without VL (e.g. SM4)
+        # Make sure to skip these IFORMs
+        return isa_set.rsplit('_', 1)[0] in avx512_main_isa
+    return False
 
 
 def work(agi):

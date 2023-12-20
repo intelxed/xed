@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE6 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPBEXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -54,7 +54,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE6 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPBEXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -71,7 +71,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE2 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPBXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -88,7 +88,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE2 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPBXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -105,7 +105,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xEE V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPLEXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -122,7 +122,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xEE V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPLEXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -139,7 +139,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xEC V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPLXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -156,7 +156,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xEC V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPLXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -173,7 +173,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE7 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNBEXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -190,7 +190,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE7 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNBEXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -207,7 +207,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE3 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNBXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -224,7 +224,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE3 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNBXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -241,7 +241,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xEF V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNLEXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -258,7 +258,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xEF V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNLEXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -275,7 +275,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xED V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNLXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -292,7 +292,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xED V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNLXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -309,7 +309,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE1 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNOXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -326,7 +326,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE1 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNOXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -343,7 +343,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xEB V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNPXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -360,7 +360,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xEB V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNPXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -377,7 +377,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE9 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNSXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -394,7 +394,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE9 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNSXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -411,7 +411,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE5 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPNZXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -428,7 +428,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE5 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPNZXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -445,7 +445,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE0 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPOXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -462,7 +462,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE0 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPOXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -479,7 +479,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xEA V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPPXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -496,7 +496,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xEA V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPPXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -513,7 +513,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE8 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPSXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -530,7 +530,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE8 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPSXADD_MEMu64_GPR64u64_GPR64u64
 }
 
@@ -547,7 +547,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_4B 
 PATTERN:    VV1 0xE4 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W0  mode64   
-OPERANDS:    MEM0:rw:d:u32 REG0=GPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
+OPERANDS:    MEM0:rw:d:u32 REG0=VGPR32_R():rw:d:u32 REG1=VGPR32_N():r:d:u32
 IFORM:       CMPZXADD_MEMu32_GPR32u32_GPR32u32
 }
 
@@ -564,7 +564,7 @@ REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-mod  of-mod  sf-mod  af-mod  ]
 ATTRIBUTES:  ATOMIC REQUIRES_ALIGNMENT_8B 
 PATTERN:    VV1 0xE4 V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  VL128  W1  mode64   
-OPERANDS:    MEM0:rw:q:u64 REG0=GPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
+OPERANDS:    MEM0:rw:q:u64 REG0=VGPR64_R():rw:q:u64 REG1=VGPR64_N():r:q:u64
 IFORM:       CMPZXADD_MEMu64_GPR64u64_GPR64u64
 }
 

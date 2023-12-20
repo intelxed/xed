@@ -18,4 +18,5 @@
 
 #  name     space   esc  mapopc mapno modrm disp imm opcpos pattern
 evex-map4   evex    N/A   N/A     4    yes   no  var   1    'MAP4'
+evex-map7   evex    N/A   N/A     7    yes   no   4    1    'MAP7'
 

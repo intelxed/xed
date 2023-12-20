@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,22 +24,22 @@
 // ========================================================================================  
 /*!
 @if  (EXTERNAL)
-@mainpage *EXTERNAL* XED Build Guide
+@mainpage Intel&reg; XED Build Guide
 @else
-@mainpage *INTERNAL* XED Build Guide
+@mainpage *INTERNAL* Intel&reg; XED Build Guide
 @endif
 
-2019-05-28
+November 2023
 
 @section INTRO Introduction
 
-XED can build with many compilers:
+Intel&reg; XED can be built with many compilers:
   - GNU GCC
   - Microsoft Visual Studio
   - Intel ICL/ICC
   - LLVM/Clang 
 
-XED also works with the following operating systems:
+Intel&reg; XED also works with the following operating systems:
   - Linux
   - Microsoft Windows  (with or without cygwin)
   - Apple Mac OS/X 
@@ -55,18 +55,20 @@ override this with various command line options.
 
 Table of Contents
     - @ref REPOS     "REPOS"     Repository access 
-    - @ref MBUILD    "MBUILD"    Using mbuild to build XED
-    - @ref INSTALL   "INSTALL"   Making XED kits
+    - @ref MBUILD    "MBUILD"    Using mbuild to build Intel&reg; XED
+    - @ref INSTALL   "INSTALL"   Making Intel&reg; XED kits
     - @ref WINDOWS   "WINDOWS"   Windows notes
     - @ref SHARED    "SHARED"    Shared libraries and DLLs
     - @ref HELP      "HELP"      The mbuild options
 
 @section REPOS Repository Access
 
-XED is stored in an GIT repository. Request access from
-me if you want to build XED.
+@if  (INTERNAL)
+Intel&reg; XED is stored in an GIT repository. Request access from
+xed.team@intel.com if you want to build Intel&reg; XED.
+@endif
 
-Here's how to check out XED and mbuild, as sibling directories:
+Here's how to check out Intel&reg; XED and mbuild, as sibling directories:
 
 @if  (EXTERNAL)
 @code
@@ -112,16 +114,16 @@ your trees should look like this:
 @section MBUILD Introduction to using mbuild
 
 Mbuild is a python-based build system. For more information about mbuild see:
-https://intelxed.github.io (or inside Intel http://mjc.intel.com/mjcharne/mbuild ).
+https://intelxed.github.io
 
-The XED build using mbuild is dependence driven It uses file and
+The Intel&reg; XED build using mbuild is dependency driven. It uses file and
 command signatures to detect the need to rebuild files.
 
-The mbuild script requires python version 2.7, python 3.4 or later.
+The mbuild script requires python 3.8 or later.
 
 
 Assuming you checked out the tree as described above, you can build
-XED using mbuild as follows on linux:
+Intel&reg; XED using mbuild as follows on Linux:
 @code
 mkdir build
 cd build
@@ -134,7 +136,7 @@ cd build
 ../xed/mfile.py examples install zip    (optional, makes a zip file that includes the examples)
 @endcode
 
-Actual windows example:
+Actual Windows example:
 
 @if (EXTERNAL)
 @code
@@ -142,7 +144,7 @@ git clone https://github.com/intelxed/xed.git xed
 git clone https://github.com/intelxed/mbuild.git mbuild
 mkdir test
 cd test
-C:/Python37/python ../xed/mfile.py examples install zip
+C:/Python3/python ../xed/mfile.py examples install zip
 @endcode
 @else
 @code
@@ -150,13 +152,13 @@ git clone {xed repository URL} xed
 git clone {mbuild repository URL} mbuild
 mkdir test
 cd test
-C:/Python37/python ../xed/mfile.py examples install zip
+C:/Python3/python ../xed/mfile.py examples install zip
 @endcode
 @endif
 
 For more information on building for windows see section @ref WINDOWS
 
-Actual linux example (password prompts omitted):
+Actual Linux example (password prompts omitted):
 
 @if (EXTERNAL)
 @code
@@ -178,28 +180,28 @@ python ../xed/mfile.py examples install zip
 
 To build 32b on a 64b platform, add to the mfile.py execution "host_cpu=ia32":
 @code
-C:/Python37/python ../xed/mfile.py examples install zip host_cpu=ia32
+C:/Python3/python ../xed/mfile.py examples install zip host_cpu=ia32
 @endcode
 
-@section INSTALL Making XED kits
+@section INSTALL Making Intel&reg; XED kits
 
-Some of the headers are private (for building XED), some are public
-and some are generated. To simplify use, I recommend that all users
-work from XED kits, rather from the XED sources. This section
-describes how to build XED kits using the "install" target.
+Some headers are private (for building Intel&reg; XED), some are public
+and some are generated. It is recommended that all users work from 
+Intel&reg; XED kits to simplify use, rather from the Intel&reg; XED sources. This section
+describes how to build Intel&reg; XED kits using the "install" target.
 
-The install target collects up all pieces and puts them in one
+The install target collects all the pieces and puts them in one
 subdirectory. The static public headers and dynamically generated
 public header files are put in an "include" subdirectory. 
 
-Static libraries are put the "lib" directory. If you are doing a
+Static libraries are put in the "lib" directory. If you are doing a
 shared object or DLL build, the shared object or DLL is put in the bin
 directory.  This simplifies using the examples.
 
-The manual and examples, if generated, are also included in doc
+The manual and examples, if generated, are also included in the doc
 directory.
 
-The structure of a XED kit is as follows:
+The structure of a Intel&reg; XED kit is as follows:
     @code
                               |-bin------
                               |-doc------|-html-
@@ -219,13 +221,13 @@ quicker than the sequence of commands.
 @section ENC2 Building the fast encoder
 
 A set of additional encoder libraries can be created and built by
-adding the --enc2 option to the command line.  See the XED reference
-manual for more information about the XED ENC2.  A test for every
+adding the --enc2 option to the command line.  See the Intel&reg; XED reference
+manual for more information about the Intel&reg; XED ENC2.  A test for every
 encode function can be built by adding the --enc2-test option.  One
 library is built for 64b mode with 64b addressing (m64,a64) and
 another library is built for 32b mode with 32b addressing (m32,a32).
 Due to the large amount of code generated, compilation time is
-sigificantly longer when using the --enc2 options.  The XED ENC2
+significantly longer when using the --enc2 options.  The Intel&reg; XED ENC2
 libraries and headers are placed in the build directory's
 wkit/{include,lib} directories as well as the installed kit if the
 "install" target is used.
@@ -234,7 +236,7 @@ wkit/{include,lib} directories as well as the installed kit if the
 @section WINDOWS Windows notes
 
 
-For building on windows, the easiest build method assumes that you've
+For building on Windows, the easiest build method assumes that you've
 configured your environment by running the appropriate BAT file, such
 as vcvars32.bat or vcvarsamd64.bat from the bin directory of your MSVS
 installation, by opening a Visual Studio command prompt or by having
@@ -245,24 +247,24 @@ during MSVS installation.
 On windows you can build from a cmd.exe or a cygwin  window, with MSVS or GNU gcc.
 @code
 /* Run the Visual Studio setup script (vcvars32.bat or vcvarsamd64.bat) from your compiler installation */
-C:/Python37/python ../xed/mfile.py examples    ( from a cmd.exe window using win32 python)
+C:/Python3/python ../xed/mfile.py examples    ( from a cmd.exe window using win32 python)
 
 /* or from cygwin, using MSVS, you must ensure your MSVS compiler environment is set up properly */
 ../xed/mfile.py examples                        ( from a cygwin window, using cygwin's python)
 
 /* if you installed the compiler in a standard place, you can have MBUILD set it up*/
-C:/Python37/python ../xed/mfile.py --setup-msvs --msvs-version 10 examples
+C:/Python3/python ../xed/mfile.py --setup-msvs --msvs-version 10 examples
 
 /* or from cygwin, using GCC */
 ../xed/mfile.py --compiler=gnu examples         ( from a cygwin window, using cygwin's gcc)
 @endcode
 
 The cygwin builds will use cygwin's python to launch the mfile, but
-win32 c:/Python37/python to run the generators. I try to avoid
+win32 c:/Python3/python to run the generators. I try to avoid
 building using cygwin's python because those builds are single
 threaded because of long standing bugs in cygwin.
 
-If you want to have symbols in the xed command line example, you must
+If you want to have symbols in the Intel&reg; XED command line example, you must
 build with MSVS 8 (2005) or later and supply the "--dbghelp" option to
 the build line. During execution, dbghelp.dll version 6.9.3.113 or
 later, is required.  Dbghelp.dll must be placed in the same directory
@@ -271,7 +273,7 @@ as xed.exe. Dbghelp.dll is available from Microsoft.
 
 @section SHARED Shared libraries and DLLs
 
-If you build XED using the \-\-shared object you'll get a libxed.so on
+If you build Intel&reg; XED using the \-\-shared object, you'll get a libxed.so on
 Linux or a libxed.dll on Windows. When you link against these shared
 objects/DLL you are required to define XED_DLL (/DXED_DLL on Windows
 or -DXED_DLL on Linux).
@@ -280,7 +282,7 @@ or -DXED_DLL on Linux).
 
 If you supply the \-\-help message to the ../xed/mfile.py you'll
 see the various options controlling compilation. Some options are
-build into to mbuild and are not relevant for the XED0 build (like the
+built into mbuild and are not relevant for Intel&reg; XED build (like the
 assembler overrides). I've omitted the irrelevant ones in the
 following options listing:
 
@@ -299,8 +301,8 @@ Options:
                         be located.
   -v VERBOSE, --verbose=VERBOSE
                         Verbosity level. Defaults to value passed to env_t()
-  --compiler=COMPILER   Compiler (ms,gnu,clang,icc,icl,iclang). Default is gnu
-                        on linux and ms on windows. Default is: gnu
+  --compiler=COMPILER   Compiler (ms,gnu,clang,icc,icl,iclang, icx). Default
+                        is gnu on linux and ms on windows. Default is: ms
   --debug               Debug build
   --shared              Shared DLL build
   --static              Statically link executables
@@ -323,9 +325,11 @@ Options:
   --vc-dir=VC_DIR       MSVS Compiler VC directory. For finding libraries  and
                         setting the toolchain
   --msvs-version=MSVS_VERSION, --msvc-version=MSVS_VERSION, --msvsversion=MSVS_VERSION, --msvcversion=MSVS_VERSION
-                        MSVS version 6=VC98, 7=VS .Net 2003, 8=VS 2005, 9=VS
-                        2008, 10=VS 2010/DEV10, 11=VS2012/DEV11This sets
-                        certain flags and idioms for quirks in some compilers.
+                        MSVS version 6=VC98, 7=VS .Net 2003, 8=VS 2005,
+                        9=VS2008, 10=VS 2010/DEV10, 11=VS2012/DEV11,
+                        12=VS2013, 14=VS2015, 15=VS2017, 16=VS2019, 17=VS2022.
+                        This sets certain flags and idioms for quirks in some
+                        compilers.
   --setup-msvc, --setup-msvs, --msvs-setup, --msvc-setup
                         Use the value of the --msvc-version to initialize the
                         MSVC configuration.
@@ -345,59 +349,93 @@ Options:
                         Host CPU, typically ia32, intel64 or x86-64
   --host-os=ARG_HOST_OS
                         Host OS (where the binary runs)
+  --android             Android build (avoid rpath for examples)
+  --copy-runtime-libs   Copy the libc to the kit. Rarely necessary if building
+                        on old linux dev systems. Default: false
+  --example-linkflags=EXAMPLE_LINKFLAGS
+                        Extra link flags for the examples
+  --example-flags=EXAMPLE_FLAGS
+                        Extra compilation flags for the examples
+  --example-rpath=EXAMPLE_RPATHS
+                        Extra rpath dirs for examples
   --doxygen-install=DOXYGEN_INSTALL
                         Doxygen installation directory
   --doxygen=DOXYGEN     Doxygen command name
+  --doxygen-internal    Create internal version of build documentation (just
+                        changes paths for git repos)
   -c, --clean           Clean targets
   -k, --keep-going      Keep going after errors occur when building
   --messages            Enable use xed's debug messages
+  --no-pedantic         Disable -pedantic (gnu/clang compilers).
   --asserts             Enable use xed's asserts
   --clr                 Compile for Microsoft CLR
   --no-werror           Disable use of -Werror on GNU compiles
-  --gen-ild-storage     Dump ILD storage data file.
   --show-dag            Show the dependence DAG
-  --ext=EXT             Add extension files of the form
-                        pattern-name:file-name.txt
-  --extf=EXTF           Add extension configuration files     that contain
-                        lines of form pattern-name:file-name.txt. All files
+  --ext=EXT             Add extension files of the form pattern-name:file-
+                        name.txt
+  --extf=EXTF           Add extension configuration files that contain lines
+                        of form pattern-name:file-name.txt. All files
                         references will be made relative to the directory in
-                        which the     config file is located
+                        which the config file is located.
+  --xedext-dir=XEDEXT_DIR
+                        XED extension dir
+  --tests-extension=TESTS_EXT
+                        Tests directories extension
   --default-isa-extf=DEFAULT_ISA
                         Override the default ISA files.cfg file
-  --no-avx              Do not include AVX
-  --no-xsaveopt         Do not include XSAVEOPT
-  --no-ivbavx           Do not include AVX for IVB.
-  --no-ivbint           Do not include integer (nonAVX) IVB NI.
-  --no-avxhsw           Do not include AVX for HSW.
+  --no-avx              Do not include AVX (nor down-stream unrelated
+                        technologies).
+  --no-avx512           Do not include AVX512 (nor down-stream unrelated
+                        technologies).
+  --no-ivb              Do not include IVB.
+  --no-hsw              Do not include HSW.
   --no-mpx              Do not include MPX.
-  --no-sha              Do not include SHA.
-  --no-bdw              Do not include BDW NI.
-  --no-glm              Do not include GLM.
-  --knl                 Include KNL AVX512{PF,ER} on top of AVX512{F,CD}.
-                        Default: Currently enabled.
-  --no-knl              Do no include KNL AVX512{PF,ER}. Default: KNL enabled.
-  --no-skl              Do not include SKL.
-  --no-skx              Do not include SKX.
-  --no-memory-future    Do not include future memory NI.
-  --no-avx512-future    Do not include future avx512 instructions.
-  --dbghelp             Use dbghelp.dll on windows.
-  --install-dir=INSTALL_DIR
-                        XED Install directory.
-                        Default: kits/xed-install-date-os-cpu
-  --kit-kind=KIT_KIND   Kit version string.
-                        The default is 'base'
+  --no-cet              Do not include CET.
+  --no-knl              Do no include KNL AVX512{PF,ER}.
+  --no-knm              Do not include KNM.
+  --no-skl              Do not include SKL (Skylake Client).
+  --no-skx              Do not include SKX (Skylake Server).
+  --no-clx              Do not include CLX (Cascade Lake Server).
+  --no-cpx              Do not include CPX (Cooper Lake Server).
+  --no-cnl              Do not include CNL.
+  --no-icl              Do not include ICL.
+  --no-tgl              Do not include TGL.
+  --no-adl              Do not include ADL.
+  --no-spr              Do not include SPR.
+  --no-future           Do not include future NI.
   --no-amd              Disable AMD public instructions
+  --no-via              Disable VIA public instructions
+  --no-lakefield        Disable lakefield public instructions
+  --no-gnr              Disable Granite Rapids public instructions
+  --no-srf              Disable Sierra Forest public instructions
+  --no-cwf              Disable Clearwater Forest public instructions
+  --no-ptl              Disable Panther Lake public instructions
+  --no-emr              Disable Emerald Rapids public instructions
+  --no-arl              Disable Arrow Lake public instructions
+  --no-lnl              Disable Lunar Lake public instructions
+  --dbghelp             Use dbghelp.dll on windows.
+  --prefix=PREFIX_DIR   XED System install directory.
+  --prefix-lib-dir=PREFIX_LIB_DIR
+                        library subdirectory name. Default: lib
+  --install-dir=INSTALL_DIR
+                        XED Install directory. Default: kits/xed-install-date-
+                        os-cpu
+  --kit-kind=KIT_KIND   Kit version string.  The default is 'base'
   --limit-strings       Remove some strings to save space.
   --no-encoder          Disable the encoder
   --no-decoder          Disable the decoder
   --generator-options=GENERATOR_OPTIONS
-                        Options to pass through for
-                        the decode generator
+                        Options to pass through for the decode generator
   --legal-header=LEGAL_HEADER
-                        Use this special legal header
-                        on public header files and examples.
-  --python=PYTHONARG    Use a specific version of python
-                        for subprocesses.
+                        Use this special legal header on public header files
+                        and examples.
+  --python=PYTHONARG    Use a specific version of python for subprocesses.
+  --ld-library-path=LD_LIBRARY_PATH
+                        Specify additions to LD_LIBRARY_PATH for use when
+                        running ldd and making kits
+  --ld-library-path-for-tests=LD_LIBRARY_PATH_FOR_TESTS
+                        Specify additions to LD_LIBRARY_PATH for use when
+                        running the tests
   --elf-dwarf, --dwarf  Use libelf/libdwarf. (Linux only)
   --elf-dwarf-precompiled
                         Use precompiled libelf/libdwarf from  the XED source
@@ -407,8 +445,22 @@ Options:
   --strip=STRIP         Path to strip binary. (Linux only)
   --pti-test            INTERNAL TESTING OPTION.
   --compress-operands   use bit-fields to compress the operand storage.
+  --add-orphan-inst-to-future-chip
+                        Add orphan isa-sets to future chip definition.
   --test-perf           Do performance test (on linux). Requires specific
                         external test binary.
+  --pin-crt=PIN_CRT     Compile for the Pin C-runtime. Specify path to pin kit
+  --static-stripped     Make a static libxed.a renaming internal symbols
+  --set-copyright       Set the Intel copyright on Windows XED executable
+  --asan                Use Address Sanitizer (on linux)
+  --enc2                Build the enc2 fast encoder. Longer build.
+  --enc2-test           Build the enc2 fast encoder *tests*. Longer build.
+  --enc2-test-checked   Build the enc2 fast encoder *tests*. Test the checked
+                        interface. Longer build.
+  --encoder-chip=ENCODER_CHIP
+                        Specific encoder chip. Default is ALL
+  --setup-hooks         Copies git hook scripts locally and exits. Does NOT
+                        build XED
 @endcode
 
 

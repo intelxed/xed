@@ -801,7 +801,7 @@ class rule_t(object):
              "condition list, we do not support it currently") % str(self)
         die(error)
 
-    def emit_isa_rule(self, ith_rule, group):
+    def emit_isa_rule(self, ith_rule, group: ins_emit.ins_group_t):
         ''' emit code for INSTRUCTION's rule:
             1. conditions.
             2. set of the encoders iform index.
@@ -1039,12 +1039,30 @@ class rule_t(object):
     def get_all_fbs(self):
         ''' collect all the actions that sets fields '''
         fbs = []
+        found_map_fb = False
         for action in self.actions:
             if action.is_field_binding():
-                    fbs.append(action)
+                fbs.append(action)
+                if action.field_name == 'MAP': 
+                    found_map_fb = True
             if action.is_emit_action() and action.emit_type == 'numeric':
                 if action.field_name:
                     fbs.append(action)
+
+        if not found_map_fb:
+            # MAP binding does not exist in Legacy encoding space (implied by the escape and map bytes)
+            # Force MAP binding as it is needed for REX2 support (to emit the REX2.MAP 
+            # bit and validate a legal map-id whenever REX2 prefix is emitted)
+            legacy_map_pattern = re.compile(r'^LEGACY_MAP(?P<mapid>[0-9])$')
+            vv0_map = 0
+            for action in self.actions:
+                if action.field_name:
+                    m = legacy_map_pattern.match(action.field_name)
+                    if m:
+                        cond_die(vv0_map, '', 'Legacy map was set twice')
+                        vv0_map = int(m['mapid'])
+            fbs.append(actions.action_t(f'MAP={vv0_map}'))
+
         return fbs
     
     def get_all_emits(self):
@@ -1093,19 +1111,20 @@ class iform_t(object):
         self._fixup_non_evex_conditions()
         self._fixup_evex_scalable_operands()
         self._find_legacy_map(map_info)
+        self._fixup_non_egpr_conditions()
         self.rule = self.make_rule()
 
     def _find_legacy_map(self, map_info):
         """Set self.legacy_map to the map_info_t record that best matches"""
         if self.encspace == 0:
             s = []
-            self.legacy_map = None
+            self.legacy_map: map_info_rdr.map_info_t = None
             for act in self.enc_actions:
                 if act.type == 'bits':
                     s.append(act.value)
             if s:
                 found = False
-                default_map = None
+                default_map: map_info_rdr.map_info_t = None
                 for m in map_info:
                     if m.space == 'legacy':
                         if m.legacy_escape == 'N/A':  # 1B map (map 0)
@@ -1169,6 +1188,16 @@ class iform_t(object):
            The modal_patterns become conditions later on."""
         if self.encspace != 2: # Not EVEX
             self.modal_patterns.append("MUST_USE_EVEX=0")
+
+    def _fixup_non_egpr_conditions(self):
+        """if instruction does not support EGPRs (GPR>16).
+           add modal_pattern HAS_EGPR=0 which become a condition later on"""
+        if self.encspace == 1: # VEX
+            self.modal_patterns.append("HAS_EGPR=0")
+        elif self.encspace == 0: # Legacy
+            if self.legacy_map.map_id not in [0,1]:
+                # REX2 supports MAP0 and MAP1
+                self.modal_patterns.append("HAS_EGPR=0")
     
     def make_operand_name_list(self):
         """Make an ordered list of operand storage field names that
@@ -2101,7 +2130,7 @@ class encoder_configuration_t(object):
         return False
             
         
-    def parse_one_decode_rule(self, iclass, operand_str, pattern_str):
+    def parse_one_decode_rule(self, iclass, operand_str, pattern_str, attribute_str):
         """Read the decoder rule from the main ISA file and package it
         up for encoding. Flipping things around as necessary.
         
@@ -2149,12 +2178,16 @@ class encoder_configuration_t(object):
 
             # special cases
 
-            # VL is generally an encoder input, except in some cases
-            # (VZERO*, BMI, KMASKS, etc.)
             do_encoder_input_check = True
+            # VL is generally an encoder input, except in some cases (VZERO*, BMI, KMASKS, etc.)
             if p_short in ['VL'] and self.force_vl_encoder_output(iclass, operand_str, pattern_str):
                 do_encoder_input_check = False
-                
+            # The NF (No-Flags) XED operand is used as an encoder input for APX no-flag 
+            # instructions. Those instructions are defined with the APX_NF attribute.
+            # NF=1 should not be an encoder input if it represents other properties (see {,CF}CMOV)
+            elif p == 'NF=1' and attribute_str and 'APX_NF' not in attribute_str:
+                do_encoder_input_check = False
+
             if do_encoder_input_check:
                 if p_short in storage_fields and storage_fields[p_short].encoder_input:
                     if voperand():
@@ -2231,7 +2264,7 @@ class encoder_configuration_t(object):
         # from the instruction decode patterns (MOD[mm] etc.). We
         # ignore the ones for constant bindings!
         for (field_name,value) in extra_bindings:
-            if genutil.numeric(value):
+            if genutil.is_numeric(value):
                 #msgerr("IGNORING %s %s" % (field_name, value))
                 pass # we ignore things that are just bits at this point.
             else:
@@ -2279,9 +2312,8 @@ class encoder_configuration_t(object):
         for a in modal_patterns:
             msg("\t" +  str(a))
     
-    def finalize_decode_conversion(self,iclass, operands, ipattern, uname=None,
-                                   real_opcode=True,
-                                   isa_set=None):
+    def finalize_decode_conversion(self,iclass, operands, ipattern, uname,
+                                   real_opcode, isa_set, iattribute):
         if ipattern  == None:
             die("No ipattern for iclass %s and operands: %s" % 
                 (str(iclass), operands ))
@@ -2291,7 +2323,7 @@ class encoder_configuration_t(object):
         # the encode actions are the decode patterns    (as [ blot_t ])
         # the modal_patterns are things that should become encode conditions
         (conditions, actions, modal_patterns) = \
-                      self.parse_one_decode_rule(iclass, operands, ipattern)
+                      self.parse_one_decode_rule(iclass, operands, ipattern, iattribute)
         if vfinalize():
             self.print_iclass_info(iclass, operands, ipattern, conditions, 
                                    actions, modal_patterns)
@@ -2339,6 +2371,7 @@ class encoder_configuration_t(object):
         real_opcode = True
         extension = None # used  if no isa_set found/present
         isa_set = None
+        iattribute = None
         
         while len(lines) > 0:
             line = lines.pop(0)
@@ -2384,6 +2417,7 @@ class encoder_configuration_t(object):
                 real_opcode = True
                 extension = None # used  if no isa_set found/present
                 isa_set = None
+                iattribute = None
 
                 continue
             
@@ -2423,12 +2457,16 @@ class encoder_configuration_t(object):
                 ipattern = ip.group('ipattern')
                 continue
             
+            iatt = iattribute_pattern.match(line)
+            if iatt:
+                iattribute = iatt.group('iattribute')
+            
             if no_operand_pattern.match(line):
                 if not isa_set:
                     isa_set = extension
                 self.finalize_decode_conversion(iclass,'', 
                                                 ipattern, uname,
-                                                real_opcode, isa_set)
+                                                real_opcode, isa_set, iattribute)
                 continue
 
             op = operand_pattern.match(line)
@@ -2438,7 +2476,7 @@ class encoder_configuration_t(object):
                     isa_set = extension
                 self.finalize_decode_conversion(iclass, operands, 
                                                 ipattern, uname,
-                                                real_opcode, isa_set)
+                                                real_opcode, isa_set, iattribute)
                 continue
 
         return

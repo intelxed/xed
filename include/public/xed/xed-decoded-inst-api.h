@@ -107,7 +107,7 @@ XED_DLL_EXPORT xed_uint32_t
 xed_decoded_inst_has_mpx_prefix(const xed_decoded_inst_t* p);
 
 /// @ingroup DEC
-// Return non-zero value for APX-Promtoed zero-upper instructions
+/// @brief Return non-zero value for APX-Promtoed zero-upper instructions (ZU).
 XED_DLL_EXPORT xed_bool_t 
 xed_decoded_inst_is_apx_zu(const xed_decoded_inst_t* p);
 
@@ -529,6 +529,11 @@ XED_DLL_EXPORT xed_reg_enum_t
 xed_decoded_inst_get_reg(const xed_decoded_inst_t* p, 
                          xed_operand_enum_t reg_operand);
 
+/// @ingroup DEC
+/// Return DFV register enumeration if one of the instruction's operands
+/// is a "default flags values" pseudo-register and invalid register enumeration otherwise
+XED_DLL_EXPORT xed_reg_enum_t 
+xed_decoded_inst_get_dfv_reg(const xed_decoded_inst_t* xedd);
 
 /// See the comment on xed_decoded_inst_uses_rflags(). This can return 
 /// 0 if the flags are really not used by this instruction.
@@ -683,8 +688,8 @@ xed_decoded_inst_set_user_data(xed_decoded_inst_t* p,
 /// @name xed_decoded_inst_t Classifiers
 //@{
 /// @ingroup DEC
-/// True for APX instructions, includes instructions with EGPRs, REX2 and 
-/// encodings that are treated as illegal on non-APX systems
+/// @brief True for APX instructions.
+/// includes instructions with EGPRs, REX2 and encodings that are treated as illegal on non-APX systems
 XED_DLL_EXPORT xed_bool_t
 xed_classify_apx(const xed_decoded_inst_t* d);
 /// @ingroup DEC

@@ -159,6 +159,25 @@ xed_simple_flag_get_undefined_flag_set(const xed_simple_flag_t* p) {
     return &(p->undefined);
 }
 
+xed_bool_t xed_flag_dfv_get_default_flags_values(xed_reg_enum_t dfv_reg, xed_flag_dfv_t* p){
+    /* stores the default flags values given a DFV register, or do nothing and return 0 otherwise */
+#if defined(XED_APX)
+    if (dfv_reg >= XED_REG_DFV0 && dfv_reg <= XED_REG_DFV15)
+    {
+        xed_uint32_t dfv_idx = dfv_reg - XED_REG_DFV0;
+        p->flat = 0;
+        p->s.of = (dfv_idx >> 3) & 0x1;
+        p->s.sf = (dfv_idx >> 2) & 0x1; 
+        p->s.zf = (dfv_idx >> 1) & 0x1; 
+        p->s.cf = (dfv_idx >> 0) & 0x1;
+        return 1;
+    }
+#endif
+    (void) dfv_reg;
+    (void) p;
+    return 0;
+}
+
 xed_bool_t     xed_simple_flag_get_may_write(const xed_simple_flag_t* p)     {
     return p->may_write;
 }

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -67,6 +67,22 @@ OUTREG=XED_REG_R12D -> nothing
 OUTREG=XED_REG_R13D -> nothing
 OUTREG=XED_REG_R14D -> nothing
 OUTREG=XED_REG_R15D -> nothing
+OUTREG=XED_REG_R16D -> nothing
+OUTREG=XED_REG_R17D -> nothing
+OUTREG=XED_REG_R18D -> nothing
+OUTREG=XED_REG_R19D -> nothing
+OUTREG=XED_REG_R20D -> nothing
+OUTREG=XED_REG_R21D -> nothing
+OUTREG=XED_REG_R22D -> nothing
+OUTREG=XED_REG_R23D -> nothing
+OUTREG=XED_REG_R24D -> nothing
+OUTREG=XED_REG_R25D -> nothing
+OUTREG=XED_REG_R26D -> nothing
+OUTREG=XED_REG_R27D -> nothing
+OUTREG=XED_REG_R28D -> nothing
+OUTREG=XED_REG_R29D -> nothing
+OUTREG=XED_REG_R30D -> nothing
+OUTREG=XED_REG_R31D -> nothing
 
 xed_reg_enum_t GPR64e()::
 OUTREG=XED_REG_RAX -> nothing
@@ -85,3 +101,19 @@ OUTREG=XED_REG_R12 -> nothing
 OUTREG=XED_REG_R13 -> nothing
 OUTREG=XED_REG_R14 -> nothing
 OUTREG=XED_REG_R15 -> nothing
+OUTREG=XED_REG_R16 -> nothing
+OUTREG=XED_REG_R17 -> nothing
+OUTREG=XED_REG_R18 -> nothing
+OUTREG=XED_REG_R19 -> nothing
+OUTREG=XED_REG_R20 -> nothing
+OUTREG=XED_REG_R21 -> nothing
+OUTREG=XED_REG_R22 -> nothing
+OUTREG=XED_REG_R23 -> nothing
+OUTREG=XED_REG_R24 -> nothing
+OUTREG=XED_REG_R25 -> nothing
+OUTREG=XED_REG_R26 -> nothing
+OUTREG=XED_REG_R27 -> nothing
+OUTREG=XED_REG_R28 -> nothing
+OUTREG=XED_REG_R29 -> nothing
+OUTREG=XED_REG_R30 -> nothing
+OUTREG=XED_REG_R31 -> nothing

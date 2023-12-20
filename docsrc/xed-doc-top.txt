@@ -23,14 +23,14 @@
 
 // ===========================================================================  
 /*! 
-@mainpage X86 Encoder Decoder User Guide
+@mainpage Intel&reg; X86 Encoder Decoder User Guide
 
-2020-11-13
+November 2023
 
 @section INTRO Introduction
 
 
-XED is an acronym for X86 Encoder Decoder. The
+Intel&reg; XED is an acronym for X86 Encoder Decoder. The
 latter part is pronounced like the (British) English "z".
 
 Intel&reg; X86 Encoder Decoder (Intel&reg; XED) is a software library 
@@ -41,18 +41,18 @@ and produces a data structure describing the opcode and operands, and flags.
 The generic encoder takes a similar data structure and produces a sequence 
 of 1 to 15 bytes.
 
-There another encoder called "enc2" available that is much faster than
+There is another encoder called "enc2" available that is much faster than
 the generic encoder mentioned above.  Rather than using a generic
 interface, in enc2, instruction encoding is done by calling one of a
 very large number of functions, passing as arguments the registers and
-constants that would be used the assembly language description of the
+constants that would be used in the assembly language description of the
 instruction.  There are two interfaces to the enc2 encoder:
-"unchecked" and "checked". The unchecked version is faster and assumes
-the arguments passed to it are in the correct ranges. The checked
-version validates that the argument passed in are in the correct
+unchecked and checked. The unchecked version is faster and assumes
+that the arguments passed in are in the correct ranges. The checked
+version validates that the arguments passed in are in the correct
 ranges and if that succeeds, it calls the corresponding unchecked
 version of the function.  The checking can be skipped if desired using
-a runtime setting. The enc2 encoder is available in builds done with
+a runtime setting. The enc2 encoder is available in builds with
 the "--enc2" option. Due to the large amount of code generated, that
 build takes longer.
 
@@ -61,13 +61,13 @@ Intel&reg; XED is multi-thread safe.
 Intel&reg; XED was designed to be very fast and extensible.
 
 Intel&reg; XED compiles with the following compilers:
-    <ul>   
+    <ul>
     <li> GNU GCC
     <li> Microsoft Visual Studio
     <li> Intel ICL/ICC
-    <li> LLVM/Clang 
+    <li> LLVM/Clang
     </ul>
-    
+
 
 Intel&reg; XED works with the following operating systems:
     <ul>
@@ -78,7 +78,7 @@ Intel&reg; XED works with the following operating systems:
     </ul>
 
 The Intel&reg; XED examples (@ref EXAMPLES) also include binary image readers for
-Windows PECOFF, ELF and Mac OS X* MACHO binary file formats for 32b and
+Windows PECOFF, ELF, and Mac OS X* MACHO binary file formats for 32b and
 64b. These allow Intel&reg; XED to be used as a simple (not symbolic)
 disassembler. The Intel&reg; XED disassembler supports 3 output formats: Intel,
 ATT SYSV, and a more detailed internal format describing all resources
@@ -98,8 +98,8 @@ read and written.
 @section BUILD Building your program using Intel&reg; XED.
 
 This section describes the requirements for compiling with Intel&reg; XED and
-linking the libxed.a library. It assumes you are building from a
-Intel&reg; XED kit, and not directly from the sources. (See the "install"
+linking the libxed.a library. It assumes you are building from an
+Intel&reg; XED kit and not directly from the sources. (See the "install"
 option in the Intel&reg; XED build manual for information on making kits).
 
 The structure of a Intel&reg; XED kit is as follows:
@@ -120,7 +120,7 @@ Your compilation statement must include:
 @code
 -Ixed-kit-name/include
 @endcode
-where "xed-kit-name" is the place you've unpacked the Intel&reg; XED kit.
+where "xed-kit-name" is where you've unpacked the Intel&reg; XED kit.
 
 Your Linux or Mac OS X* link statement must reference the libxed library:
 @code
@@ -146,7 +146,7 @@ different). The following external functions/symbols are required for
 linking a program with libxed, with one caveat: The functions fprint
 and abort and the data object stderr are optional. If users register
 their own abort handler using #xed_register_abort_function () , then
-fprintf, stderr and abort are not required and can be stubbed out to
+fprintf, stderr, and abort are not required and can be stubbed out to
 satisfy the linker.
 
 Required:
@@ -181,6 +181,13 @@ well-defined components:
             width. The R, X and B fields extend the register
             encodings. The REX byte must be right before the opcode
             bytes else it is ignored.
+
+            <li> REX2 prefix, a 2-byte variant of the REX prefix, introduced with Intel&reg; APX extensions (see @ref APX), 
+            adds 16 Extended General Purpose Registers (EGPRs) across the legacy instruction set. 
+            It has eight 1-bit fields: M0, R4, X4, B4, W, R3, X3 and B3.
+            R3, X3, B3 and W bits are the same as R, X and B bits in the REX prefix.
+            While R4, X4, and B4 are additional bits used to encode the 32 EGPR registers.
+            M0 bit selects between legacy maps 0 and 1 (1-byte opcodes no escape and 2-byte opcodes escape 0x0F respectively).
        
             <li> VEX prefix byte sequence. The VEX prefix is used
             mostly for AVX1 and AVX2 instructions as well as BMI1/2
@@ -189,7 +196,12 @@ well-defined components:
             0xC5 byte. The 3-byte sequence begins with an 0xC4 byte.
 
             <li> EVEX prefix. The EVEX 4-byte sequence used for
-            encoding Intel AVX512 instructions and begins with an 0x62 byte.
+            encoding Intel&reg; AVX512 instructions and begins with an 0x62 byte. Intel&reg; APX provides
+            an extended version of the prefix, where the semantics of several payload bits are redefined.
+            The extension is essentially used to provide Intel&reg; APX features for legacy instructions that cannot be provided 
+            by other prefixes, such as support for the new data destination (see @ref APX) or status flags update suppression
+            "no flags" which are represented by the ND and NF bits respectively in the third payload byte.
+            Note that the byte following the extended EVEX prefix is always interpreted as the main opcode byte.
             
          </ul>
 
@@ -198,25 +210,25 @@ well-defined components:
          complexity.
          
     <li> 1-3 opcode bytes. When more than one opcode byte is required
-    the leading bytes (called escapes) are either 0x0F, 0x0F 0x38 or
+    the leading bytes (called escapes) are either 0x0F, 0x0F 0x38, or
     0x0F 0x3A.  With VEX and EVEX prefixes, the escape bytes are
     encoded differently.
     
     <li> MODRM byte. Used for addressing memory, refining opcodes,
-    specifying registers.  Optional, but common.  It has 3 fields: the
+    and specifying registers.  Optional, but common.  It has three fields: the
     2-bit "mod", the 3-bit "reg" and 3-bit "r/m" fields.
        
     <li> SIB byte. Used for specifying memory addressing, optional.
-     It has 3 fields: the 2-bit scale, 3-bit index and 3-bit base.
+     It has three fields: the 2-bit scale, 3-bit index, and 3-bit base.
        
     <li> Displacement bytes. Used for specifying memory offsets, optional.
     <li> Immediate bytes.  Optional
     </ul>
 
 
-Immediates and displacements are usually limited to 4 bytes, but there
-are several variants of the MOV instruction that can take 8B
-values. The AMD 3DNow ISA extension uses the immediate field to
+Immediates and displacements are usually limited to 4 bytes, but several 
+variants of the MOV instruction can take 8B values. 
+The AMD 3DNow ISA extension uses the immediate field to
 provide additional opcode information.
 
 The legacy prefix bytes are used for:
@@ -229,9 +241,9 @@ The legacy prefix bytes are used for:
     <li> opcode refinement. 
     </ul>
 
-There are 11 distinct legacy prefixes. Three of them (operand size,
+There are 11 distinct legacy prefixes. Three of them (operand size
 and the two repeat prefixes) have different meanings in different
-contexts; Sometimes they are used for opcode refinement and do not
+contexts. Sometimes they are used for opcode refinement and do not
 have their default meaning. Less frequently, two of the segment
 overrides can be used for conditional branch hints.
 
@@ -244,11 +256,59 @@ For additional information on the instruction semantics and encodings:
 <li>  <a href="http://www.intel.com/software/isa">http://www.intel.com/software/isa</a> Information on future ISA extensions.
 </ul>
 
+@subsection APX Intel&reg; APX
+
+Intel&reg; Advanced Performance Extensions (Intel&reg; APX) expands the Intel&reg; 64 instruction set architecture with
+access to more registers and adds various new features that improve general-purpose performance. The
+extensions are designed to provide efficient performance gains across a variety of workloads without
+significantly increasing the silicon area or power consumption of the core.
+The main features of Intel&reg; APX include:
+<ul>
+    <li> Extended GPRs, also known as EGPRs (see @ref APX_OPERANDS)
+    <li> Three-operand instructions with a new data destination (NDD); legacy integer instructions can now use EVEX to encode a dedicated
+    destination register operand – turning them into three-operand instructions and reducing the need for extra register move instructions.
+    The NDD receives the result of the computation, and all other operands (including the original destination operand) become read-only source operands
+    <li> Legacy-promoted instructions that support status flag update suppression "no flags" (NF); an option for the compiler to suppress the status flags writes 
+    of common instructions (no CSPAZO flags, such as Parity, Overflow...)
+    <li> Conditional ISA improvements: New conditional load, store and, compare instructions
+    <li> Optimized register state save/restore operations
+    <li> A new 64-bit absolute direct jump instruction
+    <li> Zero Upper (ZU) support for several APX-Promoted instructions, which zero the upper bits of a destination GPR. The destination GPR will get the 
+    instruction’s result in bits [OSIZE-1:0] and, if OSIZE < 64b, have its upper bits [63:OSIZE] zeroed
+</ul>
+
+Intel&reg; APX instructions' definition by Intel&reg; XED;
+
+Legacy:
+  - Instructions with REX2 prefix are not defined with new iforms or new ISA-SETs
+  - The APXLEGACY extension group includes new APX-F instructions
+
+EVEX:
+  - Existing (non-APX) EVEX instructions with EGPRs are not defined with new iforms or new ISA-SETs
+  - Promoted and new instructions are defined with new iforms using the '_APX' suffix
+  - Promoted new data destination instructions with the 'APX_NDD' attribute
+  - Promoted no flags instructions with the 'APX_NF' attribute
+  - The APXEVEX extension group includes new and promoted APX-F instructions
+
+@subsection AVX10 Intel&reg; AVX10
+
+Intel&reg; Advanced Vector Extensions 10 (Intel&reg; AVX10) establishes a common, converged vector instruction set across all Intel&reg; architectures, incorporating the modern 
+vectorization aspects of Intel&reg; AVX-512.
+
+The Intel&reg; AVX10 architecture introduces several new features and capabilities;
+<ul>
+    <li> Introduces a version-based instruction set enumeration
+    <li> Allows a converged implementation supported on all Intel&reg; CPUs to include all the existing Intel&reg;  AVX-512 capabilities such 
+    as EVEX encoding, 32 vector registers and 8 32-bit opmask registers at maximum vector length of 256 (Intel&reg; AVX10/256)
+    <li> Allows an implementation to include support for 512-bit vector and 64-bit opmask registers on P-Core CPUs (Intel&reg; AVX10/512) for 
+    heavy vector compute applications that can leverage the additional vector length
+    <li> Introduces embedded rounding and Suppress All Exceptions (SAE) control for YMM versions of the instructions
+</ul>
 
 
-@section OVERVIEW Overview of XED approach
+@section OVERVIEW Overview of Intel&reg; XED approach
 
-XED has two fundamental interfaces: encoding and decoding. Supporting
+Intel&reg; XED has two fundamental interfaces: encoding and decoding. Supporting
 these interfaces are many data structures, but the two starting points
 are the #xed_encoder_request_t and the #xed_decoded_inst_t .  The
 #xed_decoded_inst_t has more information than the
@@ -256,20 +316,66 @@ are the #xed_encoder_request_t and the #xed_decoded_inst_t .  The
 common fields called the #xed_operand_values_t. 
 
 The output of the decoder, the #xed_decoded_inst_t , includes additional
-information that is not required for encoding, but provides more
+information that is not required for encoding but provides more
 information about the instruction resources.
 
 The common operand fields, used by both the encoder and decoder, hold
 the operands and the memory addressing information. 
 
-The decoder has an operands array that holds order of the decoded
+The decoder has an operands array that holds the order of the decoded
 operands. This array indicates whether or not the operands are read or
 written.
 
 The encoder has an operand array where the encoder user must specify
 the order of the operands used for encoding.
 
+@subsection CPUID CPUID
 
+Intel&reg; XED ISA-SETs can be mapped to one or more CPUID groups, each being mapped to one or more CPUID records.
+The CPUID record contains information about the register containing the bits to be set, the leaf, subleaf and bit indices. 
+When the leaf and subleaf values are loaded into the EAX and ECX registers, respectively, the CPUID instruction sets the specified
+bits of the specified register, indicating support for the ISA or the feature, which is often the CPUID name field.
+
+Intel&reg; AVX10 introduced a versioned approach for enumeration that ensures that all Intel&reg; CPUs support the same features 
+and instructions at a given Intel&reg; AVX10 version number. This approach also reduced the required number of CPUID feature flags
+to be checked to determine feature support. This way, usually, it is only needed to check three fields:
+1.	A CPUID feature bit indicating that the Intel&reg; AVX10 ISA is supported
+2.	A version number to ensure that the supported version is greater than or equal to the desired version
+3.	A vector length bit indicating the maximum supported vector length 
+
+Determining whether an ISA-SET is supported by a chip:
+For ISA-SETs with a single CPUID group, all of its CPUID records must be set in order to be supported by the chip.
+For ISA-SETs with multiple CPUID groups, at least one CPUID group must be satisfied. In order to match one group, all of its cpuid records
+must be set. To simplify things, we can transform it into a logical expression -
+@code
+        "CPUID GROUP A"                                        OR     "CPUID GROUP B"                                       OR ...
+        ("CPUID RECORD A.A" AND "CPUID RECORD A.B" AND ... )   OR    ("CPUID RECORD B.A" AND "CPUID RECORD B.B" AND ... )   OR ...
+@endcode
+If one CPUID group is satisfied, the whole expression will be satisfied ("OR" relationship), thus indicating chip support for the ISA.
+Since the CPUID group itself is an "AND" expression between all of its CPUID records, all CPUID records must be set (satisfied)
+in order to satisfy the sub-expression.
+
+For instance, the ISA-SET AVX512F_512 has the following CPUIDS groups: 
+The Intel&reg; AVX10 CPUID group with three CPUID records:
+<ul>
+    <li> CPUID name avx10_enabled, leaf 0x7, sub-leaf 0x1, register EDX, bit 19
+    <li> CPUID name avx10_ver1, leaf 0x24, sub-leaf 0x0, register EBX, bits 0 to 7
+    <li> CPUID name avx10_512vl, leaf 0x24, sub-leaf 0x0, register EBX, bit 18
+</ul>
+The feature group with a single CPUID record:
+<ul>
+    <li> CPUID name avx512f, leaf 0x7, sub-leaf 0x0, register EBX, bit 16
+</ul>
+This means that a chip supports AVX512F_512 ISA if at least one of the two groups has a match.
+In order to match one CPUID group, all of its records must be set. So either the first group's three CPUID records or the second 
+group's single CPUID record must be set.
+
+To provide further insight on Intel&reg; AVX10 CPUID, let's discuss the first CPUID group of AVX512F_512:
+The first record ("AVX10 Converged Vector ISA Enable" bit) is indicative of processor support of Intel&reg; AVX10 ISA. The second CPUID record 
+specifies the processor's minimal required Intel&reg; AVX10 version (in this case, AVX10.1). The last CPUID record is the vector length bit indicating 
+the maximum supported VL (512).
+
+For the recommended usage of the Intel&reg; XED CPUID APIS, see @ref SMALLEXAMPLES .
 
 // ===========================================================================  
 @section ICLASS Instruction classes 
@@ -295,7 +401,7 @@ to handle all the nuances of the ISA. This is an attempt to explain
 the nonstandard handling of certain instruction names.
 
 The FAR versions of 3 opcodes (really 6 distinct opcodes) are given
-the opcode names CALL_FAR, JMP_FAR and RET_FAR. The AMD documentation
+the opcode names CALL_FAR, JMP_FAR, and RET_FAR. The AMD documentation
 lists the far return as RETF. I call that RET_FAR to be consistent
 with the other far operations.
 
@@ -305,22 +411,22 @@ instruction MOVSD, Intel&reg; XED calls the SSE version MOVSD_XMM.
 In March 2015, a change was made to certain Intel&reg; XED iclasses to simplify
 the implementation. The changes are as follows:
     <ul>
-    <li> XED_ICLASS_JRCXZ was split in to 3 distinct iclasses:
+    <li> XED_ICLASS_JRCXZ was split in to three distinct iclasses:
     XED_ICLASS_JCXZ, XED_ICLASS_JECXZ and XED_ICLASS_JRCXZ.
     <li> The REP-prefixed (0xF2, 0xF3) string instructions were split
     in to new iclasses making them distinct from the underlying
     non-REP-prefixed instructions.  For example XED_ICLASS_REP_STOSW
-    is distinct from XED_ICLASS_STOSW.  And the CMPS{B,W,D,Q} and
+    is distinct from XED_ICLASS_STOSW.  The CMPS{B,W,D,Q} and
     SCAS{B,W,D,Q} instructions have "REPE_" or "REPNE_" prefixes to
     correspond to REPE (0xF3) or REPNE (0xF2).
     <li> LOCK-prefixed (0xF0) atomic read-modify-write memory
     instructions were split in to separate iclasses that contain the
-    substring "_LOCK".  LOCK-prefixed instructions have an attribute
+    substring "_LOCK".  LOCK-prefixed instructions had an attribute
     XED_ATTRIBUTE_LOCKED. Memory instructions that could have a lock
     prefix added to them when encoding, have an attribute
-    XED_ATTRIBUTE_LOCKABLE.  For example XED_ICLASS_CMPXCHG16B_LOCK
+    XED_ATTRIBUTE_LOCKABLE.  For example, XED_ICLASS_CMPXCHG16B_LOCK
     has a lock prefix, but XED_ICLASS_CMPXCHG16B does not have a lock
-    prefix.  As always XCHG is atomic with or without a LOCK prefix
+    prefix.  As always, XCHG is atomic with or without a LOCK prefix
     as per the rules of the ISA, so XED_ICLASS_XCHG does not have a
     _LOCK suffix in the xed_iclass_enum_t name.
     </ul>
@@ -328,7 +434,7 @@ the implementation. The changes are as follows:
 @subsection NOPs
 
 NOPs are very special. Intel&reg; XED allows for encoding NOPs of 1 to 9 bytes
-through the use of the XED_ICLASS_NOP (the one byte nop), and
+through the use of the XED_ICLASS_NOP (the one-byte nop), and
 XED_ICLASS_NOP2 ... XED_ICLASS_NOP9. These use the recommended NOP
 sequences from the Intel&reg; 64 and IA-32 Architectures Software Developers Manual.
 
@@ -339,7 +445,7 @@ it did zero the upper 32 bits, it would not be a NOP.
 
 There are two important NOP categories. XED_CATEGORY_NOP and
 XED_CATEGORY_WIDENOP. The XED_CATEGORY_NOP applies only to the 0x90
-opcode. The WIDENOP category applies to the NOPs in the two byte table
+opcode. The WIDENOP category applies to the NOPs in the two-byte table
 row 0F19...0F1F. The WIDENOPs take MODRM bytes, and optional SIB and
 displacements.
 
@@ -353,9 +459,9 @@ destination (read and written) and the second operand is just a source
 (read).
 
 For decode requests (#xed_decoded_inst_t), the operands array is
-stored in the #xed_inst_t strcture once the instruction is
-decoded. For encode requests, the request's operand order is stored in
-the #xed_encoder_request_t.
+stored in the #xed_inst_t structure once the instruction is
+decoded. The request's operand order is stored in the #xed_encoder_request_t
+for encode requests.
 
 There are several types of operands: 
       <ul>
@@ -373,7 +479,7 @@ conditionally read or written.  The visibility attribute
 (#xed_operand_visibility_enum_t) is described in the next subsection.
 
 The memory operation operand is really a pointer to separate fields
-that hold the memory operation information. The memory operation information is comprised of:
+that hold the memory operation information. The memory operation information is comprised of the following:
      <ul>
      <li> a segment register
      <li> a base register
@@ -401,8 +507,8 @@ There are several important things to note:
 
 @subsection AVX512_OPERANDS Intel&reg; AVX512 Operands
 
-Intel&reg; AVX512 adds write masking, merging and zeroing to the
-instruction set via the EVEX encodings.  Write masking, merging and
+Intel&reg; AVX512 adds write masking, merging, and zeroing to the
+instruction set via the EVEX encodings.  Write masking, merging, and
 zeroing are properties of the instruction encoding and are not visible
 by looking at individual operands. Write masking with merging makes it
 possible for values of the destination register to live on from prior
@@ -414,12 +520,12 @@ with zeros for elements that are "masked off".
 
 For most operands, to learn if the operand reads or writes its
 associated resource, one can use #xed_operand_rw(const xed_operand_t*
-p). However because masking, merging and zeroing are properties of the
+p). However, because masking, merging and zeroing are properties of the
 instruction, and not just the operand, use of a different function is
 required.
 
 To handle this, Intel&reg; XED has a new interface function
-#xed_decoded_inst_operand_action() which takes a #xed_decoded_inst_t
+#xed_decoded_inst_operand_action(), which takes a #xed_decoded_inst_t
 pointer and an operand index and indicates how the read/write behavior
 is modified in the presence of masking with merging or masking with
 zeroing.
@@ -435,12 +541,36 @@ for stores:
      a read with a conditional write.
 </ul>
 
+@subsection APX_OPERANDS Intel&reg; APX Operands
+
+2023 saw the introduction of Intel&reg; Advanced Performance Extensions (Intel&reg; APX),
+which expands the entire x86 instruction set with access to more registers.
+Intel&reg; APX doubles the number of general-purpose registers (GPRs) from 16 to 32 (Extended GPRs or EGPRs).
+
+New and promoted APX-F instructions are defined in one of the following Intel&reg; XED extension groups:
+- XED_EXTENSION_APXLEGACY: For new APX-F instructions within the Legacy encoding space
+- XED_EXTENSION_APXEVEX: For new and promoted APX-F instructions within the EVEX encoding space
+
+CCMP and CTEST are two new sets of instructions for conditional CMP and TEST, respectively. These instructions
+introduce a new 4-bit pseudo-register for "Default Flags Values" called DFV (EVEX.[OF, SF, ZF, CF]).
+
+The register index represents the bits for the default flags, for example, DFV10.index == 10 == 0b1010  ->  OF=1, SF=0, ZF=1, CF=0.
+The DFV pseudo-register should be explicitly defined in an encoder request.
+
+The xed_decoded_inst_get_dfv_reg() API can be used to retrieve a DFV register enumeration from a decoded instruction.
+The xed_flag_dfv_get_default_flags_values() API can be used to get the default flags values given a DFV register enumeration.
+
+Developers can, however, dynamically disable Intel&reg; APX architecture encoder support using the 'NO_APX' API xed3_operand_set_no_apx().
+The xed3_operand_set_must_use_evex() API can also be used for APX promoted instructions in order to force EVEX space upon the encoding request.
+
+Developers wishing to encode No-Flags Intel&reg; APX instructions should set the NF Intel&reg; XED operand.
+Whereas those wishing to encode SETcc/IMUL with Zero Upper behavior should set the ND Intel&reg; XED operand.
 
 @subsection OPERAND_VISIBILITY Operand Resource Visibilities
 
 See #xed_operand_visibility_enum_t .
 
-There are 3 basic types of resource visibilites: 
+There are three basic types of resource visibilities: 
       <ul>
       <li> EXPLICIT (EXPL), 
       <li> IMPLICIT (IMPL), and
@@ -448,9 +578,9 @@ There are 3 basic types of resource visibilites:
       </ul>
 
 Explicit are what you think they are: resources that
-are required for the encoding and for each explicit resource, there is
-field in the corresponding instruction encoding.  The implicit and
-suppressed resources are a more subtle.
+are required for the encoding, and for each explicit resource, and there is
+a field in the corresponding instruction encoding for each explicit resource.  The implicit and
+suppressed resources are more subtle.
 
 
 SUPP operands are:
@@ -466,12 +596,12 @@ IMPL operands are:
  <li> not represented using operand bits in the encoding (like SUPP).
  </ul>
 
-The implicit resources are required for selecting an encoding, but do
+The implicit resources are required for selecting an encoding but do
 not show up as a specific field in the instruction
 representation. Implicit resources do show up in a conventional
 instruction disassembly. In the IA-32 instruction set or Intel64
 instruction set, there are many instructions that use EAX or RAX
-implicitly, for example.  Sometimes the CL or RCX register is
+implicitly, for example.  Sometimes, the CL or RCX register is
 implicit. Also, some instructions have an implicit 1 immediate. The
 opcode you chose fixes your choice of implicit register or immediate.
 
@@ -504,7 +634,7 @@ writes st2. The output register that Intel&reg; XED provides is essentially "pre
 pop". The pop occurs afterward, conceptually. The actual result ends
 up in the st1 register after the stack pop operation.  Intel&reg; XED also lists
 the pseudo resources indicating that a stack pop has occurred. This
-behavior affects the output register of following instructions: FADDP,
+behavior affects the output register of the following instructions: FADDP,
 FMULP, FSUBRP, FSUBP, FDIVRP, FDIVP.
 
 @subsection PSEUDO_RESOURCES Pseudo Resources
@@ -512,13 +642,13 @@ FMULP, FSUBRP, FSUBP, FDIVRP, FDIVP.
 Some instructions reference machine registers or perform interesting
 operations that we need to represent.  For example, the IDTR and GDTR
 are represented as pseudo resources. Operations that pop the x87
-floating point register stack can have a X87POP or X87POP2 "register"
+floating point register stack can have an X87POP or X87POP2 "register"
 to indicate if the x87 register stack is popped once or twice. These
 are part of the #xed_reg_enum_t.
 
 @subsection IMM_DIS Immediates and Displacements
 
-Using the API functions for setting immediates, memory displacements
+Using the API functions for setting immediates, memory displacements,
 and branch displacements.  Immediates and Displacements are stored in
 normal integers internally, but they are stored endian swapped and
 left justified.  The API functions take care of all the endian
@@ -532,7 +662,7 @@ from a base register (including the instruction pointer) or start of a
 memory region.
 
 Immediates are signed or unsigned and are used for numerical
-computations, shift distances, and also hold things like segment
+computations and shift distances. They also hold things like segment
 selectors for far pointers for certain jump or call instructions.
 
 There is also a second 1B immediate used only for the ENTER
@@ -547,7 +677,7 @@ required, your displacement must be either 1 byte or 4 bytes
 long. This is expressed by OR'ing 1 and 4 together to get 0101 (base
 2) or 5 (base 10).
 
-If a four byte displacement was required, but the value was
+If a four-byte displacement was required, but the value was
 representable in fewer than four bytes, then the legal width should be
 set to 0100 (base 2) or 4 (base 10). 
 
@@ -602,7 +732,7 @@ whatsoever for conflicts or incompat- ibilities arising from future
 changes to them.
 
 The software described in this document may contain software defects
-which may cause the product to deviate from published
+that may cause the product to deviate from published
 specifications. Current characterized software defects are available
 on request.
 
@@ -615,7 +745,7 @@ countries.
 
 Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2002-2016 Intel Corporation. All Rights Reserved.
+Copyright (c) 2002-2023 Intel Corporation. All Rights Reserved.
 
 */
 
@@ -817,7 +947,7 @@ with one of "_a16", "_a32" or "_a64" substrings.
 The libraries for the ENC2 encoder are built when when includes the
 "--enc2" switch during the build process.  There is one set of
 libraries and headers generated for each supported
-configuration. Currently XED ENC2 supports 64b mode with 64b addrssing
+configuration. Currently Intel&reg; XED ENC2 supports 64b mode with 64b addrssing
 (m64,a64) and 32b mode with 32b addressing (m32,a32).  The build
 process creates an enc2-m64-a64 directory and an enc2-m32-a32
 directory, each with two libraries for the checked and unchecked
@@ -982,6 +1112,18 @@ type #xed_chip_enum_t represents a collection of xed "isa-sets".  If
 you have a #xed_decoded_inst_t, you can get the isa set via
 the function #xed_decoded_inst_get_isa_set.
 
+Intel&reg; XED chip-check supports the detection of all Intel&reg; APX instructions and flavors, whether be it a new Intel&reg; APX instruction,
+legacy instruction with REX2 prefix, EVEX instruction with EGPR as one of its operands (register or memory) or EVEX instruction with ignored EGPR encoding.
+
+*/
+
+/*! @defgroup CPUID CPUID Interface
+
+Each Intel&reg; XED ISA-SET can be mapped to one or more CPUID groups (feature bit, Intel&reg; AVX10...) and each CPUID group is mapped to one or
+more CPUID records.
+For each ISA-SET, the CPUID scan should accrue in two nested loops; by iterating through all ISA-SET's CPUID groups and by iterating through all group's CPUID records.
+For more usage example, please check the xed-ex1.c example (@ref SMALLEXAMPLES).
+
 */
 
 /*! @defgroup PRINT Printing (disassembling) Instructions
@@ -1090,8 +1232,7 @@ function for finding out what the last element of the enumeration is.
 /*! @defgroup CMDLINE Intel&reg; XED command interface
 
 The command line tool called xed or xed.exe is built when you build
-the examples (@ref EXAMPLES) that come with Intel&reg; XED. The xed-ex3 is just
-encode portion of the xed command line tool.
+the examples (@ref EXAMPLES) that come with Intel&reg; XED.
 
 
 This tool is useful for encoding and decoding or even
@@ -1101,8 +1242,8 @@ jump to the examples.
 
 
 This section also explains a little language for writing the
-instructions for encode requests (-e option).  I am constantly using
-this tool and updating it. The xed-ex3 (xed-ex3.exe) example is just
+instructions for encode requests (-e option).  This tool is constantly updated.
+The xed-ex3 (xed-ex3.exe) example is just
 the encoder portion of the xed command line tool.
 
 The SUPPRESSED operands emitted by the decoder are not used when
@@ -1151,64 +1292,123 @@ Here is the help message:
 
 @code
 
-% obj/xed -h
-Usage: obj/xed [options]
+% xed -h
+Usage: xed [options]
 One of the following is required:
-  -i input_file             (decode file)
-  -ide input_file           (decode/encode file)
-  -d hex-string             (decode one instruction)
-  -e instruction            (encode, must be last)
-  -de hex-string            (decode-then-encode)
-  -F prefix		    (filter input with prefix)
- 
+    -i input_file             (decode pecoff-format file)
+    -ir raw_input_file        (decode a raw unformatted binary file)
+    -ih hex_input_file        (decode a raw unformatted ASCII hex file)
+    -d hex-string             (decode a sequence of bytes, must be last)
+    -j                        (just decode one instruction when using -d)
+    -F prefix                 (decode ascii hex bytes after prefix)
+                              (running in filter mode from stdin)
+    -ide input_file           (decode/encode file)
+    -e instruction            (encode, must be last)
+    -f                        (encode force, skip encoder chip check)
+    -ie file-to-assemble      (assemble the contents of the file)
+    -de hex-string            (decode-then-encode, must be last)
+
 Optional arguments:
-  -v verbosity  (0=quiet, 1=errors, 2=useful-info, 3=trace, 5=very verbose)
-  -n number-of-instructions-to-decode (default 10,000, accepts K/M/G qualifiers)
-  -I            (Intel SYSV syntax for disassembly)
-  -A            (ATT SYSV syntax for disassembly)
-  -16           (for LEGACY_16 mode)
-  -32           (for LEGACY_32 mode, default)
-  -64           (for LONG_64 mode w/64b addressing)
-  -s32          (32b stack addressing, default, not in LONG_64 mode)
-  -s16          (16b stack addressing, not in LONG_64 mode)
+
+    -v N          (0=quiet, 1=errors, 2=useful-info, 3=trace,
+                    5=very verbose)
+    -xv N         (XED engine verbosity, 0...99)
+
+    -chip-check CHIP   (count instructions that are not valid for CHIP)
+    -chip-check-list   (list the valid chips)
+
+    -s section    (target section for file disassembly,
+                    PECOFF and ELF formats only)
+
+    -n N          (number of instructions to decode. Default 100M,
+                    accepts K/M/G qualifiers)
+
+    -b addr       (Base address offset, for DLLs/shared libraries.
+                    Use 0x for hex addresses)
+    -as addr      (Address to start disassembling.
+                    Use 0x for hex addresses)
+    -ae addr      (Address to end   disassembling.
+                    Use 0x for hex addresses)
+    -no-resync    (Disable symbol-based resynchronization algorithm
+                    for disassembly)
+    -ast          (Show the AVX/SSE transition classfication)
+    -histo        (Histogram decode times)
+
+    -I            (Intel syntax for disassembly)
+    -A            (ATT SYSV syntax for disassembly)
+    -isa-set      (Emit the XED "ISA set" in dissasembly)
+    -xml          (XML formatting)
+    -uc           (upper case hex formatting)
+    -pmd          (positive memory displacement formatting)
+    -nwm          (Format AVX512 without curly braces for writemasks, include k0)
+    -emit         (Output __emit statements for the Intel compiler)
+    -S file       Read symbol table in "nm" format from file
+    -dot FN       (Emit a register dependence graph file in dot format.
+                    Best used with -as ADDR -ae ADDR to limit graph size.)
+
+    -r            (for REAL_16 mode, 16b addressing (20b addresses),
+                    16b default data size)
+    -r32          (for REAL_32 mode, 16b addressing (20b addresses),
+                    32b default data size)
+    -16           (for LEGACY_16 mode, 16b addressing,
+                    16b default data size)
+    -32           (for LEGACY_32 mode, 32b addressing,
+                    32b default data size -- default)
+    -64           (for LONG_64 mode w/64b addressing
+                    Optional on windows/linux)
+    -mpx          (Turn on MPX mode for disassembly, default is off)
+    -cet          (Turn on CET mode for disassembly, default is off)
+    -s32          (32b stack addressing, default, not in LONG_64 mode)
+    -s16          (16b stack addressing, not in LONG_64 mode)
+    -set OP VAL   (Set a XED operands to some integer value, repeatable)
+    -version      (The version message)
+    -help         (This help message)
 @endcode
 
 Here are a couple of examples:
 
 @code
 % xed -d 0000
-ADD INT_ALU BASE  Opcode: 00  MODRM: 00 Bytes: 2
-        Eb/EXPLICIT/RW Gb/EXPLICIT/R 
-        ADD EffWidth: 8b
-        MachineMode: LEGACY_32 AddrWidth: 32b StackAddrWidth: 32b
-        MEM/EXPLICIT/RW REG/AL(REG8)/EXPLICIT/R 
-        Read Write BASE= EAX(REG32) MemopLength = 1
-
-        rFLAGS: of-mod sf-mod zf-mod af-mod pf-mod cf-mod \ 
-            Read:  Written: of sf zf af pf cf             writes
+ICLASS:     ADD
+CATEGORY:   BINARY
+EXTENSION:  BASE
+IFORM:      ADD_MEMb_GPR8
+ISA_SET:    I86
+ATTRIBUTES: BYTEOP LOCKABLE
+SHORT:      add byte ptr [eax], al
 
 % xed -e ADD EAX EBX
-Encodable! 01d8
+Request: ADD MODE:1, REG0:EAX, REG1:EBX, SMODE:1
+OPERAND ORDER: REG0 REG1
+Encodable! 01D8
+.byte 0x01,0xd8
 
-xed -e ADD EAX MEM4:ESP,EBX,4
-Encodable! 03049c
+% xed -e ADD EAX MEM4:ESP,EBX,4
+Request: ADD EASZ:2, MEM0:dword ptr [ESP+EBX*4], MEM_WIDTH:4, MODE:1, REG0:EAX, SMODE:1
+OPERAND ORDER: REG0 MEM0
+Encodable! 03049C
+.byte 0x03,0x04,0x9c
 
 % xed -d 6a00
-PUSH INT_ALU BASE  Opcode: 6a  Immed: 00 Bytes: 2
-        Ib/EXPLICIT/R STACKPUSH/SUPPRESSED/R 
-        PUSH EffWidth: 32b
-        MachineMode: LEGACY_32 AddrWidth: 32b StackAddrWidth: 32b
-        MEM/SUPPRESSED/W REG/ESP(REG32)/SUPPRESSED/RW IMM/EXPLICIT/R 
-        Write SEG= SS BASE= ESP(REG32) MemopLength = 4
-        IMMED: 00
-
-        Does not use rFLAGS
+ICLASS:     PUSH
+CATEGORY:   PUSH
+EXTENSION:  BASE
+IFORM:      PUSH_IMMb
+ISA_SET:    I186
+ATTRIBUTES: FIXED_BASE0 SCALABLE STACKPUSH0
+SHORT:      push 0x0
 
 % xed -e MOV EAX MEM4:SS:ESP
-Encodable! 8b0424
+Request: MOV EASZ:2, MEM0:dword ptr SS[ESP], MEM_WIDTH:4, MODE:1, REG0:EAX, SMODE:1
+OPERAND ORDER: REG0 MEM0
+Encodable! 8B0424
+.byte 0x8b,0x04,0x24
 
-% echo '7f550c23efa1 __clone+0x31 insn: 48 85 c0' | xed -F insn: -A
-7f550c23efa1 __clone+0x31       test %rax, %rax
+% xed -64 -e CCMPB r8b r9b dfv14
+Request: CCMPB MODE:2, REG0:R8B, REG1:R9B, REG2:DFV14, SMODE:2
+OPERAND ORDER: REG0 REG1 REG2 
+Encodable! 6254740238C8
+.byte 0x62,0x54,0x74,0x02,0x38,0xc8
 
 @endcode 
 
@@ -1232,22 +1432,17 @@ addressing in 16 bit mode.
 @code
 % obj/xed-ex3 -64 PUSH/64 RAX
 Encode request:
-PUSH Prefixes:  EffOpWidth: 64b EffAddrWidth: 64b
-	MachineMode: LONG_64 AddrWidth: 64b StackAddrWidth: 32b
-	REG/RAX(REG64)/EXPLICIT/RW 
-	MemopLength = 0
+PUSH EOSZ:3, MODE:2, REG0:RAX, SMODE:2
+OPERAND ORDER: REG0
 
 Encodable! 50
 
 % obj/xed-ex3 MOV MEM4:EAX IMM:11223344
 Encode request:
-MOV Prefixes:  EffOpWidth: 32b EffAddrWidth: 32b
-	MachineMode: LEGACY_32 AddrWidth: 32b StackAddrWidth: 32b
-	MEM0/EXPLICIT/RW IMM/EXPLICIT/RW 
-	TmpltIdx=0 BASE= EAX(REG32) MemopLength = 0
-	IMMED: 0x11223344 signed: 1144201745 starts@byte: 1
+MOV EASZ:2, IMM0:0x11223344, IMM_WIDTH:32, MEM0:dword ptr [EAX], MEM_WIDTH:4, MODE:1, SMODE:1
+OPERAND ORDER: MEM0 IMM0
 
-Encodable! c70011223344
+Encodable! C70044332211
 @endcode
 
 @section ENCODE_EXAMPLE An example of using the encoder
@@ -1318,44 +1513,94 @@ Here are a few examples of running the program:
 
 @code
 
-% ./xed-ex1 0 0
-iclass ADD	category INT_ALU	ISA-extension BASE
+% ./xed-ex1 01 c0
+
+iclass ADD      category BINARY ISA-extension BASE      ISA-set I86
 instruction-length 2
-effective-operand-width 8b
-effective-address-width 32b
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name ADD_GPRv_GPRv_01
+iform-enum-name-dispatch (zero based) 14
+iclass-max-iform-dispatch 42
+Nominal opcode position 0
+Nominal opcode 0x01
 Operands
-  0 MEM0  EXPLICIT / RW
-  1 REG AL EXPLICIT / R
-  2 REG EFLAGS SUPPRESSED / W
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0              REG0=EAX   EXPLICIT  RW         V   32     4     1     32        INT        GPR
+1   REG1              REG1=EAX   EXPLICIT   R         V   32     4     1     32        INT        GPR
+2   REG2           REG2=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
 Memory Operands
-  0 read SEG= DS BASE= EAX/REG32 
-  MemopLength = 1
+  MemopBytes = 0
 FLAGS:
-  must-write-rflags of-mod sf-mod zf-mod af-mod pf-mod cf-mod 
-  read: 
-  written: of sf zf af pf cf 
+  must-write-rflags of-mod sf-mod zf-mod af-mod pf-mod cf-mod
+       read:                                mask=0x0
+    written:             of sf zf af pf cf  mask=0x8d5
+  undefined:                                mask=0x0
+ATTRIBUTES: SCALABLE
+ISA SET: [I86]
+
 ===============================================================================
 
 % ./xed-ex1 f2 0f 58 9c 24 e0 00 00 00
-iclass ADDSD	category SSE	ISA-extension SSE2
+
+iclass ADDSD    category SSE    ISA-extension SSE2      ISA-set SSE2
 instruction-length 9
-effective-operand-width 32b
-effective-address-width 32b
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name ADDSD_XMMsd_MEMsd
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 2
+Nominal opcode position 2
+Nominal opcode 0x58
 Operands
-  0 REG XMM3 EXPLICIT / RW
-  1 MEM0  EXPLICIT / R
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   REG0             REG0=XMM3   EXPLICIT  RW        SD   64     8     1     64     DOUBLE        XMM
+1   MEM0           (see below)   EXPLICIT   R        SD   64     8     1     64     DOUBLE    INVALID
 Memory Operands
-  0 read SEG= SS BASE= ESP/REG32 DISPLACEMENT= DISP32 0x000000e0
-  MemopLength = 8
+  0    read SEG= SS BASE= ESP/GPR DISPLACEMENT_BYTES= 4 0x00000000000000e0 base10=224 ASZ0=32
+  MemopBytes = 8
+ATTRIBUTES: MXCSR SIMD_SCALAR
+F2 PREFIX
+EXCEPTION TYPE: SSE_TYPE_3
+SSE
+SCALAR
+Number of legacy prefixes: 1
+ISA SET: [SSE2]
+0       CPUID GROUP NAME: [SSE2]
+        0       CPUID RECORD NAME: [SSE2]
+                {Leaf 0x00000001, subleaf 0x00000000, EDX[26:26]} = 1
+
 ===============================================================================
+
 ./xed-ex1 f3 90
-iclass PAUSE	category INT_ALU	ISA-extension BASE
+
+iclass PAUSE    category MISC   ISA-extension PAUSE     ISA-set PAUSE
 instruction-length 2
-effective-operand-width 32b
-effective-address-width 32b
+operand-width 32
+effective-operand-width 32
+effective-address-width 32
+stack-address-width 32
+iform-enum-name PAUSE
+iform-enum-name-dispatch (zero based) 0
+iclass-max-iform-dispatch 1
+Nominal opcode position 1
+Nominal opcode 0x90
 Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 Memory Operands
-  MemopLength = 0
+  MemopBytes = 0
+ATTRIBUTES: NOTSX
+F3 PREFIX
+Number of legacy prefixes: 1
+ISA SET: [PAUSE]
+
 ===============================================================================
 
 @endcode

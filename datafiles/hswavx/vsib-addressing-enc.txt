@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -48,13 +48,17 @@ SEQUENCE VMODRM_YMM_EMIT
 ######################################
 VMODRM_MOD_ENCODE()::
 
-# (1) no base  with rBP/r13
-# Add a fake 1B displacement to rBP and r13 if they do not have one already
+# (1) no base  with rBP/r13/r21/r29
+# Add a fake 1B displacement to rBP/r13/r21/r29 if they do not have one already
 eamode32 DISP_WIDTH=0 BASE0=ArBP()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
 eamode32 DISP_WIDTH=0 BASE0=Ar13()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
+eamode32 DISP_WIDTH=0 BASE0=Ar21()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
+eamode32 DISP_WIDTH=0 BASE0=Ar29()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
 
 eamode64 DISP_WIDTH=0 BASE0=ArBP()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
 eamode64 DISP_WIDTH=0 BASE0=Ar13()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
+eamode64 DISP_WIDTH=0 BASE0=Ar21()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
+eamode64 DISP_WIDTH=0 BASE0=Ar29()       -> MOD=1 DISP_WIDTH=8 DISP=0    # ARG MODIFICATION
 
 # (2) no disp with most base regs
 # All these 32b and 64b can handle no displacement
@@ -74,7 +78,22 @@ eamode32 DISP_WIDTH=0 BASE0=Ar12()  mode64     -> MOD=0
 eamode32 DISP_WIDTH=0 BASE0=Ar14()  mode64     -> MOD=0 
 eamode32 DISP_WIDTH=0 BASE0=Ar15()  mode64     -> MOD=0 
 
-# rBP and r13 are handled above
+eamode32 DISP_WIDTH=0 BASE0=Ar16()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar17()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar18()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar19()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar20()  mode64     -> MOD=0
+eamode32 DISP_WIDTH=0 BASE0=Ar22()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar23()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar24()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar25()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar26()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar27()  mode64     -> MOD=0
+eamode32 DISP_WIDTH=0 BASE0=Ar28()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar30()  mode64     -> MOD=0 
+eamode32 DISP_WIDTH=0 BASE0=Ar31()  mode64     -> MOD=0 
+
+# rBP, r13, r21 and 29 are handled above
 eamode64 DISP_WIDTH=0 BASE0=ArAX()       -> MOD=0 
 eamode64 DISP_WIDTH=0 BASE0=ArBX()       -> MOD=0 
 eamode64 DISP_WIDTH=0 BASE0=ArCX()       -> MOD=0 
@@ -89,9 +108,23 @@ eamode64 DISP_WIDTH=0 BASE0=Ar11()       -> MOD=0
 eamode64 DISP_WIDTH=0 BASE0=Ar12()       -> MOD=0
 eamode64 DISP_WIDTH=0 BASE0=Ar14()       -> MOD=0 
 eamode64 DISP_WIDTH=0 BASE0=Ar15()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar16()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar17()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar18()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar19()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar20()       -> MOD=0
+eamode64 DISP_WIDTH=0 BASE0=Ar22()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar23()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar24()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar25()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar26()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar27()       -> MOD=0
+eamode64 DISP_WIDTH=0 BASE0=Ar28()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar30()       -> MOD=0 
+eamode64 DISP_WIDTH=0 BASE0=Ar31()       -> MOD=0 
 
 # (3) 8b displacement
-eamode32 DISP_WIDTH=8                            -> MOD=1
+eamode32 DISP_WIDTH=8                           -> MOD=1
 eamode64 DISP_WIDTH=8 BASE0=GPR64e()            -> MOD=1
 
 
@@ -116,34 +149,68 @@ eamode64 DISP_WIDTH=32 BASE0=Ar12()       -> MOD=2
 eamode64 DISP_WIDTH=32 BASE0=Ar13()       -> MOD=2 
 eamode64 DISP_WIDTH=32 BASE0=Ar14()       -> MOD=2 
 eamode64 DISP_WIDTH=32 BASE0=Ar15()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar16()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar17()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar18()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar19()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar20()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar21()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar22()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar23()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar24()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar25()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar26()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar27()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar28()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar29()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar30()       -> MOD=2 
+eamode64 DISP_WIDTH=32 BASE0=Ar31()       -> MOD=2 
+
 
 otherwise -> error
 
 VSIB_ENC_BASE()::
-  BASE0=ArAX() -> REXB=0 SIBBASE=0
-  BASE0=ArCX() -> REXB=0 SIBBASE=1
-  BASE0=ArDX() -> REXB=0 SIBBASE=2 
-  BASE0=ArBX() -> REXB=0 SIBBASE=3 
-  BASE0=ArSP() -> REXB=0 SIBBASE=4 
+  BASE0=ArAX() -> REXB4=0 REXB=0 SIBBASE=0
+  BASE0=ArCX() -> REXB4=0 REXB=0 SIBBASE=1
+  BASE0=ArDX() -> REXB4=0 REXB=0 SIBBASE=2 
+  BASE0=ArBX() -> REXB4=0 REXB=0 SIBBASE=3 
+  BASE0=ArSP() -> REXB4=0 REXB=0 SIBBASE=4 
 
-  BASE0=@      -> DISP_WIDTH_32() REXB=0 SIBBASE=5 
+  BASE0=@      -> DISP_WIDTH_32() REXB=0 REXB4=0 SIBBASE=5 
 
-  # RBP/EBP or r13/r13d must have a displacement
-  BASE0=ArBP() -> DISP_WIDTH_8_32() REXB=0 SIBBASE=5  
-  
-  BASE0=Ar13() -> DISP_WIDTH_8_32() REXB=1 SIBBASE=5  
-  
+  # SIBBASE=5 must have a displacement
+  BASE0=ArBP() -> DISP_WIDTH_8_32() REXB4=0 REXB=0 SIBBASE=5  
+  BASE0=Ar13() -> DISP_WIDTH_8_32() REXB4=0 REXB=1 SIBBASE=5  
+  BASE0=Ar21() -> DISP_WIDTH_8_32() REXB4=1 REXB=0 SIBBASE=5  
+  BASE0=Ar29() -> DISP_WIDTH_8_32() REXB4=1 REXB=1 SIBBASE=5  
 
-  BASE0=ArSI()  ->    REXB=0 SIBBASE=6 
-  BASE0=ArDI()  ->    REXB=0 SIBBASE=7 
-  BASE0=Ar8()   ->    REXB=1 SIBBASE=0 
-  BASE0=Ar9()   ->    REXB=1 SIBBASE=1 
-  BASE0=Ar10()  ->    REXB=1 SIBBASE=2 
-  BASE0=Ar11()  ->    REXB=1 SIBBASE=3 
-  BASE0=Ar12()  ->    REXB=1 SIBBASE=4 
+  BASE0=ArSI()  ->    REXB4=0 REXB=0 SIBBASE=6 
+  BASE0=ArDI()  ->    REXB4=0 REXB=0 SIBBASE=7 
+  BASE0=Ar8()   ->    REXB4=0 REXB=1 SIBBASE=0 
+  BASE0=Ar9()   ->    REXB4=0 REXB=1 SIBBASE=1 
+  BASE0=Ar10()  ->    REXB4=0 REXB=1 SIBBASE=2 
+  BASE0=Ar11()  ->    REXB4=0 REXB=1 SIBBASE=3 
+  BASE0=Ar12()  ->    REXB4=0 REXB=1 SIBBASE=4 
                 
-  BASE0=Ar14() ->    REXB=1 SIBBASE=6 
-  BASE0=Ar15() ->    REXB=1 SIBBASE=7 
+  BASE0=Ar14()  ->    REXB4=0 REXB=1 SIBBASE=6 
+  BASE0=Ar15()  ->    REXB4=0 REXB=1 SIBBASE=7 
+
+  BASE0=Ar16()  ->    REXB4=1 REXB=0 SIBBASE=0
+  BASE0=Ar17()  ->    REXB4=1 REXB=0 SIBBASE=1
+  BASE0=Ar18()  ->    REXB4=1 REXB=0 SIBBASE=2 
+  BASE0=Ar19()  ->    REXB4=1 REXB=0 SIBBASE=3 
+  BASE0=Ar20()  ->    REXB4=1 REXB=0 SIBBASE=4 
+
+  BASE0=Ar22()  ->    REXB4=1 REXB=0 SIBBASE=6 
+  BASE0=Ar23()  ->    REXB4=1 REXB=0 SIBBASE=7 
+  BASE0=Ar24()  ->    REXB4=1 REXB=1 SIBBASE=0 
+  BASE0=Ar25()  ->    REXB4=1 REXB=1 SIBBASE=1 
+  BASE0=Ar26()  ->    REXB4=1 REXB=1 SIBBASE=2 
+  BASE0=Ar27()  ->    REXB4=1 REXB=1 SIBBASE=3 
+  BASE0=Ar28()  ->    REXB4=1 REXB=1 SIBBASE=4 
+  
+  BASE0=Ar30()  ->    REXB4=1 REXB=1 SIBBASE=6 
+  BASE0=Ar31()  ->    REXB4=1 REXB=1 SIBBASE=7 
   otherwise    ->    error
 
 

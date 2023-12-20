@@ -39,8 +39,8 @@ runs:
   steps:
     - name: protex scan
       run: |
-          python3 .github/scripts/protex.py --project-id ${{ inputs.proj_id }} --url ${{ inputs.server }} \
-            --user ${{ inputs.username }} --pass ${{ inputs.password }} --tool-path ${{ inputs.bdstool_path }}
+          python3 .github/scripts/protex.py --project-id '${{ inputs.proj_id }}' --url '${{ inputs.server }}' \
+            --user '${{ inputs.username }}' --pass '${{ inputs.password }}' --tool-path '${{ inputs.bdstool_path }}'
       shell: bash
     - name: add comment   # uploads protex guidance as pull-request comment
       uses: actions/github-script@v6

@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,9 +26,28 @@ END_LEGAL */
 #include "xed-flag-enum.h"
 #include "xed-flag-action-enum.h"
 #include "xed-gen-table-defs.h"
+#include "xed-reg-enum.h"
 
 
 ////////////////////////////////////////////////////////////////////////////
+/// @ingroup FLAGS
+/// a struct representing an instruction's default flags values
+typedef union xed_flag_dfv_s {
+    xed_uint8_t flat;
+    struct {
+        xed_uint32_t of:1;
+        xed_uint32_t sf:1;
+        xed_uint32_t zf:1;
+        xed_uint32_t cf:1;
+        xed_uint32_t pad:4;
+    } s;
+} xed_flag_dfv_t;
+
+/// @ingroup FLAGS
+/// extracts the default flags values from XED DFV pseudo-register to a given xed_flag_dfv_t pointer
+/// If the given DFV enumeration is invalid, the function returns 0
+XED_DLL_EXPORT xed_bool_t xed_flag_dfv_get_default_flags_values(xed_reg_enum_t dfv_reg, xed_flag_dfv_t* p);
+
 /// @ingroup FLAGS
 /// a union of flags bits
 union  xed_flag_set_s {

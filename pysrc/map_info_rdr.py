@@ -175,7 +175,7 @@ def _parse_map_line(s):
 
         if mi.map_id == 'N/A':
             _die("Bad map description map-id [{}]".format(s))
-        elif genutil.numeric(mi.map_id):
+        elif genutil.is_numeric(mi.map_id):
             mi.map_id = genutil.make_numeric(mi.map_id)
         else:
             mi.map_id_fixup=True
@@ -185,7 +185,7 @@ def _parse_map_line(s):
             _die("Bad map description legacy escape [{}]".format(s))
         if mi.legacy_opcode != 'N/A':
             _die("Bad map description legacy opcode [{}]".format(s))
-        if genutil.numeric(mi.map_id):
+        if genutil.is_numeric(mi.map_id):
             mi.map_id = genutil.make_numeric(mi.map_id)
         else:
             _die("Bad map description map id [{}]".format(s))
@@ -196,7 +196,7 @@ def _parse_map_line(s):
         _die("Bad map description modrm specifier [{}]".format(s))
     if mi.imm not in ['var','0','1','2','4']:
         _die("Bad map description imm specifier [{}]".format(s))
-    if genutil.numeric(mi.opcpos):
+    if genutil.is_numeric(mi.opcpos):
         mi.opcpos = genutil.make_numeric(mi.opcpos)
     else:
         _die("Bad map description opcode position specifier [{}]".format(s))

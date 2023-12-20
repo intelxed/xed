@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ CATEGORY:    RDPID
 EXTENSION:   RDPID
 ISA_SET:     RDPID
 REAL_OPCODE: Y
-PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3  REG[0b111] RM[nnn]  f3_refining_prefix   mode64 
+PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3  REG[0b111] RM[nnn]  f3_refining_prefix   mode64 DF64()
 OPERANDS:    REG0=GPR64_B():w:q:u64 REG1=XED_REG_TSCAUX:r:SUPP:d:u32
 IFORM:       RDPID_GPR64u64
 }

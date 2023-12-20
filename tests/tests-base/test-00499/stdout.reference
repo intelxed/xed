@@ -2,7 +2,7 @@
 ICLASS:     RORX
 CATEGORY:   BMI2
 EXTENSION:  BMI2
-IFORM:      RORX_VGPR64q_MEMq_IMMb
+IFORM:      RORX_GPR64q_MEMq_IMMb
 ISA_SET:    BMI2
 ATTRIBUTES: 
 SHORT:      rorx rdi, qword ptr gs:[rbp+rsi*1+0xdb64a79], 0x67

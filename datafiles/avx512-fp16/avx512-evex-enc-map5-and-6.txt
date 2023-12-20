@@ -16,9 +16,11 @@
 #  
 #END_LEGAL
 
-# augment EVEX_MAP_ENC() in avx512f
+# augment EVEX_REXB4_MAP_ENC() in avx512f
 
-EVEX_MAP_ENC()::
-MAP=5  -> 0b0101
-MAP=6  -> 0b0110
+EVEX_REXB4_MAP_ENC()::
+MAP=5 mode64 REXB4[e] -> e 0b101
+MAP=5 mode32 REXB4=0  -> 0b0101
+MAP=6 mode64 REXB4[e] -> e 0b110
+MAP=6 mode32 REXB4=0  -> 0b0110
 

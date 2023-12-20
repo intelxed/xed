@@ -40,24 +40,23 @@ void enc_evex_vindex_xmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_sibbase(r,offset&7);
-    set_rexx(r,offset>=8);
+    set_rexx(r,(offset >> 3) & 1);
     set_evexvv(r,!(offset>=16)); // FIXME: check inverted
 }
 void enc_evex_vindex_ymm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_sibbase(r,offset&7);
-    set_rexx(r,offset>=8);
+    set_rexx(r,(offset >> 3) & 1);
     set_evexvv(r,!(offset>=16)); // FIXME: check inverted
 }
 void enc_evex_vindex_zmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_sibbase(r,offset&7);
-    set_rexx(r,offset>=8);
+    set_rexx(r,(offset >> 3) & 1);
     set_evexvv(r,!(offset>=16)); // FIXME: check inverted
 }
-
 /// vex register for vex-VSIB
 void enc_vex_vindex_xmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
@@ -130,14 +129,14 @@ void enc_evex_modrm_reg_xmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, (offset >= 8));
+    set_rexr(r, (offset >> 3) & 1);
     set_evexrr(r, (offset >= 16));
 }
 void enc_evex_modrm_rm_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, (offset >= 8));
+    set_rexb(r, (offset >> 3) & 1);
     set_rexx(r, (offset >= 16));
 }
 
@@ -151,14 +150,14 @@ void enc_evex_modrm_reg_ymm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, (offset >= 8));
+    set_rexr(r, (offset >> 3) & 1);
     set_evexrr(r, (offset >= 16));
 }
 void enc_evex_modrm_rm_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, (offset >= 8));
+    set_rexb(r, (offset >> 3) & 1);
     set_rexx(r, (offset >= 16));
 }
 
@@ -172,14 +171,14 @@ void enc_evex_modrm_reg_zmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, (offset >= 8));
+    set_rexr(r, (offset >> 3) & 1);
     set_evexrr(r, (offset >= 16));
 }
 void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, (offset >= 8));
+    set_rexb(r, (offset >> 3) & 1);
     set_rexx(r, (offset >= 16));
 }
 
@@ -265,7 +264,7 @@ void enc_evex_modrm_rm_tmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_TREG_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, (offset >= 8));
+    set_rexb(r, (offset >> 3) & 1);
     set_rexx(r, (offset >= 16));
 }
 
@@ -724,7 +723,7 @@ static void enc_modrm_vsib_bis_a64_internal_nodisp(xed_enc2_req_t* r,
 
     
     set_sibindex(r, index_offset & 7); // encode x/y/zmm as sibscale
-    set_rexx(r, index_offset >= 8);
+    set_rexx(r, (index_offset >> 3) & 1);
     set_evexvv(r, !(index_offset >= 16));
     
     scale_test_and_set(r,scale);
@@ -747,7 +746,7 @@ static void enc_modrm_vsib_a64_internal_disp(xed_enc2_req_t* r,
     set_has_sib(r);
     
     set_sibindex(r, index_offset & 7); // encode xmm as sibscale
-    set_rexx(r, index_offset >= 8);
+    set_rexx(r, (index_offset >> 3) & 1);
     set_evexvv(r, !(index_offset >= 16));
     
     scale_test_and_set(r,scale);
@@ -1056,7 +1055,7 @@ static void enc_modrm_vsib_bis_a32_internal_nodisp(xed_enc2_req_t* r,
     set_has_sib(r);
     
     set_sibindex(r, index_offset & 7); // encode xmm as sibscale
-    set_rexx(r, index_offset >= 8);
+    set_rexx(r, (index_offset >> 3) & 1);
     set_evexvv(r, !(index_offset >= 16));
     
     scale_test_and_set(r,scale);
@@ -1079,7 +1078,7 @@ static void enc_modrm_vsib_a32_internal_disp(xed_enc2_req_t* r,
     set_has_sib(r);
     
     set_sibindex(r, index_offset & 7); // encode xmm as sibscale
-    set_rexx(r, index_offset >= 8);
+    set_rexx(r, (index_offset >> 3) & 1);
     set_evexvv(r, !(index_offset >= 16));
     
     scale_test_and_set(r,scale);

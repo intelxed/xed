@@ -1,0 +1,42 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2023 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+# ***** Manually GENERATED FILE *****
+# ***** Manually GENERATED FILE *****
+# ***** Manually GENERATED FILE *****
+#
+#
+
+
+INSTRUCTIONS()::
+# Replace the not64-SYSCALL AMD version:
+UDELETE: AMDSYSCALL32
+
+{
+ICLASS    : SYSCALL_32
+DISASM    : syscall
+CPL       : 3
+CATEGORY  : SYSCALL
+EXTENSION : BASE
+ISA_SET   : FRED
+ATTRIBUTES: NOTSX
+FLAGS     : MUST [ id-mod vip-mod vif-mod ac-mod vm-0 rf-0 nt-mod iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
+PATTERN   : 0x0F 0x05 not64 IGNORE66()
+OPERANDS  : REG0=XED_REG_RIP:w:SUPP
+}

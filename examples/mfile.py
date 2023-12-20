@@ -65,10 +65,10 @@ def _find_common():
 
 def setup():
     if sys.version_info[0] == 3:
-        if sys.version_info[1] < 7:
-            _fatal("Need python version 3.7 or later.")
+        if sys.version_info[1] < 8:
+            _fatal("Need python version 3.8 or later.")
     else:
-        _fatal("Need python version 3.7 or later.")
+        _fatal("Need python version 3.8 or later.")
     _find_mbuild_import()
     # when building in the source tree the xed_build_common.py file is
     # in the parent directory of the examples. When building in the

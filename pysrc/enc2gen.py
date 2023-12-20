@@ -21,6 +21,7 @@
 # This is the "fast" encoder generator known as "enc2".
 
 from __future__ import print_function
+import json
 import os
 import sys
 import copy
@@ -40,6 +41,8 @@ import enc2test
 import enc2argcheck
 
 from enc2common import *
+from collections import defaultdict
+from typing import Dict, Set
 
 def get_fname(depth=1): # default is current caller
     #return sys._getframe(depth).f_code.co_name
@@ -3041,7 +3044,7 @@ def chose_evex_scaled_disp(fo, ii, dispsz, broadcasting=False): # WIP
     elif broadcasting:
         memop_width_bytes = ii.element_size // 8
     else:
-        memop_width_bytes = ii.memop_width // 8
+        memop_width_bytes = ii.memop_width // 8 #FIXME
 
     fo.add_code_eol('use_displacement = xed_chose_evex_scaled_disp{}(r, disp{}, {})'.format(
         disp_fix,
@@ -4563,7 +4566,7 @@ def create_evex_xyztmm_and_gpr(env,ii):
             reg_type_names.append('zmm')
         elif op_tmm(op):
             reg_type_names.append('tmm')
-        elif op_gpr32(op) or op_vgpr32(op):
+        elif op_gpr32(op):
             reg_type_names.append('gpr32')
         elif op_gpr64(op):
             reg_type_names.append('gpr64')
@@ -4665,21 +4668,15 @@ def create_evex_regs_mem(env, ii):
     var_regs = [var_reg0, var_reg1, var_reg2]
     arg_regs = [ arg_reg0, arg_reg1, arg_reg2 ]
     
-    imm8=False
-    if ii.has_imm8:
-        imm8 = True
-
+    imm8= ii.has_imm8
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
     
-
     mask_versions = [False]
     if ii.write_masking_notk0:
         mask_versions = [True]
     elif ii.write_masking:
         mask_versions = [False, True]
-    else:
-        mask_versions = [False]
         
     dispsz_list = get_dispsz_list(env)
     
@@ -4833,14 +4830,14 @@ def evex_mask_dest_mem(ii): # optional imm8
     return msk==1 and xyz > 0 and i <= 1 and mem==1
 
 def evex_zmm_tmm_vgpr32_or_imm8(ii):
-    """Check whether the given instruction has zmm,tmm,vgpr32 or zmm,tmm,imm8 operands"""
+    """Check whether the given instruction has zmm,tmm,gpr32 or zmm,tmm,imm8 operands"""
     z, t, r32_or_imm8 = 0, 0, 0
     for op in _gen_opnds(ii):
         if op_zmm(op):
             z += 1
         elif op_tmm(op):
             t += 1
-        elif op_vgpr32(op) or op_imm8(op):
+        elif op_gpr32(op) or op_imm8(op):
             r32_or_imm8 += 1
         else:
             return False
@@ -5319,8 +5316,9 @@ def create_enc_fn(env, ii):
     else:
         die("Unhandled encoding space: {}".format(ii.space))
         
-def spew(ii):
-    """Print information about the instruction. Purely decorative"""
+def spew(ii) -> bool:
+    """Print information about the instruction. Return value indicates whether enc2 supports the instruction"""
+    is_unsupported_inst = False
     s = [ii.iclass.lower()]
     if ii.iform:
         s.append(ii.iform)
@@ -5391,7 +5389,9 @@ def spew(ii):
     elif ii.encoder_skipped:
         dbg("//SKIP {}".format(" ".join(s)))
     else:
+        is_unsupported_inst = True  #inst not supported by enc2
         dbg("//TODO {}".format(" ".join(s)))
+    return is_unsupported_inst 
 
 
 def gather_stats(db):
@@ -5502,7 +5502,25 @@ def emit_encode_functions(args,
     return file_emitters
 
 
-    
+def dump_unsupported_iforms(unsupported_iforms: Dict[str, Set[str]], mode: int, gendir: str):
+    """
+    dumps sorted dictionary (mapping of ISA to IFORM) into a json file.
+
+    Args:
+        unsupported_iforms (dict): represents enc2 unsupported IFORMs
+        mode (int): mode (64,32...)
+        gendir (str): directory to generate file into
+    """    
+    # sort the dict by isa-set and sort each iform list per class
+    sorted_isa = sorted(unsupported_iforms.keys())
+    unsupported_iforms = {isa: sorted(list(unsupported_iforms[isa])) for isa in sorted_isa}
+
+    unsupported_iforms_file = os.path.join(gendir,f'enc2_unsupported_m{mode}.json')
+
+    with open(unsupported_iforms_file, 'w') as f:
+        json.dump(unsupported_iforms, f, indent=2)
+
+
 def work():
     
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
@@ -5555,8 +5573,9 @@ def work():
     if args.output_file_list == None:
         args.output_file_list = os.path.join(args.gendir, 'enc2-list-of-files.txt')
     def _mkstr(lst):
-        s = [str(x) for x in lst]
-        return  ":".join(s)
+        if lst:
+            s = [str(x) for x in lst]
+            return  "-".join(s)
     dbg_fn = os.path.join(args.gendir,'enc2out-m{}-a{}.txt'.format(_mkstr(args.modes),
                                                                    _mkstr(args.asz_list)))
     msge("Writing {}".format(dbg_fn))
@@ -5615,7 +5634,8 @@ def work():
 
 
     output_file_emitters = []
-        
+    # store unsupported IFORMS using a mapping of ISA-SET to set of IFORMs
+    unsupported_iforms = defaultdict(set)
     
     #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:
@@ -5629,8 +5649,10 @@ def work():
             msge("Generating encoder functions for {}".format(env))
             for ii in xeddb.recs:
                 # create encoder function. sets ii.encoder_functions
-                create_enc_fn(env, ii) 
-                spew(ii)
+                create_enc_fn(env, ii)
+                is_unsupported_inst = spew(ii)
+                if is_unsupported_inst:
+                    unsupported_iforms[ii.isa_set].add(ii.iform) # add unsupported IFORM to this dict
                 # create test(s) sets ii.enc_test_functions
                 enc2test.create_test_fn_main(env, ii)
                 # create arg checkers.  sets ii.enc_arg_check_functions
@@ -5722,8 +5744,7 @@ def work():
             fe.close()
             output_file_emitters.append(fe)
 
-            
-            
+    dump_unsupported_iforms(unsupported_iforms, args.modes[0], args.gendir)
     gather_stats(xeddb.recs)
     dump_numbered_function_creators()
     dump_output_file_names( args.output_file_list,

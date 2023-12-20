@@ -1,0 +1,1 @@
+ BUILDDIR/xed -64 -e movlpd xmm1 mem8:r27

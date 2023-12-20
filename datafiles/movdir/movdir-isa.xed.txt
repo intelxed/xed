@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ ICLASS:      MOVDIR64B
 CPL:         3
 CATEGORY:    MOVDIR
 EXTENSION:   MOVDIR
-ISA_SET:     MOVDIR
+ISA_SET:     MOVDIR64B
 REAL_OPCODE: Y
 ATTRIBUTES:  REQUIRES_ALIGNMENT 
 PATTERN:    0x0F 0x38 0xF8 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix   not64
@@ -44,13 +44,13 @@ IFORM:       MOVDIR64B_GPRa_MEM
 }
 
 
-# EMITTING MOVDIRI (MOVDIRI-N/A-1-32)
+# EMITTING MOVDIRI (MOVDIRI-N/A-1)
 {
 ICLASS:      MOVDIRI
 CPL:         3
 CATEGORY:    MOVDIR
 EXTENSION:   MOVDIR
-ISA_SET:     MOVDIR
+ISA_SET:     MOVDIRI
 REAL_OPCODE: Y
 PATTERN:    0x0F 0x38 0xF9 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      norexw_prefix 
 OPERANDS:    MEM0:w:d:u32 REG0=GPR32_R():r:d:u32
@@ -64,7 +64,7 @@ ICLASS:      MOVDIRI
 CPL:         3
 CATEGORY:    MOVDIR
 EXTENSION:   MOVDIR
-ISA_SET:     MOVDIR
+ISA_SET:     MOVDIRI
 REAL_OPCODE: Y
 PATTERN:    0x0F 0x38 0xF9 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      mode64 rexw_prefix 
 OPERANDS:    MEM0:w:q:u64 REG0=GPR64_R():r:q:u64

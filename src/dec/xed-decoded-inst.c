@@ -679,6 +679,27 @@ xed_decoded_inst__compute_masked_immediate( const xed_decoded_inst_t* p)
     return masked_imm_byte;
 }
 
+#if defined(XED_APX)
+xed_reg_enum_t xed_decoded_inst_get_dfv_reg(const xed_decoded_inst_t* xedd){
+    /* returns default flag values reg if a decoded instruction uses DFV and INVALID reg otherwise.*/
+    const xed_inst_t* inst = xed_decoded_inst_inst(xedd);
+    const xed_int_t noperands = xed_inst_noperands(inst);
+    xed_int_t i = noperands-1;
+    // DFV is usually the last operand. Scan in reverse order:
+    for(; i>=0; i--)
+    {
+        const xed_operand_t* o = xed_inst_operand(inst,i);
+        const xed_operand_enum_t op_name = xed_operand_name(o);
+        xed_reg_enum_t r = xed_decoded_inst_get_reg(xedd, op_name);
+        if (r >= XED_REG_DFV0 && r <= XED_REG_DFV15)
+        {
+            return r;
+        }
+    }
+    return XED_REG_INVALID;
+}
+#endif
+
 const xed_simple_flag_t*
 xed_decoded_inst_get_rflags_info(const xed_decoded_inst_t* q) 
 {

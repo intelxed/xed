@@ -57,19 +57,18 @@ def warn(m):
 
 ############################################################################
 
-# Require python 3.7 (or later) for this script
 def check_python_version():
    tup = sys.version_info
    major = tup[0]
    minor = tup[1]
    if (major > 3 ) or \
-      (major == 3 and minor >= 7):
+      (major == 3 and minor >= 8):
        return 
-   die('Need Python version 3.7 or later.')
+   die('Need Python version 3.8 or later.')
    
 check_python_version()
 
-from optparse import OptionParser # requires python 2.3
+from optparse import OptionParser
 
 parser = OptionParser()
 

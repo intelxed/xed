@@ -28,24 +28,24 @@ INSTRUCTIONS()::
 ICLASS:     PUSHP
 CPL:        3
 CATEGORY:   PUSH
-EXTENSION:  APX_F
+EXTENSION:  APXLEGACY
 ISA_SET:    APX_F
 COMMENT:    PUSH PPX
 
-PATTERN:    0b0101_0 SRM[rrr] rex2_refining_prefix rexw_prefix mode64 DF64()
-OPERANDS:   REG0=GPRv_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
-IFORM:      PUSHP_GPRv
+PATTERN:    0b0101_0 SRM[rrr] rex2_refining_prefix rexw_prefix mode64
+OPERANDS:   REG0=GPR64_SB():r REG1=XED_REG_STACKPUSH:rw:spw:SUPP
+IFORM:      PUSHP_GPR64
 }
 
 {
 ICLASS:     POPP
 CPL:        3
 CATEGORY:   POP
-EXTENSION:  APX_F
+EXTENSION:  APXLEGACY
 ISA_SET:    APX_F
 COMMENT:    POP PPX
 
-PATTERN:    0b0101_1 SRM[rrr] mode64 rex2_refining_prefix rexw_prefix DF64()
-OPERANDS:   REG0=GPRv_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
-IFORM:      POPP_GPRv
+PATTERN:    0b0101_1 SRM[rrr] mode64 rex2_refining_prefix rexw_prefix
+OPERANDS:   REG0=GPR64_SB():w REG1=XED_REG_STACKPOP:rw:spw:SUPP
+IFORM:      POPP_GPR64
 }

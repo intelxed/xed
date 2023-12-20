@@ -6,3 +6,5 @@ IFORM:      PEXTRW_GPR32_XMMdq_IMMb
 ISA_SET:    SSE2
 ATTRIBUTES: 
 SHORT:      pextrw r27d, xmm11, 0x8
+Encodable! 66D5CDC5DB08
+Identical re-encoding

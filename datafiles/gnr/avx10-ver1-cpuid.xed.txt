@@ -34,7 +34,7 @@ XED_ISA_SET_AVX512BW_128,  AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx
 XED_ISA_SET_AVX512BW_256,  AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1 avx10_256vl.24.0.ebx[17]
 XED_ISA_SET_AVX512BW_512,  AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1 avx10_512vl.24.0.ebx[18]
 XED_ISA_SET_AVX512BW_KOPD, AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512BW_KOPQ, AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512BW_KOPQ, AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1 avx10_256vl.24.0.ebx[17]
 
 XED_ISA_SET_AVX512DQ_SCALAR, AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1
 XED_ISA_SET_AVX512DQ_128N,   AVX10:  avx10_enabled.7.1.edx[19] avx10_ver1.24.0.ebx[0:7]=1

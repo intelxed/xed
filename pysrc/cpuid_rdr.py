@@ -130,10 +130,27 @@ class cpuid_record_t:
         # Return non-compacted generic XED format
         if not self.valid_self_members() or self.fname == 'INVALID':
             return 'N/A'
-        s = f'{self.fname}.{self.leaf}.{self.s_leaf}.{self.reg}[{self.bit_start}:{self.bit_end}]'
+        if (int(self.bit_start,10) == int(self.bit_end,10)):
+            bit_string = f'{self.bit_start}'
+        else:
+            bit_string = f'{self.bit_start}:{self.bit_end}'
+        s = f'{self.fname}.{self.leaf}.{self.s_leaf}.{self.reg}[{bit_string}]'
         s += f'={self.value}'
         return s
-    
+   
+    def __repr__(self):
+        """Overrides the default implementation"""
+        # Return non-compacted generic XED format
+        if not self.valid_self_members() or self.fname == 'INVALID':
+            return 'N/A'
+        if (int(self.bit_start,10) == int(self.bit_end,10)):
+            bit_string = f'{self.bit_start}'
+        else:
+            bit_string = f'{self.bit_start}:{self.bit_end}'
+        s = f'{self.fname}.{self.leaf}.{self.s_leaf}.{self.reg}[{bit_string}]'
+        s += f'={self.value}'
+        return '"'+s+'"'
+
     def __eq__(self, other):
         """Overrides the default implementation"""
         if not isinstance(other, cpuid_record_t):
@@ -231,6 +248,13 @@ class group_record_t:
         s += 'CPUID records:\n\t'
         s += ', '.join([str(rec) for rec in self.get_records()])
         return s
+
+    def __repr__(self) -> str:
+        """ Overrides the default implementation """
+        p = ', '.join(['"'+str(rec)+'"' for rec in self.records])
+        s = '{' + self.name + ' : ['+p+'] }'
+        return s
+
 
 
 ### Type Hints ###

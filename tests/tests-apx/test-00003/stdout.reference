@@ -6,3 +6,5 @@ IFORM:      MOVLPD_XMMsd_MEMq
 ISA_SET:    SSE2
 ATTRIBUTES: 
 SHORT:      movlpd xmm1, qword ptr [r27+r24*4+0x1]
+Encodable! 66D5B3124C8301
+Identical re-encoding

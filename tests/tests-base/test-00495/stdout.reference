@@ -2,7 +2,7 @@
 ICLASS:     BLSR
 CATEGORY:   BMI1
 EXTENSION:  BMI1
-IFORM:      BLSR_VGPR32d_MEMd
+IFORM:      BLSR_GPR32d_MEMd
 ISA_SET:    BMI1
 ATTRIBUTES: 
 SHORT:      blsr edx, dword ptr ss:[si]

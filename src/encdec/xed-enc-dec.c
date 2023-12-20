@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2023 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -73,5 +73,10 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
     xed3_operand_set_rexx(d,0);
     xed3_operand_set_norex(d,0);
     xed3_operand_set_needrex(d,0);
+    xed3_operand_set_rex2(d,0);
+    xed3_operand_set_rexb4(d,0);
+    xed3_operand_set_rexr4(d,0);
+    xed3_operand_set_rexx4(d,0);
+    xed3_operand_set_norex2(d,0);
     xed3_operand_set_osz(d,0);
 }

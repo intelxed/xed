@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,7 +21,8 @@ TIGER_LAKE:                  \
      KEYLOCKER               \
      KEYLOCKER_WIDE          \
      CET                     \
-     MOVDIR                  \
+     MOVDIRI                 \
+     MOVDIR64B               \
      AVX512_VP2INTERSECT_128 \
      AVX512_VP2INTERSECT_256 \
      AVX512_VP2INTERSECT_512  

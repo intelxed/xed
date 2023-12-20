@@ -28,25 +28,6 @@ END_LEGAL */
 
 int main(int argc, char** argv);
 
-#if defined(XED_APX)
-xed_reg_enum_t get_dfv_reg(const xed_decoded_inst_t* xedd){
-    /* returns default flag values reg if a decoded instruction uses DFV and INVALID reg otherwise.*/
-    const xed_inst_t* inst = xedd->_inst;
-    const unsigned int noperands = xed_inst_noperands(inst);
-    unsigned int i;
-    for( i=0;i<noperands;i++)
-    {
-        const xed_operand_t* o = xed_inst_operand(inst,i);
-        const xed_operand_enum_t op_name = xed_operand_name(o);
-        xed_reg_enum_t r = xed_decoded_inst_get_reg(xedd, op_name);
-        if (r >= XED_REG_DFV0 && r <= XED_REG_DFV15)
-        {
-            return r;
-        }
-    }
-    return XED_REG_INVALID;
-}
-#endif
 
 void print_misc(xed_decoded_inst_t* xedd) {
     xed_uint_t i=0, j=0;
@@ -296,15 +277,17 @@ void print_flags(xed_decoded_inst_t* xedd) {
         }
 #if defined(XED_APX)
         /* print Default Flags Values based on the DFV pseudo register*/
-        xed_reg_enum_t dfv_reg = get_dfv_reg(xedd);
-        if (dfv_reg != XED_REG_INVALID){
-            xed_uint32_t dfv_idx = dfv_reg - XED_REG_DFV0;
+        xed_reg_enum_t dfv_enum = xed_decoded_inst_get_dfv_reg(xedd);
+        if (dfv_enum != XED_REG_INVALID){
+            xed_flag_dfv_t dfv_reg;
+            xed_bool_t okay = xed_flag_dfv_get_default_flags_values(dfv_enum, &dfv_reg);
+            assert(okay);
             printf("    default:%13sof=%d, sf=%d, zf=%d, cf=%d\n",
                     "",
-                    (dfv_idx >> 3) & 0x1, 
-                    (dfv_idx >> 2) & 0x1, 
-                    (dfv_idx >> 1) & 0x1, 
-                    (dfv_idx >> 0) & 0x1);
+                    dfv_reg.s.of,
+                    dfv_reg.s.sf,
+                    dfv_reg.s.zf,
+                    dfv_reg.s.cf);
         }
 #endif
     }

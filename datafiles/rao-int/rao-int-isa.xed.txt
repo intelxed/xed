@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2023 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      norexw_prefix 
@@ -47,6 +48,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  no_refining_prefix      mode64  rexw_prefix 
@@ -62,6 +64,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix      norexw_prefix 
@@ -77,6 +80,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  osz_refining_prefix      mode64  rexw_prefix 
@@ -92,6 +96,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f2_refining_prefix      norexw_prefix 
@@ -107,6 +112,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f2_refining_prefix      mode64  rexw_prefix 
@@ -122,6 +128,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_4B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f3_refining_prefix      norexw_prefix 
@@ -137,6 +144,7 @@ CPL:         3
 CATEGORY:    LEGACY
 EXTENSION:   RAO_INT
 ISA_SET:     RAO_INT
+EXCEPTIONS:  LEGACY-RAO-INT
 REAL_OPCODE: Y
 ATTRIBUTES:  ATOMIC NOTSX REQUIRES_ALIGNMENT_8B 
 PATTERN:    0x0F 0x38 0xFC MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f3_refining_prefix      mode64  rexw_prefix 

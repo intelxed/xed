@@ -47,7 +47,7 @@ CATEGORY:    UINTR
 EXTENSION:   UINTR
 ISA_SET:     UINTR
 REAL_OPCODE: Y
-PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3 REG[0b110] RM[nnn] f3_refining_prefix mode64
+PATTERN:     0x0F 0xC7 MOD[0b11] MOD=3 REG[0b110] RM[nnn] f3_refining_prefix mode64 DF64()
 OPERANDS:    REG0=GPR64_B():r:q:u32
 IFORM:       SENDUIPI_GPR64u32
 }
