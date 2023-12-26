@@ -65,7 +65,8 @@ import glob
 import re
 import optparse
 import collections
-from typing import Dict, List
+from typing import Dict, List, Optional
+
 
 def find_dir(d):
     directory = os.getcwd()
@@ -98,6 +99,7 @@ sys.path=  [ os.path.join(xed2_src_path,'pysrc') ]  + sys.path
 from genutil import *
 import genutil
 import operand_storage
+from operand_storage import operands_storage_t
 import slash_expand
 import flag_gen
 from verbosity import *
@@ -4980,85 +4982,88 @@ class generator_info_t(generator_common_t):
 # $$ all_generator_info_t
 class all_generator_info_t(object):
    """List of generators, each with its own graph"""
+
+   common: generator_common_t
+
+   generator_list: List[generator_info_t] = []
+   generator_dict: Dict[str, generator_info_t] = {} # access by NT name
+   nonterminal_dict: nonterminal_dict_t = nonterminal_dict_t()
+
+   src_files: List[str] = []
+   hdr_files: List[str] = []
+
+   # list of map_info_rdr.map_info_t describing valid maps for this
+   # build.
+   map_info: List[map_info_rdr.map_info_t] = []
+
+   # enum lists
+   operand_types: Dict[str, bool] = {} # typename -> True
+   operand_widths: Dict[str, bool] = {} # width -> True # oc2
+   operand_names: Dict[str, str] = {} # name -> Type
+   iclasses: List[str] = []
+   categories: List[str] = []
+   extensions: List[str] = []
+   attributes: List[str] = []
+
+   # for emitting defines with limits
+   max_iclass_strings: int = 0
+   max_convert_patterns: int = 0
+   max_decorations_per_operand: int = 0
+
+   # this is the iclasses in the order of the enumeration for us in
+   # initializing other structures.
+   iclasses_enum_order: Optional[List[str]] = None
+
+   # function_object_ts
+   itable_init_functions: table_init_object_t = table_init_object_t('xed-init-inst-table-',
+                                                    'xed_init_inst_table_')
+   encode_init_function_objects: List[function_object_t] = []
+
+   # TODO: Unused
+   # dictionaries of code snippets that map to function names
+   #extractors = {}
+   #packers = {}
+
+   operand_storage: Optional[operands_storage_t] = None
+
+   overall_lookup_init: Optional[function_object_t] = None
+
+   # TODO: Unused
+   # functions called during decode traverals to capture required operands.
+   #all_node_capture_functions = []
+
+   # data for instruction table
+   inst_fp: Optional[xed_file_emitter_t] = None
+
+   # TODO: Unused
+   # list of (index, initializer) tuples for all the entire decode graph
+   # all_decode_graph_nodes = []
+
+   data_table_file: Optional[xed_file_emitter_t] = None
+   operand_sequence_file: Optional[xed_file_emitter_t] = None
+
+   # set by scan_maps
+   max_map_evex: int = 0
+   max_map_vex: int = 0
+
+   # dict "iclass:extension" -> ( iclass, extension, category, isa_set, properties-list, iclass_string_index)
+   iform_info: Dict[str, Tuple[str, str, str, str, List[str], int]] = {}
+
+   attributes_dict: Dict[str, int] = {}
+   attr_next_pos: int  = 0
+   attributes_ordered: Optional[list[Tuple[int, str]]]  = None
+   sorted_attributes_dict: Dict[str, int] = {}
+
+   # a dict of all the enum names to their values.
+   # passed to operand storage in order to calculate
+   # the number of required bits
+   all_enums: Dict[str, list[str]] = {}
+
    def __init__(self,options):
       #common has mostly input and output files and names
       self.common = generator_common_t()
       self.common.options = options
       self.common.open_all_files()
-      
-      self.generator_list : List[generator_info_t] = []
-      self.generator_dict = {} # access by NT name
-      self.nonterminal_dict = nonterminal_dict_t()
-
-      self.src_files=[]
-      self.hdr_files=[]
-
-      # list of map_info_rdr.map_info_t describing valid maps for this
-      # build.
-      self.map_info = None 
-
-
-      # enum lists
-      self.operand_types = {} # typename -> True
-      self.operand_widths = {} # width -> True # oc2
-      self.operand_names = {} # name -> Type
-      self.iclasses  = []
-      self.categories = []
-      self.extensions = []
-      self.attributes = []
-      
-      # for emitting defines with limits
-      self.max_iclass_strings = 0
-      self.max_convert_patterns = 0
-      self.max_decorations_per_operand = 0
-
-      # this is the iclasses in the order of the enumeration for us in
-      # initializing other structures.
-      self.iclasses_enum_order = None
-
-      # function_object_ts
-      self.itable_init_functions = table_init_object_t('xed-init-inst-table-',
-                                                       'xed_init_inst_table_')
-      self.encode_init_function_objects = []
-      
-      # dictionaries of code snippets that map to function names
-      self.extractors = {}
-      self.packers = {}
-      
-      self.operand_storage = None # operand_storage_t
-      
-
-      # function_object_t 
-      self.overall_lookup_init = None
-
-      # functions called during decode traverals to capture required operands.
-      self.all_node_capture_functions = []
-
-      # data for instruction table
-      self.inst_fp = None
-
-      # list of (index, initializer) tuples for all the entire decode graph
-      self.all_decode_graph_nodes=[]
-      
-      self.data_table_file=None
-      self.operand_sequence_file=None
-
-      # set by scan_maps
-      self.max_map_vex = 0
-      self.max_map_evex = 0
-      
-      # dict "iclass:extension" -> ( iclass,extension, 
-      #                               category, iform_enum, properties-list)
-      self.iform_info = {} 
-
-      self.attributes_dict = {}
-      self.attr_next_pos  = 0
-      self.attributes_ordered  = None
-      self.sorted_attributes_dict = {}
-      # a dict of all the enum names to their values. 
-      # passed to operand storage in order to calculate 
-      # the number of required bits
-      self.all_enums = {} 
 
       # these are xed_file_emitter_t objects
       self.flag_simple_file = self.common.open_file("xed-flags-simple.c", start=False)
