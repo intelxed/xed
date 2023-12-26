@@ -4862,22 +4862,22 @@ class generator_common_t(object):
    agi. Basically all the globals that are needed by most generator
    specific processing."""
 
-   def __init__(self):
-      self.options = None
-      self.state_bits = None # dictionary of state_info_t's
-      self.state_space = None # dictionary of all values of each state
-                              # restriction (operand_decider)
+   options: Optional[object] = None
+   state_bits: Optional[Dict[str, state_info_t]] = None
 
-      self.enc_file = None
-      self.inst_file = None
-      self.operand_storage_hdr_file = None
-      self.operand_storage_src_file = None
-      
-      self.header_file_names = []
-      self.source_file_names = []
-      self.file_pointers = []
+   # dictionary of all values of each state restriction (operand_decider)
+   state_space: Optional[Dict[str, List[str]]] = None
 
-      self.inst_table_file_names = []
+   enc_file: Optional[xed_file_emitter_t] = None
+   inst_file: Optional[xed_file_emitter_t] = None
+   operand_storage_header_file: Optional[xed_file_emitter_t] = None
+   operand_storage_src_file: Optional[xed_file_emitter_t] = None
+
+   header_file_names: List[str] = []
+   source_file_names: List[str] = []
+   file_pointers: List[xed_file_emitter_t] = []
+
+   inst_table_file_names: List[str] = []
 
    def get_state_space_values(self,od_token):
        '''return the list of values associated with this token'''
