@@ -4939,31 +4939,36 @@ class generator_common_t(object):
 # $$ generator_info_t      
 class generator_info_t(generator_common_t):
    """All the information that we collect and generate"""
+
+   common: generator_common_t
+
+   parser_output: Optional[parser_t] = None
+   graph: Optional[graph_node] = None
+
+   # Unique list of iclasses
+   iclasses: Dict[str, bool] = {}
+
+   # list of tuples of (nonterminal names, max count of how many
+   # there are of this one per instruction)
+   nonterminals: List[Tuple[str, int]] = []
+
+   operands: List[opnds.operand_info_t] = None
+
+   # TODO: Unused
+   #storage_class = None
+
+   # TODO: Unused fields
+   #For thing that are directly translateable in to tables, we
+   #generate a table here.
+   #luf_arrays = []
+   #marshalling_function = None
+
    def __init__(self, common):
-      super(generator_info_t,self).__init__()
+      super().__init__()
       self.common = common
       
       if self.common.options == None:
          die("Bad init")
-      #old style generator_common_t.__init__(self,generator_common)
-      self.parser_output : parser_t = None
-      self.graph = None
-      # unique list of iclasses
-      self.iclasses = {}
-
-      # list of tuples of (nonterminal names, max count of how many
-      # there are of this one per instruction)
-      self.nonterminals = []
-
-      # list of opnds.operand_info_t's
-      self.operands = None
-
-      self.storage_class = None
-
-      #For thing that are directly translateable in to tables, we
-      #generate a table here.
-      self.luf_arrays =  []
-      self.marshalling_function = None
       
    def nonterminal_name(self):
       """The name of this subtree"""
