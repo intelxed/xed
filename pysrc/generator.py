@@ -4907,20 +4907,20 @@ class generator_common_t(object):
       self.file_pointers.append(fp)
       return fp
 
-   def build_fn(self, tail: str, header=False):
+   def build_file_name(self, tail: str, header=False):
       """
       Build and record a file name
       """
 
       if True: # MJC2006-10-10
-         fn = tail
+         file_name = tail
       else:
-         fn = os.path.join(self.options.gendir,tail)
+         file_name = os.path.join(self.options.gendir,tail)
          if header:
-            self.header_file_names.append(fn)
+            self.header_file_names.append(file_name)
          else:
-            self.source_file_names.append(fn)
-      return fn
+            self.source_file_names.append(file_name)
+      return file_name
    
    def open_all_files(self):
       """
@@ -4932,7 +4932,7 @@ class generator_common_t(object):
       header = True
 
 
-      self.inst_file = self.open_file(self.build_fn(
+      self.inst_file = self.open_file(self.build_file_name(
                                           self.options.inst_init_file))
 
    def open_new_inst_table_file(self):
@@ -4942,7 +4942,7 @@ class generator_common_t(object):
 
       i = len(self.inst_table_file_names)
       base_fn = 'xed-inst-table-init-'
-      fn = self.build_fn(base_fn + str(i) + ".c")
+      fn = self.build_file_name(base_fn + str(i) + ".c")
       self.inst_table_file_names.append(fn)
       fp = self.open_file(fn)
       return fp
