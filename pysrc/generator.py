@@ -5194,14 +5194,6 @@ class all_generator_info_t(object):
       for fn in self.hdr_files + self.src_files:
          f.write(fn+"\n")
       f.close()
-   
-   def mk_fn(self,fn):
-      if True: #MJC2006-10-10
-         return fn
-      return self.real_mk_fn(fn)
-
-   def real_mk_fn(self,fn):
-      return os.path.join(self.common.options.gendir,fn)
       
    def close_output_files(self):
       """
