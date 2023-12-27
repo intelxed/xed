@@ -4858,9 +4858,11 @@ def expand_hierarchical_records(ii):
 
 # $$ generator_common_t
 class generator_common_t(object):
-   """This is stuff that is common to every geneator and the
+   """
+   Items that are common to every generator and the
    agi. Basically all the globals that are needed by most generator
-   specific processing."""
+   specific processing.
+   """
 
    options: Optional[object] = None
    state_bits: Optional[Dict[str, state_info_t]] = None
@@ -4879,18 +4881,23 @@ class generator_common_t(object):
 
    inst_table_file_names: List[str] = []
 
-   def get_state_space_values(self,od_token):
-       '''return the list of values associated with this token'''
-       return self.state_space[od_token]
+   def get_state_space_values(self, operand_decipher_token: str):
+       """
+       Get the list of values associated with `operand_decipher_token`
+       """
+
+       return self.state_space[operand_decipher_token]
       
-   def open_file(self,fn, arg_shell_file=False, start=True):
-      'open and record the file pointers'
+   def open_file(self, file_name: str, arg_shell_file=False, start=True):
+      """
+      Open a file and record its file pointer
+      """
 
       fp = xed_file_emitter_t(self.options.xeddir,
                               self.options.gendir,
-                              fn,
+                              file_name,
                               shell_file=arg_shell_file)
-      if is_header(fn):
+      if is_header(file_name):
           self.header_file_names.append(fp.full_file_name)
       else:
           self.source_file_names.append(fp.full_file_name)
@@ -4900,8 +4907,11 @@ class generator_common_t(object):
       self.file_pointers.append(fp)
       return fp
 
-   def build_fn(self,tail,header=False):
-      'build and record the file names'
+   def build_fn(self, tail: str, header=False):
+      """
+      Build and record a file name
+      """
+
       if True: # MJC2006-10-10
          fn = tail
       else:
@@ -4913,7 +4923,10 @@ class generator_common_t(object):
       return fn
    
    def open_all_files(self):
-      "Open the major output files"
+      """
+      Open all major output files
+      """
+
       msge("Opening output files")
 
       header = True
@@ -4923,6 +4936,10 @@ class generator_common_t(object):
                                           self.options.inst_init_file))
 
    def open_new_inst_table_file(self):
+      """
+      Open a new XED instruction table init file
+      """
+
       i = len(self.inst_table_file_names)
       base_fn = 'xed-inst-table-init-'
       fn = self.build_fn(base_fn + str(i) + ".c")
@@ -4932,13 +4949,18 @@ class generator_common_t(object):
 
          
    def close_output_files(self):
-      "Close the major output files"
+      """
+      Close all major output files
+      """
+
       for f in self.file_pointers:
          f.close()
 
 # $$ generator_info_t      
 class generator_info_t(generator_common_t):
-   """All the information that we collect and generate"""
+   """
+   All the information that we collect and generate
+   """
 
    common: generator_common_t
 
@@ -4971,12 +4993,18 @@ class generator_info_t(generator_common_t):
          die("Bad init")
       
    def nonterminal_name(self):
-      """The name of this subtree"""
+      """
+      The name of this subtree
+      """
+
       s =  self.parser_output.nonterminal_name
       return nonterminal_parens_pattern.sub('', s)
 
    def build_unique_iclass_list(self):
-      "build a unique list of iclasses"
+      """
+      Build a unique list of iclasses
+      """
+
       self.iclasses = {}
       for ii in self.parser_output.instructions:
          if field_check(ii,'iclass'):
@@ -4986,7 +5014,9 @@ class generator_info_t(generator_common_t):
 
 # $$ all_generator_info_t
 class all_generator_info_t(object):
-   """List of generators, each with its own graph"""
+   """
+   List of generators, each with its own graph
+   """
 
    common: generator_common_t
 
@@ -5138,30 +5168,32 @@ class all_generator_info_t(object):
       self.operand_sequence_file.close()
 
       
-   def add_file_name(self,fn,header=False):
-      if type(fn) in [bytes,str]:
-          fns = [fn]
-      elif type(fn) == list:
-          fns = fn
+   def add_file_name(self, file_name: str | bytes | List[str], header=False):
+      if type(file_name) in [bytes,str]:
+          file_names = [file_name]
+      elif type(file_name) == list:
+          file_names = file_name
       else:
           die("Need string or list")
       
-      for f in fns:
+      for file in file_names:
           if header:
-             self.hdr_files.append(f)
+             self.hdr_files.append(file)
           else:
-             self.src_files.append(f)
+             self.src_files.append(file)
 
    def dump_generated_files(self):
-       """For mbuild dependence checking, we need an accurate list of the
-          files the generator created. This file is read by xed_mbuild.py"""
+      """
+      For mbuild dependence checking, we need an accurate list of the
+      files the generator created. This file is read by xed_mbuild.py
+      """
        
-       output_file_list = mbuild.join(self.common.options.gendir, 
-                                      "DECGEN-OUTPUT-FILES.txt")
-       f = base_open_file(output_file_list,"w")
-       for fn in self.hdr_files + self.src_files:
-           f.write(fn+"\n")
-       f.close()
+      output_file_list = mbuild.join(self.common.options.gendir,
+                                    "DECGEN-OUTPUT-FILES.txt")
+      f = base_open_file(output_file_list,"w")
+      for fn in self.hdr_files + self.src_files:
+         f.write(fn+"\n")
+      f.close()
    
    def mk_fn(self,fn):
       if True: #MJC2006-10-10
@@ -5172,7 +5204,10 @@ class all_generator_info_t(object):
       return os.path.join(self.common.options.gendir,fn)
       
    def close_output_files(self):
-      "Close the major output files"
+      """
+      Close the major output files
+      """
+
       self.common.close_output_files()
 
    def make_generator(self, nt_name):
@@ -5182,16 +5217,18 @@ class all_generator_info_t(object):
       return g
 
 
-   def open_file(self, fn, keeper=True, arg_shell_file=False, start=True, private=True):
-      'open and record the file pointers'
+   def open_file(self, file_name: str, keeper=True, arg_shell_file=False, start=True, private=True):
+      """
+      Open `file_name` and record the file pointer
+      """
 
       fp = xed_file_emitter_t(self.common.options.xeddir,
                               self.common.options.gendir,
-                              fn,
+                              file_name,
                               shell_file=arg_shell_file,
                               is_private=private)
       if keeper:
-          self.add_file_name(fp.full_file_name, is_header(fn))
+          self.add_file_name(fp.full_file_name, is_header(file_name))
 
       if start:
           fp.start()
@@ -5209,14 +5246,17 @@ class all_generator_info_t(object):
 
                         
    def code_gen_table_sizes(self):
-      """Write the file that has the declarations of the tables that we
-      fill in in the generator"""
-      fn = "xed-gen-table-defs.h"
+      """
+      Write the file that has the declarations of the tables that we
+      fill in the generator
+      """
+
+      file_name = "xed-gen-table-defs.h"
       # we do not put this in a namespace because it is included while
       # in the XED namespace.
       fi = xed_file_emitter_t(self.common.options.xeddir,
                               self.common.options.gendir,
-                              fn,
+                              file_name,
                               namespace=None)
 
       self.add_file_name(fi.full_file_name,header=True)
@@ -5274,10 +5314,10 @@ class all_generator_info_t(object):
       fi.close()
 
       
-   def handle_prefab_enum(self,enum_fn):
+   def handle_prefab_enum(self, enum_file_name: str):
       # parse the enum file and get the c and h file names
       gendir = self.common.options.gendir
-      m=metaenum.metaenum_t(enum_fn,gendir)
+      m=metaenum.metaenum_t(enum_file_name,gendir)
       m.run_enumer()
       # remember the c & h file names
       self.add_file_name(m.src_full_file_name)
@@ -5289,13 +5329,17 @@ class all_generator_info_t(object):
 
       
    def handle_prefab_enums(self):
-      """Gather up all the enum.txt files in the datafiles directory"""
+      """
+      Gather all the `enum.txt` files in the `datafiles` directory, and
+      generate the corresponding `.c` and `.h` files.
+      """
+
       prefab_enum_shell_pattern = os.path.join(self.common.options.xeddir,
                                                "datafiles/*enum.txt")
       prefab_enum_files = glob.glob( prefab_enum_shell_pattern )
-      for fn in prefab_enum_files:
-         msge("PREFAB-ENUM: " + fn)
-         self.handle_prefab_enum( fn )
+      for file_name in prefab_enum_files:
+         msge("PREFAB-ENUM: " + file_name)
+         self.handle_prefab_enum( file_name )
          
    def extend_operand_names_with_input_states(self):
       type ='xed_uint32_t'
