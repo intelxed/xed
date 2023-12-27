@@ -4881,14 +4881,14 @@ class generator_common_t(object):
 
    inst_table_file_names: List[str] = []
 
-   def get_state_space_values(self, operand_decipher_token: str):
+   def get_state_space_values(self, operand_decipher_token: str) -> List[str]:
        """
        Get the list of values associated with `operand_decipher_token`
        """
 
        return self.state_space[operand_decipher_token]
       
-   def open_file(self, file_name: str, arg_shell_file=False, start=True):
+   def open_file(self, file_name: str, arg_shell_file=False, start=True) -> xed_file_emitter_t:
       """
       Open a file and record its file pointer
       """
@@ -4907,7 +4907,7 @@ class generator_common_t(object):
       self.file_pointers.append(fp)
       return fp
 
-   def build_file_name(self, tail: str, header=False):
+   def build_file_name(self, tail: str, header=False) -> str:
       """
       Build and record a file name
       """
@@ -4935,7 +4935,7 @@ class generator_common_t(object):
       self.inst_file = self.open_file(self.build_file_name(
                                           self.options.inst_init_file))
 
-   def open_new_inst_table_file(self):
+   def open_new_inst_table_file(self) -> xed_file_emitter_t:
       """
       Open a new XED instruction table init file
       """
@@ -4992,7 +4992,7 @@ class generator_info_t(generator_common_t):
       if self.common.options == None:
          die("Bad init")
       
-   def nonterminal_name(self):
+   def nonterminal_name(self) -> str:
       """
       The name of this subtree
       """
@@ -5202,14 +5202,14 @@ class all_generator_info_t(object):
 
       self.common.close_output_files()
 
-   def make_generator(self, nt_name):
+   def make_generator(self, nt_name: str) -> generator_info_t:
       g = generator_info_t(self.common)
       self.generator_list.append(g)
       self.generator_dict[nt_name] = g
       return g
 
 
-   def open_file(self, file_name: str, keeper=True, arg_shell_file=False, start=True, private=True):
+   def open_file(self, file_name: str, keeper=True, arg_shell_file=False, start=True, private=True) -> xed_file_emitter_t:
       """
       Open `file_name` and record the file pointer
       """
@@ -5306,7 +5306,7 @@ class all_generator_info_t(object):
       fi.close()
 
       
-   def handle_prefab_enum(self, enum_file_name: str):
+   def handle_prefab_enum(self, enum_file_name: str) -> List[str]:
       # parse the enum file and get the c and h file names
       gendir = self.common.options.gendir
       m=metaenum.metaenum_t(enum_file_name,gendir)
