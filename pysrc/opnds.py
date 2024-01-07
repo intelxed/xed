@@ -122,9 +122,7 @@ class operand_info_t(object):
       self.rightmost_bitpos = 0
 
    def is_ntluf(self):
-      if self.type == 'nt_lookup_fn':
-         return True
-      return False
+      return self.type == "nt_lookup_fn"
 
    def _strip_ntluf_name(self):
        if self.is_ntluf():
