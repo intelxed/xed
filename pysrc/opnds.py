@@ -156,7 +156,7 @@ class operand_info_t(object):
       Returns `True` if this operand is a decimal number
       """
 
-      if type(self.bits) == list:
+      if isinstance(self.bits, list):
          if ( len(self.bits) == 1 and
               operand_info_t.decimal_number_pattern.match(self.bits[0]) ):
                return True
@@ -194,7 +194,7 @@ class operand_info_t(object):
       s.append("{:6}".format(self.name))
       s.append("{:9}".format(self.type))
       if self.bits:
-         if type(self.bits) == list:
+         if isinstance(self.bits, list):
             s.append(''.join(self.bits) + " (L)")
          else:
             s.append('[' + self.bits + ']')
