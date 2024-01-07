@@ -19,7 +19,7 @@
 #END_LEGAL
 
 import re
-from typing import Optional, List
+from typing import Optional, List, Dict, Set
 
 from verbosity import *
 import genutil
@@ -301,11 +301,11 @@ convert_pattern = re.compile(r'TXT=(?P<rhs>[0-9A-Za-z_]+)')
 
 
 def parse_one_operand(w, 
-                      default_vis='DEFAULT', 
-                      xtypes=None, 
-                      default_xtypes=None,
-                      internal=False,
-                      skip_encoder_conditions=True):
+                      default_vis: str = 'DEFAULT',
+                      xtypes: Optional[Set[str]] = None,
+                      default_xtypes: Optional[Dict[str, str]] = None,
+                      internal: bool = False,
+                      skip_encoder_conditions: bool = True):
    """Format examples:
    name=xxxxxy:{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
    name=NTLUR():{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
@@ -335,7 +335,7 @@ def parse_one_operand(w,
    rw = 'r'
    cvt = []
    invert = False
-   lookupfn_name=None
+   lookupfn_name = None
    xtype = None
    multireg = 0
    if colon_pattern.search(w):
