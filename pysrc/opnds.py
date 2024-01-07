@@ -142,7 +142,7 @@ class operand_info_t(object):
            cvt = self.cvt[i]
        except:
            pass
-       if cvt == None:
+       if cvt is None:
            cvt = 'INVALID'
        return cvt.upper()
    
@@ -170,7 +170,7 @@ class operand_info_t(object):
       Return `True` if all bits in the operand are 1s/0s (could be mixed)
       """
 
-      if self.bits == None:
+      if self.bits is None:
          return False
 
       for b in self.bits:
@@ -359,7 +359,7 @@ def parse_one_operand(w,
                 multireg = int(multi_reg_p.group('nreg')) 
             elif cp:
                 cvt.append(cp.group('rhs'))
-            elif oc2 == None and oc2_pattern.match(c):
+            elif oc2 is None and oc2_pattern.match(c):
                oc2 = c
                if vopnd():
                   genutil.msge("\t\tSET OC2 to  %s" % (oc2))
@@ -386,7 +386,7 @@ def parse_one_operand(w,
    if slash_pattern.search(a):
       genutil.die("Bad slash in operand")
 
-   if xtype == None:
+   if xtype is None:
       # need to use the default xtype based on the oc2 width code
       if oc2:
          try:
