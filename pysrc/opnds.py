@@ -19,6 +19,8 @@
 #END_LEGAL
 
 import re
+from typing import Optional, List
+
 from verbosity import *
 import genutil
 
@@ -35,18 +37,18 @@ class operand_info_t(object):
                      'flag', 'agen' ]
    
    def __init__(self,
-                name,
-                type,
-                bits='', # typically the right hand side of an operand or '1'
-                rw='r',
-                invert=False,
-                lookupfn_name=None,
-                vis='DEFAULT',
-                oc2=None,
-                cvt=None,
-                xtype=None,
-                internal=False,
-                multireg=0):
+                name: str,
+                type: str,
+                bits: str = '', # typically the right hand side of an operand or '1'
+                rw: str = 'r',
+                invert: bool = False,
+                lookupfn_name: Optional[str] = None,
+                vis: str = 'DEFAULT',
+                oc2: Optional[str] = None,
+                cvt: Optional[List[str]] =None,
+                xtype: Optional[str] = None,
+                internal: bool = False,
+                multireg: int = 0):
 
       self.name  = name.upper()
       self.type = type # See operand_info_t.operand_types
@@ -98,7 +100,7 @@ class operand_info_t(object):
       
       # Sometimes we want the actual operand to be the logical
       # inversion of the captured bit.
-      self.invert=invert
+      self.invert = invert
       
       # names of functions for extracting or packing these bits
       # These become function pointers in the instruction table.
