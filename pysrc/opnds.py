@@ -153,7 +153,10 @@ class operand_info_t(object):
        return self.type.upper()
       
    def non_binary_fixed_number(self):
-      "Returns True if this operand is a decimal number"
+      """
+      Returns `True` if this operand is a decimal number
+      """
+
       if type(self.bits) == list:
          if ( len(self.bits) == 1 and
               operand_info_t.decimal_number_pattern.match(self.bits[0]) ):
@@ -164,7 +167,10 @@ class operand_info_t(object):
       return False
    
    def all_bits_fixed(self):
-      "Return True if all bits in the operand are 1s/0s (could be mixed)"
+      """
+      Return `True` if all bits in the operand are 1s/0s (could be mixed)
+      """
+
       if self.bits == None:
          return False
 
