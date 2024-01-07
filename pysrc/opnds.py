@@ -453,29 +453,15 @@ def parse_one_operand(w,
       else:
           rhs = hex(genutil.make_numeric(rhs))
           optype = 'imm_const'
-   elif mem_pattern.search(a):        # memop
+   elif (mem_pattern.search(a) # memop
+         or imm_token_pattern.search(a)  # immediate placeholder
+         or agen_pattern.search(a)       # agen
+         or relative_branch_pattern.search(a)
+         or absolute_branch_pattern.search(a)
+         or pointer_pattern.search(a)
+   ):
       name = a
-      optype ='imm_const'
-      rhs = '1'
-   elif imm_token_pattern.search(a):        # immediate placeholder
-      name = a
-      optype ='imm_const'
-      rhs = '1'
-   elif agen_pattern.search(a):        # agen
-      name = a
-      optype ='imm_const'
-      rhs = '1'
-   elif relative_branch_pattern.search(a):
-      name = a
-      optype ='imm_const'
-      rhs = '1'
-   elif absolute_branch_pattern.search(a):
-      name = a
-      optype ='imm_const'
-      rhs = '1'
-   elif pointer_pattern.search(a): 
-      name = a
-      optype ='imm_const'
+      optype = 'imm_const'
       rhs = '1'
    elif xed_reset_pattern.search(a):
       # special marker that tells the traverser to restart this
