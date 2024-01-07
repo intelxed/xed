@@ -122,10 +122,10 @@ class operand_info_t(object):
       # bit_positions list.
       self.rightmost_bitpos = 0
 
-   def is_ntluf(self):
+   def is_ntluf(self) -> bool:
       return self.type == "nt_lookup_fn"
 
-   def _strip_ntluf_name(self):
+   def _strip_ntluf_name(self) -> Optional[str]:
        if self.is_ntluf():
            s = self.lookupfn_name
            s = re.sub(r'[()]*','',s)
@@ -136,7 +136,7 @@ class operand_info_t(object):
        return None
 
 
-   def get_cvt(self, i):
+   def get_cvt(self, i) -> str:
        cvt = None
        try:
            cvt = self.cvt[i]
@@ -146,12 +146,12 @@ class operand_info_t(object):
            cvt = 'INVALID'
        return cvt.upper()
    
-   def get_type_for_emit(self):
+   def get_type_for_emit(self) -> str:
        if self.type == 'nt_lookup_fn' and self.multireg >= 2:
            return self.type.upper() + str(self.multireg)
        return self.type.upper()
       
-   def non_binary_fixed_number(self):
+   def non_binary_fixed_number(self) -> bool:
       """
       Returns `True` if this operand is a decimal number
       """
@@ -165,7 +165,7 @@ class operand_info_t(object):
             return True
       return False
    
-   def all_bits_fixed(self):
+   def all_bits_fixed(self) -> bool:
       """
       Return `True` if all bits in the operand are 1s/0s (could be mixed)
       """
@@ -188,7 +188,7 @@ class operand_info_t(object):
    def set_suppressed(self):
       self.visibility = 'SUPPRESSED'
       
-   def dump_str(self, pad=''):
+   def dump_str(self, pad: str = '') -> str:
       s = []
       s.append(pad)
       s.append("{:6}".format(self.name))
@@ -218,7 +218,7 @@ class operand_info_t(object):
          s.append('invert')
       return " ".join(s)
    
-   def dump(self, pad=''):
+   def dump(self, pad: str = ''):
       genutil.msge( self.dump_str(pad))
    def __str__(self):
       return self.dump_str()
@@ -300,7 +300,7 @@ def parse_one_operand(w,
                       xtypes: Optional[Set[str]] = None,
                       default_xtypes: Optional[Dict[str, str]] = None,
                       internal: bool = False,
-                      skip_encoder_conditions: bool = True):
+                      skip_encoder_conditions: bool = True) -> Optional[operand_info_t]:
    """Format examples:
    name=xxxxxy:{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
    name=NTLUR():{r,w,crw,rw,rcw}[:{EXPL,IMPL,SUPP,ECOND}][:{some oc2 code}][:{some xtype code}]
@@ -317,7 +317,7 @@ def parse_one_operand(w,
    @param w: string
    @param w: an operand specification string
    
-   @rtype operand_info_t
+   @rtype Optional[operand_info_t]
    @return a parsed operand
    """
    
