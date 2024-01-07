@@ -222,28 +222,19 @@ class operand_info_t(object):
        return self.dump_str()
 
    def __eq__(self,other):
-      if self.name != other.name:
-         return False
-      if self.type != other.type:
-         return False
-      if self.xtype != other.xtype:
-         return False
-      if self.lookupfn_name != other.lookupfn_name:
-         return False
-      if self.invert != other.invert:
-         return False
-      if self.rw != other.rw:
-         return False
-      if self.visibility != other.visibility:
-         return False
-      if self.oc2 != other.oc2:
-         return False
-      if self.cvt != other.cvt:
-         return False
-      if self.multireg != other.multireg:
-         return False
-      if self.bits != other.bits: # FIXME: check this
-         return False
+      if (self.name != other.name
+              or self.type != other.type
+              or self.xtype != other.xtype
+              or self.lookupfn_name != other.lookupfn_name
+              or self.invert != other.invert
+              or self.rw != other.rw
+              or self.visibility != other.visibility
+              or self.oc2 != other.oc2
+              or self.cvt != other.cvt
+              or self.multireg != other.multireg
+              or self.bits != other.bits # FIXME: check this
+      ):
+            return False
       return True
    def __hash__(self):
       h = 0
