@@ -101,11 +101,12 @@ class operand_info_t(object):
       # Sometimes we want the actual operand to be the logical
       # inversion of the captured bit.
       self.invert = invert
-      
+
+      # TODO: Unused
       # names of functions for extracting or packing these bits
       # These become function pointers in the instruction table.
-      self.bit_extractor = None
-      self.bit_packer = None
+      # self.bit_extractor = None
+      # self.bit_packer = None
 
       # actual index of each variable bit in the operand.
       # The values point to bits in the ipattern.
