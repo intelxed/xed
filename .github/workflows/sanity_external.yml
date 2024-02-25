@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ env:
   MIN_PY_VER: "3.8.17"
 ###########################################################
 
-
+permissions: read-all
 on:
   pull_request:
     branches:
@@ -117,6 +117,7 @@ jobs:
   # Malware scan
   anti_virus_scan:
     needs: init
+    permissions: write-all
     runs-on:
       - self-hosted
       - xed-runners
@@ -131,6 +132,7 @@ jobs:
 
   protex_scan:
     needs: init
+    permissions: write-all
     runs-on:
       - self-hosted
       - xed-runners
@@ -189,6 +191,7 @@ jobs:
 
   coverity_report:
     needs: [init, coverity_scan]
+    permissions: write-all
     runs-on:
       - self-hosted
       - xed-runners
