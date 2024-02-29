@@ -197,18 +197,23 @@ def  _clang_version_string(env):
 def  _greater_than_gcc(env,amaj,amin,aver):
     vstr = _gcc_version_string(env)
     try:
+        vstr = re.sub(r"[^\d\.]", "", vstr)
         (vmaj, vmin, vver) = vstr.split('.')
     except:
         return False
+
     vmaj = int(vmaj)
-    vmin = int(vmin)
-    vver = int(vver)
     if vmaj > amaj:
         return True
+
+    vmin = int(vmin)
     if vmaj == amaj and vmin > amin:
         return True
+
+    vver = int(vver)
     if vmaj == amaj and vmin == amin and vver >= aver:
         return True
+
     return False
 
 def set_env_gnu(env):
