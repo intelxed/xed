@@ -26,17 +26,8 @@ import glob
 import datetime
 
 from genutil import *
-def find_dir(d):
-    directory = os.getcwd()
-    last = ''
-    while directory != last:
-        target_directory = os.path.join(directory,d)
-        if os.path.exists(target_directory):
-            return target_directory
-        last = directory
-        directory = os.path.split(directory)[0]
-    return None
-sys.path.append(find_dir('mbuild'))
+
+add_mbuild_to_path()
 try:
    import mbuild
 except:

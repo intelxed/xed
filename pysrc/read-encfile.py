@@ -42,24 +42,9 @@ import os
 import optparse
 import stat
 import copy
+from genutil import add_mbuild_to_path
 
-def find_dir(d):
-    directory = os.getcwd()
-    last = ''
-    while directory != last:
-        target_directory = os.path.join(directory,d)
-        if os.path.exists(target_directory):
-            return target_directory
-        last = directory
-        directory = os.path.split(directory)[0]
-    return None
-
-mbuild_install_path = os.path.join(os.path.dirname(sys.argv[0]), 
-                                   '..', '..', 'mbuild')
-
-if not os.path.exists(mbuild_install_path):
-    mbuild_install_path =  find_dir('mbuild')
-sys.path=  [mbuild_install_path]  + sys.path
+add_mbuild_to_path()
 try:
    import mbuild
 except:
