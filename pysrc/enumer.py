@@ -22,18 +22,9 @@ import os
 import sys
 import re
 import codegen
+from genutil import add_mbuild_to_path
 
-def find_dir(d):
-    directory = os.getcwd()
-    last = ''
-    while directory != last:
-        target_dir = os.path.join(directory,d)
-        if os.path.exists(target_dir):
-            return target_dir
-        last = directory
-        directory = os.path.split(directory)[0]
-    return None
-sys.path.append(find_dir('mbuild'))
+add_mbuild_to_path()
 try:
    import mbuild
 except:
