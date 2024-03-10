@@ -68,39 +68,39 @@ def check_python_version():
    
 check_python_version()
 
-from optparse import OptionParser
+from argparse import ArgumentParser
 
-parser = OptionParser()
+parser = ArgumentParser()
 
 # Most useful switches
 
-parser.add_option('--iclasses',
-                  action='store_true', dest='iclasses', default=False,
-                  help='Enum for iclasses')
-parser.add_option('--operands',
-                  action='store_true', dest='operands', default=False,
-                  help='Enum for operands')
-parser.add_option('--operand-types',
-                  action='store_true', dest='operand_types', default=False,
-                  help='Enum for operands')
-parser.add_option('--extensions',
-                  action='store_true', dest='extensions', default=False,
-                  help='Enum for extensions')
-parser.add_option('--categories',
-                  action='store_true', dest='categories', default=False,
-                  help='Enum for categories')
-parser.add_option('--input',
-                  action='store', dest='input', default='',
-                  help='Input file')
-parser.add_option('--output',
-                  action='store', dest='output', default='',
-                  help='Output file')
-parser.add_option('--gendir',
-                  action='store', dest='gendir', default='gen',
-                  help='Output directory')
-parser.add_option('--verbosity', '-v',
-                  action='store', dest='verbosity', default=0,
-                  help='Level of verbosity')
+parser.add_argument('--iclasses',
+                    action='store_true', dest='iclasses', default=False,
+                    help='Enum for iclasses')
+parser.add_argument('--operands',
+                    action='store_true', dest='operands', default=False,
+                    help='Enum for operands')
+parser.add_argument('--operand-types',
+                    action='store_true', dest='operand_types', default=False,
+                    help='Enum for operands')
+parser.add_argument('--extensions',
+                    action='store_true', dest='extensions', default=False,
+                    help='Enum for extensions')
+parser.add_argument('--categories',
+                    action='store_true', dest='categories', default=False,
+                    help='Enum for categories')
+parser.add_argument('--input',
+                    action='store', dest='input', default='',
+                    help='Input file')
+parser.add_argument('--output',
+                    action='store', dest='output', default='',
+                    help='Output file')
+parser.add_argument('--gendir',
+                    action='store', dest='gendir', default='gen',
+                    help='Output directory')
+parser.add_argument('--verbosity', '-v',
+                    action='store', dest='verbosity', default=0,
+                    help='Level of verbosity')
 
 ############################################################################
 
@@ -139,7 +139,7 @@ def print_extension_enum(lines,gendir, output):
    print_enum(lines,gendir, 'xed-extension', 'xed_extension_enum_t', 'XED_EXTENSION_',output)
 
 if __name__ == '__main__':
-   (options, args ) = parser.parse_args()
+   options = parser.parse_args()
    if options.input == '':
       die('Need --input filename argument')
    if options.output == '':

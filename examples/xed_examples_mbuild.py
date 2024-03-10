@@ -25,7 +25,6 @@ import shutil
 import copy
 import time
 import types
-import optparse
 # sys.path is set up by calling script (mfile.py ususally)
 import mbuild 
 import xed_build_common as xbc    
@@ -102,138 +101,138 @@ def mkenv():
 
 def xed_args(env):
     """For command line invocation: parse the arguments"""
-    env.parser.add_option("--no-encoder", 
-                          dest="encoder",
-                          action="store_false",
-                          help="No encoder")
-    env.parser.add_option("--no-enc2", 
-                          dest="enc2",
-                          action="store_false",
-                          help="No enc2 encoder")
-    env.parser.add_option("--no-decoder", 
-                          dest="decoder",
-                          action="store_false",
-                          help="No decoder")
-    env.parser.add_option("--android", 
-                          dest="android",
-                          action="store_true",
-                          help="Android build (avoid rpath for examples)")
-    env.parser.add_option("--example-linkflags", 
-                          dest="example_linkflags",
-                          action="store",
-                          help="Extra link flags for the examples")
-    env.parser.add_option("--example-flags", 
-                          dest="example_flags",
-                          action="store",
-                          help="Extra compilation flags for the examples")
-    env.parser.add_option("--example-rpath", 
-                          dest="example_rpaths",
-                          action="append",
-                          help="Extra rpath dirs for examples")
-    env.parser.add_option("-c","--clean", 
-                          dest="clean", 
-                          action="store_true",
-                          help="Clean targets")
-    env.parser.add_option("--keep-going", '-k', 
-                          action="store_false",
-                          dest="die_on_errors",
-                          help="Keep going after errors occur when building")
-    env.parser.add_option("--messages", 
-                          action="store_true",
-                          dest="xed_messages",
-                          help="Enable use xed's debug messages")
-    env.parser.add_option("--no-pedantic", 
-                          action="store_false",
-                          dest="pedantic",
-                          help="Disable -pedantic (gnu/clang compilers).")
-    env.parser.add_option("--asserts", 
-                          action="store_true",
-                          dest="xed_asserts",
-                          help="Enable use xed's asserts")
-    env.parser.add_option("--clr", 
-                          action="store_true", 
-                          dest="clr",
-                          help="Compile for Microsoft CLR")
-    env.parser.add_option("--no-werror", 
-                          action="store_false",
-                          dest="use_werror",
-                          help="Disable use of -Werror on GNU compiles")
-    env.parser.add_option("--dbghelp", 
-                          action="store_true", 
-                          dest="dbghelp",
-                          help="Use dbghelp.dll on windows.")
-    env.parser.add_option("--install-dir", 
-                          dest="install_dir",
-                          action="store",
-                          help="XED Install directory. " +
-                          "Default: kits/xed-install-date-os-cpu")
-    env.parser.add_option("--kit-kind", 
-                          dest="kit_kind", 
-                          action="store",
-                          help="Kit version string.  " +
-                          "The default is 'base'")
-    env.parser.add_option("--win", 
-                          action="store_true", 
-                          dest="win",
-                          help="Add -mno-cygwin to GCC-on-windows compilation")
-    env.parser.add_option("--ld-library-path", 
-                          action="append",
-                          dest="ld_library_path",
-                          help="Specify additions to LD_LIBRARY_PATH " +
-                          "for use when running ldd and making kits")
-    env.parser.add_option("--ld-library-path-for-tests", 
-                          action="append",
-                          dest="ld_library_path_for_tests",
-                          help="Specify additions to LD_LIBRARY_PATH " +
-                          "for use when running the tests")
+    env.parser.add_argument("--no-encoder",
+                            dest="encoder",
+                            action="store_false",
+                            help="No encoder")
+    env.parser.add_argument("--no-enc2",
+                            dest="enc2",
+                            action="store_false",
+                            help="No enc2 encoder")
+    env.parser.add_argument("--no-decoder",
+                            dest="decoder",
+                            action="store_false",
+                            help="No decoder")
+    env.parser.add_argument("--android",
+                            dest="android",
+                            action="store_true",
+                            help="Android build (avoid rpath for examples)")
+    env.parser.add_argument("--example-linkflags",
+                            dest="example_linkflags",
+                            action="store",
+                            help="Extra link flags for the examples")
+    env.parser.add_argument("--example-flags",
+                            dest="example_flags",
+                            action="store",
+                            help="Extra compilation flags for the examples")
+    env.parser.add_argument("--example-rpath",
+                            dest="example_rpaths",
+                            action="append",
+                            help="Extra rpath dirs for examples")
+    env.parser.add_argument("-c","--clean",
+                            dest="clean",
+                            action="store_true",
+                            help="Clean targets")
+    env.parser.add_argument("--keep-going", '-k',
+                            action="store_false",
+                            dest="die_on_errors",
+                            help="Keep going after errors occur when building")
+    env.parser.add_argument("--messages",
+                            action="store_true",
+                            dest="xed_messages",
+                            help="Enable use xed's debug messages")
+    env.parser.add_argument("--no-pedantic",
+                            action="store_false",
+                            dest="pedantic",
+                            help="Disable -pedantic (gnu/clang compilers).")
+    env.parser.add_argument("--asserts",
+                            action="store_true",
+                            dest="xed_asserts",
+                            help="Enable use xed's asserts")
+    env.parser.add_argument("--clr",
+                            action="store_true",
+                            dest="clr",
+                            help="Compile for Microsoft CLR")
+    env.parser.add_argument("--no-werror",
+                            action="store_false",
+                            dest="use_werror",
+                            help="Disable use of -Werror on GNU compiles")
+    env.parser.add_argument("--dbghelp",
+                            action="store_true",
+                            dest="dbghelp",
+                            help="Use dbghelp.dll on windows.")
+    env.parser.add_argument("--install-dir",
+                            dest="install_dir",
+                            action="store",
+                            help="XED Install directory. " +
+                            "Default: kits/xed-install-date-os-cpu")
+    env.parser.add_argument("--kit-kind",
+                            dest="kit_kind",
+                            action="store",
+                            help="Kit version string.  " +
+                            "The default is 'base'")
+    env.parser.add_argument("--win",
+                            action="store_true",
+                            dest="win",
+                            help="Add -mno-cygwin to GCC-on-windows compilation")
+    env.parser.add_argument("--ld-library-path",
+                            action="append",
+                            dest="ld_library_path",
+                            help="Specify additions to LD_LIBRARY_PATH " +
+                            "for use when running ldd and making kits")
+    env.parser.add_argument("--ld-library-path-for-tests",
+                            action="append",
+                            dest="ld_library_path_for_tests",
+                            help="Specify additions to LD_LIBRARY_PATH " +
+                            "for use when running the tests")
 
     # elf.h is different than libelf.h.
-    env.parser.add_option("--elf-dwarf", "--dwarf",
-                          action="store_true",
-                          dest="use_elf_dwarf",
-                          help="Use libelf/libdwarf. (Linux only)")
-    env.parser.add_option("--elf-dwarf-precompiled", 
-                          action="store_true",
-                          dest="use_elf_dwarf_precompiled",
-                          help="Use precompiled libelf/libdwarf from " +
-                          " the XED source distribution." + 
-                          " This is the currently required" +
-                          " if you are installing a kit." +
-                          " Implies the --elf-dwarf knob."
-                          " (Linux only)")
-    env.parser.add_option("--strip", 
-                          action="store",
-                          dest="strip",
-                          help="Path to strip binary. (Linux only)")
-    env.parser.add_option("--pin-crt", 
-                          action="store",
-                          dest="pin_crt",
-                          help="Compile for the Pin C-runtime. Specify" +
-                          " path to pin kit")
-    env.parser.add_option("--lib-dir", 
-                          action='store',
-                          dest="xed_lib_dir",
-                          help="directory where libxed* is located.")
-    env.parser.add_option("--enc2-lib", 
-                          action='append',
-                          dest="xed_enc2_libs",
-                          help="Filenames (with paths) of the XED enc2 libraries.")
-    env.parser.add_option("--inc-dir", 
-                          action="append",
-                          dest="xed_inc_dir",
-                          help="directory where xed generated headers are located.")
-    env.parser.add_option("--xed-dir", 
-                          action="store",
-                          dest="xed_dir",
-                          help="directory where xed sources are located.")
-    env.parser.add_option("--build-cpp-examples", 
-                          action="store_true",
-                          dest="build_cpp_examples",
-                          help="Build the C++ examples default: False.")
-    env.parser.add_option("--set-copyright", 
-                          action="store_true",
-                          dest="set_copyright",
-                          help="Set the Intel copyright on Windows XED executable")
+    env.parser.add_argument("--elf-dwarf", "--dwarf",
+                            action="store_true",
+                            dest="use_elf_dwarf",
+                            help="Use libelf/libdwarf. (Linux only)")
+    env.parser.add_argument("--elf-dwarf-precompiled",
+                            action="store_true",
+                            dest="use_elf_dwarf_precompiled",
+                            help="Use precompiled libelf/libdwarf from " +
+                            " the XED source distribution." +
+                            " This is the currently required" +
+                            " if you are installing a kit." +
+                            " Implies the --elf-dwarf knob."
+                            " (Linux only)")
+    env.parser.add_argument("--strip",
+                            action="store",
+                            dest="strip",
+                            help="Path to strip binary. (Linux only)")
+    env.parser.add_argument("--pin-crt",
+                            action="store",
+                            dest="pin_crt",
+                            help="Compile for the Pin C-runtime. Specify" +
+                            " path to pin kit")
+    env.parser.add_argument("--lib-dir",
+                            action='store',
+                            dest="xed_lib_dir",
+                            help="directory where libxed* is located.")
+    env.parser.add_argument("--enc2-lib",
+                            action='append',
+                            dest="xed_enc2_libs",
+                            help="Filenames (with paths) of the XED enc2 libraries.")
+    env.parser.add_argument("--inc-dir",
+                            action="append",
+                            dest="xed_inc_dir",
+                            help="directory where xed generated headers are located.")
+    env.parser.add_argument("--xed-dir",
+                            action="store",
+                            dest="xed_dir",
+                            help="directory where xed sources are located.")
+    env.parser.add_argument("--build-cpp-examples",
+                            action="store_true",
+                            dest="build_cpp_examples",
+                            help="Build the C++ examples default: False.")
+    env.parser.add_argument("--set-copyright",
+                            action="store_true",
+                            dest="set_copyright",
+                            help="Set the Intel copyright on Windows XED executable")
 
     env.parse_args(env['xed_defaults'])
     

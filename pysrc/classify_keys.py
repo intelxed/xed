@@ -17,8 +17,9 @@
 #  
 #END_LEGAL
 from __future__ import print_function
+
+import argparse
 import sys
-import optparse
 import collections
 
 def read_keys(env):
@@ -142,14 +143,14 @@ class obj_t(object):
 def setup():
     env = obj_t()
 
-    parser = optparse.OptionParser()
-    parser.add_option('-i', 
-                      action='store',
-                      dest='input', 
-                      default='keys.dec',
-                      help='Input file name')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i',
+                        action='store',
+                        dest='input',
+                        default='keys.dec',
+                        help='Input file name')
 
-    (options,args) = parser.parse_args()
+    options = parser.parse_args()
     env.fn = options.input
     return env
 

@@ -63,7 +63,7 @@ import sys
 import copy
 import glob
 import re
-import optparse
+import argparse
 import collections
 from typing import Dict, List
 
@@ -127,153 +127,153 @@ import classifier
 ## OPTIONS
 #####################################################################
 def setup_arg_parser():
-    arg_parser = optparse.OptionParser()
-    arg_parser.add_option('--debug',
-                          action='store_true', 
-                          dest='debug', 
-                          default=False,
-                          help='Start PDB debugger')
-    arg_parser.add_option('--limit-enum-strings',
-                          action='store_true', 
-                          dest='limit_enum_strings', 
-                          default=False,
-                          help='Save space by limiting the enum strings')
-    arg_parser.add_option('--gendir',
-                          action='store', 
-                          dest='gendir', 
-                          default='gen',
-                          help='Directory for generated files')
-    arg_parser.add_option('--xeddir',
-                          action='store',
-                          dest='xeddir', 
-                          default='',
-                          help='Directory for generated files')
-    arg_parser.add_option('--input-regs',
-                          action='store', 
-                          dest='input_regs', 
-                          default='',
-                          help='Register input file')
-    arg_parser.add_option('--input-widths',
-                          action='store', 
-                          dest='input_widths', 
-                          default='',
-                          help='Widths input file')
-    arg_parser.add_option('--input-extra-widths',
-                          action='store', 
-                          dest='input_extra_widths',
-                          default='',
-                          help='Extra widths input file')
-    arg_parser.add_option('--input-element-types',
-                          action='store', 
-                          dest='input_element_types', 
-                          default='',
-                          help='File with mappings from type names to' + 
-                          ' widths and base element types')
-    arg_parser.add_option('--input-element-type-base',
-                          action='store', 
-                          dest='input_element_type_base', 
-                          default='',
-                          help='new chunk for element type enum')
-    arg_parser.add_option('--input-pointer-names',
-                          action='store', 
-                          dest='input_pointer_names', 
-                          default='',
-                          help='Pointer names input file for disassembly')
-    arg_parser.add_option('--input-fields',
-                          action='store', 
-                          dest='input_fields', 
-                          default='',
-                          help='Operand storage description  input file')
-    arg_parser.add_option('--input',
-                          action='store', 
-                          dest='input', 
-                          default='',
-                          help='Input file')
-    arg_parser.add_option('--input-state',
-                          action='store', 
-                          dest='input_state', 
-                          default='xed-state-bits.txt',
-                          help='state input file')
-    arg_parser.add_option('--input-errors',
-                          action='store', 
-                          dest='input_errors', 
-                          default='',
-                          help='new chunk for errors enum')
-    arg_parser.add_option('--inst',
-                          action='store', 
-                          dest='inst_init_file', 
-                          default='xed-init-inst-table.c',
-                          help='Instruction table init file')
-    arg_parser.add_option('--sout',
-                          action='store', 
-                          dest='structured_output_fn', 
-                          default='xed-sout.txt',
-                          help='Emit structured output file')
-    arg_parser.add_option('--patterns',
-                          action='store',
-                          dest='structured_input_fn', 
-                          default='',
-                          help='Read structured input file')
-    arg_parser.add_option('--chip-models',
-                          action='store', 
-                          dest='chip_models_input_fn', 
-                          default='',
-                          help='Chip models input file name')
-    arg_parser.add_option('--ctables',
-                          action='store', 
-                          dest='ctables_input_fn', 
-                          default='',
-                          help='Conversion tables input file name')
-    arg_parser.add_option('--isa',
-                          action='store', 
-                          dest='isa_input_file', 
-                          default='',
-                          help='Read structured input file containing' + 
-                               ' the ISA INSTRUCTIONS() nonterminal')
-    arg_parser.add_option('--spine',
-                          action='store', 
-                          dest='spine', 
-                          default='',
-                          help='Read the spine file containing the' +
-                               ' top-most decoder nonterminal')
-    arg_parser.add_option('--print-graph',
-                          action='store_true', 
-                          dest='print_graph', 
-                          default=False,
-                          help='Print the graph for each nonterminal (big)')
+    arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument('--debug',
+                            action='store_true',
+                            dest='debug',
+                            default=False,
+                            help='Start PDB debugger')
+    arg_parser.add_argument('--limit-enum-strings',
+                            action='store_true',
+                            dest='limit_enum_strings',
+                            default=False,
+                            help='Save space by limiting the enum strings')
+    arg_parser.add_argument('--gendir',
+                            action='store',
+                            dest='gendir',
+                            default='gen',
+                            help='Directory for generated files')
+    arg_parser.add_argument('--xeddir',
+                            action='store',
+                            dest='xeddir',
+                            default='',
+                            help='Directory for generated files')
+    arg_parser.add_argument('--input-regs',
+                            action='store',
+                            dest='input_regs',
+                            default='',
+                            help='Register input file')
+    arg_parser.add_argument('--input-widths',
+                            action='store',
+                            dest='input_widths',
+                            default='',
+                            help='Widths input file')
+    arg_parser.add_argument('--input-extra-widths',
+                            action='store',
+                            dest='input_extra_widths',
+                            default='',
+                            help='Extra widths input file')
+    arg_parser.add_argument('--input-element-types',
+                            action='store',
+                            dest='input_element_types',
+                            default='',
+                            help='File with mappings from type names to' +
+                            ' widths and base element types')
+    arg_parser.add_argument('--input-element-type-base',
+                            action='store',
+                            dest='input_element_type_base',
+                            default='',
+                            help='new chunk for element type enum')
+    arg_parser.add_argument('--input-pointer-names',
+                            action='store',
+                            dest='input_pointer_names',
+                            default='',
+                            help='Pointer names input file for disassembly')
+    arg_parser.add_argument('--input-fields',
+                            action='store',
+                            dest='input_fields',
+                            default='',
+                            help='Operand storage description  input file')
+    arg_parser.add_argument('--input',
+                            action='store',
+                            dest='input',
+                            default='',
+                            help='Input file')
+    arg_parser.add_argument('--input-state',
+                            action='store',
+                            dest='input_state',
+                            default='xed-state-bits.txt',
+                            help='state input file')
+    arg_parser.add_argument('--input-errors',
+                            action='store',
+                            dest='input_errors',
+                            default='',
+                            help='new chunk for errors enum')
+    arg_parser.add_argument('--inst',
+                            action='store',
+                            dest='inst_init_file',
+                            default='xed-init-inst-table.c',
+                            help='Instruction table init file')
+    arg_parser.add_argument('--sout',
+                            action='store',
+                            dest='structured_output_fn',
+                            default='xed-sout.txt',
+                            help='Emit structured output file')
+    arg_parser.add_argument('--patterns',
+                            action='store',
+                            dest='structured_input_fn',
+                            default='',
+                            help='Read structured input file')
+    arg_parser.add_argument('--chip-models',
+                            action='store',
+                            dest='chip_models_input_fn',
+                            default='',
+                            help='Chip models input file name')
+    arg_parser.add_argument('--ctables',
+                            action='store',
+                            dest='ctables_input_fn',
+                            default='',
+                            help='Conversion tables input file name')
+    arg_parser.add_argument('--isa',
+                            action='store',
+                            dest='isa_input_file',
+                            default='',
+                            help='Read structured input file containing' +
+                                 ' the ISA INSTRUCTIONS() nonterminal')
+    arg_parser.add_argument('--spine',
+                            action='store',
+                            dest='spine',
+                            default='',
+                            help='Read the spine file containing the' +
+                                 ' top-most decoder nonterminal')
+    arg_parser.add_argument('--print-graph',
+                            action='store_true',
+                            dest='print_graph',
+                            default=False,
+                            help='Print the graph for each nonterminal (big)')
 
-    arg_parser.add_option('--verbosity', '--verbose', '-v',
-                          action='append', 
-                          dest='verbosity', 
-                          default=[],
-                          help='Level of verbosity, repeatable. '  +
+    arg_parser.add_argument('--verbosity', '--verbose', '-v',
+                            action='append',
+                            dest='verbosity',
+                            default=[],
+                            help='Level of verbosity, repeatable. '  +
                                ' Values=1..7, enc,merge')
-    arg_parser.add_option('--no-imm-suffix',
-                          action='store_false', 
-                          dest='add_suffix_to_imm', 
-                          default=True,
-                          help='Omit width suffixes from iforms')
-    arg_parser.add_option('--cpuid',
-                          action='store', 
-                          dest='cpuid_input_fn', 
-                          default='',
-                          help='isa-set to cpuid map input file')
-    arg_parser.add_option('--map-descriptions',
-                          action='store', 
-                          dest='map_descriptions_input_fn', 
-                          default='',
-                          help='map descriptions input file')
-    arg_parser.add_option("--compress-operands", 
-                          action="store_true",
-                          dest="compress_operands",
-                          default=False,
-                          help="use bit-fields to compress the "+
-                          "operand storage.")
-    arg_parser.add_option("--add-orphan-inst-to-future-chip", 
-                          action="store_true",
-                          dest="add_orphan_inst_to_future_chip",
-                          default=False,
-                          help="Add orphan isa-sets to future chip definition.")
+    arg_parser.add_argument('--no-imm-suffix',
+                            action='store_false',
+                            dest='add_suffix_to_imm',
+                            default=True,
+                            help='Omit width suffixes from iforms')
+    arg_parser.add_argument('--cpuid',
+                            action='store',
+                            dest='cpuid_input_fn',
+                            default='',
+                            help='isa-set to cpuid map input file')
+    arg_parser.add_argument('--map-descriptions',
+                            action='store',
+                            dest='map_descriptions_input_fn',
+                            default='',
+                            help='map descriptions input file')
+    arg_parser.add_argument("--compress-operands",
+                            action="store_true",
+                            dest="compress_operands",
+                            default=False,
+                            help="use bit-fields to compress the "+
+                            "operand storage.")
+    arg_parser.add_argument("--add-orphan-inst-to-future-chip",
+                            action="store_true",
+                            dest="add_orphan_inst_to_future_chip",
+                            default=False,
+                            help="Add orphan isa-sets to future chip definition.")
     return arg_parser
 
 #####################################################################
@@ -6311,33 +6311,33 @@ def gen_operand_storage_fields(options,agi):
 
 def main():
    arg_parser = setup_arg_parser()
-   (options, args ) = arg_parser.parse_args()
+   args = arg_parser.parse_args()
    
-   if options.debug:
+   if args.debug:
        activate_debugger() # genutil
        
-   set_verbosity_options(options.verbosity)
-   if options.xeddir == '':
+   set_verbosity_options(args.verbosity)
+   if args.xeddir == '':
       path_to_generator = sys.argv[0]
       (path_to_src, configure) = os.path.split(path_to_generator)
-      options.xeddir = path_to_src
-      msge("[ASSUMING PATH TO XED SRC] " + options.xeddir)
+      args.xeddir = path_to_src
+      msge("[ASSUMING PATH TO XED SRC] " + args.xeddir)
 
-   agi = all_generator_info_t(options)
+   agi = all_generator_info_t(args)
 
    if not os.path.exists(agi.common.options.gendir):
       die("Need a subdirectory called " + agi.common.options.gendir)
 
-   agi.map_info = map_info_rdr.read_file(options.map_descriptions_input_fn)
-   gen_operand_storage_fields(options,agi)
+   agi.map_info = map_info_rdr.read_file(args.map_descriptions_input_fn)
+   gen_operand_storage_fields(args,agi)
    
-   gen_regs(options,agi)
+   gen_regs(args,agi)
 
-   gen_widths(options,agi) # writes agi.widths_list and agi.widths_dict
+   gen_widths(args,agi) # writes agi.widths_list and agi.widths_dict
    gen_extra_widths(agi) # writes agi.extra_widths_nt and agi.exta_widths_reg
    gen_element_types_base(agi) 
    gen_element_types(agi) # write agi.xtypes dict, agi.xtypes
-   gen_pointer_names(options,agi)
+   gen_pointer_names(args,agi)
    gen_errors_enum(agi) 
    
    

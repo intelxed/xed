@@ -25,7 +25,6 @@ import shutil
 import copy
 import time
 import types
-import optparse
 import mbuild 
     
 ############################################################################
