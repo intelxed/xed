@@ -39,7 +39,7 @@ from pathlib import Path
 import re
 import sys
 import os
-import optparse
+import argparse
 import stat
 import copy
 
@@ -3222,67 +3222,66 @@ class encoder_configuration_t(object):
 
 ##############################################################################
 def setup_arg_parser():
-    arg_parser = optparse.OptionParser()
+    arg_parser = argparse.ArgumentParser()
 
-    arg_parser.add_option('--gendir',
-                      action='store', dest='gendir', default='obj',
-                      help='Directory for generated files')
-    arg_parser.add_option('--xeddir',
-                      action='store', dest='xeddir', default='.',
-                      help='Directory for generated files')
-    arg_parser.add_option('--xedext-dir',
-                      action='store', dest='xedext_dir', default='',
-                      help='Directory for extension')
+    arg_parser.add_argument('--gendir',
+                            action='store', dest='gendir', default='obj',
+                            help='Directory for generated files')
+    arg_parser.add_argument('--xeddir',
+                            action='store', dest='xeddir', default='.',
+                            help='Directory for generated files')
+    arg_parser.add_argument('--xedext-dir',
+                            action='store', dest='xedext_dir', default='',
+                            help='Directory for extension')
     
-    arg_parser.add_option('--input-fields',
-                      action='store', dest='input_fields', default='',
-                      help='Operand storage description  input file')
-    arg_parser.add_option('--input-state',
-                      action='store', dest='input_state', default='xed-state-bits.txt',
-                      help='state input file')
-    arg_parser.add_option('--input-regs',
-                      action='store', dest='input_regs', default='',
-                      help='Encoder regs file')
-    arg_parser.add_option('--enc-patterns',
-                      action='append', dest='enc_patterns', default=[],
-                      help='Encoder input files')
-    arg_parser.add_option('--enc-dec-patterns',
-                      action='append', dest='enc_dec_patterns', default=[],
-                      help='Decoder input files used by the encoder')
-    arg_parser.add_option('--isa',
-                      action='store', dest='isa_input_file', default='',
-                      help='Read structured input file containing the ISA INSTRUCTIONS() nonterminal')
-    arg_parser.add_option('--map-descriptions',
-                          action='store',
-                          dest='map_descriptions_input_fn',
-                          default='',
-                          help='map descriptions input file')
-    arg_parser.add_option('--no-amd',
-                      action='store_false', dest='amd_enabled', default=True,
-                      help='Omit AMD instructions')
-    arg_parser.add_option('--verbosity', '-v',
-                      action='append', dest='verbosity', default=[],
-                      help='list of verbosity tokens, repeatable.')
-    arg_parser.add_option('--chip-models',
-                          action='store', 
-                          dest='chip_models_input_fn', 
-                          default='',
-                          help='Chip models input file name')
-    arg_parser.add_option('--chip',
-                          action='store', 
-                          dest='chip', 
-                          default='ALL',
-                          help='''Name of the target chip. Default is ALL.  Setting the target chip
-                                limits what encode will produce to
-                                only those instructions valid for that
-                                chip.''')
-    
-    options, args = arg_parser.parse_args()
-    return options, args
+    arg_parser.add_argument('--input-fields',
+                            action='store', dest='input_fields', default='',
+                            help='Operand storage description  input file')
+    arg_parser.add_argument('--input-state',
+                            action='store', dest='input_state', default='xed-state-bits.txt',
+                            help='state input file')
+    arg_parser.add_argument('--input-regs',
+                            action='store', dest='input_regs', default='',
+                            help='Encoder regs file')
+    arg_parser.add_argument('--enc-patterns',
+                            action='append', dest='enc_patterns', default=[],
+                            help='Encoder input files')
+    arg_parser.add_argument('--enc-dec-patterns',
+                            action='append', dest='enc_dec_patterns', default=[],
+                            help='Decoder input files used by the encoder')
+    arg_parser.add_argument('--isa',
+                            action='store', dest='isa_input_file', default='',
+                            help='Read structured input file containing the ISA INSTRUCTIONS() nonterminal')
+    arg_parser.add_argument('--map-descriptions',
+                            action='store',
+                            dest='map_descriptions_input_fn',
+                            default='',
+                            help='map descriptions input file')
+    arg_parser.add_argument('--no-amd',
+                            action='store_false', dest='amd_enabled', default=True,
+                            help='Omit AMD instructions')
+    arg_parser.add_argument('--verbosity', '-v',
+                            action='append', dest='verbosity', default=[],
+                            help='list of verbosity tokens, repeatable.')
+    arg_parser.add_argument('--chip-models',
+                            action='store',
+                            dest='chip_models_input_fn',
+                            default='',
+                            help='Chip models input file name')
+    arg_parser.add_argument('--chip',
+                            action='store',
+                            dest='chip',
+                            default='ALL',
+                            help='''Name of the target chip. Default is ALL.  Setting the target chip
+                                  limits what encode will produce to
+                                  only those instructions valid for that
+                                  chip.''')
+
+    return arg_parser.parse_args()
 
 
 if __name__ == '__main__':
-    (options, args) = setup_arg_parser()
+    options = setup_arg_parser()
     set_verbosity_options(options.verbosity)
     enc_inputs = encoder_input_files_t(options)
     enc = encoder_configuration_t(enc_inputs, options.chip, options.amd_enabled)

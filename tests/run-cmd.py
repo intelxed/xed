@@ -249,33 +249,33 @@ def run_tests(env):
     
 def work():
     env = mbuild.env_t()
-    env.parser.add_option(
+    env.parser.add_argument(
         "--bulk-make-tests", "-b",
         dest="bulk_tests", action="append",
         default=[], 
         help="List of bulk tests from which to create test references. Repeatable")
-    env.parser.add_option("--rebase-tests", 
-                          dest="rebase_tests", 
-                          action="store_true",
-                          default=False, 
-                          help="Update the reference output files. Do not compare.")
-    env.parser.add_option("--tests", 
-                          dest="tests", 
-                          action="append",
-                          default=[], 
-                          help="Directory where tests live.")
-    env.parser.add_option("--otests", 
-                          dest="otests", 
-                          action="store",
-                          default='tests-base', 
-                          help="Directory where tests live.")
-    env.parser.add_option("-c", "--code", 
-                          dest="codes", 
-                          action="append",
-                          default=[], 
-                          help="Codes for test subsetting (DEC, ENC, AVX, " 
-                             + "AVX512X, AVX512PF, AMX, APX, AVX10, IPREFETCH, HSW, AMD, XOP, VIA)." 
-                             + " Only used for running tests, not creating them.")
+    env.parser.add_argument("--rebase-tests",
+                            dest="rebase_tests",
+                            action="store_true",
+                            default=False,
+                            help="Update the reference output files. Do not compare.")
+    env.parser.add_argument("--tests",
+                            dest="tests",
+                            action="append",
+                            default=[],
+                            help="Directory where tests live.")
+    env.parser.add_argument("--otests",
+                            dest="otests",
+                            action="store",
+                            default='tests-base',
+                            help="Directory where tests live.")
+    env.parser.add_argument("-c", "--code",
+                            dest="codes",
+                            action="append",
+                            default=[],
+                            help="Codes for test subsetting (DEC, ENC, AVX, "
+                               + "AVX512X, AVX512PF, AMX, APX, AVX10, IPREFETCH, HSW, AMD, XOP, VIA)."
+                               + " Only used for running tests, not creating them.")
     env.parse_args()
 
     if not env['tests']:

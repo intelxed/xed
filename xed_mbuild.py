@@ -193,7 +193,7 @@ class generator_inputs_t(object):
             ofn = mbuild.join(self.intermediate_dir,self.file_name[f])
             self.file_name[f] = ofn # update file name-- only call once!
         
-    def concatenate_input_files(self,env):
+    def concatenate_input_files(self, env: mbuild.env_t):
         """Concatenate all the files of each type"""
         for f in self.fields:
             self.concatenate_one_set_of_files(env,
@@ -235,7 +235,7 @@ class generator_inputs_t(object):
             s.append(extra_args)
         return ' '.join(s)
 
-    def encode_command(self, env, xedsrc, extra_args=None):
+    def encode_command(self, env: mbuild.env_t, xedsrc, extra_args=None):
         """Produce an encoder generator command"""
         s = []
         s.append( env['pythonarg'] )
@@ -263,7 +263,7 @@ class generator_inputs_t(object):
         return ' '.join(s)
     
 
-    def concatenate_one_set_of_files(self, env, target, inputs):
+    def concatenate_one_set_of_files(self, env: mbuild.env_t, target, inputs):
         """Concatenate input files creating the target file."""
         try:
             mbuild.vmsgb(2, "CONCAT", "%s <-\n\t\t%s" % (target ,
@@ -290,7 +290,7 @@ class generator_inputs_t(object):
             xbc.cdie("Could not write file %s from inputs: %s" %
                        ( target, ', '.join(inputs)))
 
-def run_generator_preparation(gc, env):
+def run_generator_preparation(gc, env: mbuild.env_t):
     """Prepare to run the encode and decode table generators"""
     if env == None:
         return (1, ['no env!'])
@@ -308,7 +308,7 @@ def read_file_list(fn):
         a.append(f.rstrip())
     return a
 
-def run_decode_generator(gc, env):
+def run_decode_generator(gc, env: mbuild.env_t):
     """Run the decode table generator. This function is executed as
      required by the work_queue."""
     if env == None:
@@ -345,7 +345,7 @@ def run_decode_generator(gc, env):
     mbuild.vmsgb(1, "DEC-GEN", "Return code: " + str(retval))
     return (retval, error_output )
 
-def run_encode_generator(gc, env):
+def run_encode_generator(gc, env: mbuild.env_t):
     """Run the encoder table generator. This function is executed as
      required by the work_queue."""
     if env == None:
@@ -384,7 +384,7 @@ def _encode_command2(args):
     s.append('--output-file-list %s' % aq(args.enc2_output_file))
     return ' '.join(s)
 
-def run_encode_generator2(args, env):
+def run_encode_generator2(args, env: mbuild.env_t):
     """Run the encoder2 table generator. This function is executed as
      required by the work_queue."""
     if env == None:
@@ -425,7 +425,7 @@ def need_to_rebuild(fn,sigfile):
 ###########################################################################
 # legal header tagging
 
-def legal_header_tagging(env):
+def legal_header_tagging(env: mbuild.env_t):
     if 'apply-header' not in env['targets']:
         return
         
@@ -469,7 +469,7 @@ def legal_header_tagging(env):
     mbuild.msgb("STOPPING", "after %s" % 'header tagging')
     xbc.cexit(0)
 
-def header_tag_files(env, files, legal_header, script_files=False):
+def header_tag_files(env: mbuild.env_t, files, legal_header, script_files=False):
     """Apply the legal_header to the list of files"""
     try: 
        import apply_legal_header
@@ -486,12 +486,12 @@ def header_tag_files(env, files, legal_header, script_files=False):
              apply_legal_header.apply_header_to_source_file(legal_header, f)
 ###########################################################################
 # Doxygen build
-def get_kit(env):
+def get_kit(env: mbuild.env_t):
     if xbc.installing(env):
         return env['ikit'].kit
     return env['wkit'].kit
     
-def doxygen_subs(env,api_ref=True):
+def doxygen_subs(env: mbuild.env_t, api_ref=True):
    '''Create substitutions dictionary for customizing doxygen run'''
    subs = {}
    subs['XED_TOPSRCDIR']   = aq(env['src_dir'])
@@ -515,7 +515,7 @@ def doxygen_subs(env,api_ref=True):
 
    return subs
 
-def make_doxygen_build(env, work_queue):
+def make_doxygen_build(env: mbuild.env_t, work_queue):
     """Make the doxygen how-to-build-xed manual"""
     if 'doc-build' not in env['targets']:
         return
@@ -540,7 +540,7 @@ def make_doxygen_build(env, work_queue):
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-build')
 
-def create_doxygen_api_documentation(env, work_queue):
+def create_doxygen_api_documentation(env: mbuild.env_t, work_queue):
     # After applying the legal header, create the doxygen from the kit
     # files, and place the output right in the kit.
     if 'doc' in env['targets']:
@@ -552,7 +552,7 @@ def create_doxygen_api_documentation(env, work_queue):
         if env['doxygen_install']:        
             make_doxygen_api(env, work_queue, env['doxygen_install'])
     
-def make_doxygen_api(env, work_queue, install_dir):
+def make_doxygen_api(env: mbuild.env_t, work_queue, install_dir):
     """We may install in the kit or elsewhere using files from the kit"""
     mbuild.msgb("XED BUILDING 'api' DOCUMENTATION")
     e2 = copy.deepcopy(env)
@@ -573,7 +573,7 @@ def make_doxygen_api(env, work_queue, install_dir):
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-ref')
 
-def setup_hooks(env):
+def setup_hooks(env: mbuild.env_t):
     """replaces the local git hook scripts with scripts from this repository"""
     xed_path = env['src_dir']
     xed_pre_commit = Path(xed_path, 'scripts', 'git-hooks', 'pre-commit.py').resolve(strict=True)
@@ -582,7 +582,7 @@ def setup_hooks(env):
     shutil.copyfile(xed_pre_commit, pre_commit)
     shutil.copymode(xed_pre_commit, pre_commit)
     
-def mkenv():
+def mkenv() -> mbuild.env_t:
     """External entry point: create the environment"""
     if sys.version_info[0] == 3:
         if sys.version_info[1] < 8:
@@ -592,6 +592,7 @@ def mkenv():
 
     # create an environment, parse args
     env = mbuild.env_t()
+    env.parser.usage = "%(prog)s [targets] [options]"
     standard_defaults = dict(    doxygen_install='',
                                  doxygen='',
                                  doxygen_internal=False,
@@ -681,349 +682,372 @@ def mkenv():
     env.set_defaults(env['xed_defaults'])
     return env
 
-def xed_args(env):
+
+VALID_TARGETS = [
+    'apply-header',
+    'clean',
+    'cmdline',
+    'doc',
+    'doc-build',
+    'examples',
+    'install',
+    'just-gen',
+    'just-prep',
+    'skip-gen',
+    'skip-lib',
+    'test',
+    'zip'
+]
+
+
+def xed_args(env: mbuild.env_t):
     """For command line invocation: parse the arguments"""
-    env.parser.add_option("--android", 
-                          dest="android",
-                          action="store_true",
-                          help="Android build (avoid rpath for examples)")
-    env.parser.add_option("--copy-runtime-libs", 
-                          dest="copy_libc",
-                          action="store_true",
-                          help="Copy the libc to the kit." +
-                          " Rarely necessary if building on old linux " +
-                          "dev systems. Default: false")
-    env.parser.add_option("--example-linkflags", 
-                          dest="example_linkflags",
-                          action="store",
-                          help="Extra link flags for the examples")
-    env.parser.add_option("--example-flags", 
-                          dest="example_flags",
-                          action="store",
-                          help="Extra compilation flags for the examples")
-    env.parser.add_option("--example-rpath", 
-                          dest="example_rpaths",
-                          action="append",
-                          help="Extra rpath dirs for examples")
-    env.parser.add_option("--doxygen-install", 
-                          dest="doxygen_install",
-                          action="store",
-                          help="Doxygen installation directory")
-    env.parser.add_option("--doxygen", 
-                          dest="doxygen", 
-                          action="store",
-                          help="Doxygen command name")
-    env.parser.add_option("--doxygen-internal", 
-                          dest="doxygen_internal", 
-                          action="store_true",
-                          help="Create internal version of build documentation (just changes paths for git repos)")
-    env.parser.add_option("-c","--clean", 
-                          dest="clean", 
-                          action="store_true",
-                          help="Clean targets")
-    env.parser.add_option("--keep-going", '-k', 
-                          action="store_false",
-                          dest="die_on_errors",
-                          help="Keep going after errors occur when building")
-    env.parser.add_option("--messages", 
-                          action="store_true",
-                          dest="xed_messages",
-                          help="Enable use xed's debug messages")
-    env.parser.add_option("--no-pedantic", 
-                          action="store_false",
-                          dest="pedantic",
-                          help="Disable -pedantic (gnu/clang compilers).")
-    env.parser.add_option("--asserts", 
-                          action="store_true",
-                          dest="xed_asserts",
-                          help="Enable use xed's asserts")
-    env.parser.add_option("--clr", 
-                          action="store_true", 
-                          dest="clr",
-                          help="Compile for Microsoft CLR")
-    env.parser.add_option("--no-werror", 
-                          action="store_false",
-                          dest="use_werror",
-                          help="Disable use of -Werror on GNU compiles")
-    env.parser.add_option("--show-dag",
-                          action="store_true",
-                          dest="show_dag",
-                          help="Show the dependence DAG")
 
-    env.parser.add_option("--ext", 
-                          action="append",
-                          dest="ext", 
-                          help="Add extension files of the form " +
-                                "pattern-name:file-name.txt")
+    env.parser.add_argument("targets",
+                            nargs="*",
+                            help="Build the provided targets")
 
-    env.parser.add_option("--extf", 
-                          action="append", 
-                          dest="extf", 
-                          help="Add extension configuration files " +
-    "that contain lines of form pattern-name:file-name.txt. All files " +
-    "references will be made relative to the directory in which the " +
-    "config file is located.")
+    env.parser.add_argument("--android",
+                            dest="android",
+                            action="store_true",
+                            help="Android build (avoid rpath for examples)")
+    env.parser.add_argument("--copy-runtime-libs",
+                            dest="copy_libc",
+                            action="store_true",
+                            help="Copy the libc to the kit." +
+                            " Rarely necessary if building on old linux " +
+                            "dev systems. Default: false")
+    env.parser.add_argument("--example-linkflags",
+                            dest="example_linkflags",
+                            action="store",
+                            help="Extra link flags for the examples")
+    env.parser.add_argument("--example-flags",
+                            dest="example_flags",
+                            action="store",
+                            help="Extra compilation flags for the examples")
+    env.parser.add_argument("--example-rpath",
+                            dest="example_rpaths",
+                            action="append",
+                            help="Extra rpath dirs for examples")
+    env.parser.add_argument("--doxygen-install",
+                            dest="doxygen_install",
+                            action="store",
+                            help="Doxygen installation directory")
+    env.parser.add_argument("--doxygen",
+                            dest="doxygen",
+                            action="store",
+                            help="Doxygen command name")
+    env.parser.add_argument("--doxygen-internal",
+                            dest="doxygen_internal",
+                            action="store_true",
+                            help="Create internal version of build documentation (just changes paths for git repos)")
+    env.parser.add_argument("-c","--clean",
+                            dest="clean",
+                            action="store_true",
+                            help="Clean targets")
+    env.parser.add_argument("--keep-going", '-k',
+                            action="store_false",
+                            dest="die_on_errors",
+                            help="Keep going after errors occur when building")
+    env.parser.add_argument("--messages",
+                            action="store_true",
+                            dest="xed_messages",
+                            help="Enable use xed's debug messages")
+    env.parser.add_argument("--no-pedantic",
+                            action="store_false",
+                            dest="pedantic",
+                            help="Disable -pedantic (gnu/clang compilers).")
+    env.parser.add_argument("--asserts",
+                            action="store_true",
+                            dest="xed_asserts",
+                            help="Enable use xed's asserts")
+    env.parser.add_argument("--clr",
+                            action="store_true",
+                            dest="clr",
+                            help="Compile for Microsoft CLR")
+    env.parser.add_argument("--no-werror",
+                            action="store_false",
+                            dest="use_werror",
+                            help="Disable use of -Werror on GNU compiles")
+    env.parser.add_argument("--show-dag",
+                            action="store_true",
+                            dest="show_dag",
+                            help="Show the dependence DAG")
 
-    env.parser.add_option("--xedext-dir", 
-                          action="store", 
-                          dest="xedext_dir", 
-                          help="XED extension dir")
+    env.parser.add_argument("--ext",
+                            action="append",
+                            dest="ext",
+                            help="Add extension files of the form " +
+                                 "pattern-name:file-name.txt")
+
+    env.parser.add_argument("--extf",
+                            action="append",
+                            dest="extf",
+                            help="Add extension configuration files " +
+                                 "that contain lines of form pattern-name:file-name.txt. All files " +
+                                 "references will be made relative to the directory in which the " +
+                                 "config file is located.")
+
+    env.parser.add_argument("--xedext-dir",
+                            action="store",
+                            dest="xedext_dir",
+                            help="XED extension dir")
     
-    env.parser.add_option("--tests-extension", 
-                          action="append", 
-                          dest="tests_ext", 
-                          help="Tests directories extension")
+    env.parser.add_argument("--tests-extension",
+                            action="append",
+                            dest="tests_ext",
+                            help="Tests directories extension")
 
-    env.parser.add_option("--default-isa-extf", 
-                          action="store",
-                          dest="default_isa",
-                          help="Override the default ISA files.cfg file")
+    env.parser.add_argument("--default-isa-extf",
+                            action="store",
+                            dest="default_isa",
+                            help="Override the default ISA files.cfg file")
 
-    env.parser.add_option("--no-avx",
-                          action="store_false",
-                          dest="avx", 
-                          help="Do not include AVX (nor down-stream unrelated technologies).")
-    env.parser.add_option("--no-avx512",
-                          action="store_false",
-                          dest="avx512", 
-                          help="Do not include AVX512 (nor down-stream unrelated technologies).")
-    env.parser.add_option("--no-ivb",
-                          action="store_false", 
-                          dest="ivb", 
-                          help="Do not include IVB.")
-    env.parser.add_option("--no-hsw",
-                          action="store_false", 
-                          dest="hsw", 
-                          help="Do not include HSW.")
-    env.parser.add_option("--no-mpx",
-                          action="store_false", 
-                          dest="mpx", 
-                          help="Do not include MPX.")
-    env.parser.add_option("--no-cet",
-                          action="store_false", 
-                          dest="cet", 
-                          help="Do not include CET.")
-    env.parser.add_option("--no-knl",
-                          action="store_false", 
-                          dest="knl", 
-                          help="Do no include KNL AVX512{PF,ER}.")
-    env.parser.add_option("--no-knm",
-                          action="store_false", 
-                          dest="knm", 
-                          help="Do not include KNM.")
-    env.parser.add_option("--no-skl",
-                          action="store_false", 
-                          dest="skl", 
-                          help="Do not include SKL (Skylake Client).")
-    env.parser.add_option("--no-skx",
-                          action="store_false", 
-                          dest="skx", 
-                          help="Do not include SKX (Skylake Server).")
-    env.parser.add_option("--no-clx",
-                          action="store_false", 
-                          dest="clx", 
-                          help="Do not include CLX (Cascade Lake Server).")
-    env.parser.add_option("--no-cpx",
-                          action="store_false", 
-                          dest="cpx", 
-                          help="Do not include CPX (Cooper Lake Server).")
-    env.parser.add_option("--no-cnl",
-                          action="store_false", 
-                          dest="cnl", 
-                          help="Do not include CNL.")
-    env.parser.add_option("--no-icl",
-                          action="store_false", 
-                          dest="icl", 
-                          help="Do not include ICL.")
-    env.parser.add_option("--no-tgl",
-                          action="store_false", 
-                          dest="tgl", 
-                          help="Do not include TGL.")
-    env.parser.add_option("--no-adl",
-                          action="store_false", 
-                          dest="adl", 
-                          help="Do not include ADL.")
-    env.parser.add_option("--no-spr",
-                          action="store_false", 
-                          dest="spr", 
-                          help="Do not include SPR.")
-    env.parser.add_option("--no-future",
-                          action="store_false", 
-                          dest="future", 
-                          help="Do not include future NI.")
-    env.parser.add_option("--no-amd",
-                          action="store_false",
-                          dest="amd_enabled",
-                          help="Disable AMD public instructions")
-    env.parser.add_option("--no-via",
-                          action="store_false",
-                          dest="via_enabled",
-                          help="Disable VIA public instructions")                  
-    env.parser.add_option("--no-lakefield",
-                          action="store_false",
-                          dest="lakefield",
-                          help="Disable lakefield public instructions")
-    env.parser.add_option("--no-gnr",
-                          action="store_false",
-                          dest="gnr",
-                          help="Disable Granite Rapids public instructions")
-    env.parser.add_option("--no-srf",
-                          action="store_false",
-                          dest="srf",
-                          help="Disable Sierra Forest public instructions")
-    env.parser.add_option("--no-cwf",
-                          action="store_false",
-                          dest="cwf",
-                          help="Disable Clearwater Forest public instructions")
-    env.parser.add_option("--no-ptl",
-                          action="store_false",
-                          dest="ptl",
-                          help="Disable Panther Lake public instructions")
-    env.parser.add_option("--no-emr",
-                          action="store_false",
-                          dest="emr",
-                          help="Disable Emerald Rapids public instructions")
-    env.parser.add_option("--no-arl",
-                          action="store_false",
-                          dest="arl",
-                          help="Disable Arrow Lake public instructions")
-    env.parser.add_option("--no-lnl",
-                          action="store_false",
-                          dest="lnl",
-                          help="Disable Lunar Lake public instructions")
-    env.parser.add_option("--dbghelp", 
-                          action="store_true", 
-                          dest="dbghelp",
-                          help="Use dbghelp.dll on windows.")
-    env.parser.add_option("--prefix", 
-                          dest="prefix_dir",
-                          action="store",
-                          help="XED System install directory.")
-    env.parser.add_option("--prefix-lib-dir", 
-                          dest="prefix_lib_dir",
-                          action="store",
-                          help="library subdirectory name. Default: lib")
-    env.parser.add_option("--install-dir", 
-                          dest="install_dir",
-                          action="store",
-                          help="XED Install directory. " +
-                          "Default: kits/xed-install-date-os-cpu")
-    env.parser.add_option("--kit-kind", 
-                          dest="kit_kind", 
-                          action="store",
-                          help="Kit version string.  " +
-                          "The default is 'base'")
-    env.parser.add_option("--limit-strings", 
-                          action="store_true",
-                          dest="limit_strings",
-                          help="Remove some strings to save space.")
-    env.parser.add_option("--no-encoder", 
-                          action="store_false",
-                          dest="encoder",
-                          help="Disable the encoder")
-    env.parser.add_option("--no-decoder", 
-                          action="store_false",
-                          dest="decoder",
-                          help="Disable the decoder")
-    env.parser.add_option("--generator-options", 
-                          action="append",
-                          dest="generator_options",
-                          help="Options to pass through for " + 
-                                  "the decode generator")
-    env.parser.add_option("--legal-header", 
-                          action="store",
-                          dest="legal_header",
-                          help="Use this special legal header " +
-                          "on public header files and examples.")
-    env.parser.add_option("--python", 
-                          action="store",
-                          dest="pythonarg",
-                          help="Use a specific version of python " +
-                               "for subprocesses.")
-    env.parser.add_option("--ld-library-path", 
-                          action="append",
-                          dest="ld_library_path",
-                          help="Specify additions to LD_LIBRARY_PATH " +
-                          "for use when running ldd and making kits")
-    env.parser.add_option("--ld-library-path-for-tests", 
-                          action="append",
-                          dest="ld_library_path_for_tests",
-                          help="Specify additions to LD_LIBRARY_PATH " +
-                          "for use when running the tests")
+    env.parser.add_argument("--no-avx",
+                            action="store_false",
+                            dest="avx",
+                            help="Do not include AVX (nor down-stream unrelated technologies).")
+    env.parser.add_argument("--no-avx512",
+                            action="store_false",
+                            dest="avx512",
+                            help="Do not include AVX512 (nor down-stream unrelated technologies).")
+    env.parser.add_argument("--no-ivb",
+                            action="store_false",
+                            dest="ivb",
+                            help="Do not include IVB.")
+    env.parser.add_argument("--no-hsw",
+                            action="store_false",
+                            dest="hsw",
+                            help="Do not include HSW.")
+    env.parser.add_argument("--no-mpx",
+                            action="store_false",
+                            dest="mpx",
+                            help="Do not include MPX.")
+    env.parser.add_argument("--no-cet",
+                            action="store_false",
+                            dest="cet",
+                            help="Do not include CET.")
+    env.parser.add_argument("--no-knl",
+                            action="store_false",
+                            dest="knl",
+                            help="Do no include KNL AVX512{PF,ER}.")
+    env.parser.add_argument("--no-knm",
+                            action="store_false",
+                            dest="knm",
+                            help="Do not include KNM.")
+    env.parser.add_argument("--no-skl",
+                            action="store_false",
+                            dest="skl",
+                            help="Do not include SKL (Skylake Client).")
+    env.parser.add_argument("--no-skx",
+                            action="store_false",
+                            dest="skx",
+                            help="Do not include SKX (Skylake Server).")
+    env.parser.add_argument("--no-clx",
+                            action="store_false",
+                            dest="clx",
+                            help="Do not include CLX (Cascade Lake Server).")
+    env.parser.add_argument("--no-cpx",
+                            action="store_false",
+                            dest="cpx",
+                            help="Do not include CPX (Cooper Lake Server).")
+    env.parser.add_argument("--no-cnl",
+                            action="store_false",
+                            dest="cnl",
+                            help="Do not include CNL.")
+    env.parser.add_argument("--no-icl",
+                            action="store_false",
+                            dest="icl",
+                            help="Do not include ICL.")
+    env.parser.add_argument("--no-tgl",
+                            action="store_false",
+                            dest="tgl",
+                            help="Do not include TGL.")
+    env.parser.add_argument("--no-adl",
+                            action="store_false",
+                            dest="adl",
+                            help="Do not include ADL.")
+    env.parser.add_argument("--no-spr",
+                            action="store_false",
+                            dest="spr",
+                            help="Do not include SPR.")
+    env.parser.add_argument("--no-future",
+                            action="store_false",
+                            dest="future",
+                            help="Do not include future NI.")
+    env.parser.add_argument("--no-amd",
+                            action="store_false",
+                            dest="amd_enabled",
+                            help="Disable AMD public instructions")
+    env.parser.add_argument("--no-via",
+                            action="store_false",
+                            dest="via_enabled",
+                            help="Disable VIA public instructions")
+    env.parser.add_argument("--no-lakefield",
+                            action="store_false",
+                            dest="lakefield",
+                            help="Disable lakefield public instructions")
+    env.parser.add_argument("--no-gnr",
+                            action="store_false",
+                            dest="gnr",
+                            help="Disable Granite Rapids public instructions")
+    env.parser.add_argument("--no-srf",
+                            action="store_false",
+                            dest="srf",
+                            help="Disable Sierra Forest public instructions")
+    env.parser.add_argument("--no-cwf",
+                            action="store_false",
+                            dest="cwf",
+                            help="Disable Clearwater Forest public instructions")
+    env.parser.add_argument("--no-ptl",
+                            action="store_false",
+                            dest="ptl",
+                            help="Disable Panther Lake public instructions")
+    env.parser.add_argument("--no-emr",
+                            action="store_false",
+                            dest="emr",
+                            help="Disable Emerald Rapids public instructions")
+    env.parser.add_argument("--no-arl",
+                            action="store_false",
+                            dest="arl",
+                            help="Disable Arrow Lake public instructions")
+    env.parser.add_argument("--no-lnl",
+                            action="store_false",
+                            dest="lnl",
+                            help="Disable Lunar Lake public instructions")
+    env.parser.add_argument("--dbghelp",
+                            action="store_true",
+                            dest="dbghelp",
+                            help="Use dbghelp.dll on windows.")
+    env.parser.add_argument("--prefix",
+                            dest="prefix_dir",
+                            action="store",
+                            help="XED System install directory.")
+    env.parser.add_argument("--prefix-lib-dir",
+                            dest="prefix_lib_dir",
+                            action="store",
+                            help="library subdirectory name. Default: lib")
+    env.parser.add_argument("--install-dir",
+                            dest="install_dir",
+                            action="store",
+                            help="XED Install directory. " +
+                            "Default: kits/xed-install-date-os-cpu")
+    env.parser.add_argument("--kit-kind",
+                            dest="kit_kind",
+                            action="store",
+                            help="Kit version string.  " +
+                            "The default is 'base'")
+    env.parser.add_argument("--limit-strings",
+                            action="store_true",
+                            dest="limit_strings",
+                            help="Remove some strings to save space.")
+    env.parser.add_argument("--no-encoder",
+                            action="store_false",
+                            dest="encoder",
+                            help="Disable the encoder")
+    env.parser.add_argument("--no-decoder",
+                            action="store_false",
+                            dest="decoder",
+                            help="Disable the decoder")
+    env.parser.add_argument("--generator-options",
+                            action="append",
+                            dest="generator_options",
+                            help="Options to pass through for " +
+                                 "the decode generator")
+    env.parser.add_argument("--legal-header",
+                            action="store",
+                            dest="legal_header",
+                            help="Use this special legal header " +
+                            "on public header files and examples.")
+    env.parser.add_argument("--python",
+                            action="store",
+                            dest="pythonarg",
+                            help="Use a specific version of python " +
+                                 "for subprocesses.")
+    env.parser.add_argument("--ld-library-path",
+                            action="append",
+                            dest="ld_library_path",
+                            help="Specify additions to LD_LIBRARY_PATH " +
+                            "for use when running ldd and making kits")
+    env.parser.add_argument("--ld-library-path-for-tests",
+                            action="append",
+                            dest="ld_library_path_for_tests",
+                            help="Specify additions to LD_LIBRARY_PATH " +
+                            "for use when running the tests")
 
     # elf.h is different than libelf.h.
-    env.parser.add_option("--elf-dwarf", "--dwarf",
-                          action="store_true",
-                          dest="use_elf_dwarf",
-                          help="Use libelf/libdwarf. (Linux only)")
-    env.parser.add_option("--elf-dwarf-precompiled", 
-                          action="store_true",
-                          dest="use_elf_dwarf_precompiled",
-                          help="Use precompiled libelf/libdwarf from " +
-                          " the XED source distribution." + 
-                          " This is the currently required" +
-                          " if you are installing a kit." +
-                          " Implies the --elf-dwarf knob."
-                          " (Linux only)")
-    env.parser.add_option("--strip", 
-                          action="store",
-                          dest="strip",
-                          help="Path to strip binary. (Linux only)")
-    env.parser.add_option("--pti-test", 
-                          action="store_true",
-                          dest="pti_test",
-                          help="INTERNAL TESTING OPTION.")
-    env.parser.add_option("--compress-operands", 
-                          action="store_true",
-                          dest="compress_operands",
-                          help="use bit-fields to compress the "+
-                          "operand storage.")
-    env.parser.add_option("--add-orphan-inst-to-future-chip", 
-                          action="store_true",
-                          dest="add_orphan_inst_to_future_chip",
-                          help="Add orphan isa-sets to future chip definition.")
-    env.parser.add_option("--test-perf", 
-                          action="store_true",
-                          dest="test_perf",
-                          help="Do performance test (on linux). Requires" + 
-                          " specific external test binary.")
-    env.parser.add_option("--pin-crt", 
-                          action="store",
-                          dest="pin_crt",
-                          help="Compile for the Pin C-runtime. Specify" +
-                          " path to pin kit")
-    env.parser.add_option("--static-stripped", 
-                          action="store_true",
-                          dest="static_stripped",
-                          help="Make a static libxed.a renaming internal symbols")
-    env.parser.add_option("--set-copyright", 
-                          action="store_true",
-                          dest="set_copyright",
-                          help="Set the Intel copyright on Windows XED executable")
-    env.parser.add_option("--asan", 
-                          action="store_true",
-                          dest="asan",
-                          help="Use Address Sanitizer (on linux)")
-    env.parser.add_option("--enc2", 
-                          action="store_true",
-                          dest="enc2",
-                          help="Build the enc2 fast encoder. Longer build.")
-    env.parser.add_option("--enc2-test", 
-                          action="store_true",
-                          dest="enc2_test",
-                          help="Build the enc2 fast encoder *tests*. Longer build.")
-    env.parser.add_option("--enc2-test-checked", 
-                          action="store_true",
-                          dest="enc2_test_checked",
-                          help="Build the enc2 fast encoder *tests*. Test the checked interface. Longer build.")
-    env.parser.add_option("--encoder-chip", 
-                          action="store",
-                          dest="encoder_chip",
-                          help="Specific encoder chip. Default is ALL")
-    env.parser.add_option("--setup-hooks", 
-                          action="store_true",
-                          dest="setup_hooks",
-                          help="Copies git hook scripts locally and exits. Does NOT build XED")
+    env.parser.add_argument("--elf-dwarf", "--dwarf",
+                            action="store_true",
+                            dest="use_elf_dwarf",
+                            help="Use libelf/libdwarf. (Linux only)")
+    env.parser.add_argument("--elf-dwarf-precompiled",
+                            action="store_true",
+                            dest="use_elf_dwarf_precompiled",
+                            help="Use precompiled libelf/libdwarf from " +
+                            " the XED source distribution." +
+                            " This is the currently required" +
+                            " if you are installing a kit." +
+                            " Implies the --elf-dwarf knob."
+                            " (Linux only)")
+    env.parser.add_argument("--strip",
+                            action="store",
+                            dest="strip",
+                            help="Path to strip binary. (Linux only)")
+    env.parser.add_argument("--pti-test",
+                            action="store_true",
+                            dest="pti_test",
+                            help="INTERNAL TESTING OPTION.")
+    env.parser.add_argument("--compress-operands",
+                            action="store_true",
+                            dest="compress_operands",
+                            help="use bit-fields to compress the "+
+                            "operand storage.")
+    env.parser.add_argument("--add-orphan-inst-to-future-chip",
+                            action="store_true",
+                            dest="add_orphan_inst_to_future_chip",
+                            help="Add orphan isa-sets to future chip definition.")
+    env.parser.add_argument("--test-perf",
+                            action="store_true",
+                            dest="test_perf",
+                            help="Do performance test (on linux). Requires" +
+                            " specific external test binary.")
+    env.parser.add_argument("--pin-crt",
+                            action="store",
+                            dest="pin_crt",
+                            help="Compile for the Pin C-runtime. Specify" +
+                            " path to pin kit")
+    env.parser.add_argument("--static-stripped",
+                            action="store_true",
+                            dest="static_stripped",
+                            help="Make a static libxed.a renaming internal symbols")
+    env.parser.add_argument("--set-copyright",
+                            action="store_true",
+                            dest="set_copyright",
+                            help="Set the Intel copyright on Windows XED executable")
+    env.parser.add_argument("--asan",
+                            action="store_true",
+                            dest="asan",
+                            help="Use Address Sanitizer (on linux)")
+    env.parser.add_argument("--enc2",
+                            action="store_true",
+                            dest="enc2",
+                            help="Build the enc2 fast encoder. Longer build.")
+    env.parser.add_argument("--enc2-test",
+                            action="store_true",
+                            dest="enc2_test",
+                            help="Build the enc2 fast encoder *tests*. Longer build.")
+    env.parser.add_argument("--enc2-test-checked",
+                            action="store_true",
+                            dest="enc2_test_checked",
+                            help="Build the enc2 fast encoder *tests*. Test the checked interface. Longer build.")
+    env.parser.add_argument("--encoder-chip",
+                            action="store",
+                            dest="encoder_chip",
+                            help="Specific encoder chip. Default is ALL")
+    env.parser.add_argument("--setup-hooks",
+                            action="store_true",
+                            dest="setup_hooks",
+                            help="Copies git hook scripts locally and exits. Does NOT build XED")
     env.parse_args(env['xed_defaults'])
 
 def init_once(env):
@@ -1070,21 +1094,12 @@ def init(env):
     # this is required for older code that has not been updated to use xed/ on includes
     env.add_include_dir(mbuild.join(env['src_dir'],"include","public",'xed'))
     env.add_include_dir(mbuild.join(env['src_dir'],"include","public"))
-    
-    valid_targets = [ 'clean',       'just-prep',
-                      'just-gen',    'skip-gen',
-                      'install',
-                      'apply-header',
-                      'skip-lib',
-                      'examples',    'cmdline',
-                      'doc',         'doc-build',
-                      'install',     'zip',
-                      'test' ]
+
     for t in env['targets']:
-        if t not in valid_targets:
+        if t not in VALID_TARGETS:
             xbc.cdie("Invalid target supplied: " + t +
                        "\n  Valid targets:\n\t" +
-                       "\n\t".join(valid_targets))
+                       "\n\t".join(VALID_TARGETS))
     if 'test' in env['targets']:
         if 'examples' not in env['targets']:
             mbuild.msgb("INFO",
@@ -2107,12 +2122,12 @@ def _copy_examples_to_bin(env,xkit):
             _modify_search_path_mac(env,
                                     mbuild.join( xkit.bin, os.path.basename(f)))
     
-def _test_examples(env):
+def _test_examples(env: mbuild.env_t):
     _get_xed_min_size(env)
     _test_perf(env)
 
 
-def build_examples(env):
+def build_examples(env: mbuild.env_t):
     '''Build examples in the kit. Copy executables to wkit.bin'''
 
     env['example_exes'] = []
@@ -2148,7 +2163,7 @@ def build_examples(env):
         env['example_exes'] = env_ex['example_exes']
 
 
-def _copy_dynamic_libs_to_kit(env,xkit):
+def _copy_dynamic_libs_to_kit(env: mbuild.env_t, xkit):
     """Copy *all* the dynamic libs that ldd finds to the extlib dir in the
        (wkit or ikit) kit"""
     import external_libs
@@ -2205,7 +2220,7 @@ def apply_legal_header2(fn, legal_header):
     else:
         apply_legal_header.apply_header_to_data_file(legal_header,fn)
 
-def _gen_lib_names(env):
+def _gen_lib_names(env: mbuild.env_t):
     libnames_template = [ 'lib%(base_lib)s.a',
                           'lib%(base_lib)s.so',
                           '%(base_lib)s.lib',
@@ -2235,7 +2250,7 @@ def _gen_lib_names(env):
     libs = list(filter(lambda x: os.path.exists(x), libnames))
     return libs
 
-def _copy_generated_headers(env, dest):
+def _copy_generated_headers(env: mbuild.env_t, dest):
     gincs = mbuild.glob(env['build_dir'],'*.h')
 
     if env['enc2']:
@@ -2247,7 +2262,7 @@ def _copy_generated_headers(env, dest):
     for  h in gincs:
         mbuild.copy_file(h,dest)
 
-def _copy_nongenerated_headers(env, dest):
+def _copy_nongenerated_headers(env: mbuild.env_t, dest):
     src_inc = mbuild.join(env['src_dir'],'include',"public",'xed','*.h')
     incs= mbuild.glob(src_inc)
     if len(incs) == 0:
@@ -2255,7 +2270,7 @@ def _copy_nongenerated_headers(env, dest):
     for  h in incs:
         mbuild.copy_file(h,dest)
 
-def _get_legal_header(env):
+def _get_legal_header(env: mbuild.env_t):
     if env['legal_header'] == 'default' or env['legal_header'] == None:
         env['legal_header'] = mbuild.join(env['src_dir'],
                                           'misc',
@@ -2263,7 +2278,7 @@ def _get_legal_header(env):
     legal_header = open(env['legal_header'],'r').readlines()
     return legal_header
 
-def _apply_legal_header_to_headers(env,dest):
+def _apply_legal_header_to_headers(env: mbuild.env_t, dest):
     """apply legal header to all installed headers 
        in the include directory."""
 
@@ -2274,7 +2289,7 @@ def _apply_legal_header_to_headers(env,dest):
         apply_legal_header2(h, legal_header)
 
                                                  
-def system_install(env, work_queue):
+def system_install(env: mbuild.env_t, work_queue):
     """Build install in the prefix_dir. Use prefix_lib_dir as library name
        since some systems use lib, lib32 or lib64. non-windows only.
     """
@@ -2321,7 +2336,7 @@ def system_install(env, work_queue):
     for fn in mbuild.glob(include,'*.h'):
         mbuild.make_read_only(fn)
 
-def create_install_kit_structure(env, work_queue):
+def create_install_kit_structure(env: mbuild.env_t, work_queue):
     if xbc.installing(env):
         ikit = dummy_obj_t()
         env['ikit'] = ikit
@@ -2345,7 +2360,7 @@ def create_install_kit_structure(env, work_queue):
         mbuild.cmkdir(ikit.kit)
         _make_kit_dirs(env, ikit)
 
-def _prep_kit_dirs(env):
+def _prep_kit_dirs(env: mbuild.env_t):
     def pr(x):
         return (x,x)
     env['kit_dirs'] = [ ('include_top',mbuild.join('include')),
@@ -2358,13 +2373,13 @@ def _prep_kit_dirs(env):
                         pr('doc'),
                         pr('misc') ]
     
-def _make_kit_dirs(env,some_kit):
+def _make_kit_dirs(env: mbuild.env_t, some_kit):
     for key,pth in env['kit_dirs']:
         d = mbuild.join(some_kit.kit,pth)
         setattr(some_kit, key, d)
         mbuild.cmkdir(d)
     
-def create_working_kit_structure(env, work_queue):
+def create_working_kit_structure(env: mbuild.env_t, work_queue):
     '''Create directories and copy files in to the XED "working" kit.'''
 
     wkit = dummy_obj_t()
@@ -2458,7 +2473,7 @@ def create_working_kit_structure(env, work_queue):
     _apply_legal_header_to_headers(env, wkit.include_xed)
 
 
-def copy_working_kit_to_install_dir(env):
+def copy_working_kit_to_install_dir(env: mbuild.env_t):
     def keeper(fn):
         if fn in ['obj','__pycache__']:
             return False
@@ -2492,7 +2507,7 @@ def copy_working_kit_to_install_dir(env):
                                                      os.path.basename(f)))
         # we get the extlib files from the wkit
             
-def compress_kit(env):
+def compress_kit(env: mbuild.env_t):
     '''build a zip file'''
     if 'zip' in env['targets']:
         ikit = env['ikit']
@@ -2510,7 +2525,7 @@ def compress_kit(env):
         env['kit_zip_file']=archive
 
 
-def get_git_cmd(env):
+def get_git_cmd(env: mbuild.env_t):
    git = 'git'
    if 'GITCMD' in os.environ:
       gite = os.environ['GITCMD']
@@ -2519,7 +2534,7 @@ def get_git_cmd(env):
    return git
 
 
-def get_git_version(env):
+def get_git_version(env: mbuild.env_t):
     NO_VERSION = '000'
 
     # are we in a GIT repo?
@@ -2549,7 +2564,7 @@ def get_git_version(env):
     return NO_VERSION
 
 
-def emit_defines_header(env):
+def emit_defines_header(env: mbuild.env_t):
     """Grab all the XED_* defines and the model name and emit a header file"""
 
     def _emit_define(s):
@@ -2595,12 +2610,12 @@ def emit_defines_header(env):
     else:
         mbuild.vmsgb(1, "REUSING BUILD DEFINES HEADER FILE")
 
-def update_version(env):
+def update_version(env: mbuild.env_t):
    new_rev = get_git_version(env)
    mbuild.vmsgb(1, "XED VERSION", new_rev)
    env['xed_version'] =  new_rev
        
-def _test_setup(env):
+def _test_setup(env: mbuild.env_t):
     osenv = None
     if 'ld_library_path_for_tests' in env and env['ld_library_path_for_tests']:
         osenv = copy.deepcopy(os.environ)
@@ -2618,7 +2633,7 @@ def _test_setup(env):
                           env.build_dir_join('examples'))
     return osenv
 
-def _test_cmdline_decoder(env,osenv):
+def _test_cmdline_decoder(env: mbuild.env_t, osenv):
     """Disassemble something with the command line decoder to make sure it
        works. Returns 0 on success, and nonzero on failure."""
 
@@ -2640,7 +2655,7 @@ def _test_cmdline_decoder(env,osenv):
 
     return retval
 
-def _run_canned_tests(env,osenv):
+def _run_canned_tests(env: mbuild.env_t, osenv):
     """Run the tests from the tests subdirectory"""
     retval = 0 # success
     env['test_dir'] = aq(mbuild.join(env['src_dir'],'tests'))
@@ -2711,7 +2726,7 @@ def _run_canned_tests(env,osenv):
         
     return retval
 
-def run_tests(env):
+def run_tests(env: mbuild.env_t):
     """Run the tests"""
 
     if 'test' not in env['targets']:
@@ -2728,7 +2743,7 @@ def run_tests(env):
         return 1 # failure
     return 0 # success
 
-def verify_args(env):
+def verify_args(env: mbuild.env_t):
     if not env['avx']:
         mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, "
                     "TGL, ADL, SPR, KNL, KNM, GNR, SRF, ARL, LNL, CWF, PTL, EMR, Future\n\n\n")
@@ -2815,7 +2830,7 @@ def verify_args(env):
        env['use_elf_dwarf'] = True
        
 
-def macro_args(env):
+def macro_args(env: mbuild.env_t):
 
     # undefined behavior sanitizer
     #
@@ -2843,7 +2858,7 @@ def macro_args(env):
         env['enc2']=True
         env['enc']=True
 
-def work(env):
+def work(env: mbuild.env_t):
     """External entry point for non-command line invocations.
     Initialize the environment, build libxed, the examples, the kit
     and run the tests"""
@@ -2913,7 +2928,7 @@ def work(env):
     return retval
 
 # for compatibility with older user script conventions
-def set_xed_defaults(env):
+def set_xed_defaults(env: mbuild.env_t):
     xbc.set_xed_defaults(env)
 
 def execute():
