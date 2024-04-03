@@ -46,7 +46,7 @@ jobs:
       coverity_matrix: ${{ steps.load_coverity_matrix.outputs.matrix }}
     steps:
       - name: Checkout xed for reusable actions
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set test matrix
         id: load_matrix
         uses: ./.github/actions/load-matrix
@@ -69,11 +69,11 @@ jobs:
       - ${{ matrix.os }}
     steps:
     - name: Checkout xed
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: xed
     - name: Checkout mbuild
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: intelxed/mbuild
         ref: main
@@ -92,18 +92,18 @@ jobs:
       - Linux
     steps:
     - name: Checkout xed
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: xed
     - name: Checkout mbuild
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: intelxed/mbuild
         ref: main
         path: mbuild
         token: ${{ secrets.PAT }}
 
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{env.MIN_PY_VER}}
     - name: Parse python version setup
@@ -124,7 +124,7 @@ jobs:
       - Linux
     steps:
     - name: Checkout xed for reusable actions
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Perform Anti-virus scan
       uses: ./.github/actions/antivirus-scan
       with:
@@ -139,7 +139,7 @@ jobs:
       - Linux
     steps:
     - name: Checkout xed for reusable actions
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Perform Protex scan
       uses: ./.github/actions/protex-scan
       with:
@@ -163,11 +163,11 @@ jobs:
       Linux_cov_sum  : ${{ steps.gen_coverity_sum.outputs.Linux_cov_sum }}
     steps:
     - name: Checkout xed
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
           path: xed
     - name: Checkout mbuild
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
           repository: intelxed/mbuild
           ref: main
@@ -198,7 +198,7 @@ jobs:
       - Windows
     steps:
     - name: Checkout xed for reusable actions
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: gen and upload reports
       uses: ./.github/actions/coverity-report
       with:

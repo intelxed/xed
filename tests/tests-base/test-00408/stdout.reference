@@ -17,7 +17,7 @@ Operands
 1   REG1              REG1=EIP SUPPRESSED   W         Y   32     4     1     32        INT         IP
 2   MEM0           (see below) SUPPRESSED   R      SPW5  160    20     1    160        INT    INVALID
 3  BASE0             BASE0=ESP SUPPRESSED  RW       SSZ   32     4     1     32        INT        GPR
-4   REG2           REG2=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
+4   REG2           REG2=EFLAGS SUPPRESSED  RW   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   0    read SEG= SS BASE= ESP/GPR  ASZ0=32
   MemopBytes = 20

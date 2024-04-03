@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ END_LEGAL */
 #  define xed_int32_t  __int32
 #  define xed_int64_t  __int64
 #else
-#  error "XED types unsupported platform? Need windows, gcc, or icc."
+#  error "XED types unsupported platform? Need windows, gcc, or clang."
 #endif
 
 typedef unsigned int  xed_uint_t;

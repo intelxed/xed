@@ -16,7 +16,7 @@ Operands
 0   REG0              REG0=EAX SUPPRESSED   R         D   32     4     1     32        INT        GPR
 1   MEM0           (see below) SUPPRESSED   R         D   32     4     1     32        INT    INVALID
 2  BASE0             BASE0=EDI SUPPRESSED  RW       ASZ   32     4     1     32        INT        GPR
-3   REG1           REG1=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
+3   REG1           REG1=EFLAGS SUPPRESSED  RW   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   0    read SEG= ES BASE= EDI/GPR  ASZ0=32
   MemopBytes = 4

@@ -14,9 +14,9 @@ Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   REG0        REG0=STACKPUSH SUPPRESSED  RW         W   16     2     1     16        INT     PSEUDO
-1   MEM0           (see below) SUPPRESSED   W         W   16     2     1     16        INT    INVALID
-2  BASE0             BASE0=ESP SUPPRESSED  RW       SSZ   32     4     1     32        INT        GPR
-3   REG1           REG1=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
+1   REG1           REG1=EFLAGS SUPPRESSED   R         W   16     2     1     16       UINT      FLAGS
+2   MEM0           (see below) SUPPRESSED   W         W   16     2     1     16        INT    INVALID
+3  BASE0             BASE0=ESP SUPPRESSED  RW       SSZ   32     4     1     32        INT        GPR
 Memory Operands
   0 written SEG= SS BASE= ESP/GPR  ASZ0=32
   MemopBytes = 2

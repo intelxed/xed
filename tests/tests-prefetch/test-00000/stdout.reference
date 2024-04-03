@@ -5,6 +5,6 @@ EXTENSION:  ICACHE_PREFETCH
 IFORM:      PREFETCHIT0_MEMu8
 ISA_SET:    ICACHE_PREFETCH
 ATTRIBUTES: PREFETCH 
-SHORT:      prefetchit0 zmmword ptr [rax]
+SHORT:      prefetchit0 ptr [rax]
 Encodable! 0F1838
 Identical re-encoding

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -70,6 +70,15 @@ static XED_INLINE void set_rexb(xed_enc2_req_t* r, xed_uint_t v) {
 static XED_INLINE void set_rexx(xed_enc2_req_t* r, xed_uint_t v) {
     r->s.rexx = v;
 }
+static XED_INLINE void set_rexb4(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.rexb4 = v;
+}
+static XED_INLINE void set_rexr4(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.rexr4 = v;
+}
+static XED_INLINE void set_rexx4(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.rexx4 = v;
+}
 static XED_INLINE xed_uint_t get_rexw(xed_enc2_req_t* r) {
     return r->s.rexw;
 }
@@ -81,6 +90,35 @@ static XED_INLINE xed_uint_t get_rexr(xed_enc2_req_t* r) {
 }
 static XED_INLINE xed_uint_t get_rexb(xed_enc2_req_t* r) {
     return r->s.rexb;
+}
+static XED_INLINE xed_uint_t get_rexb4(xed_enc2_req_t* r) {
+    return r->s.rexb4;
+}
+static XED_INLINE xed_uint_t get_rexr4(xed_enc2_req_t* r) {
+    return r->s.rexr4;
+}
+static XED_INLINE xed_uint_t get_rexx4(xed_enc2_req_t* r) {
+    return r->s.rexx4;
+}
+
+static XED_INLINE void set_nf(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.nf = v;
+}
+static XED_INLINE void set_nd(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.nd = v;
+}
+static XED_INLINE xed_uint_t get_nf(xed_enc2_req_t* r) {
+    return r->s.nf;
+}
+static XED_INLINE xed_uint_t get_nd(xed_enc2_req_t* r) {
+    return r->s.nd;
+}
+
+static XED_INLINE void set_scc(xed_enc2_req_t* r, xed_uint_t v) {
+    r->s.scc = v;
+}
+static XED_INLINE xed_uint_t get_scc(xed_enc2_req_t* r) {
+    return r->s.scc;
 }
 
 static XED_INLINE void set_mod(xed_enc2_req_t* r, xed_uint_t v) {
@@ -139,13 +177,6 @@ static XED_INLINE xed_uint_t get_sibindex(xed_enc2_req_t* r) {
     return r->s.sibindex;
 }
 
-
-static XED_INLINE void set_evexrr(xed_enc2_req_t* r, xed_uint_t v) {
-    r->s.evexrr = v;
-}
-static XED_INLINE xed_uint_t get_evexrr(xed_enc2_req_t* r) {
-    return r->s.evexrr;
-}
 
 static XED_INLINE void set_vvvv(xed_enc2_req_t* r, xed_uint_t v) {
     r->s.vvvv = v;
@@ -301,34 +332,81 @@ static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
 
 
 static XED_INLINE void emit_vex_c5(xed_enc2_req_t* r) {
-    xed_uint8_t inverted_v = 0x80; // REXR is inverted (MSB; 10000000)
+    xed_uint8_t inverted_v = 0xF8; // REXR and V3...V0 are inverted (MS 5 bits; 11111000)
     xed_uint8_t v = ((get_rexr(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r)<<2) | get_vexpp(r)) ^ inverted_v;
     emit(r,0xC5);
     emit(r,v);
 }
 static XED_INLINE void emit_vex_c4(xed_enc2_req_t* r) {
     xed_uint8_t inverted_v1 = 0xE0; // REX{R,X,B} are inverted (MS 3 bits; 11100000)
+    xed_uint8_t inverted_v2 = 0x78; // V3...V0 are inverted (01111000)
     xed_uint8_t v1 = ((get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | get_map(r)) ^ inverted_v1;
-    xed_uint8_t v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r) << 2) | get_vexpp(r);
+    xed_uint8_t v2 = ((get_rexw(r) << 7) | (get_vvvv(r) << 3) | (get_vexl(r) << 2) | get_vexpp(r)) ^ inverted_v2;
     emit(r,0xC4);
     emit(r,v1);
     emit(r,v2);
 }
 
+static XED_INLINE xed_uint8_t get_evex_pb1(xed_enc2_req_t* r) {
+    xed_uint8_t v1, inverted_v1 = 0xF0; // REX{R,X,B} and REXR4/EVEXR are inverted (MS 4 bits; 11110000)
+    v1 = ((get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | 
+         (get_rexr4(r) << 4) | (get_rexb4(r) << 3) | get_map(r)) ^ inverted_v1;
+    return v1;
+}
+
 
 static XED_INLINE void emit_evex(xed_enc2_req_t* r) {
-    xed_uint8_t v1,v2,v3;
-    xed_uint8_t inverted_v1 = 0xF0; // REX{R,X,B} and REXR4/EVEXR are inverted (MS 4 bits; 11110000)
+    xed_uint8_t v1, v2, v3;
+    xed_uint8_t inverted_v2 = 0x7C; // REXX4 and V3...V0 are inverted in payload byte 2 (01111100)
+    xed_uint8_t inverted_v3 = 0x08; // V' is inverted in payload byte 3 (00001000)
 
     emit(r,0x62);
-    v1 = ((get_rexr(r) << 7) | (get_rexx(r) << 6) | (get_rexb(r) << 5) | (get_evexrr(r) << 4) | get_map(r)) ^ inverted_v1;
+
+    v1 = get_evex_pb1(r);
+
     emit(r,v1);
-    v2 = (get_rexw(r) << 7) | (get_vvvv(r) << 3) | (1 << 2) | get_vexpp(r);
+
+    v2 = ((get_rexw(r) << 7) | (get_vvvv(r) << 3) | (get_rexx4(r) << 2) | get_vexpp(r)) ^ inverted_v2;
+
     emit(r,v2);
-    v3 = (get_evexz(r) << 7) | (get_evexll(r) << 5) | (get_evexb(r)<< 4) | (get_evexvv(r) <<3) | get_evexaaa(r);
+
+    v3 = ((get_evexz(r) << 7) | (get_evexll(r) << 5) | 
+         ((get_evexb(r)  | get_nd(r)) << 4) |
+         (get_evexvv(r) << 3) | 
+         (get_evexaaa(r) | get_nf(r) << 2)) ^ inverted_v3;
+
     emit(r,v3);
 }
 
+static XED_INLINE void emit_evex_apx_scc(xed_enc2_req_t* r) {
+    xed_uint8_t v1, v2, v3;
+    xed_uint8_t inverted_v2 = 0x04; // REXX4 is inverted in payload byte 2 (00000100)
+
+    emit(r,0x62);
+
+    v1 = get_evex_pb1(r);
+
+    emit(r,v1);
+
+    v2 = ((get_rexw(r) << 7) | (get_vvvv(r) << 3) | (get_rexx4(r) << 2) | get_vexpp(r)) ^ inverted_v2;
+
+    emit(r,v2);
+
+    v3 = ( (get_nd(r) << 4) | get_scc(r) );
+    emit(r,v3);
+}
+
+static XED_INLINE void emit_rex2(xed_enc2_req_t* r) {
+    xed_uint8_t v;
+
+    emit(r,0xd5);
+
+    v = (get_map(r) << 7) | (get_rexr4(r) << 6) | (get_rexx4(r) << 5) | 
+         (get_rexb4(r) << 4) | (get_rexw(r) << 3) | (get_rexr(r) << 2) |
+         (get_rexx(r) << 1) | (get_rexb(r));
+
+    emit(r,v);
+}
 
 //////
 
@@ -404,7 +482,7 @@ void enc_evex_modrm_reg_gpr64(xed_enc2_req_t* r,
 void enc_evex_modrm_rm_gpr64(xed_enc2_req_t* r,
                              xed_reg_enum_t dst);
 
-
+void enc_dfv(xed_enc2_req_t* r, xed_reg_enum_t dst);
 
 
 void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
@@ -440,13 +518,23 @@ void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
                         xed_reg_enum_t dst);
 void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
                        xed_reg_enum_t dst);
+void enc_evex_modrm_reg_gpr8(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst);
+void enc_evex_modrm_rm_gpr8(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst);
+void enc_evex_vvvv_reg_gpr8(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst);
 
 void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
                          xed_reg_enum_t dst);
-    
 void enc_modrm_rm_gpr16(xed_enc2_req_t* r,
                         xed_reg_enum_t dst);
-
+void enc_evex_modrm_reg_gpr16(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst);
+void enc_evex_modrm_rm_gpr16(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst);
+void enc_evex_vvvv_reg_gpr16(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst);
 
 void enc_modrm_reg_gpr32(xed_enc2_req_t* r,
                          xed_reg_enum_t dst);
@@ -736,8 +824,12 @@ xed_int32_t xed_chose_evex_scaled_disp16(xed_enc2_req_t* r,
 # if defined(XED_REG_TREG_FIRST_DEFINED)
 void enc_vvvv_reg_tmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst);
+void enc_evex_vvvv_reg_tmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst);
 void enc_modrm_reg_tmm(xed_enc2_req_t* r,
                        xed_reg_enum_t dst);
+void enc_evex_modrm_reg_tmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst);
 void enc_modrm_rm_tmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst);
 void enc_evex_modrm_rm_tmm(xed_enc2_req_t* r,

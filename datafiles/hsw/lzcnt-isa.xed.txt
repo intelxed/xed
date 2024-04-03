@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -21,10 +21,11 @@ INSTRUCTIONS()::
 # LZCNT reg32, reg/mem32 F30FBD /r
 # LZCNT reg64, reg/mem64 F30FBD /r
 
+UDELETE: AMD_LZCNT
+
 {
 ICLASS    : LZCNT
 # This replace the AMD version in LZCNT builds
-VERSION   : 2 
 CPL       : 3
 CATEGORY  : LZCNT
 EXTENSION : LZCNT
@@ -37,9 +38,10 @@ OPERANDS  : REG0=GPRv_R():w:v     REG1=GPRv_B():r:v
 }
 
 
+UDELETE: AMD_BSR
+UDELETE: NORM_BSR
 {
 ICLASS    : BSR
-VERSION   : 2
 COMMENT   : AMD reused 0FBD for LZCNT and made BSR not have a refining prefix.  This version replaces the normal version of BSR
 CPL       : 3
 CATEGORY  : BITBYTE

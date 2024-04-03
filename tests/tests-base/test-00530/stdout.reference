@@ -14,7 +14,7 @@ Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   REG0              REG0=EIP SUPPRESSED   W         Y   32     4     1     32        INT         IP
-1   REG1           REG1=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
+1   REG1           REG1=EFLAGS SUPPRESSED  RW   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   MemopBytes = 0
 FLAGS:

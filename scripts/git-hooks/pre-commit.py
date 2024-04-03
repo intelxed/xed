@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,12 +22,21 @@ from pathlib import Path
 import sys
 import os
 
+def find_dir(d):
+    dir = os.getcwd()
+    last = ''
+    while dir != last:
+        target_dir = os.path.join(dir,d)
+        if os.path.exists(target_dir):
+            return target_dir
+        last = dir
+        (dir,tail) = os.path.split(dir)
+    return None
 
-XED_ROOT : Path = None
-p = Path(__file__).resolve().parents
-if len(p)>2: XED_ROOT = p[2]  # whether located in git-hooks or xed/script
+# import apply_legal_header from mbuild or xed
+XED_ROOT = find_dir('xed')
 assert XED_ROOT, 'Couldn\'t locate XED root directory'
-sys.path.append(str(XED_ROOT/'scripts'))
+sys.path.append(str( os.path.join(XED_ROOT, 'scripts')))
 import apply_legal_header
 
 def get_interesting_files():

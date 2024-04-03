@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -95,15 +95,12 @@ void invert_map(void) {
     unsigned int n = xed_iclass_enum_t_last();
     unsigned int i;
     
-    xed2my_enum = malloc(sizeof(unsigned int)*n);
+    xed2my_enum = calloc(n, sizeof(unsigned int));
     assert(xed2my_enum!=0);
     
-    for(i=0;i<n;i++) {
-        xed2my_enum[i] = 0; // invalid
-    }
     for (i=0;i<MY_ICLASS_LAST;i++) {
         xed2my_enum[ xed_iclass_interface[i].xed_name ] = i;
-        printf("%s xed=%d client=%d\n", xed_iclass_interface[i].string_name,
+        printf("%s xed=%d client=%u\n", xed_iclass_interface[i].string_name,
                xed_iclass_interface[i].xed_name,
                i);
     }

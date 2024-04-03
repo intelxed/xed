@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import copy
 import time
 import collections
 import stat
+from typing import List
 
 def _fatal(m):
     sys.stderr.write("\n\nXED ERROR: %s\n\n" % (m) )
@@ -50,6 +51,7 @@ try:
 except:
    _fatal("xed_mbuild.py could not import xed_build_common.py")
 
+from pysrc import find_dir
 
 ## END OF IMPORTS SETUP
 ############################################################################
@@ -381,6 +383,8 @@ def _encode_command2(args):
     s.extend( args.config.as_args() )
     if args.test_checked_interface:
         s.append('-chk' )  
+    if args.operand_check:
+        s.append('-operand-check')
     s.append('--output-file-list %s' % aq(args.enc2_output_file))
     return ' '.join(s)
 
@@ -573,14 +577,22 @@ def make_doxygen_api(env, work_queue, install_dir):
     inputs.append(  e2['mfile'] )
     mbuild.doxygen_run(e2, inputs, subs, work_queue, 'dox-ref')
 
+
 def setup_hooks(env):
-    """replaces the local git hook scripts with scripts from this repository"""
+    """replaces XED/MBUILD local git hook scripts with scripts scripted hooks"""
     xed_path = env['src_dir']
     xed_pre_commit = Path(xed_path, 'scripts', 'git-hooks', 'pre-commit.py').resolve(strict=True)
     pre_commit = Path(xed_path, '.git', 'hooks', 'pre-commit').resolve()
-    mbuild.msgb('setup pre-commit hook', f'copy {xed_pre_commit} to {pre_commit}')
+    mbuild.msgb('setup xed pre-commit hook', f'copy {xed_pre_commit} to {pre_commit}')
     shutil.copyfile(xed_pre_commit, pre_commit)
     shutil.copymode(xed_pre_commit, pre_commit)
+
+    mbuild_path = find_dir.find_dir('mbuild')
+    pre_commit = Path(mbuild_path, '.git', 'hooks', 'pre-commit').resolve()
+    mbuild.msgb('setup mbuild pre-commit hook', f'copy {xed_pre_commit} to {pre_commit}')
+    shutil.copyfile(xed_pre_commit, pre_commit)
+    shutil.copymode(xed_pre_commit, pre_commit)
+
     
 def mkenv():
     """External entry point: create the environment"""
@@ -602,6 +614,7 @@ def mkenv():
                                  pedantic=True,
                                  clr=False,
                                  use_werror=True,
+                                 security_level=1,
                                  show_dag=False,
                                  ext=[],
                                  extf=[],
@@ -673,6 +686,7 @@ def mkenv():
                                  enc2=False,
                                  enc2_test=False,
                                  enc2_test_checked=False,
+                                 enc2_operands_checked=False,
                                  first_lib=None,
                                  last_lib=None,
                                  setup_hooks=False)
@@ -745,6 +759,11 @@ def xed_args(env):
                           action="store_false",
                           dest="use_werror",
                           help="Disable use of -Werror on GNU compiles")
+    env.parser.add_option("--security-level",
+                          dest="security_level",
+                          action="store",
+                          type=int,
+                          help="Security build level: 1(Medium), 2(High), 3(Highest)")
     env.parser.add_option("--show-dag",
                           action="store_true",
                           dest="show_dag",
@@ -1016,6 +1035,10 @@ def xed_args(env):
                           action="store_true",
                           dest="enc2_test_checked",
                           help="Build the enc2 fast encoder *tests*. Test the checked interface. Longer build.")
+    env.parser.add_option("--enc2-operands-checked", 
+                          action="store_true",
+                          dest="enc2_operands_checked",
+                          help="A more strict testing of enc2 - validates operand values as well as iforms")
     env.parser.add_option("--encoder-chip", 
                           action="store",
                           dest="encoder_chip",
@@ -1104,7 +1127,6 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
     
     # grab common sources compiled earlier
     common_sources = ['xed-ild.c',                 # dec
-                      'xed-ild-extension.c',       # dec
                       'xed-chip-features.c',       # dec
                       'xed-isa-set.c',             # common
                       'xed-chip-modes.c',          # common
@@ -1679,6 +1701,7 @@ def add_encoder2_command(env, dag, input_files, config):
     enc2args.enc2_output_file = env.build_dir_join('ENCGEN2-OUTPUT-FILES-{}.txt'.format(config))
     enc2args.config = config
     enc2args.test_checked_interface = env['enc2_test_checked']
+    enc2args.operand_check = env['enc2_operands_checked']
     if os.path.exists(enc2args.enc2_output_file):
         need_to_rebuild_enc = need_to_rebuild(enc2args.enc2_output_file,
                                               enc2args.enc2_hash_file)
@@ -2048,8 +2071,6 @@ def _modify_search_path_mac(env, fn, tgt=None):
 def _test_perf(env):
     """Performance test. Should compile with -O3 or higher. Linux
     only. Requires a specific test binary."""
-    if not env.on_linux():
-        return
     if not env['test_perf']:
         return
 
@@ -2057,10 +2078,10 @@ def _test_perf(env):
     xed = None
     wkit = env['wkit']
     for exe in mbuild.glob(wkit.bin, '*'):
-        if 'xed' == os.path.basename(exe):
+        if re.match(r'xed(\.exe)?$', os.path.basename(exe)):
             xed = exe
     if not xed:
-        xbc.cdie("Could not find the xed command line tool for perf test")
+        xbc.cdie(f"Could not find the xed command line tool for perf test in:\n {mbuild.glob(wkit.bin, '*')}")
 
     import perftest
     args = perftest.mkargs()
@@ -2123,11 +2144,18 @@ def build_examples(env):
     sys.path.insert(0, wkit.examples )
     import xed_examples_mbuild
     env_ex = copy.deepcopy(env)
+    
+    # Some build flags disturb the example build process (Fix is needed)
+    exclude_flags: List[str] = []
+    for f in exclude_flags:
+        env_ex['CCFLAGS'] = env_ex['CCFLAGS'].replace(f, '')
+        env_ex['CXXFLAGS'] = env_ex['CXXFLAGS'].replace(f, '')
+
     env_ex['CPPPATH']   = [] # clear out libxed-build headers.
     env_ex['src_dir']   = wkit.examples 
     env_ex['build_dir'] = mbuild.join(wkit.examples, 'obj')
     mbuild.cmkdir( env_ex['build_dir'] )
-    
+
     env_ex['xed_lib_dir'] =   wkit.lib 
     env_ex['xed_inc_dir'] =  [ wkit.include_top ] 
 
@@ -2837,6 +2865,8 @@ def macro_args(env):
         env.add_to_var('CCFLAGS', fcmd)
         env.add_to_var('LINKFLAGS', fcmd)
         
+    if env['enc2_operands_checked']:
+        env['enc2_test_checked']=True
     if env['enc2_test_checked']:
         env['enc2_test']=True
     if env['enc2_test']:

@@ -13,7 +13,7 @@ Nominal opcode 0xfd
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0           REG0=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+0   REG0           REG0=EFLAGS SUPPRESSED   W   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   MemopBytes = 0
 FLAGS:

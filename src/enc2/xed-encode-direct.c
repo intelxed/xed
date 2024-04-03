@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -41,42 +41,42 @@ void enc_evex_vindex_xmm(xed_enc2_req_t* r,
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_sibbase(r,offset&7);
     set_rexx(r,(offset >> 3) & 1);
-    set_evexvv(r,!(offset>=16)); // FIXME: check inverted
+    set_evexvv(r,(offset >> 4) & 1);
 }
 void enc_evex_vindex_ymm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_sibbase(r,offset&7);
     set_rexx(r,(offset >> 3) & 1);
-    set_evexvv(r,!(offset>=16)); // FIXME: check inverted
+    set_evexvv(r,(offset >> 4) & 1);
 }
 void enc_evex_vindex_zmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_sibbase(r,offset&7);
     set_rexx(r,(offset >> 3) & 1);
-    set_evexvv(r,!(offset>=16)); // FIXME: check inverted
+    set_evexvv(r,(offset >> 4) & 1);
 }
 /// vex register for vex-VSIB
 void enc_vex_vindex_xmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_sibbase(r,offset&7);
-    set_rexx(r,offset>=8);
+    set_rexx(r,(offset >> 3) & 1);
 }
 void enc_vex_vindex_ymm(xed_enc2_req_t* r,
                         xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_sibbase(r,offset&7);
-    set_rexx(r,offset>=8);
+    set_rexx(r,(offset >> 3) & 1);
 }
 
 // evex registers k0..k7 regs
 void enc_evex_vvvv_kreg(xed_enc2_req_t* r,
                         xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
-    set_vvvv(r, ~(offset & 7));
-    set_evexvv(r,1);
+    set_vvvv(r, offset & 7);
+    set_evexvv(r,0);
 }
 void enc_evex_modrm_reg_kreg(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
@@ -96,7 +96,7 @@ void enc_evex_modrm_rm_kreg(xed_enc2_req_t* r,
 void enc_vex_vvvv_kreg(xed_enc2_req_t* r,     
                            xed_reg_enum_t dst) {  ///VEX
     xed_uint_t offset =  dst-XED_REG_MASK_FIRST;
-    set_vvvv(r, ~(offset & 7));
+    set_vvvv(r, offset & 7);
 }
 void enc_modrm_reg_kreg(xed_enc2_req_t* r,
                         xed_reg_enum_t dst) { ///VEX
@@ -122,85 +122,127 @@ void enc_evex_kmask(xed_enc2_req_t* r,
 void enc_evex_vvvv_reg_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
-    set_vvvv(r, ~(offset & 15));
-    set_evexvv(r, !(offset>15));    
+    set_vvvv(r, offset & 15);
+    set_evexvv(r, (offset >> 4) & 1);    
 }
 void enc_evex_modrm_reg_xmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r, (offset >> 3) & 1);
-    set_evexrr(r, (offset >= 16));
+    set_rexr4(r, (offset >> 4) & 1);
 }
 void enc_evex_modrm_rm_xmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, (offset >> 3) & 1);
-    set_rexx(r, (offset >= 16));
+    set_rexx(r, (offset >> 4) & 1);
 }
 
 void enc_evex_vvvv_reg_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
-    set_vvvv(r, ~(offset & 15));
-    set_evexvv(r, !(offset>15));    
+    set_vvvv(r, offset & 15);
+    set_evexvv(r, (offset >> 4) & 1);    
 }
 void enc_evex_modrm_reg_ymm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r, (offset >> 3) & 1);
-    set_evexrr(r, (offset >= 16));
+    set_rexr4(r, (offset >> 4) & 1);
 }
 void enc_evex_modrm_rm_ymm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, (offset >> 3) & 1);
-    set_rexx(r, (offset >= 16));
+    set_rexx(r, (offset >> 4) & 1);
 }
 
 void enc_evex_vvvv_reg_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
-    set_vvvv(r, ~(offset & 15));
-    set_evexvv(r, !(offset>15));    
+    set_vvvv(r, offset & 15);
+    set_evexvv(r, (offset >> 4) & 1);    
 }
 void enc_evex_modrm_reg_zmm(xed_enc2_req_t* r,
                             xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_reg(r, offset & 7);
     set_rexr(r, (offset >> 3) & 1);
-    set_evexrr(r, (offset >= 16));
+    set_rexr4(r, (offset >> 4) & 1);
 }
 void enc_evex_modrm_rm_zmm(xed_enc2_req_t* r,
                            xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_ZMM_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, (offset >> 3) & 1);
-    set_rexx(r, (offset >= 16));
+    set_rexx(r, (offset >> 4) & 1);
 }
 
+void enc_evex_vvvv_reg_gpr8(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR8_FIRST;
+    set_vvvv(r, offset & 15);
+    set_evexvv(r,(offset >> 4) & 1);
+}
+void enc_evex_modrm_reg_gpr8(xed_enc2_req_t* r,
+                              xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR8_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
+}
+void enc_evex_modrm_rm_gpr8(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR8_FIRST;
+    set_rm(r, offset & 7);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
+}
 
+void enc_evex_vvvv_reg_gpr16(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
+    set_vvvv(r, offset & 15);
+    set_evexvv(r,(offset >> 4) & 1);
+}
+void enc_evex_modrm_reg_gpr16(xed_enc2_req_t* r,
+                              xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
+}
+void enc_evex_modrm_rm_gpr16(xed_enc2_req_t* r,
+                             xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
+    set_rm(r, offset & 7);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
+}
 
 void enc_evex_vvvv_reg_gpr32(xed_enc2_req_t* r,
                              xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
-    set_vvvv(r, ~(offset & 15));
-    set_evexvv(r,1);
+    set_vvvv(r, offset & 15);
+    set_evexvv(r,(offset >> 4) & 1);
 }
 void enc_evex_modrm_reg_gpr32(xed_enc2_req_t* r,
                               xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, (offset >= 8));
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
 }
 void enc_evex_modrm_rm_gpr32(xed_enc2_req_t* r,
                              xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, (offset >= 8));
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 
 
@@ -208,20 +250,22 @@ void enc_evex_modrm_rm_gpr32(xed_enc2_req_t* r,
 void enc_evex_vvvv_reg_gpr64(xed_enc2_req_t* r,
                              xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
-    set_vvvv(r, ~(offset & 15));
-    set_evexvv(r,1);
+    set_vvvv(r, offset & 15);
+    set_evexvv(r,(offset >> 4) & 1);
 }
 void enc_evex_modrm_reg_gpr64(xed_enc2_req_t* r,
                               xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r, (offset >= 8));
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
 }
 void enc_evex_modrm_rm_gpr64(xed_enc2_req_t* r,
                              xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r, (offset >= 8));
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 
 
@@ -231,19 +275,19 @@ void enc_evex_modrm_rm_gpr64(xed_enc2_req_t* r,
 void enc_vvvv_reg_xmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
-    set_vvvv(r, ~(offset & 15));
+    set_vvvv(r, offset & 15);
 }
 void enc_vvvv_reg_ymm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
-    set_vvvv(r, ~(offset & 15));
+    set_vvvv(r, offset & 15);
 }
 
 #if defined(XED_REG_TREG_FIRST_DEFINED)
 void enc_vvvv_reg_tmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_TREG_FIRST;
-    set_vvvv(r, 8|(~(offset & 7)));
+    set_vvvv(r, offset & 7);
 }
 
 void enc_modrm_reg_tmm(xed_enc2_req_t* r,
@@ -260,25 +304,45 @@ void enc_modrm_rm_tmm(xed_enc2_req_t* r,
     //set_rexb(r,0); // zero init optimization
 }
 
+void enc_evex_modrm_reg_tmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_TREG_FIRST;
+    set_reg(r, offset & 7);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
+}
+
 void enc_evex_modrm_rm_tmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_TREG_FIRST;
     set_rm(r, offset & 7);
     set_rexb(r, (offset >> 3) & 1);
-    set_rexx(r, (offset >= 16));
+    set_rexx(r, (offset >> 4) & 1);
+}
+
+void enc_evex_vvvv_reg_tmm(xed_enc2_req_t* r,
+                      xed_reg_enum_t dst) {
+    xed_uint_t offset =  dst-XED_REG_TREG_FIRST;
+    set_vvvv(r, offset & 15);
+    set_evexvv(r,  (offset >> 4) & 1);
 }
 
 #endif
 
+void enc_dfv(xed_enc2_req_t* r, xed_reg_enum_t dst){
+    xed_uint_t offset =  dst-XED_REG_DFV0;
+    set_vvvv(r, offset & 15);
+}
+
 void enc_vvvv_reg_gpr32(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
-    set_vvvv(r, ~(offset & 15));
+    set_vvvv(r, offset & 15);
 }
 void enc_vvvv_reg_gpr64(xed_enc2_req_t* r,
                         xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
-    set_vvvv(r, ~(offset & 15));
+    set_vvvv(r, offset & 15);
 }
 
 
@@ -292,26 +356,26 @@ void enc_modrm_reg_xmm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,offset >= 8);
+    set_rexr(r,(offset >> 3) & 1);
 }
 void enc_modrm_rm_xmm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_XMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r,offset >= 8);
+    set_rexb(r,(offset >> 3) & 1);
 }
 void enc_modrm_reg_ymm(xed_enc2_req_t* r,
                          xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,offset >= 8);
+    set_rexr(r,(offset >> 3) & 1);
 }
 
 void enc_modrm_rm_ymm(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_YMM_FIRST;
     set_rm(r, offset & 7);
-    set_rexb(r,offset >= 8);
+    set_rexb(r,(offset >> 3) & 1);
 }
 
 
@@ -338,7 +402,8 @@ void enc_modrm_reg_gpr8(xed_enc2_req_t* r,
         offset = dst-XED_REG_GPR8h_FIRST+4;  // AH,CH,DH,BH
    
     set_reg(r, offset & 7);
-    set_rexr(r,offset >= 8);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
     //SPL, BPL, SIL, DIL need REX no matter what
     if (dst >= XED_REG_SPL && dst <= XED_REG_DIL)
         set_need_rex(r);
@@ -353,7 +418,8 @@ void enc_modrm_rm_gpr8(xed_enc2_req_t* r,
 
     set_mod(r, 3);
     set_rm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
     //SPL, BPL, SIL, DIL need REX no matter what
     if (dst >= XED_REG_SPL && dst <= XED_REG_DIL)
         set_need_rex(r);
@@ -364,7 +430,8 @@ void enc_modrm_reg_gpr16(xed_enc2_req_t* r,
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
     xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,offset >= 8);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
 }
     
 void enc_modrm_rm_gpr16(xed_enc2_req_t* r,
@@ -373,7 +440,8 @@ void enc_modrm_rm_gpr16(xed_enc2_req_t* r,
     xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
     set_mod(r, 3);
     set_rm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 
 
@@ -385,7 +453,8 @@ void enc_modrm_reg_gpr32(xed_enc2_req_t* r,
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,offset >= 8);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
 }
     
 void enc_modrm_rm_gpr32(xed_enc2_req_t* r,
@@ -394,7 +463,8 @@ void enc_modrm_rm_gpr32(xed_enc2_req_t* r,
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_mod(r, 3);
     set_rm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 
 
@@ -404,7 +474,8 @@ void enc_modrm_reg_gpr64(xed_enc2_req_t* r,
     /* encode modrm.reg with a register.  Might imply a rex bit setting */
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_reg(r, offset & 7);
-    set_rexr(r,offset >= 8);
+    set_rexr(r, (offset >> 3) & 1);
+    set_rexr4(r, (offset >> 4) & 1);
 }
     
 void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
@@ -413,7 +484,8 @@ void enc_modrm_rm_gpr64(xed_enc2_req_t* r,
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_mod(r, 3);
     set_rm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 
 
@@ -426,7 +498,8 @@ void enc_srm_gpr8(xed_enc2_req_t* r,
         offset = dst-XED_REG_GPR8h_FIRST+4;  // AH,CH,DH,BH
 
     set_srm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
     
     //SPL, BPL, SIL, DIL need REX no matter what
     if (dst >= XED_REG_SPL && dst <= XED_REG_DIL)
@@ -437,19 +510,22 @@ void enc_srm_gpr16(xed_enc2_req_t* r,
                    xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR16_FIRST;
     set_srm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 void enc_srm_gpr32(xed_enc2_req_t* r,
                    xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR32_FIRST;
     set_srm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 void enc_srm_gpr64(xed_enc2_req_t* r,
                    xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_GPR64_FIRST;
     set_srm(r, offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
+    set_rexb4(r, (offset >> 4) & 1);
 }
 
 void enc_imm8_reg_xmm(xed_enc2_req_t* r, // _SE imm8 reg
@@ -482,7 +558,7 @@ void enc_modrm_reg_cr(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {
     xed_uint_t offset =  dst-XED_REG_CR_FIRST;
     set_reg(r, offset&7);
-    set_rexr(r, offset>=8);
+    set_rexr(r, (offset >> 3) & 1);
 }
 void enc_modrm_reg_dr(xed_enc2_req_t* r, 
                       xed_reg_enum_t dst) {
@@ -571,6 +647,8 @@ static void enc_modrm_rm_mem_disp_a64_internal(xed_enc2_req_t* r,
     else if (base == XED_REG_INVALID ||
              base == XED_REG_RSP ||
              base == XED_REG_R12 ||
+             base == XED_REG_R20 ||
+             base == XED_REG_R28 ||
              indx != XED_REG_INVALID) {         // need sib
         xed_uint_t offset_indx;
         set_has_sib(r);
@@ -581,7 +659,8 @@ static void enc_modrm_rm_mem_disp_a64_internal(xed_enc2_req_t* r,
         }
         else { 
             set_sibbase(r, offset & 7);
-            set_rexb(r, offset >= 8);
+            set_rexb(r, (offset >> 3) & 1);
+            set_rexb4(r, (offset >> 4) & 1);
         }
         
         // nothing speical required if base == XED_REG_RBP or XED_REG_R13
@@ -596,14 +675,16 @@ static void enc_modrm_rm_mem_disp_a64_internal(xed_enc2_req_t* r,
             if (indx == XED_REG_RSP)
                 xed_enc2_error( "bad index register == RSP");
             set_sibindex(r,offset_indx & 7);
-            set_rexx(r,offset_indx >= 8);
+            set_rexx(r, (offset_indx >> 3) & 1);
+            set_rexx4(r, (offset_indx >> 4) & 1);
 
             scale_test_and_set(r, scale);
         }
     }
     else { // reasonable base, no index
         set_rm(r, offset & 7);
-        set_rexb(r, offset >= 8);
+        set_rexb(r, (offset >> 3) & 1);
+        set_rexb4(r, (offset >> 4) & 1);
     }
 }
 static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
@@ -626,6 +707,10 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
              base == XED_REG_R12 ||
              base == XED_REG_RBP ||
              base == XED_REG_R13 ||
+             base == XED_REG_R20 ||
+             base == XED_REG_R21 ||
+             base == XED_REG_R28 ||
+             base == XED_REG_R29 ||
              indx != XED_REG_INVALID) {        // need sib
         xed_uint_t offset_indx;
      
@@ -637,10 +722,14 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
         }
         else { 
             set_sibbase(r, offset & 7);
-            set_rexb(r, offset >= 8);
+            set_rexb(r, (offset >> 3) & 1);
+            set_rexb4(r, (offset >> 4) & 1);
         }
         
-        if ( base == XED_REG_RBP || base == XED_REG_R13  ) {
+        if ( base == XED_REG_RBP ||
+             base == XED_REG_R13 ||
+             base == XED_REG_R21 ||
+             base == XED_REG_R29) {
             set_mod(r,1);              // potentially overwriting earlier setting
             set_has_disp8(r);          // force a disp8 with value 0.
         }
@@ -653,14 +742,16 @@ static void enc_modrm_rm_mem_nodisp_a64_internal(xed_enc2_req_t* r,
             if (indx == XED_REG_RSP)
                 xed_enc2_error( "bad index register == RSP");
             set_sibindex(r,offset_indx & 7);
-            set_rexx(r,offset_indx >= 8);
+            set_rexx(r, (offset_indx >> 3) & 1);
+            set_rexx4(r, (offset_indx >> 4) & 1);
 
             scale_test_and_set(r, scale);
         }
     }
     else { // reasonable base, no index
         set_rm(r,offset & 7);
-        set_rexb(r, offset >= 8);
+        set_rexb(r, (offset >> 3) & 1);
+        set_rexb4(r, (offset >> 4) & 1);
     }
 }
 
@@ -724,16 +815,20 @@ static void enc_modrm_vsib_bis_a64_internal_nodisp(xed_enc2_req_t* r,
     
     set_sibindex(r, index_offset & 7); // encode x/y/zmm as sibscale
     set_rexx(r, (index_offset >> 3) & 1);
-    set_evexvv(r, !(index_offset >= 16));
+    set_evexvv(r, (index_offset >> 4) & 1);
     
     scale_test_and_set(r,scale);
 
-    if (base == XED_REG_RBP || base == XED_REG_R13) {
+    if (base == XED_REG_RBP ||
+        base == XED_REG_R13 ||
+        base == XED_REG_R21 ||
+        base == XED_REG_R29) {
         set_mod(r,1);              // overwriting earlier setting
         set_has_disp8(r);          // force a disp8 with value 0.
     }
     set_sibbase(r,base_offset & 7);
-    set_rexb(r,base_offset >= 8);
+    set_rexb(r, (base_offset >> 3) & 1);
+    set_rexb4(r, (base_offset >> 4) & 1);
 }
 static void enc_modrm_vsib_a64_internal_disp(xed_enc2_req_t* r,
                                              xed_reg_enum_t base,
@@ -747,12 +842,13 @@ static void enc_modrm_vsib_a64_internal_disp(xed_enc2_req_t* r,
     
     set_sibindex(r, index_offset & 7); // encode xmm as sibscale
     set_rexx(r, (index_offset >> 3) & 1);
-    set_evexvv(r, !(index_offset >= 16));
+    set_evexvv(r, (index_offset >> 4) & 1);
     
     scale_test_and_set(r,scale);
 
     set_sibbase(r,base_offset & 7);
-    set_rexb(r,base_offset >= 8);
+    set_rexb(r, (base_offset >> 3) & 1);
+    set_rexb4(r, (base_offset >> 4) & 1);
 }
 
 
@@ -906,6 +1002,8 @@ static void enc_modrm_rm_mem_disp_a32_internal(xed_enc2_req_t* r,
     if (base == XED_REG_INVALID ||
         base == XED_REG_ESP ||
         base == XED_REG_R12D ||
+        base == XED_REG_R20D ||
+        base == XED_REG_R28D ||
         indx != XED_REG_INVALID) {
         xed_uint_t offset_indx;
         // need sib
@@ -916,7 +1014,8 @@ static void enc_modrm_rm_mem_disp_a32_internal(xed_enc2_req_t* r,
         }
         else { 
             set_sibbase(r, offset & 7);
-            set_rexb(r, offset >= 8); 
+            set_rexb(r, (offset >> 3) & 1);
+            set_rexb4(r, (offset >> 4) & 1);
         }
 
         if (indx == XED_REG_INVALID) {
@@ -927,14 +1026,16 @@ static void enc_modrm_rm_mem_disp_a32_internal(xed_enc2_req_t* r,
             if (indx == XED_REG_ESP)
                 xed_enc2_error( "bad index register == ESP");
             set_sibindex(r,offset_indx & 7);
-            set_rexx(r,offset_indx >= 8);
+            set_rexx(r, (offset_indx >> 3) & 1);
+            set_rexx4(r, (offset_indx >> 4) & 1);
 
             scale_test_and_set(r, scale);
         }
     }
     else { // reasonable base, no index
         set_rm(r,offset & 7);
-        set_rexb(r, offset >= 8);
+        set_rexb(r, (offset >> 3) & 1);
+        set_rexb4(r, (offset >> 4) & 1);
     }
 }
 
@@ -957,6 +1058,10 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
         base == XED_REG_R12D    ||
         base == XED_REG_EBP     ||
         base == XED_REG_R13D    ||
+        base == XED_REG_R20D    ||
+        base == XED_REG_R21D    ||
+        base == XED_REG_R28D    ||
+        base == XED_REG_R29D    ||
         indx != XED_REG_INVALID  ) {         // need sib
         xed_uint_t offset_indx;
 
@@ -967,9 +1072,13 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
         }
         else { 
             set_sibbase(r, offset & 7);
-            set_rexb(r, offset >= 8); 
+            set_rexb(r, (offset >> 3) & 1);
+            set_rexb4(r, (offset >> 4) & 1);
         }
-        if ( base == XED_REG_EBP || base == XED_REG_R13D  ) {
+        if (base == XED_REG_EBP  || 
+            base == XED_REG_R13D ||
+            base == XED_REG_R21D ||
+            base == XED_REG_R29D) {
             set_mod(r,1);              // potentially overwriting earlier setting
             set_has_disp8(r);          // force a disp8 with value 0.
         }
@@ -982,14 +1091,16 @@ static void enc_modrm_rm_mem_nodisp_a32_internal(xed_enc2_req_t* r,
             if (indx == XED_REG_ESP)
                 xed_enc2_error( "bad index register == ESP");
             set_sibindex(r,offset_indx & 7);
-            set_rexx(r,offset_indx >= 8);
+            set_rexx(r, (offset_indx >> 3) & 1);
+            set_rexx4(r,(offset_indx >> 4) & 1);
                            
             scale_test_and_set(r, scale);
         }
     }
     else { // reasonable base, no index
         set_rm(r,offset & 7);
-        set_rexb(r, offset >= 8);
+        set_rexb(r, (offset >> 3) & 1);
+        set_rexb4(r, (offset >> 4) & 1);
     }
 }
 
@@ -1056,16 +1167,20 @@ static void enc_modrm_vsib_bis_a32_internal_nodisp(xed_enc2_req_t* r,
     
     set_sibindex(r, index_offset & 7); // encode xmm as sibscale
     set_rexx(r, (index_offset >> 3) & 1);
-    set_evexvv(r, !(index_offset >= 16));
+    set_evexvv(r, (index_offset >> 4) & 1);
     
     scale_test_and_set(r,scale);
 
-    if (base == XED_REG_EBP || base == XED_REG_R13D) {
+    if (base == XED_REG_EBP  || 
+        base == XED_REG_R13D ||
+        base == XED_REG_R21D ||
+        base == XED_REG_R29D) {
         set_mod(r,1);              // overwriting earlier setting
         set_has_disp8(r);          // force a disp8 with value 0.
     }
     set_sibbase(r,base_offset & 7);
-    set_rexb(r,base_offset >= 8);
+    set_rexb(r, (base_offset >> 3) & 1);
+    set_rexb4(r, (base_offset >> 4) & 1);
 }
 static void enc_modrm_vsib_a32_internal_disp(xed_enc2_req_t* r,
                                              xed_reg_enum_t base,
@@ -1079,12 +1194,13 @@ static void enc_modrm_vsib_a32_internal_disp(xed_enc2_req_t* r,
     
     set_sibindex(r, index_offset & 7); // encode xmm as sibscale
     set_rexx(r, (index_offset >> 3) & 1);
-    set_evexvv(r, !(index_offset >= 16));
+    set_evexvv(r, (index_offset >> 4) & 1);
     
     scale_test_and_set(r,scale);
 
     set_sibbase(r,base_offset & 7);
-    set_rexb(r,base_offset >= 8);
+    set_rexb(r, (base_offset >> 3) & 1);
+    set_rexb4(r, (base_offset >> 4) & 1);
 }
 
 
@@ -1244,14 +1360,14 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,7); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_BP:
         switch(indx) {
           case XED_REG_SI:            set_rm(r,2); break;
           case XED_REG_DI:            set_rm(r,3); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_INVALID:  // look at index
         switch(indx) {
           case XED_REG_BX:            set_rm(r,7); break;
@@ -1260,7 +1376,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,6); break; // disp16!
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_SI:
         switch(indx) {
           case XED_REG_BX:            set_rm(r,0); break;
@@ -1268,7 +1384,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,4); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_DI:
         switch(indx) {
           case XED_REG_BX:            set_rm(r,1); break;
@@ -1276,7 +1392,7 @@ static void enc_modrm_rm_mem_nodisp_a16_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,5); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       default:
         xed_enc2_error("Bad 16b base reg");
     }
@@ -1298,7 +1414,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,7); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_BP:
         switch(indx) {
           case XED_REG_SI:            set_rm(r,2); break;
@@ -1306,7 +1422,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,6); break; 
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_INVALID:  // look at index
         switch(indx) {
           case XED_REG_BX:            set_rm(r,7); break;
@@ -1316,7 +1432,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
 
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_SI:
         switch(indx) {
           case XED_REG_BX:            set_rm(r,0); break;
@@ -1324,7 +1440,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,4); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       case XED_REG_DI:
         switch(indx) {
           case XED_REG_BX:            set_rm(r,1); break;
@@ -1332,7 +1448,7 @@ static void enc_modrm_rm_mem_a16_disp_internal(xed_enc2_req_t* r,
           case XED_REG_INVALID:       set_rm(r,5); break;
           default:
             xed_enc2_error("Bad 16b index reg");
-        }
+        }; break;
       default:
         xed_enc2_error("Bad 16b base reg");
     }
@@ -1387,7 +1503,7 @@ xed_uint8_t emit_partial_opcode_and_rmreg(xed_enc2_req_t* r,
 {
     xed_uint_t offset = rmreg - first;
     xed_uint8_t opcode_out = opcode | (offset & 7);
-    set_rexb(r, offset >= 8);
+    set_rexb(r, (offset >> 3) & 1);
     return opcode_out;
 }
 xed_uint8_t emit_partial_opcode_and_rmreg_gpr16(xed_enc2_req_t* r,

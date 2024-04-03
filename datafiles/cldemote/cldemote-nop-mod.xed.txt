@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ UDELETE: NOP0F1C
 
 {
 ICLASS    : NOP
-#UNAME     : NOP0F1C
 CPL       : 3
 CATEGORY  : WIDENOP
 EXTENSION : BASE
@@ -40,26 +39,100 @@ PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() osz_refining_pre
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() not64
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
 
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() mode64 rep
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() mode64 rep
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() mode64 rep
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() mode64 rep
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() mode64 rep
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() mode64 rep
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() 
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() mode64 rep
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() mode64 osz_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+}
+
+{
+ICLASS    : NOP
+UNAME     : NOP0F1C64
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() mode64 no_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() mode64 no_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() mode64 no_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() mode64 no_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() mode64 no_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() mode64 no_refining_prefix
+OPERANDS  : MEM0:r:v REG0=GPRv_R():r
+IFORM     : NOP_MEMv_GPRv_0F1C
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() mode64 no_refining_prefix
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
 }

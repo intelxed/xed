@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -76,6 +76,9 @@ def _create_enc_arg_check_function(env, ii, encfn):
         chk_fn.add_code('if (xed_enc2_check_args) {')
         chk_fn.add_code_eol('   const char* pfn = "{}"'.format(  chk_fn.get_function_name() ))
         for argtype,argname,arginfo in args:
+            evex_suffix = ''
+            if ii.space == 'evex' and _fixup_arg_type(ii,arginfo) == 'gpr8':
+                evex_suffix = '_evex'   # gpr8 has different rules in evex
             if arginfo == 'req':
                 continue # don't check the request structure
             elif 'int' in arginfo:
@@ -83,8 +86,9 @@ def _create_enc_arg_check_function(env, ii, encfn):
             elif 'imm' in arginfo:
                 continue # don't check the integer arguments
             else:
-                chk_fn.add_code_eol('   xed_enc2_invalid_{}({}, {},"{}",pfn)'.format(
+                chk_fn.add_code_eol('   xed_enc2_invalid_{}{}({}, {},"{}",pfn)'.format(
                     _fixup_arg_type(ii,arginfo),
+                    evex_suffix,
                     env.mode,
                     argname,
                     argname))

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -29,20 +29,18 @@
 @mainpage *INTERNAL* Intel&reg; XED Build Guide
 @endif
 
-November 2023
+April 2024
 
 @section INTRO Introduction
 
 Intel&reg; XED can be built with many compilers:
   - GNU GCC
   - Microsoft Visual Studio
-  - Intel ICL/ICC
   - LLVM/Clang 
 
 Intel&reg; XED also works with the following operating systems:
   - Linux
   - Microsoft Windows  (with or without cygwin)
-  - Apple Mac OS/X 
   - FreeBSD
 
 The default compiler on Linux and FreeBSD is GNU gcc. The default on
@@ -301,8 +299,8 @@ Options:
                         be located.
   -v VERBOSE, --verbose=VERBOSE
                         Verbosity level. Defaults to value passed to env_t()
-  --compiler=COMPILER   Compiler (ms,gnu,clang,icc,icl,iclang, icx). Default
-                        is gnu on linux and ms on windows. Default is: ms
+  --compiler=COMPILER   Compiler (ms,gnu,clang). Default is gnu on linux and 
+                        ms on windows.
   --debug               Debug build
   --shared              Shared DLL build
   --static              Statically link executables
@@ -333,8 +331,6 @@ Options:
   --setup-msvc, --setup-msvs, --msvs-setup, --msvc-setup
                         Use the value of the --msvc-version to initialize the
                         MSVC configuration.
-  --icc-version=ICC_VERSION, --iccver=ICC_VERSION, --icc-ver=ICC_VERSION
-                        ICC/ICL version 7, 8, 9, 10, 11
   --gcc-version=GCC_VERSION, --gccversion=GCC_VERSION, --gcc-ver=GCC_VERSION
                         GCC version, with dots as in 2.96, 3.4.3, 4.2.0, etc.
   --cc=CC               full path to C compiler
@@ -457,6 +453,9 @@ Options:
   --enc2-test           Build the enc2 fast encoder *tests*. Longer build.
   --enc2-test-checked   Build the enc2 fast encoder *tests*. Test the checked
                         interface. Longer build.
+  --enc2-operands-checked
+                        A more strict testing of enc2 - validates operand values 
+                        as well as iforms
   --encoder-chip=ENCODER_CHIP
                         Specific encoder chip. Default is ALL
   --setup-hooks         Copies git hook scripts locally and exits. Does NOT

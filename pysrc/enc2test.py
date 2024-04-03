@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -42,20 +42,37 @@ def _add_test_function(ii,fo):
 
 # generate all the register names
 gpr64 = "RAX RCX RDX RBX RSI RDI RBP RSP R8 R9 R10 R11 R12 R13 R14 R15".split()
+egpr64 = gpr64 + "R16 R17 R18 R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30 R31".split()
+
+egpr64_norsp = egpr64.copy()
+egpr64_norsp.remove("RSP")
+
 gpr64_index = "RAX RCX RDX RBX RSI RDI RBP R8 R9 R10 R11 R12 R13 R14 R15".split()
+egpr64_index = gpr64_index + "R16 R17 R18 R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30 R31".split()
+
+# EGPRs are only directly accessible within 64-bit mode.
 
 gpr32_not64 = "EAX ECX EDX EBX ESI EDI EBP ESP".split()
-gpr32_not64 = "EAX ECX EDX EBX ESI EDI EBP ESP".split() 
+
 gpr32_index_not64 = "EAX ECX EDX EBX ESI EDI EBP".split()
 
-gpr16_not64 = "AX CX DX BX SI DI BP SP".split()
-gpr16_index = "SI DI".split()
-gpr8_not64  = "AL CL DL BL".split()
+gpr32_m64 = gpr32_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
+egpr32_m64 = gpr32_m64 + "R16D R17D R18D R19D R20D R21D R22D R23D R24D R25D R26D R27D R28D R29D R30D R31D".split()
 
 gpr32_index_m64 = gpr32_index_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
-gpr32_m64 = gpr32_not64 + "R8D R9D R10D R11D R12D R13D R14D R15D".split()
+egpr32_index_m64 = gpr32_index_m64 + "R16D R17D R18D R19D R20D R21D R22D R23D R24D R25D R26D R27D R28D R29D R30D R31D".split()
+
+gpr16_not64 = "AX CX DX BX SI DI BP SP".split()
+
+gpr16_index = "SI DI".split()
+
 gpr16_m64 = gpr16_not64 + "R8W R9W R10W R11W R12W R13W R14W R15W".split()
+egpr16_m64 = gpr16_m64 + "R16W R17W R18W R19W R20W R21W R22W R23W R24W R25W R26W R27W R28W R29W R30W R31W".split()
+
+gpr8_not64  = "AL CL DL BL".split()
+
 gpr8_m64  = gpr8_not64  + "SIL DIL BPL SPL R8B R9B R10B R11B R12B R13B R14B R15B".split()
+egpr8_m64 = gpr8_m64 + "R16B R17B R18B R19B R20B R21B R22B R23B R24B R25B R26B R27B R28B R29B R30B R31B".split()
 
 gpr8h = "AH CH DH BH".split()
 
@@ -74,6 +91,8 @@ zmm_evex_m64 = [ 'ZMM{}'.format(i) for i in range(0,32)]
 xmm_not64 = [ 'XMM{}'.format(i) for i in range(0,8)]
 ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
 zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
+
+dfv = [ 'DFV{}'.format(i) for i in range(0,16)]
 
 tmm = [ 'TMM{}'.format(i) for i in range(0,8)]
 
@@ -94,12 +113,19 @@ def set_test_gen_counters(env):
     env.test_gen_regs = {
         # the index versions skip ESP/RSP as it cannot be an index register
         'gpr64_index': gpr64_index,
+        'egpr64_index': egpr64_index,
         'gpr32_index': gpr32_index_m64 if env.mode==64 else gpr32_index_not64,
+        'egpr32_index': egpr32_index_m64,
         'gpr16_index': gpr16_index,
         'gpr64': gpr64,
+        'egpr64': egpr64,
+        'egpr64_norsp': egpr64_norsp,
         'gpr32': gpr32_m64 if env.mode==64 else gpr32_not64,
+        'egpr32': egpr32_m64,
         'gpr16': gpr16_m64 if env.mode==64 else gpr16_not64,
+        'egpr16': egpr16_m64,
         'gpr8':  gpr8_m64  if env.mode==64 else gpr8_not64,
+        'egpr8': egpr8_m64,
         'gpr8h': gpr8h,
         'mmx' :  mmx,
         'x87' :  x87,
@@ -123,7 +149,8 @@ def set_test_gen_counters(env):
         'dr' :  dr,
         'rcsae' : rcsae,
         'zeroing': zeroing,
-        'scale' : scale
+        'scale' : scale,
+        'dfv': dfv
         }
 
     env.test_gen_reg_limit = {}
@@ -175,7 +202,23 @@ def get_bump_unified(env,regkind,evex):
     env.test_gen_counters[special_regkind] = n
     return testreg
 
-    
+def supports_extended_gpr(ii):
+    # For now only add EGPR for EVEX instructions
+    if ii.space == 'evex':
+        return True
+    """ 
+    elif ii.space == 'legacy':
+        if ii.map in [0, 1]:
+            return True
+    """
+    return False
+
+def no_rsp_reg(ii):
+    # some instructions cannot use RSP reg
+    for op in ii.parsed_operands:
+        if op.lookupfn_name and 'NORSP' in op.lookupfn_name:
+            return True
+    return False
 
 def  gen_reg_simd_unified(env,regkind, evex=True):
     return 'XED_REG_{}'.format(get_bump_unified(env,regkind,evex))
@@ -188,21 +231,39 @@ def gen_int(env,regkind):
 # can vary output randomly, vary by number of calls in this
 # instruction, etc.
 def  get_gpr64_index(env, ii):
+    if supports_extended_gpr(ii):
+        gen_reg(env,'egpr64_index')
     return gen_reg(env,'gpr64_index')
+
 def  get_gpr32_index(env, ii):
+    if supports_extended_gpr(ii):
+        gen_reg(env,'egpr32_index')
     return gen_reg(env,'gpr32_index')
+
 def  get_gpr16_index(env, ii):
     return gen_reg(env,'gpr16_index')
 
 def  get_gpr64(env, ii):
+    if supports_extended_gpr(ii):
+        if no_rsp_reg(ii):
+            return gen_reg(env,'egpr64_norsp')
+        else:
+            return gen_reg(env,'egpr64')
     return gen_reg(env,'gpr64')
+
 def  get_gpr32(env, ii):
+    if supports_extended_gpr(ii):
+        gen_reg(env,'egpr32')
     return gen_reg(env,'gpr32')
 
-
 def  get_gpr16(env, ii):
+    if supports_extended_gpr(ii):
+        gen_reg(env,'egpr16')
     return gen_reg(env,'gpr16')
+
 def  get_gpr8(env, ii):  # FIXME: figure out how to use gpr8h values
+    if supports_extended_gpr(ii):
+        gen_reg(env,'egpr8')
     return gen_reg(env,'gpr8')
 
 
@@ -269,6 +330,8 @@ def  get_rcsae(env, ii):  # 0,1,2
 def  get_scale(env, ii): # 1,2,4,8
     return gen_int(env,'scale')
 
+def  get_dfv(env, ii):
+    return gen_reg(env,'dfv')
 
 # FIXED VALUES
 def  get_ax(env, ii): # always this value
@@ -322,6 +385,7 @@ arginfo2value_creator = {
      'kreg!0': get_kreg_not0,
      'x87': get_x87,
      'mmx': get_mmx,
+     'dfv': get_dfv,
     
      'imm8': get_imm8,
      'imm16': get_imm16,
@@ -348,14 +412,55 @@ arginfo2value_creator = {
      'rax': get_rax
  }
 
+trivial_arg_getter = {
+    'base': 'xed3_operand_get_base0',
+    'disp8': 'xed3_operand_get_disp',
+    'disp16': 'xed3_operand_get_disp',
+    'disp64': 'xed3_operand_get_disp',
+    'index': 'xed3_operand_get_index',
+    'scale': 'xed3_operand_get_scale',
+    'index_xmm' : 'xed3_operand_get_index',
+    'index_ymm' : 'xed3_operand_get_index',
+    'index_zmm' : 'xed3_operand_get_index',
+    'gpr8_0': 'xed3_operand_get_reg0',
+    'gpr8_1': 'xed3_operand_get_reg1',
+    'gpr16_0': 'xed3_operand_get_reg0',
+    'gpr16_1': 'xed3_operand_get_reg1',
+    'gpr32_0': 'xed3_operand_get_reg0',
+    'gpr32_1': 'xed3_operand_get_reg1',
+    'gpr64_0': 'xed3_operand_get_reg0',
+    'gpr64_1': 'xed3_operand_get_reg1',
+    'dfv': 'xed_decoded_inst_get_dfv_reg'
+}
 
-    
-    
+def get_mask0_index(ii, testfn):
+    """returns a list of mask0 operand indices for instructions with k0 masks
+    and an empty list otherwise"""
+    i = 0
+    mask_indices = []
+    for op in ii.parsed_operands:
+        if op.name.startswith('MEM'):
+            continue
+        if op.lookupfn_name in ['MASK1']:
+            mask_indices.append(i)
+        i = i + 1
+    # Make sure instruction uses mask0
+    # instructions with mask!=0 have msk operand in their name
+    if len(mask_indices) == testfn.get_function_name().count('_msk'):
+        return []
+    return mask_indices
+
+
 def _create_enc_test_functions(env, ii, encfn):
-    global arginfo2value_creator
- 
+    
+    # a mapping of each operand to its randomly/fixed assigned value
+    operand2value = {}
+    
+    # add arguments to the test function
     testfn = _make_test_function_object(env,encfn)
     testfn.add_arg('xed_uint8_t* output_buffer')
+    testfn.add_arg('xed_decoded_inst_t* xedd')
+
     # gather args
     args = []
     for arg,arginfo in encfn.get_args():
@@ -371,14 +476,14 @@ def _create_enc_test_functions(env, ii, encfn):
     if not request_arg:
         die("NO REQUEST ARG FOUND")
 
-    # arg var decls
+    # argument variables' declarations
     for i,(argtype,argname,arginfo) in enumerate(args):
         testfn.add_code_eol('{} {}'.format(argtype, argname))
 
     # common configuration
     testfn.add_code_eol('xed_enc2_req_t request')
-    #testfn.add_code_eol('xed_uint8_t output_buffer[XED_MAX_INSTRUCTION_BYTES]')
-    
+    testfn.add_code_eol('xed_uint32_t enc2_len')
+    testfn.add_code_eol('xed_error_enum_t err')
     
     # set vars to test values 
     for argtype,argname,arginfo in args:
@@ -394,9 +499,10 @@ def _create_enc_test_functions(env, ii, encfn):
             except:
                 die("FIXME: MESSED UP ARGUMENTS FOR {} {} {} from {}".format(argtype, argname, arginfo, ii.iclass))
             v = vfn(env,ii)
+            operand2value[argname] = v
             testfn.add_code_eol('{} = {}'.format(argname, v))            
     
-    # test function call
+    # call to argument checker function which subsequently calls enc2 function
     s = []
     fname =  encfn.get_function_name()
     if env.test_checked_interface:
@@ -410,8 +516,54 @@ def _create_enc_test_functions(env, ii, encfn):
     s.append( ')' )
     testfn.add_code_eol(''.join(s))
 
+    # get enc2 encoded string length and validate it
+    testfn.add_code_eol('enc2_len = xed_enc2_encoded_length({})'.format(request_arg))
+    testfn.add_code(f'if (enc2_len == 0)')
+    testfn.add_code_eol(f'  return 0')
+
+    # decode the encoded string and validate it
+    testfn.add_code_eol('err = xed_decode(xedd, output_buffer, enc2_len)')
+    testfn.add_code(f'if (err != XED_ERROR_NONE)')
+    testfn.add_code_eol(f'  return 0')
+    
+    if env.operand_check:
+        
+        j = 0   # index used for generic ith operand getters
+        mask0_indices = get_mask0_index(ii, testfn)
+        imm2value = {'imm32': 2864434397, 'imm16': 32493, 'imm8': 126}
+        expression = []
+
+        # validate decoded operands' values
+        for argtype,argname,arginfo in args:
+            if argname in trivial_arg_getter.keys():
+                # arguments that have "well-defined" getters
+                expression.append(f'({trivial_arg_getter[argname]}(xedd) == {operand2value[argname]})')
+            elif argname in ['cr', 'dr', 'gpr8', 'gpr16', 'gpr32', 'gpr64','seg', 'reg3','reg2','reg1','reg0',
+                                     'kreg0', 'kreg1', 'kreg2', 'kmask']:
+                # arguments with generic xed3_operand_get_reg[i] getter
+                if j in mask0_indices or '_st0_sti' in testfn.get_function_name():
+                    # special cases where we need to skip to next operand (suppressed ST0, mask0)
+                    # as get ith reg returns the values of these operands instead of the current ones
+                    j = j + 1
+                expression.append(f'(xed3_operand_get_reg{j}(xedd) == {operand2value[argname]})')
+                j = j + 1
+            elif argname == 'disp32':
+                # disp32 is stored relatively (abs value requires complex calculations), so check pre-calculated val
+                expression.append(f'(xed_operand_values_get_memory_displacement_int64(xedd) == -1430532899)')
+            elif argname in ['imm8', 'imm32', 'imm16']:
+                # imm values are fixed, compare with uint instead of hex
+                expression.append(f'(xed_operand_values_get_immediate_uint64(xedd) == {imm2value[argname]})')
+            elif argname in ['imm8_2', 'imm16_2']:
+                # imm values are fixed, compare with uint instead of hex
+                expression.append(f'(xed3_operand_get_uimm1(xedd) == {imm2value[argname[:-2]]})')
+
+        if expression:
+            testfn.add_code_eol('xed_bool_t conditions_satisfied = ' + " &\n    ".join(expression))
+            testfn.add_code('if (conditions_satisfied == 0)')
+            testfn.add_code_eol('   return 0')
+
     # return the output length
-    testfn.add_code_eol('return xed_enc2_encoded_length({})'.format(request_arg))
+    testfn.add_code_eol('return enc2_len')
     
     _add_test_function(ii, testfn)
     

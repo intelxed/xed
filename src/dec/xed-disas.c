@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ END_LEGAL */
 
 #include <string.h> // memset
 #define XED_HEX_BUFLEN 200
+#define MULTI_REG_BUF_LEN 4
 
 int
 xed_get_symbolic_disassembly(xed_print_info_t* pi,
@@ -458,10 +459,18 @@ xed_print_operand_decorations(
         int i;
         for( i=0; i<XED_MAX_DECORATIONS_PER_OPERAND; i++ )  {
             xed_operand_convert_enum_t v = xed_operand_convert[cvt_idx][i];
-            if (v == XED_OPERAND_CONVERT_INVALID ||
-                v >=  XED_OPERAND_CONVERT_LAST    )
+            if (v == XED_OPERAND_CONVERT_INVALID || v >=  XED_OPERAND_CONVERT_LAST){
                 break;
-            pi->blen = xed_print_cvt(pi->p, pi->buf, pi->blen, v);
+            }
+            else if (v > XED_OPERAND_CONVERT_MULTIREG_START){ // print +N notation for sequential regs
+                char numStr[MULTI_REG_BUF_LEN];
+                xed_sprintf_uint32(numStr, v - XED_OPERAND_CONVERT_MULTIREG_START, MULTI_REG_BUF_LEN);
+                pi->blen = xed_strncat_lower(pi->buf, "+", pi->blen);
+                pi->blen = xed_strncat_lower(pi->buf, numStr, pi->blen);
+            }
+            else {
+                pi->blen = xed_print_cvt(pi->p, pi->buf, pi->blen, v);
+            }
         }
     }
 }
@@ -775,11 +784,13 @@ static void xed_print_operand( xed_print_info_t* pi )
                   xml_tag_pi(pi, "MEM", bytes << 3);
           }
 
-          if (xed_operand_name(op) != XED_OPERAND_AGEN)
-              pi->blen = xed_strncat_lower(
-                  pi->buf,
-                  xed_decoded_inst_print_ptr_size(bytes),
-                  pi->blen);
+          if (xed_operand_name(op) != XED_OPERAND_AGEN &&
+              xed_operand_width(op) != XED_OPERAND_WIDTH_MPREFETCH) {
+                pi->blen = xed_strncat_lower(
+                    pi->buf,
+                    xed_decoded_inst_print_ptr_size(bytes),
+                    pi->blen);
+          }
 
           xed_pi_strcat(pi,"ptr ");
           if (seg != XED_REG_INVALID &&

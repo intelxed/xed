@@ -6,4 +6,4 @@ EXTENSION:  CLWB
 IFORM:      CLWB_MEMmprefetch
 ISA_SET:    CLWB
 ATTRIBUTES: PREFETCH 
-SHORT:      clwb zmmword ptr [eax]
+SHORT:      clwb ptr [eax]

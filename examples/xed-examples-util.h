@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -136,6 +136,12 @@ xed_uint_t disas_decode_encode_binary(xed_disas_info_t* di,
                                       xed_decoded_inst_t* xedd,
                                       xed_uint64_t runtime_address);
 
+
+void xed_decode_error(xed_uint64_t runtime_instruction_address,
+                      xed_uint64_t offset, 
+                      const xed_uint8_t* ptr, 
+                      xed_error_enum_t xed_error,
+                      xed_uint_t length);
 
 void xed_print_decode_stats(xed_disas_info_t* di);
 void xed_print_encode_stats(xed_disas_info_t* di);

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -129,9 +129,15 @@ def _read_constant_tables(lines, tables):
         else:
             genutil.die("Could not parse line {}: [{}]\n\n".format(nlines,line))
                 
+def get_xed_operand_convert_enums(names):
+    """adds a list of multireg enums for MULTI{SOURCE,DEST,SOURCEDEST}"""
+    names.insert(0, 'INVALID')
+    names.append('MULTIREG_START')  # these should be the last enumerations
+    for i in range(2, 17):
+        names.append(f'MULTIREG{i}')
+    return names
         
-    
-    
+
 def work(lines,   xeddir = '.',   gendir = 'obj'):
    tables = []
    _read_constant_tables(lines,tables)
@@ -140,7 +146,7 @@ def work(lines,   xeddir = '.',   gendir = 'obj'):
    tables=list(filter(lambda x: x.valid() , tables))
    names= [  x.name  for x in  tables ]
 
-   srcs = emit_convert_enum(['INVALID'] + names, xeddir, gendir)
+   srcs = emit_convert_enum(get_xed_operand_convert_enums(names), xeddir, gendir)
    src_file_name = 'xed-convert-table-init.c'
    hdr_file_name = 'xed-convert-table-init.h'
    xfe = codegen.xed_file_emitter_t(xeddir, gendir, src_file_name)

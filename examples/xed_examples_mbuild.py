@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -310,7 +310,7 @@ def build_examples(env, work_queue):
        _add_libxed_rpath(env)
 
     # C vs C++: env is for C++ and env_c is for C programs.
-    if env['compiler'] in  ['gnu','clang', 'icc']:
+    if env['compiler'] in  ['gnu','clang']:
         env['LINK'] = env['CXX']
     env_c = copy.deepcopy(env)
     if env_c['compiler'] in ['gnu','clang']:

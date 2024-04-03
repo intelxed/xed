@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -36,8 +36,6 @@ FUTURE:                         \
     APX_F_CMPCCXADD             \
     APX_F_ENQCMD                \
     APX_F_INVPCID               \
-    APX_F_KEYLOCKER             \
-    APX_F_KEYLOCKER_WIDE        \
     APX_F_KOPB                  \
     APX_F_KOPD                  \
     APX_F_KOPQ                  \
@@ -46,7 +44,7 @@ FUTURE:                         \
     APX_F_MOVBE                 \
     APX_F_MOVDIRI               \
     APX_F_MOVDIR64B             \
-    APX_F_SHA                   \
+    APX_F_POPCNT                \
     APX_F_VMX                   \
     APX_F_RAO_INT               \
     APX_F_USER_MSR

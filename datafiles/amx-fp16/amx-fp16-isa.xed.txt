@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ AVX_INSTRUCTIONS()::
 ICLASS:      TDPFP16PS
 CPL:         3
 CATEGORY:    AMX_TILE
-EXTENSION:   AMX_FP16
+EXTENSION:   AMX_TILE
 ISA_SET:     AMX_FP16
-EXCEPTIONS:     AMX-E4
+EXCEPTIONS:  AMX-E4
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
-PATTERN:    VV1 0x5C VF2 V0F38 MOD[0b11] MOD=3  REG[rrr] RM[nnn]  VL128  W0  mode64   
+ATTRIBUTES:  NOTSX NO_REG_MATCH 
+PATTERN:     VV1 0x5C VF2 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL128 mode64
 OPERANDS:    REG0=TMM_R():rw:tv:f32 REG1=TMM_B():r:tv:2f16 REG2=TMM_N():r:tv:2f16
 IFORM:       TDPFP16PS_TMMf32_TMM2f16_TMM2f16
 }

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -153,7 +153,7 @@ void print_misc(xed_decoded_inst_t* xedd) {
         cpuidgrp = xed_get_cpuid_group_enum_for_isa_set(isaset,i);
         if (cpuidgrp == XED_CPUID_GROUP_INVALID)
             break;
-        printf("%d\tCPUID GROUP NAME: [%s]\n", i, xed_cpuid_group_enum_t2str(cpuidgrp));
+        printf("%u\tCPUID GROUP NAME: [%s]\n", i, xed_cpuid_group_enum_t2str(cpuidgrp));
 
         for(j=0; j<XED_MAX_CPUID_RECS_PER_GROUP; j++)
         {
@@ -163,7 +163,7 @@ void print_misc(xed_decoded_inst_t* xedd) {
             cpuidrec = xed_get_cpuid_rec_enum_for_group(cpuidgrp,j);
             if (cpuidrec == XED_CPUID_REC_INVALID)
                 break;
-            printf("\t%d\tCPUID RECORD NAME: [%s]\n", j, xed_cpuid_rec_enum_t2str(cpuidrec));
+            printf("\t%u\tCPUID RECORD NAME: [%s]\n", j, xed_cpuid_rec_enum_t2str(cpuidrec));
 
             r = xed_get_cpuid_rec(cpuidrec, &crec);
             if (r) {
@@ -282,7 +282,7 @@ void print_flags(xed_decoded_inst_t* xedd) {
             xed_flag_dfv_t dfv_reg;
             xed_bool_t okay = xed_flag_dfv_get_default_flags_values(dfv_enum, &dfv_reg);
             assert(okay);
-            printf("    default:%13sof=%d, sf=%d, zf=%d, cf=%d\n",
+            printf("    default:%13sof=%u, sf=%u, zf=%u, cf=%u\n",
                     "",
                     dfv_reg.s.of,
                     dfv_reg.s.sf,
@@ -400,11 +400,11 @@ void print_operands(xed_decoded_inst_t* xedd) {
                   xed_itoa_hex_ul(buf, disp, disp_bits, no_leading_zeros, 40, lowercase);
 #if defined (_WIN32) && !defined(PIN_CRT)
                   _snprintf_s(tbuf, TBUFSZ, TBUFSZ,
-                           "BRANCH_DISPLACEMENT_BYTES=%d 0x%s",
+                           "BRANCH_DISPLACEMENT_BYTES=%u 0x%s",
                            disp_bytes,buf);
 #else
                   snprintf(tbuf, TBUFSZ,
-                           "BRANCH_DISPLACEMENT_BYTES=%d 0x%s",
+                           "BRANCH_DISPLACEMENT_BYTES=%u 0x%s",
                            disp_bytes,buf);
 #endif
               }
@@ -433,7 +433,7 @@ void print_operands(xed_decoded_inst_t* xedd) {
               }
 #if defined (_WIN32) && !defined(PIN_CRT)
               _snprintf_s(tbuf, TBUFSZ, TBUFSZ,
-                          "0x%s(%db)",buf,ibits);
+                          "0x%s(%ub)",buf,ibits);
 #else
               snprintf(tbuf,TBUFSZ,
                        "0x%s(%db)",buf,ibits);
@@ -644,21 +644,9 @@ int main(int argc, char** argv) {
                            XED_REINTERPRET_CAST(const xed_uint8_t*,itext), 
                            bytes);
     
-    switch(xed_error)    {
-      case XED_ERROR_NONE:
-        break;
-      case XED_ERROR_BUFFER_TOO_SHORT:
-        printf("Not enough bytes provided\n");
-        exit(1);
-      case XED_ERROR_INVALID_FOR_CHIP:
-        printf("The instruction was not valid for the specified chip.\n");
-        exit(1);
-      case XED_ERROR_GENERAL_ERROR:
-        printf("Could not decode given input.\n");
-        exit(1);
-      default:
-        printf("Unhandled error code %s\n",
-               xed_error_enum_t2str(xed_error));
+    if (xed_error != XED_ERROR_NONE) {
+        xed_uint_t dec_length = xed_decoded_inst_get_length(&xedd);
+        xed_decode_error(0, 0, itext, xed_error, dec_length);
         exit(1);
     }
         

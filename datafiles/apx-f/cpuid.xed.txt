@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,13 +25,11 @@ XED_ISA_SET_APX_F_CET           : apx_f.7.1.edx.21 cet.7.0.ecx.7
 XED_ISA_SET_APX_F_CMPCCXADD     : apx_f.7.1.edx.21 cmpccxadd.7.1.eax.7
 XED_ISA_SET_APX_F_ENQCMD        : apx_f.7.1.edx.21 enqcmd.7.0.ecx.29
 XED_ISA_SET_APX_F_INVPCID       : apx_f.7.1.edx.21 invpcid.7.0.ebx.10
-XED_ISA_SET_APX_F_KEYLOCKER     : apx_f.7.1.edx.21 klsupported.7.0.ecx.23 klenabled.19.0.ebx.0
-XED_ISA_SET_APX_F_KEYLOCKER_WIDE: apx_f.7.1.edx.21 klsupported.7.0.ecx.23 klenabled.19.0.ebx.0 klwide.19.0.ebx.2
 XED_ISA_SET_APX_F_LZCNT         : apx_f.7.1.edx.21 lzcnt.80000001.0.ecx.5
 XED_ISA_SET_APX_F_MOVBE         : apx_f.7.1.edx.21 movebe.1.0.ecx.22
 XED_ISA_SET_APX_F_MOVDIRI       : apx_f.7.1.edx.21 movdiri.7.0.ecx.27
 XED_ISA_SET_APX_F_MOVDIR64B     : apx_f.7.1.edx.21 movdir64b.7.0.ecx.28
-XED_ISA_SET_APX_F_SHA           : apx_f.7.1.edx.21 sha.7.0.ebx.29
+XED_ISA_SET_APX_F_POPCNT        : apx_f.7.1.edx.21 popcnt.1.0.ecx.23
 XED_ISA_SET_APX_F_VMX           : apx_f.7.1.edx.21 vmx.1.0.ecx.5
 XED_ISA_SET_APX_F_USER_MSR      : apx_f.7.1.edx.21 user_msr.7.1.edx.15
 XED_ISA_SET_APX_F_RAO_INT       : apx_f.7.1.edx.21 rao_int.7.1.eax.3

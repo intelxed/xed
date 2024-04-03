@@ -18,7 +18,7 @@ Operands
 2   MEM1           (see below) SUPPRESSED  CR         W   16     2     1     16        INT    INVALID
 3  BASE1             BASE1=ESI SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
 4   REG0              REG0=ECX SUPPRESSED RCW       ASZ   32     4     1     32        INT        GPR
-5   REG1           REG1=EFLAGS SUPPRESSED   R         Y   32     4     1     32        INT      FLAGS
+5   REG1           REG1=EFLAGS SUPPRESSED   R   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   0 written SEG= ES BASE= EDI/GPR  ASZ0=32
   1    read SEG= DS BASE= ESI/GPR  ASZ1=32

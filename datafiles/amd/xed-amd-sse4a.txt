@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -77,6 +77,7 @@ OPERANDS  : MEM0:w:d      REG0=XMM_R():r:d
 
 {
 ICLASS    : LZCNT
+UNAME     : AMD_LZCNT
 CPL       : 3
 CATEGORY  : BITBYTE
 EXTENSION : AMD
@@ -87,10 +88,10 @@ PATTERN   : 0x0F 0xBD f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPRv_R():w:v     REG1=GPRv_B():r:v
 }
 
-
+UDELETE: NORM_BSR
 {
 ICLASS    : BSR
-VERSION   : 1
+UNAME     : AMD_BSR
 COMMENT   : AMD reused 0FBD for LZCNT and made BSR not have a refining prefix.  This version replaces the normal version of BSR
 CPL       : 3
 CATEGORY  : BITBYTE

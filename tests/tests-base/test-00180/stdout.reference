@@ -6,8 +6,8 @@ effective-operand-width 16
 effective-address-width 32
 stack-address-width 64
 iform-enum-name ROL_MEMb_ONE
-iform-enum-name-dispatch (zero based) 8
-iclass-max-iform-dispatch 12
+iform-enum-name-dispatch (zero based) 26
+iclass-max-iform-dispatch 36
 Nominal opcode position 10
 Nominal opcode 0xd0
 Operands
@@ -15,7 +15,7 @@ Operands
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   MEM0           (see below)   EXPLICIT  RW         B    8     1     1      8       UINT    INVALID
 1   IMM0               0x1(8b)   IMPLICIT   R         B    8     1     1      8       UINT    INVALID
-2   REG0           REG0=RFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+2   REG0           REG0=RFLAGS SUPPRESSED   W   INVALID   64     8     1     64        INT      FLAGS
 Memory Operands
   0    read written SEG= GS BASE= EAX/GPR  ASZ0=32
   MemopBytes = 1

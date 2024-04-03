@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -4078,7 +4078,7 @@ COMMENT   : reads a selector
 }
 {
 ICLASS    : LGDT
-CPL       : 3
+CPL       : 0
 CATEGORY  : SYSTEM
 EXTENSION : BASE
 ISA_SET   : I286REAL
@@ -4875,7 +4875,7 @@ IFORM     : NOP_GPRv_0F1F
 }
 {
 ICLASS    : VMCALL
-CPL       : 3
+CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
 ATTRIBUTES: NOTSX
@@ -7320,6 +7320,9 @@ ATTRIBUTES : X87_CONTROL NOTSX
 PATTERN   : 0x9B
 OPERANDS  :
 }
+
+# {PUSH/POP}F{,D,Q} are the only instructions where FLAGS is EOSZ dependent
+# So we explicitly define the flags
 {
 ICLASS    : PUSHF
 CPL       : 3
@@ -7328,12 +7331,13 @@ EXTENSION : BASE
 ISA_SET   : I86
 FLAGS     : MUST [ id-tst  vip-tst vif-tst ac-tst vm-tst rf-tst nt-tst iopl-tst iopl-tst of-tst df-tst if-tst tf-tst sf-tst zf-tst af-tst pf-tst cf-tst ]
  # DF64() EOSZ=1
+ # basically the lower 16 bits of EFLAGS (FLAGS register) are used
 PATTERN   : 0x9C mode16 no66_prefix
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:w:SUPP REG1=XED_REG_FLAGS:r:SUPP:w:u16
 PATTERN   : 0x9C mode32 66_prefix
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:w:SUPP REG1=XED_REG_EFLAGS:r:SUPP:w:u16
 PATTERN   : 0x9C mode64 norexw_prefix 66_prefix
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:w:SUPP REG1=XED_REG_RFLAGS:r:SUPP:w:u16
 }
 {
 ICLASS    : PUSHFD
@@ -7344,9 +7348,9 @@ ISA_SET   : I386
 FLAGS     : MUST [ id-tst vip-tst vif-tst ac-tst vm-tst rf-tst nt-tst iopl-tst iopl-tst of-tst df-tst if-tst tf-tst sf-tst zf-tst af-tst pf-tst cf-tst ]
 # DF64() EOSZ=2 not64
 PATTERN   : 0x9C mode32 no66_prefix 
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:d:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:d:SUPP REG1=XED_REG_EFLAGS:r:SUPP:d:u32
 PATTERN   : 0x9C mode16 66_prefix 
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:d:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:d:SUPP REG1=XED_REG_EFLAGS:r:SUPP:d:u32
 }
 {
 ICLASS    : PUSHFQ
@@ -7356,9 +7360,9 @@ EXTENSION : LONGMODE
 FLAGS     : MUST [ id-tst vip-tst vif-tst ac-tst vm-tst rf-tst nt-tst iopl-tst iopl-tst of-tst df-tst if-tst tf-tst sf-tst zf-tst af-tst pf-tst cf-tst ]
 # DF64() EOSZ=3 mode64
 PATTERN   : 0x9C mode64 norexw_prefix no66_prefix DF64()
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:q:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:q:SUPP REG1=XED_REG_RFLAGS:r:SUPP:q:u64
 PATTERN   : 0x9C mode64 rexw_prefix  DF64()
-OPERANDS  : REG0=XED_REG_STACKPUSH:rw:q:SUPP
+OPERANDS  : REG0=XED_REG_STACKPUSH:rw:q:SUPP REG1=XED_REG_RFLAGS:r:SUPP:q:u64
 }
 {
 ICLASS    : POPF
@@ -7370,11 +7374,12 @@ ISA_SET   : I86
 FLAGS     : MUST [ id-pop vip-tst vif-mod ac-pop vm-tst rf-0 nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
 # DF64() EOSZ=1
 PATTERN   : 0x9D  mode16 no66_prefix
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:w:SUPP
+# basically the lower 16 bits of EFLAGS (FLAGS register) are used
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:w:SUPP REG1=XED_REG_FLAGS:rw:SUPP:w:u16
 PATTERN   : 0x9D mode32 66_prefix
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:w:SUPP REG1=XED_REG_EFLAGS:rw:SUPP:w:u16
 PATTERN   : 0x9D mode64 norexw_prefix 66_prefix
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:w:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:w:SUPP REG1=XED_REG_RFLAGS:rw:SUPP:w:u16
 }
 {
 ICLASS    : POPFD
@@ -7386,9 +7391,9 @@ ISA_SET   : I386
 FLAGS     : MUST [ id-pop vip-tst vif-mod ac-pop vm-tst rf-0 nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
 # DF64() EOSZ=2 not64
 PATTERN   : 0x9D mode16 66_prefix
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:d:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:d:SUPP REG1=XED_REG_EFLAGS:rw:SUPP:d:u32
 PATTERN   : 0x9D mode32 no66_prefix
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:d:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:d:SUPP REG1=XED_REG_EFLAGS:rw:SUPP:d:u32
 }
 {
 ICLASS    : POPFQ
@@ -7399,9 +7404,9 @@ EXTENSION : LONGMODE
 FLAGS     : MUST [ id-pop vip-tst vif-mod ac-pop vm-tst rf-0 nt-pop iopl-tst iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop ]
  # DF64() EOSZ=3 mode64
 PATTERN   : 0x9D mode64 norexw_prefix no66_prefix DF64()
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:q:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:q:SUPP REG1=XED_REG_RFLAGS:rw:SUPP:q:u64
 PATTERN   : 0x9D mode64 rexw_prefix DF64()
-OPERANDS  : REG0=XED_REG_STACKPOP:rw:q:SUPP
+OPERANDS  : REG0=XED_REG_STACKPOP:rw:q:SUPP REG1=XED_REG_RFLAGS:rw:SUPP:q:u64
 }
 {
 ICLASS    : SAHF
@@ -9221,7 +9226,7 @@ ICLASS    : SYSENTER
 CPL       : 3
 CATEGORY  : SYSCALL
 EXTENSION : BASE
-ISA_SET   : PPRO
+ISA_SET   : SEP
 ATTRIBUTES: PROTECTED_MODE NOTSX
 FLAGS     : MUST [ vm-0 rf-0 if-0 ]
 PATTERN   : 0x0F 0x34 not64
@@ -9235,7 +9240,7 @@ ICLASS    : SYSEXIT
 CPL       : 0
 CATEGORY  : SYSRET
 EXTENSION : BASE
-ISA_SET   : PPRO
+ISA_SET   : SEP
 ATTRIBUTES: PROTECTED_MODE RING0 NOTSX
 PATTERN   : 0x0F 0x35 not64
 OPERANDS  : REG0=XED_REG_EIP:w:SUPP  REG1=XED_REG_ESP:w:SUPP REG2=XED_REG_ECX:r:SUPP REG3=XED_REG_EDX:r:SUPP
@@ -10709,7 +10714,7 @@ EXCEPTIONS: mmx-mem
 ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
-EXTENSION : SSE2
+EXTENSION : MMX
 ISA_SET   : SSE2MMX
 PATTERN   : 0x0F 0xD4 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q:u64 MEM0:r:q:u64
@@ -10735,7 +10740,7 @@ EXCEPTIONS: mmx-nomem
 ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
-EXTENSION : MMX
+EXTENSION : SSE
 ISA_SET   : SSE
 COMMENT   : KNI on PentiumIII. MMX instructions intro'd w/SSE
 PATTERN   : 0x0F 0xD7 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
@@ -10979,7 +10984,7 @@ EXCEPTIONS: mmx-mem
 ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
-EXTENSION : MMX
+EXTENSION : SSE
 ISA_SET   : PENTIUMMMX
 PATTERN   : 0x0F 0xE4 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()
 OPERANDS  : REG0=MMX_R():rw:q:u16 MEM0:r:q:u16
@@ -10989,7 +10994,7 @@ ICLASS    : PMULHUW
 ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : MMX
-EXTENSION : MMX
+EXTENSION : SSE
 ISA_SET   : PENTIUMMMX
 PATTERN   : 0x0F 0xE4 no_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=MMX_R():rw:q:u16 REG1=MMX_B():r:q:u16
@@ -13168,6 +13173,7 @@ OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
 }
 {
 ICLASS    : BSR
+UNAME     : NORM_BSR
 CPL       : 3
 CATEGORY  : BITBYTE
 EXTENSION : BASE

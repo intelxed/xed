@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -64,6 +64,10 @@ def write_file(fn, stream):
 def add_to_flags(env,s):
     env.add_to_var('CCFLAGS',s)
     env.add_to_var('CXXFLAGS',s)
+
+def security_level_match(env: dict, level: int) -> bool:
+    ''' Return True if the "level" argument matches the build's security level '''
+    return env['security_level'] >= level
 
 def compile_with_pin_crt_lin_mac_common_cplusplus(env):
     env.add_to_var('LINKFLAGS','-lc++abi')
@@ -194,22 +198,81 @@ def  _clang_version_string(env):
     vstr = mbuild.get_clang_version(gcc)
     return vstr
 
-def  _greater_than_gcc(env,amaj,amin,aver):
+def  _greater_than_gcc(env:dict, amaj:int, amin:int, aver:int) -> bool:
     vstr = _gcc_version_string(env)
     try:
+        vstr = re.sub(r"[^\d\.]", "", vstr)
         (vmaj, vmin, vver) = vstr.split('.')
     except:
         return False
+    
     vmaj = int(vmaj)
-    vmin = int(vmin)
-    vver = int(vver)
     if vmaj > amaj:
         return True
+    
+    vmin = int(vmin)
     if vmaj == amaj and vmin > amin:
         return True
+    
+    vver = int(vver)
     if vmaj == amaj and vmin == amin and vver >= aver:
         return True
+    
     return False
+
+
+def gnu_secured_build(env: dict) -> str:
+    """ Example of extending the GNU environment for compilation """
+    flags = ''
+    if security_level_match(env, 2):
+        ### Compiler Warnings and Error Detection ###
+        flags += ' -Wextra'
+        # codegen.py puts assert to check bounded value. if the range type is unsigned,
+        # and the lower bound is zero, then we need not to check it because sometimes it
+        # is hard to tell the operand type.
+        flags += ' -Wno-error=type-limits'
+
+        ### Format String Defense ###
+        # Treats format string security warnings as errors
+        if not env['debug']:
+            flags += ' -Werror=format-security'
+
+        ### Pre-processor Macros ###
+        # enables the fortified source code features provided by the compiler, triggering
+        # additional security checks and modifications in the generated code
+        flags += ' -D_FORTIFY_SOURCE=2'
+
+        ### Stack Protection ###
+        if env['debug']:
+            # Enables stack protection by adding a stack canary to detect buffer overflows
+            flags += ' -fstack-protector'
+        else:
+            # Enables stronger stack protection with a stronger stack canary
+            flags += ' -fstack-protector-strong'
+
+        if not env.on_windows():
+            ### Position Independent Code ###
+            # Generates position-independent code during the compilation phase
+            flags += ' -fPIC'
+            if not env['debug']:
+                ### Stack and Heap Overlap Protection ###
+                # Enables Read-Only Relocation (RELRO) and Immediate Binding protections
+                env.add_to_var('LINKFLAGS','-Wl,-z,relro,-z,now')
+                ### Inexecutable Stack ###
+                # Specifies that the stack memory should be marked as non-executable
+                env.add_to_var('LINKFLAGS','-z noexecstack')
+        else:  # Windows
+            # Enables Data Execution Prevention (DEP) for executables.
+            env.add_to_var('LINKFLAGS','-z /NXCOMPAT')
+            # Enables address space layout randomization (ASLR) for executables.
+            env.add_to_var('LINKFLAGS','-z /DYNAMICBASE')
+            # Warnings as errors (Linker specific)
+            env.add_to_var('LINKFLAGS','-z /WX')
+            # Enables Link-Time Code Generation
+            env.add_to_var('LINKFLAGS', '-z /LTCG')
+
+    return flags
+
 
 def set_env_gnu(env):
     """Example of setting up the GNU GCC environment for compilation"""
@@ -231,58 +294,38 @@ def set_env_gnu(env):
 
     if env['use_werror']:
         flags += ' -Werror'
-    if env['compiler'] != 'icc':
-        flags += ' -Wno-long-long'
-        flags += ' -Wno-unknown-pragmas'
-        flags += ' -fmessage-length=0'
-        flags += ' -pipe'
+
+    flags += ' -Wno-long-long'
+    flags += ' -Wno-unknown-pragmas'
+    flags += ' -fmessage-length=0'
+    flags += ' -pipe'
+    flags += ' -fno-exceptions'
+    flags += ' -Wformat-security'
+    flags += ' -Wformat'
 
     # -pg is incompatible with -fomit-frame-pointer
     if (re.search(r' -pg', env['CXXFLAGS']) == None and 
-        re.search(r' -pg', env['CCFLAGS']) == None  and 
-        (env['compiler'] != 'icc' or env['icc_version'] not in ['7','8'])):
+        re.search(r' -pg', env['CCFLAGS']) == None):
         flags += ' -fomit-frame-pointer'
 
-    if env['compiler'] != 'icc' or (env['compiler'] == 'icc' and 
-                                    env['icc_version'] != '7'):
-        flags += ' -fno-exceptions'
-
-    # 2019-06-05: disabled - no longer needed
-    # required for gcc421 xcode to avoidundefined symbols when linking tools.
-    #if env.on_mac():
-    #    flags += ' -fno-common'
-
-    if env['build_os'] == 'win' or _greater_than_gcc(env,4,9,0):
-        flags += ' -Wformat-security'
-        flags += ' -Wformat'
-    else:
-        # gcc3.4.4 on windows has problems with %x for xed_int32_t.
-        # gcc4.9.2 works well.
-        flags += ' -Wno-format'
-        flags += ' -Wno-format-security'
-
-    if env['compiler'] != 'icc':
-        # c99 is required for c++ style comments.
-        env['CSTD'] = 'c99'
-        env['CCFLAGS'] += ' -std=%(CSTD)s '
-        if env['pedantic']:
-            env['CCFLAGS'] += ' -pedantic '
+    # c99 is required for c++ style comments.
+    env['CSTD'] = 'c99'
+    env['CCFLAGS'] += ' -std=%(CSTD)s '
+    if env['pedantic']:
+        env['CCFLAGS'] += ' -pedantic '
 
     if env['shared']:
-        if not env.on_windows():
-            # -fvisibility=hidden only works on gcc>4. If not gcc,
-            # assume it works. Really only a problem for older icc
-            # compilers.
-            if env['compiler'] != 'gcc' or _greater_than_gcc(env,4,0,0):
-                hidden = ' -fvisibility=hidden' 
-                env['LINKFLAGS'] += hidden
-                flags += hidden
-        
+        hidden = ' -fvisibility=hidden' 
+        env['LINKFLAGS'] += hidden
+        flags += hidden
+
+    if env['compiler'] in ['gnu', 'clang']:
+        flags += gnu_secured_build(env)
+
     env['CCFLAGS'] += flags
     env['CCFLAGS'] += ' -Wstrict-prototypes'
     env['CCFLAGS'] += ' -Wwrite-strings'
-    if env['compiler'] != 'icc':
-        env['CCFLAGS'] += ' -Wredundant-decls'
+    env['CCFLAGS'] += ' -Wredundant-decls'
 
     # Disabled the following. Generates too many silly errors/warnings
     #env['CCFLAGS'] += ' -Wmissing-prototypes'
@@ -291,8 +334,8 @@ def set_env_gnu(env):
 
 
 def set_env_clang(env):
-   set_env_gnu(env)
-   env['CXXFLAGS'] += ' -Wno-unused-function'
+    set_env_gnu(env)
+    env['CXXFLAGS'] += ' -Wno-unused-function'
         
 def set_env_ms(env):
     """Set up the MSVS environment for compilation"""
@@ -335,7 +378,25 @@ def set_env_ms(env):
         flags += ' /wd4244'     # Disable warnings about changing widths.
         # Disable warnings about compiler limit in MSVC7(.NET / 2003)
         flags += ' /wd4292'
-        
+        if security_level_match(env, 2):
+            env.add_to_var('LINKFLAGS','/WX')  # Warnings as errors (Linker specific)
+
+            ## Position Independent Code ##
+            # Enables function-level linking, which can improve code sharing and optimization
+            flags += ' /Gy'
+
+            ## Control Flow Integrity ##
+            env.add_to_var('LINKFLAGS', '/LTCG')  # Enables Link-Time Code Generation
+            flags += ' /sdl'   # Enables the "Additional Security Check" feature
+
+            ## Stack Protection ##
+            flags += ' /GS' # Enables buffer security checks with a stack canary
+        if security_level_match(env, 3):
+            ############## NOTE: Major performance impact ##############
+            ## Spectre Protection ##
+            # Enables Spectre variant 1 and variant 2 mitigations
+            flags += ' /Qspectre'
+
     # /Zm200 is required on VC98 for xed-decode.cpp to avoid
     # internal compiler error
     #flags += ' /Zm200'
@@ -422,7 +483,9 @@ def init(env):
     
     env['mfile'] = env.src_dir_join('mfile.py')
     env['arch'] = get_arch(env)
-    
+
+    mbuild.msgb("SECURITY BUILD LEVEL", env['security_level'])
+
     if env['compiler'] == 'gnu':
         set_env_gnu(env)
         mbuild.msgb("GNU/GCC VERSION", _gcc_version_string(env))
@@ -432,10 +495,8 @@ def init(env):
     elif env['compiler'] == 'ms':
         set_env_ms(env)
         mbuild.msgb("MS VERSION", env['msvs_version'])
-    elif env['compiler'] == 'icc':
-        set_env_icc(env)
-    elif env['compiler'] == 'icl':
-        set_env_icl(env)
+    elif env['compiler'] in ['icc', 'icl']:
+        cdie(f'"{env["compiler"]}" is no longer supported')
     else:
         cdie("Unknown compiler: " + env['compiler'])
         

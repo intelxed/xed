@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -226,7 +226,7 @@ def skip_file(file):
     skip_suffix = ['.pdf', '.msi', '.sln', '.vcproj', '.vcxproj', '.filters',
                    '.xsl', '.rtf', '.reference', '.rc', '.doc', '.html',
                    '.docx', '.msm', '.ico', '.bmp', '.exe', '.a', '.lib', '.csv', '.bz2',
-                   '.zip', '.csproj', '.json', '.js', '.xz', '.TESTS', '.pyc', '.md']
+                   '.zip', '.csproj', '.json', '.js', '.xz', '.TESTS', '.pyc', '.md', '.in']
     # Path().suffixes return a list of the final component's suffixes, if any.
     # check if the intersection with skip_suffix is empty or not
     if set(f.suffixes).intersection(skip_suffix):
@@ -450,8 +450,7 @@ def setup():
     env = vars(parser.parse_args())
     return env
 
-if __name__ == '__main__':
-
+def main():
     env = setup()
     files_for_scan = []
     files = retrieve_files(env['dir'])
@@ -463,3 +462,7 @@ if __name__ == '__main__':
     else: 
         retval = replace_copyrights(files_for_scan)
     sys.exit(retval)
+
+if __name__ == '__main__':
+
+    main()

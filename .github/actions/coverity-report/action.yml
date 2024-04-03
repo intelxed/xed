@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -40,12 +40,12 @@ runs:
             --url=${{inputs.server}} --component="${{inputs.components}}"
       shell: bash
     - name: upload cvss results # uploads coverity cvss report as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cov-cvss-report
         path: ./logs/cvss_report.pdf
     - name: upload security results # uploads coverity security report as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: cov-security-report
         path: ./logs/security_report.pdf

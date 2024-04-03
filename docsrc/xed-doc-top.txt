@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 /*! 
 @mainpage Intel&reg; X86 Encoder Decoder User Guide
 
-November 2023
+April 2024
 
 @section INTRO Introduction
 
@@ -64,7 +64,6 @@ Intel&reg; XED compiles with the following compilers:
     <ul>
     <li> GNU GCC
     <li> Microsoft Visual Studio
-    <li> Intel ICL/ICC
     <li> LLVM/Clang
     </ul>
 
@@ -73,7 +72,6 @@ Intel&reg; XED works with the following operating systems:
     <ul>
     <li> Linux
     <li> Microsoft Windows  (with and without cygwin)
-    <li> Apple Mac OS X*
     <li> FreeBSD
     </ul>
 
@@ -920,9 +918,9 @@ encoded instructions, we often have 3 variations in 64b mode (2 in
 other modes) to handle 16-bit, 32-bit and 64-bit operands. Those 3
 sizes are usually differentiated with "_o16", "_o32" and "_o64" in the
 ENC2 function names.  Having unique names is complicated as there are
-often multiple encodings for the same operation in the instrution
-set. To disambiguate alias encodings the some function names include
-substring "_vrN" where N is a integer.  Simlarly, VEX and EVEX
+often multiple encodings for the same operation in the instruction
+set. To disambiguate alias encodings the same function names include
+substring "_vrN" where N is a integer.  Similarly, VEX and EVEX
 encodings for related instructions often need to be distinguished when
 their instruction name and operands are the same. To accomplish that
 all ENC2 EVEX encoding functions names contain the substring "_e".
@@ -944,10 +942,10 @@ Memory instructions also indicate their effective addressing width
 with one of "_a16", "_a32" or "_a64" substrings.
 
 
-The libraries for the ENC2 encoder are built when when includes the
-"--enc2" switch during the build process.  There is one set of
+The libraries for the ENC2 encoder are built when the "--enc2" switch 
+is included during the build process.  There is one set of
 libraries and headers generated for each supported
-configuration. Currently Intel&reg; XED ENC2 supports 64b mode with 64b addrssing
+configuration. Currently Intel&reg; XED ENC2 supports 64b mode with 64b addressing
 (m64,a64) and 32b mode with 32b addressing (m32,a32).  The build
 process creates an enc2-m64-a64 directory and an enc2-m32-a32
 directory, each with two libraries for the checked and unchecked
@@ -968,11 +966,17 @@ Given the large size of the generated ENC2 headers, doxygen
 documentation is not created for those header files. Please view the
 headers directly in your editor.
 
-Even with the unchecked interface, some register checking is done the
+Even with the unchecked interface, some register checking is done for the
 addressing registers.  In the x86 encoding system, some choices of
 base register require that an 8-bit or 32-bit displacement is also
 used. In those cases, the ENC2 encoder is capable of supplying a
 zero-valued displacement.
+
+Intel&reg; XED also offers the capability to test ENC2 with either the "--enc2-test-checked" flag or
+the "--enc2-operands-checked" flag. Building XED with any of these flags consequently leads to a longer build.
+The former flag allows developers to test the ENC2 checked interface in a more sparing matter, where each
+instruction is then decoded and its IFORM gets validated. The latter flag offers a more rigid testing. Each
+instruction is decoded and then its IFORM and all operands involved in the encoding get validated as well.
 
 Users can install their own error handler by calling
 #xed_enc2_set_error_handler() passing a function pointer that takes
@@ -986,7 +990,7 @@ With a nonzero argument, the argument checking can be re-enabled.
 To minimize copying, ENC2 users are required to supply a pointer to an
 output buffer where the encoding bytes will be placed. That buffer is
 required to be 15 bytes in length. Valid x86 encodings are shorter
-than 15 bytes and only reach that length if redudant legacy prefixes
+than 15 bytes and only reach that length if redundant legacy prefixes
 are employed. XED ENC2 does not generate redundant legacy prefixes.
 
 Here is an example of creating an LEA instruction using the checked

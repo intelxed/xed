@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -252,7 +252,7 @@ class group_record_t:
     def __repr__(self) -> str:
         """ Overrides the default implementation """
         p = ', '.join(['"'+str(rec)+'"' for rec in self.records])
-        s = '{' + self.name + ' : ['+p+'] }'
+        s = '{"' + self.name + '" : ['+p+'] }'
         return s
 
 

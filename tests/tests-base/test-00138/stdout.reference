@@ -17,7 +17,7 @@ Operands
 1  BASE0             BASE0=ESI SUPPRESSED  RW       ASZ   32     4     1     32        INT        GPR
 2   MEM1           (see below) SUPPRESSED   R         B    8     1     1      8       UINT    INVALID
 3  BASE1             BASE1=EDI SUPPRESSED  RW       ASZ   32     4     1     32        INT        GPR
-4   REG0           REG0=EFLAGS SUPPRESSED  RW         Y   32     4     1     32        INT      FLAGS
+4   REG0           REG0=EFLAGS SUPPRESSED  RW   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   0    read SEG= GS BASE= ESI/GPR  ASZ0=32
   1    read SEG= ES BASE= EDI/GPR  ASZ1=32

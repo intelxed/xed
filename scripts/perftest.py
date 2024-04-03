@@ -2,7 +2,7 @@
 #-*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@
 #END_LEGAL
 from __future__ import print_function
 import os
+import re
 import sys
 import argparse
 import textwrap
@@ -60,6 +61,7 @@ def work(args):
         return 2
 
     s = args.xed + ' -v 0 -i ' + args.input
+    print(s)
     cpd = []
     
     print("Skipping {} samples...".format(args.skip))
@@ -136,7 +138,12 @@ class args_t:
 
 def mkargs():
     args = args_t()
-    args.xed = 'obj/examples/xed'
+    # find the XED command line tool binary
+    args.xed = ''
+    for exe in mbuild.glob('obj/wkit/bin/', '*'):
+        if re.match(r'xed(\.exe)?$', os.path.basename(exe)):
+            args.xed = exe
+
     args.input = '/usr/bin/emacs24-x'
     args.graph = False
     args.samples=10

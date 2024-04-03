@@ -6,8 +6,8 @@ effective-operand-width 32
 effective-address-width 32
 stack-address-width 32
 iform-enum-name ADD_MEMb_GPR8
-iform-enum-name-dispatch (zero based) 11
-iclass-max-iform-dispatch 18
+iform-enum-name-dispatch (zero based) 30
+iclass-max-iform-dispatch 42
 Nominal opcode position 0
 Nominal opcode 0x00
 Operands
@@ -15,7 +15,7 @@ Operands
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   MEM0           (see below)   EXPLICIT  RW         B    8     1     1      8       UINT    INVALID
 1   REG0               REG0=AL   EXPLICIT   R         B    8     1     1      8        INT        GPR
-2   REG1           REG1=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+2   REG1           REG1=EFLAGS SUPPRESSED   W   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   0    read written SEG= DS BASE= EAX/GPR  ASZ0=32
   MemopBytes = 1

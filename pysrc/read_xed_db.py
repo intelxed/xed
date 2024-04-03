@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -126,6 +126,21 @@ def _get_mempop_width_code(v):
         if op.name == 'MEM0':
             return op.oc2
     die("Could not find evex memop for {}".format(v.iclass))
+
+def get_scc_value(v) -> int:
+    """Retrieve SCC value (SC3...SC0 bits) for APX SCC instructions (VEXDEST4 and MASK)"""
+    v4_pattern = re.compile(r'VEXDEST4=([0-1])')
+    mask_pattern = re.compile(r'MASK=([0-7])')
+
+    v4_match =  v4_pattern.search(v.pattern)
+    mask_match =  mask_pattern.search(v.pattern)
+    assert v4_match and mask_match, 'APX SCC instruction with no SCC value'
+
+    v4 = not int(v4_match.group(1)) # v4 is inverted
+    mask = int(mask_match.group(1))
+    scc = (v4 << 3) | mask
+    return scc
+
 
 def _set_eosz(v):
     eosz = 'oszall'
@@ -382,6 +397,7 @@ class xed_reader_t(object):
         iform = v.iclass
         if tokens:
             iform += '_' + "_".join(tokens)
+        iform = iform.replace('VGPR', 'GPR')
         return iform
 
         
@@ -461,6 +477,8 @@ class xed_reader_t(object):
             
             elif 'FIX_ROUND_LEN512' in pattern:
                 return '512'
+            elif 'FIX_ROUND_LEN256' in pattern:
+                return '256'
             elif space == 'vex':
                 return 'LIG'
             elif space == 'evex':
@@ -478,6 +496,7 @@ class xed_reader_t(object):
             v.has_imm8 = False
             v.has_immz = False #  16/32b imm. (32b in 64b EOSZ)
             v.has_imm8_2 = False
+            v.has_imm16 = False
             v.has_imm32 = False
             v.imm_sz = '0'
             for op in v.parsed_operands:
@@ -493,6 +512,7 @@ class xed_reader_t(object):
                     v.has_imm32 = True
                     v.imm_sz = '4'
                 elif _op_immw(op):
+                    v.has_imm16 = True
                     v.imm_sz = '2'
                 elif op.name == 'IMM1':
                     v.has_imm8_2 = True
@@ -715,7 +735,20 @@ class xed_reader_t(object):
                 easz = 'asznot16'
             v.easz = easz
 
+            v.nf, v.nd = 0, 0
+            if 'NF=1' in v.pattern or 'NF1' in v.pattern:
+                v.nf=1
+            if 'ND=1' in v.pattern:
+                v.nd=1
 
+            v.is_apx_scc: bool = False
+            if 'EVAPX_SCC()' in v.pattern:
+                v.is_apx_scc = True
+                v.scc_val: int = get_scc_value(v)
+
+            v.rex2_required: bool = False
+            if 'REX2=1' in v.pattern:
+                v.rex2_required = True
 
             v.default_64b = False
             if 'DF64()' in v.pattern or 'CR_WIDTH()' in v.pattern:

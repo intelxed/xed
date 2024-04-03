@@ -3,7 +3,7 @@
 # Code generation support: emitting files, emitting functions, etc.
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -954,8 +954,9 @@ class array_gen_t(object):
             if check_bounds:
                 # FIXME: if the range type is unsigned, and the lower
                 # bound is zero, then we need not check it. But it is
-                # hard to tell from here with an arbitrary type. ICL
-                # complains about this, warning/error #186.
+                # hard to tell from here with an arbitrary type.
+                # ICL complains about this, warning/error #186.
+                # GCC complains about this, -Werror=type-limits
                 fo.add_code_eol('xed_assert(arg_'+ argname + '>=' + lower_bound +
                                 ' && arg_' + argname + '<' + upper_bound + ')')
 

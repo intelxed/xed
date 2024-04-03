@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,9 +31,10 @@ def main(env):
 
     # Prepare |
     # Generate build commands
-    commands = []
-    xed_builder = 'mfile.py'
-    flags='test'
+    commands: list = []
+    xed_builder: str = 'mfile.py'
+    secure_build: str = '--security-level=3'
+    flags: str = 'test ' + secure_build
     # {32b,64b} x {shared,dynamic} link
     for host in ['ia32', 'x86-64']:
         link_options = [('static', ''), ('dynamic', ' --shared')]
@@ -66,7 +67,8 @@ def main(env):
     commands.append(cmd)
 
     # enc2test - test encode-decode path of all instructions
-    cmd_enc2test_ext = utils.gen_enc2test_cmd(env, xed_builder, kits_dir, '', flags='test')
+    cmd_enc2test_ext = utils.gen_enc2test_cmd(
+        env, xed_builder, kits_dir, '', flags='test ' + secure_build)
     commands = [cmd_enc2test_ext] + commands  # enc2test is a long test, run it first
 
     # run

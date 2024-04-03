@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -1065,7 +1065,7 @@ int main(int argc, char** argv)
     }
     
     if (verbose > 0) 
-        printf("#nbytes = %d\n",length);
+        printf("#nbytes = %u\n",length);
 
     delete_string_list(string_list);
     string_list = 0;

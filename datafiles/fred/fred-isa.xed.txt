@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ ISA_SET:     FRED
 REAL_OPCODE: Y
 FLAGS:       MUST [  id-pop vip-pop vif-pop ac-pop vm-pop vm-pop rf-pop nt-pop nt-pop iopl-pop iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop  ]
 ATTRIBUTES:  NOTSX 
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b010]  f2_refining_prefix      mode64 DF64()
-OPERANDS:    REG0=XED_REG_STACKPOP:rw:SUPP:spw5 REG1=XED_REG_RIP:w:SUPP REG2=XED_REG_RFLAGS:w:SUPP:d:u32 REG3=XED_REG_RSP:w:SUPP:q:u64
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b001] RM[0b010] f2_refining_prefix mode64 DF64()
+OPERANDS:    REG0=XED_REG_STACKPOP:rw:SUPP:spw5 REG1=XED_REG_RIP:w:SUPP REG2=XED_REG_RSP:w:SUPP:q:u64
 IFORM:       ERETS
 }
 
@@ -51,8 +51,8 @@ ISA_SET:     FRED
 REAL_OPCODE: Y
 FLAGS:       MUST [  id-pop vip-pop vif-pop ac-pop vm-pop vm-pop rf-pop nt-pop nt-pop iopl-pop iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop  ]
 ATTRIBUTES:  NOTSX 
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b010]  f3_refining_prefix      mode64  DF64()
-OPERANDS:    REG0=XED_REG_STACKPOP:rw:SUPP:spw5 REG1=XED_REG_CS:w:SUPP:u16 REG2=XED_REG_SS:w:SUPP:u16 REG3=XED_REG_RIP:w:SUPP REG4=XED_REG_RFLAGS:w:SUPP:d:u32 REG5=XED_REG_RSP:w:SUPP:q:u64 REG6=XED_REG_GSBASE:w:SUPP:u64 REG7=XED_REG_IA32_KERNEL_GS_BASE:w:SUPP:u64
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b001] RM[0b010] f3_refining_prefix mode64 DF64()
+OPERANDS:    REG0=XED_REG_STACKPOP:rw:SUPP:spw5 REG1=XED_REG_CS:w:SUPP:u16 REG2=XED_REG_SS:w:SUPP:u16 REG3=XED_REG_RIP:w:SUPP REG4=XED_REG_RSP:w:SUPP:q:u64 REG5=XED_REG_GSBASE:w:SUPP:u64 REG6=XED_REG_IA32_KERNEL_GS_BASE:w:SUPP:u64
 IFORM:       ERETU
 }
 

@@ -16,7 +16,7 @@ Operands
 0   REG0              REG0=RIP SUPPRESSED   W         Q   64     8     1     64        INT         IP
 1   REG1              REG1=RCX SUPPRESSED   R         Q   64     8     1     64        INT        GPR
 2   REG2              REG2=R11 SUPPRESSED   R         Q   64     8     1     64        INT        GPR
-3   REG3           REG3=RFLAGS SUPPRESSED   W         Y   64     8     1     64        INT      FLAGS
+3   REG3           REG3=RFLAGS SUPPRESSED   W   INVALID   64     8     1     64        INT      FLAGS
 Memory Operands
   MemopBytes = 0
 FLAGS:

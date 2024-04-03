@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -95,13 +95,23 @@ static void check_src2_dest_match(xed_decoded_inst_t* xds) {
 }
 #endif
 
-#if defined(XED_APX)
-static XED_INLINE void check_reg0_reg1_match(xed_decoded_inst_t* xds) {
-    /* Check that the first and second registers do not match */
+#if defined(XED_ATTRIBUTE_NO_SRC_DEST_MATCH_DEFINED)
+/* this is essentially targeted at AMX instructions but applies to others (e.g. POP2{,P})
+   The check could be more robust to allow ignoring even more registers or by allowing
+   compares exclusively to type-exact registers
+*/
+static XED_INLINE void check_all_regs_match(xed_decoded_inst_t* xds) {
+    /* Check that the first, second and third registers do not match */
+    xed_reg_enum_t reg1;
     xed_reg_enum_t reg0 = xed3_operand_get_reg0(xds);
-    xed_reg_enum_t reg1 = xed3_operand_get_reg1(xds);
+    xed_reg_enum_t reg2 = xed3_operand_get_reg2(xds);
 
-    if (reg0 == reg1)
+    if (xed_decoded_inst_get_attribute(xds, XED_ATTRIBUTE_MASKOP_EVEX)) 
+        reg1 = xed3_operand_get_reg3(xds); 
+    else
+        reg1 = xed3_operand_get_reg1(xds);
+
+    if (reg0 == reg1 || reg1 == reg2 || reg0 == reg2)
         xed3_operand_set_error(xds,XED_ERROR_BAD_REG_MATCH);
 }
 #endif
@@ -117,15 +127,6 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
         xed3_operand_set_error(xds,XED_ERROR_BAD_LOCK_PREFIX);
         return;
     }
-
-#if defined(XED_APX)
-    xed_iclass_enum_t iclass  = xed_decoded_inst_get_iclass(xds);
-    /* FIXME: for now this is tailored solely for POP2{,P}. A more generic solution with broader restrictions is on the horizon */
-    if (iclass == XED_ICLASS_POP2 || iclass == XED_ICLASS_POP2P) {
-        /* POP2 and POP2P don't allow matching destination registers (first two regs)*/
-        check_reg0_reg1_match(xds);
-    }
-#endif
 
     /* We only keep real reps, MPX reps, HLE reps. Refining reps can just
      mess up subsequent encodes if the iclass or operands get changed by
@@ -147,6 +148,11 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
 #if defined(XED_ATTRIBUTE_NO_SRC_DEST_MATCH_DEFINED)
     if (xed_decoded_inst_get_attribute(xds, XED_ATTRIBUTE_NO_SRC_DEST_MATCH)) {
         check_src2_dest_match(xds);
+    }
+#endif
+#if defined(XED_ATTRIBUTE_NO_REG_MATCH_DEFINED)
+    if (xed_decoded_inst_get_attribute(xds, XED_ATTRIBUTE_NO_REG_MATCH)) {
+        check_all_regs_match(xds);
     }
 #endif
     

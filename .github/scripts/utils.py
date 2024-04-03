@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -214,11 +214,12 @@ def gen_build_cmd(env, builder, kind, build_dir, host, flags):
     return cmd
 
 
-def gen_enc2test_cmd(env, builder, kits_dir, kind, flags=''):
+def gen_enc2test_cmd(env, builder, kits_dir, kind, flags='', enc2ref: Path=''):
     """Generate enc2 build+test to validate enc-dec of all the kind's instructions"""
     commands = []
     host = 'x86-64'
     build_dir = Path(kits_dir, f'obj-{kind}-{host}-static-enc2test')
+    enc2comp = Path(__file__).parent.joinpath('enc2compare.py')
     cmd = gen_build_cmd(env, builder, kind, build_dir, host,
                         '--enc2-test-checked ' + flags)
     commands.append(cmd)
@@ -226,6 +227,14 @@ def gen_enc2test_cmd(env, builder, kits_dir, kind, flags=''):
     output = f'enc2tester-{kind}'
     enc2tester = Path(build_dir, 'enc2-m64-a64', 'enc2tester-enc2-m64-a64')
     cmd = f'{enc2tester} --reps 1 --main --gnuasm > {output}.c'
+    commands.append(cmd)
+
+    # compare enc2 unsupported ISA-SETs (make sure enc2 didn't break)
+    cmd = f'{env["pycmd"]} {enc2comp} --build-dir={build_dir} --verbose'
+    if enc2ref:
+        # replace the script's default enc2ref path (enc2unsupported_ref.json)
+        # which contains all XED instructions unsupported by enc2
+        cmd += f' --ref-path {enc2ref}'
     commands.append(cmd)
 
     if platform.system() == 'Linux':  # TBD - Add Windows and custom gcc version support
@@ -236,6 +245,14 @@ def gen_enc2test_cmd(env, builder, kits_dir, kind, flags=''):
         commands.append(cmd)
     return '; '.join(commands)
 
+
+def gen_gen_enc_layer_cmd(features: list, build_cmd: str, kit_name: str, script_path: Path) -> str:
+    """Generate gen_enc_layer script tests; groups the build cmd with the test commands since they're dependent"""
+    commands = [build_cmd]
+    for feature in features:
+        gen_enc_cmd = f'python3 {script_path} --feature {feature} --xed-kit {kit_name} --json'
+        commands.append(gen_enc_cmd)
+    return '; '.join(commands)
 
 ############# extra #############
 

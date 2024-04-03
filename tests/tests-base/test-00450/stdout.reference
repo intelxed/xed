@@ -17,7 +17,7 @@ Operands
 1   MEM0           (see below) SUPPRESSED  CR         Q   64     8     1     64        INT    INVALID
 2  BASE0             BASE0=RDI SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
 3   REG1              REG1=RCX SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
-4   REG2           REG2=RFLAGS SUPPRESSED RCW         Y   64     8     1     64        INT      FLAGS
+4   REG2           REG2=RFLAGS SUPPRESSED RCW   INVALID   64     8     1     64        INT      FLAGS
 Memory Operands
   0    read BASE= RDI/GPR  ASZ0=64
   MemopBytes = 8

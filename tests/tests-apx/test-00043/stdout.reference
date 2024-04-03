@@ -16,7 +16,7 @@ Operands
 0   REG0               REG0=R8   EXPLICIT   R         V   64     8     1     64        INT        GPR
 1   REG1               REG1=R9   EXPLICIT   R         V   64     8     1     64        INT        GPR
 2   REG2            REG2=DFV14   EXPLICIT   R   INVALID    4     1     1      4        INT     PSEUDO
-3   REG3           REG3=RFLAGS SUPPRESSED   W         Y   64     8     1     64        INT      FLAGS
+3   REG3           REG3=RFLAGS SUPPRESSED   W   INVALID   64     8     1     64        INT      FLAGS
 Memory Operands
   MemopBytes = 0
 FLAGS:

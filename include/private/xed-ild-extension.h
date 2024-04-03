@@ -22,27 +22,6 @@ END_LEGAL */
 #if !defined(XED_ILD_EXTENSION_H)
 # define XED_ILD_EXTENSION_H
 
-#include "xed-decoded-inst.h"
-#include "xed-operand-accessors.h"
-#include "xed-ild-enum.h"
-
-#define XED_GRAMMAR_MODE_64 2
-#define XED_GRAMMAR_MODE_32 1
-#define XED_GRAMMAR_MODE_16 0
-
-void xed_ild_ext_set_ubit(xed_decoded_inst_t *d, xed_uint8_t ubit);
-
-static XED_INLINE xed_uint_t xed_ild_ext_mode_64b(xed_decoded_inst_t* d) 
-{
-    return (xed3_operand_get_mode(d) == XED_GRAMMAR_MODE_64);
-}
-
-#if defined(XED_APX)
-static XED_INLINE xed_bool_t xed_ild_ext_apx_supported(xed_decoded_inst_t *d)
-{
-    return (!xed3_operand_get_no_apx(d) && xed_ild_ext_mode_64b(d));
-}
-#endif // XED_APX
 
 #endif
 

@@ -1,26 +1,13 @@
 # Intel&reg; XED support status
 ## Decoder/Encoder support
-Intel&reg; XED decoder and encoder fully support APX. 
-It includes:
-#### Legacy
-- REX2 prefix and APX extended GPRs (EGPRs)
-#### EVEX 
-- APX extended GPRs (EGPRs)
-- All APX-Promoted instructions
-- All APX new instructions
+Intel&reg; XED decoder and encoder fully support Intel&reg; APX. 
 
 #### ENC2 module 
-- :x: No ENC2 support for APX. Users should not use this module for APX encoding
-
-
-## APX CPUID support
-Intel&reg; XED defines only the Foundational APX CPUID bit for promoted/new EVEX instructions.
-APX-Promoted instructions require the equivalent Legacy CPUID as well - Those Legacy 
-CPUIDs are not listed by Intel&reg; XED yet (TBD)
-
+- :x: ENC2 supports Intel&reg; APX architecture with a few limitations; EGPRs are only supported in EVEX and thus REX2 is only emitted when necessary
+for a couple of legacy instructions.
 
 # Useful APIs
-Numerous examples and vivid explanations regarding APX features can be found in the xed-ex1 example tool.
+Numerous examples and vivid explanations regarding Intel&reg; APX features can be found in the xed-ex1 example tool.
 
 Encode request for promoted No-Flags instruction should be built with the `NF` operand:
 
@@ -35,6 +22,6 @@ Encode request for promoted No-Flags instruction should be built with the `NF` o
     ```
 
 ## CCMPcc/CTESTcc (Encode/Decode)
-The official APX assembly syntax is not supported yet. 
+The official Intel&reg; APX assembly syntax is not supported yet. 
 Current syntax is: `<MNEMONIC> <reg/mem>, <reg/mem/imm>, <dfv>`
 

@@ -7,7 +7,7 @@ effective-address-width 32
 stack-address-width 32
 iform-enum-name OR_AL_IMMb
 iform-enum-name-dispatch (zero based) 0
-iclass-max-iform-dispatch 18
+iclass-max-iform-dispatch 42
 Nominal opcode position 0
 Nominal opcode 0x0c
 Operands
@@ -15,7 +15,7 @@ Operands
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   REG0               REG0=AL   IMPLICIT  RW         B    8     1     1      8        INT        GPR
 1   IMM0              0xe0(8b)   EXPLICIT   R         B    8     1     1      8       UINT    INVALID
-2   REG1           REG1=EFLAGS SUPPRESSED   W         Y   32     4     1     32        INT      FLAGS
+2   REG1           REG1=EFLAGS SUPPRESSED   W   INVALID   32     4     1     32        INT      FLAGS
 Memory Operands
   MemopBytes = 0
 FLAGS:

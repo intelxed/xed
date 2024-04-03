@@ -1,2 +1,2 @@
 Attempting to decode: 62 d4 34 18 8f c1 
-Unhandled error code BAD_REG_MATCH
+ERROR: BAD_REG_MATCH Could not decode at offset: 0x0 len: 6 PC: 0x0: [62D434188FC1]

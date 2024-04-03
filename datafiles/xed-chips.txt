@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -59,12 +59,12 @@ ALLREAL:  ALL_OF(PENTIUMMMXREAL)
 
 # P6, PentiumPro, PPRO:
 # The SSE_PREFETCH were on P6 as fat NOPs, but XED only recognizes them on >=PENTIUM3
-PENTIUMPRO: ALL_OF(PENTIUM) PPRO PPRO_UD0_SHORT CMOV FCMOV FCOMI RDPMC FAT_NOP PREFETCH_NOP     # NO MMX (Orig P6)
+PENTIUMPRO: ALL_OF(PENTIUM) SEP PPRO PPRO_UD0_SHORT CMOV FCMOV FCOMI RDPMC FAT_NOP PREFETCH_NOP     # NO MMX (Orig P6)
     # FCMOV*, CMOV*, RDPMC, SYSCALL, SYSENTER, SYSEXIT,SYSRET, UD2, F[U]COMI[P]
     # note conflict with PENTIUM2 addition of SYSENTER/SYSEXIT
            
 
-PENTIUM2:   ALL_OF(PENTIUM)  PENTIUMMMX  PPRO CMOV FCMOV FCOMI FAT_NOP RDPMC PREFETCH_NOP FXSAVE
+PENTIUM2:   ALL_OF(PENTIUM)  PENTIUMMMX SEP PPRO CMOV FCMOV FCOMI FAT_NOP RDPMC PREFETCH_NOP FXSAVE
     # FXSAVE/FXRSTOR, SYSENTER,SYSEXIT P6
 
 # we keep SSEMXCSR separate from SSE to accommodate chip-check for KNC

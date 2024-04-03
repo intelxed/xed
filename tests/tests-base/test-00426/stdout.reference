@@ -18,7 +18,7 @@ Operands
 2   MEM1           (see below) SUPPRESSED  CR         Q   64     8     1     64        INT    INVALID
 3  BASE1             BASE1=RSI SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
 4   REG0              REG0=RCX SUPPRESSED RCW       ASZ   64     8     1     64        INT        GPR
-5   REG1           REG1=RFLAGS SUPPRESSED   R         Y   64     8     1     64        INT      FLAGS
+5   REG1           REG1=RFLAGS SUPPRESSED   R   INVALID   64     8     1     64        INT      FLAGS
 Memory Operands
   0 written BASE= RDI/GPR  ASZ0=64
   1    read BASE= RSI/GPR  ASZ1=64

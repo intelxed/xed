@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,9 +42,16 @@ typedef struct {
     xed_uint32_t rexr:1; // and vex, evex
     xed_uint32_t rexx:1; // and vex, evex
     xed_uint32_t rexb:1; // and vex, evex
+    xed_uint32_t rexb4:1;
+    xed_uint32_t rexr4:1;
+    xed_uint32_t rexx4:1;
+
+    xed_uint32_t nf:1;
+    xed_uint32_t nd:1;
+
+    xed_uint32_t scc:4;
 
     xed_uint32_t need_rex:1;  // for SIL,DIL,BPL,SPL
-    xed_uint32_t evexrr:1;
     xed_uint32_t vexl:1;
     xed_uint32_t evexb:1;  // also sae enabler for reg-only & vl=512
     
@@ -59,7 +66,7 @@ typedef struct {
     xed_uint32_t sibindex:3;
     xed_uint32_t sibbase:3;
     xed_uint32_t evexaaa:3;
-    xed_uint32_t map:3;
+    xed_uint32_t map:4;
     xed_uint32_t vexpp:3; // and evex
     xed_uint32_t vvvv:4;
     xed_uint32_t opcode_srm:3; /// for "partial opcode" instructions

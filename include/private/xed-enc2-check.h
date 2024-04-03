@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ extern xed_bool_t xed_enc2_check_args;
 void xed_enc2_invalid_cr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_dr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_seg(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_dfv(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_gpr16(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_gpr32(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_gpr64(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
@@ -36,6 +37,7 @@ void xed_enc2_invalid_gpr64_index(xed_uint_t mode, xed_reg_enum_t reg,const char
 
 
 void xed_enc2_invalid_gpr8(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
+void xed_enc2_invalid_gpr8_evex(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_kreg(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_kreg_not0(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
 void xed_enc2_invalid_mmx(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn);
