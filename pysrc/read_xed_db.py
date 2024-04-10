@@ -30,11 +30,6 @@ import opnds
 import cpuid_rdr
 import map_info_rdr
 
-def die(s):
-    sys.stdout.write("ERROR: {0}\n".format(s))
-    sys.exit(1)
-def msgb(b,s=''):
-    sys.stderr.write("[{0}] {1}\n".format(b,s))
 
 class inst_t(object):
     def __init__(self):
@@ -64,8 +59,8 @@ class inst_t(object):
                     return [32]
                 if self.eosz == 'o64':
                     return [64]
-                die("Could not handle eosz {}".format(self.eosz))
-            die("Did not find eosz for {}".format(self.iclass))
+                genutil.die("Could not handle eosz {}".format(self.eosz))
+            genutil.die("Did not find eosz for {}".format(self.iclass))
         else: #  vex, evex, xop
             return None
             
@@ -125,7 +120,7 @@ def _get_mempop_width_code(v):
     for op in v.parsed_operands:
         if op.name == 'MEM0':
             return op.oc2
-    die("Could not find evex memop for {}".format(v.iclass))
+    genutil.die("Could not find evex memop for {}".format(v.iclass))
 
 def get_scc_value(v) -> int:
     """Retrieve SCC value (SC3...SC0 bits) for APX SCC instructions (VEXDEST4 and MASK)"""
@@ -259,7 +254,7 @@ class xed_reader_t(object):
              width8='0'
              (name,  dtype, width16, width32, width64) = wrds
           else:
-             die("Bad number of tokens on line: " + line)
+              genutil.die("Bad number of tokens on line: " + line)
 
           # convert from bytes to bits, unless in explicit bits form "b'[0-9]+"
           bit_widths = {}
@@ -331,7 +326,7 @@ class xed_reader_t(object):
                     continue
                 s = op.name
             else:
-                msbg("UNHANDLED","{}".format(op))
+                genutil.msgb("UNHANDLED","{}".format(op))
                 
             if s:
                 if op.visibility in ['IMPLICIT','SUPPRESSED']:
@@ -390,7 +385,7 @@ class xed_reader_t(object):
                     if op.oc2:
                         s += op.oc2
                 else:
-                    msgb("IFORM SKIPPING ","{} for {}".format(op, v.iclass))
+                    genutil.msgb("IFORM SKIPPING ","{} for {}".format(op, v.iclass))
                 if s:
                     tokens.append(s)
                     
@@ -442,7 +437,7 @@ class xed_reader_t(object):
                         if e:
                             v.element_size = int(e.group('esize'))
                         else:
-                            die("Need an element size")
+                            genutil.die("Need an element size")
                         v.memop_width_code = _get_mempop_width_code(v)
 
                         # if the oc2=vv), we get two widths depend on
@@ -483,7 +478,7 @@ class xed_reader_t(object):
                 return 'LIG'
             elif space == 'evex':
                 return 'LLIG'
-            die("Not reached")
+            genutil.die("Not reached")
 
         for v in self.recs:
             if v.space in ['vex','evex']:
@@ -793,7 +788,7 @@ class xed_reader_t(object):
                 pattern = re.compile(s) 
                 d.append( (pattern, p.group('value')) )
             else:
-                die("Bad state line: %s"  % line)
+                genutil.die("Bad state line: %s"  % line)
         return d
 
     def _expand_state_bits_one_line(self,line):
@@ -827,9 +822,9 @@ class xed_reader_t(object):
                     iclass_dct[r.iclass].append(r) # more of same
                 elif iclass_version[r.iclass] > version:
                     # drop this record, version number too low
-                    dropped += 1  
+                    dropped += 1
 
-        msgb("VERSION DELETES", "dropped {} versioned records".format(dropped))
+        genutil.msgb("VERSION DELETES", "dropped {} versioned records".format(dropped))
         # add the versioned ones to the list of records
         for iclass in iclass_dct.keys():
             for r in iclass_dct[iclass]:
@@ -845,13 +840,13 @@ class xed_reader_t(object):
                     dropped += 1
                     continue
             n.append(r)
-        msgb("UDELETES", "dropped {} udelete records".format(dropped))
+        genutil.msgb("UDELETES", "dropped {} udelete records".format(dropped))
         return n
     
     def _expand_compound_value(self, in_rec):
         """ v is dictionary of lists. return a list of those with one element per list"""
         if len(in_rec['OPERANDS']) !=  len(in_rec['PATTERN']):
-            die("Mismatched number of patterns and operands lines")
+            genutil.die("Mismatched number of patterns and operands lines")
         x = len(in_rec['PATTERN']) 
         res = []
         for i in range(0,x):
@@ -861,7 +856,7 @@ class xed_reader_t(object):
                     setattr(d,k.lower(),v[0])
                 else:
                     if i >= len(v):
-                        die("k = {0} v = {1}".format(k,v))
+                        genutil.die("k = {0} v = {1}".format(k,v))
                     setattr(d,k.lower(),v[i])
             res.append(d)
         
@@ -930,7 +925,7 @@ class xed_reader_t(object):
 
             if patterns.left_curly_pattern.match(line):
                 if started:
-                    die("Nested instructions")
+                    genutil.die("Nested instructions")
                 started = True
                 d = collections.defaultdict(list)
                 d['NTNAME'].append(nt_name)
@@ -938,7 +933,7 @@ class xed_reader_t(object):
 
             if patterns.right_curly_pattern.match(line):
                 if not started:
-                    die("Mis-nested instructions")
+                    genutil.die("Mis-nested instructions")
                 started = False
                 recs.append(d)
                 continue
@@ -948,7 +943,7 @@ class xed_reader_t(object):
                 key = key.strip()
                 value = value.strip()
                 if value.startswith(':'):
-                    die("Double colon error {}".format(line))
+                    genutil.die("Double colon error {}".format(line))
                 if key == 'PATTERN':
                     # Since some patterns/operand sequences have
                     # iforms and others do not, we can avoid tripping
@@ -964,7 +959,7 @@ class xed_reader_t(object):
                     # for normal tokens we just append them
                     d[key].append(value)
             else:
-                die("Unexpected: [{0}]".format(line))
+                genutil.die("Unexpected: [{0}]".format(line))
         sys.stderr.write("\n")
         return recs
 
