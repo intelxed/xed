@@ -90,6 +90,7 @@ except:
    sys.exit(1)
    
 import actions
+from actions import ActionEmitType, ActionType
 import ins_emit
 import encutil
 from patterns import *
@@ -721,7 +722,7 @@ class rule_t(object):
 
     def prepare_value_for_emit(self, a):
         """@return: (length-in-bits, value-as-hex)"""
-        if a.emit_type == 'numeric':
+        if a.emit_type == ActionEmitType.NUMERIC:
             v = hex(a.int_value)
             return (a.nbits, v) # return v with the leading 0x
         s = a.value
@@ -996,7 +997,7 @@ class rule_t(object):
 
                 if vtuples():
                     msgb("TUPLES", (" ,".join( [str(x) for x in list_of_tuples] )))
-                if len(list_of_tuples) == 0 or a.emit_type == 'numeric':
+                if len(list_of_tuples) == 0 or a.emit_type == ActionEmitType.NUMERIC:
                     # no substitutions required
                     (length, s) = self.prepare_value_for_emit(a)
                     if veemit():
@@ -1045,7 +1046,7 @@ class rule_t(object):
                 fbs.append(action)
                 if action.field_name == 'MAP': 
                     found_map_fb = True
-            if action.is_emit_action() and action.emit_type == 'numeric':
+            if action.is_emit_action() and action.emit_type == ActionEmitType.NUMERIC:
                 if action.field_name:
                     fbs.append(action)
 
@@ -1321,15 +1322,15 @@ class iform_t(object):
             modifying to input action_list
         '''
         
-        emit_actions = list(filter(lambda x: x.type == 'emit', action_list))
-        fb_actions = list(filter(lambda x: x.type == 'FB', action_list))
+        emit_actions = list(filter(lambda x: x.type == ActionType.EMIT, action_list))
+        fb_actions = list(filter(lambda x: x.type == ActionType.FIELD_BINDING, action_list))
         
         #iterate to find overlapping actions
         action_to_remove = []
         for fb in fb_actions:
             for emit in emit_actions:
                 if fb.field_name.lower() == emit.field_name and \
-                  emit.emit_type == 'numeric':
+                  emit.emit_type == ActionEmitType.NUMERIC:
                     if fb.int_value == emit.int_value:
                         # overlapping actions, recored this action
                         # and remove later

@@ -23,6 +23,7 @@ import codegen
 import encutil
 import genutil
 import actions
+from actions import ActionType, ActionEmitType
 import verbosity
 
 max_in_byte = 256 #max unsigned int per byte
@@ -727,12 +728,12 @@ class instruction_codegen_t(object):
             
         bind_actions = []
         for action in iform.rule.actions:
-            if action.type == 'nt':
+            if action.type == ActionType.NONTERMINAL:
                 pass
-            elif action.type == 'FB':
+            elif action.type == ActionType.FIELD_BINDING:
                 bind_actions.append(action.field_name)
-            elif action.type == 'emit':
-                if action.emit_type == 'numeric' and action.field_name:
+            elif action.type == ActionType.EMIT:
+                if action.emit_type == ActionEmitType.NUMERIC and action.field_name:
                     bind_actions.append(action.field_name)
                 else:
                     pass
@@ -754,7 +755,7 @@ class instruction_codegen_t(object):
     def _make_emit_pattern_low(self,iform):
         emit_pattern = []
         for action in iform.rule.actions:
-            if action.type == 'emit':
+            if action.type == ActionType.EMIT:
                 # if no field_name, then we must differentiate the
                 # emit patterns using the value to avoid collisions.
                 if action.field_name == None:
@@ -767,14 +768,14 @@ class instruction_codegen_t(object):
                         action.field_name,
                         action.nbits))
 
-            elif action.type == 'nt':
+            elif action.type == ActionType.NONTERMINAL:
                 emit_pattern.append(str(action))
-            elif action.type == 'FB':
+            elif action.type == ActionType.FIELD_BINDING:
                 # FB are not used in emit phase so we do not factor them 
                 # in to the string that represents the pattern
                 pass
             else:
-                genutil.die("unexpected action type: %s" % action.type)    
+                genutil.die("unexpected action type: %s" % str(action.type))
         emit_actions_str = ', '.join(emit_pattern)
         return emit_actions_str
         
@@ -783,7 +784,7 @@ class instruction_codegen_t(object):
             
         bind_ptrn = [ str(iform.rule.conditions) ]
         for action in iform.rule.actions:
-            if action.type == 'nt':
+            if action.type == ActionType.NONTERMINAL:
                 bind_ptrn.append(str(action))
                                   
         iform.bind_ptrn =  ''
