@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -40,23 +40,6 @@ END_LEGAL */
 // GLOBALS
 ////////////////////////////////////////////////////////////////////////////
 
-
-
-#if 0 /* not used */
-void xed_strcat(char* dst, const char* src) {
-#if defined(_WIN32) && !defined(__GNUC__) 
-# if defined(XED_MSVC6) || defined(XED_MSVC7) || defined(XED_IPF) || defined(PIN_CRT)
-    strcat(dst, src);
-# else
-    // total hack to avoid warnings. Assuming people don't overflow their
-    // input buffers. FIXME
-    strcat_s(dst,xed_strlen(dst)+xed_strlen(src)+1, src);
-# endif
-#else
-    strcat(dst,src);
-#endif
-}
-#endif
 
 int xed_strncat(char* dst, const char* src, int len) {
     int dst_len  = XED_STATIC_CAST(int,xed_strlen(dst));

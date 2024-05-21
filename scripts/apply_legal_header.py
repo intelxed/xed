@@ -216,7 +216,9 @@ def skip_file(file):
     if f.is_dir():   # skip directories (e.g. submodule changes)
         return True
 
-    skip_dirs = ['tests/resync']
+    skip_dirs = ['tests/resync',
+                 '.github/actions/create-pull-request',  # Borrowed action
+                 ]
     skip_dirs = [Path(XED_ROOT, d).resolve() for d in skip_dirs]  # convert to Path list
     dir = f.parent
     for skip_d in skip_dirs:

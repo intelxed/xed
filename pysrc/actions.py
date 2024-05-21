@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+from enum import Enum, auto
+from typing import Optional
+
 from verbosity import *
 import patterns
 import genutil
@@ -35,7 +38,7 @@ def dummy_emit(act_in,name):
         dummy emit type and name as the field name'''
     
     action = copy.deepcopy(act_in)
-    action.emit_type = 'dummy'
+    action.emit_type = ActionEmitType.DUMMY
     action.field_name = name
     return action
     
@@ -58,6 +61,36 @@ def gen_nt_action(nt):
     action = action_t(str)
     return action
 
+
+class ActionType(Enum):
+    FIELD_BINDING = auto()
+    EMIT = auto()
+    NONTERMINAL = auto()
+    NONTERMINAL_LOOKUP_FN = auto()
+    ERROR = auto()
+    NOTHING = auto()
+    RETURN = auto()
+
+    def __str__(self):
+        if self == ActionType.FIELD_BINDING:
+            return "FB"
+        if self == ActionType.NONTERMINAL:
+            return "nt"
+        if self == ActionType.NONTERMINAL_LOOKUP_FN:
+            return "ntluf"
+        return self.name.lower()
+
+
+class ActionEmitType(Enum):
+    NUMERIC = auto()
+    LETTERS = auto()
+    REG = auto()
+    DUMMY = auto()
+
+    def __str__(self):
+        return self.name.lower()
+
+
 class action_t(object):
     """This is the right hand side of the rule_t. It can be a (1)
     field binding (2) a byte encoding, (3) 'error' or (4) 'nothing'."""
@@ -65,29 +98,29 @@ class action_t(object):
     
     def __init__(self, arg_action):
         # field bindings (FB) are OD=value
-        self.type = None #  'FB', 'emit', 'nt', 'error', 'nothing', 'return'
+        self.type: Optional[ActionType] = None
         self.field_name = None
         self.value = None
         self.nt = None
         self.ntluf = None
         self.int_value = None
-        self.emit_type = None # 'numeric', 'letters', 'reg'
+        self.emit_type: Optional[ActionEmitType] = None
         self.nbits = 0
         if vaction():
             msgb("ARGACTION", arg_action)
         if arg_action in ['nothing', "NOTHING"]:
-            self.type = 'nothing'
+            self.type = ActionType.NOTHING
             return
         
         b = patterns.return_pattern.search(arg_action)
         if b:
-            self.type = 'return'
+            self.type = ActionType.RETURN
             self.value = b.group('retval')
             return 
         
         # in the inputs, "error" gets expanded to "ERROR=1" via the statebits.
         if arg_action == 'error' or arg_action == "ERROR" or arg_action == 'ERROR=1':
-            self.type = 'error'
+            self.type = ActionType.ERROR
             return
 
         b = patterns.bit_expand_pattern.search(arg_action)
@@ -114,25 +147,25 @@ class action_t(object):
             else:
                 self.value = rhs
                 
-            self.type = 'FB'
+            self.type = ActionType.FIELD_BINDING
             return
         
         nt = patterns.nt_name_pattern.match(action)
         if nt:
             # NTLUF or NT. Only shows up on decode-oriented rules
             self.nt = nt.group('ntname')
-            self.type = 'nt'
+            self.type = ActionType.NONTERMINAL
             return
         ntluf = patterns.ntluf_name_pattern.match(action)
         if ntluf:
             # NTLUF or NT. Only shows up on decode-oriented rules
             self.ntluf = ntluf.group('ntname')
-            self.type = 'ntluf'
+            self.type = ActionType.NONTERMINAL_LOOKUP_FN
             return
         
         cp = patterns.lhs_capture_pattern_end.match(action) 
         if cp:
-            self.type = 'emit'
+            self.type = ActionType.EMIT
             self.value = cp.group('bits')
             self.field_name = cp.group('name').lower()
             #msgerr("EMIT ACTION %s" % action)
@@ -140,7 +173,7 @@ class action_t(object):
             return 
         
         # simple byte encoding
-        self.type = 'emit'
+        self.type = ActionType.EMIT
         self.field_name = None
         #msgerr("EMIT ACTION %s" % action)
         self.value = action
@@ -149,7 +182,7 @@ class action_t(object):
 
     def classify(self):
         if patterns.decimal_pattern.match(self.value):
-            self.emit_type = 'numeric'
+            self.emit_type = ActionEmitType.NUMERIC
             self.int_value = int(self.value)
             t = hex(self.int_value)
             self.nbits = 4*len(t[2:])
@@ -158,14 +191,14 @@ class action_t(object):
             return
             
         if patterns.hex_pattern.match(self.value):
-            self.emit_type = 'numeric'
+            self.emit_type = ActionEmitType.NUMERIC
             self.int_value = int(self.value,16)
             self.nbits = 4*(len(self.value)-2)  # drop the 0x, convert nibbles to bits
             if vclassify():
                 msgb("CLASSIFY", "%s as hex" % (self.value))
             return
         if patterns.letter_and_underscore_pattern.match(self.value):
-            self.emit_type = 'letters'
+            self.emit_type = ActionEmitType.LETTERS
             t = self.value
             t = genutil.no_underscores(t)
             self.nbits = len(t)
@@ -174,7 +207,7 @@ class action_t(object):
             return
         b = patterns.binary_pattern.match(self.value)   # leading "0b"
         if b:
-            self.emit_type = 'numeric'
+            self.emit_type = ActionEmitType.NUMERIC
             t = '0b' + b.group('bits') # pattern match strips out 0b
             self.int_value = genutil.make_numeric(t)
             bits_str = genutil.make_binary(t)
@@ -183,7 +216,7 @@ class action_t(object):
                 msgb("CLASSIFY", "%s as explicit-binary -> int = %d nbits=%d [%s,%s]" % (self.value,self.int_value,self.nbits,t,bits_str))
             return
         if patterns.bits_and_letters_underscore_pattern.match(self.value):
-            self.emit_type = 'letters'
+            self.emit_type = ActionEmitType.LETTERS
             v = genutil.no_underscores(self.value)
             self.nbits = len(v)
             if vclassify():
@@ -192,7 +225,7 @@ class action_t(object):
 
 
         if patterns.simple_number_pattern.match(self.value):
-            self.emit_type = 'numeric'
+            self.emit_type = ActionEmitType.NUMERIC
             self.int_value = genutil.make_numeric(self.value)
             t = hex(self.int_value)
             self.nbits = 4*len(t[2:])
@@ -204,16 +237,16 @@ class action_t(object):
             
     def naked_bits(self):
         ''' returns True if the type is emit but there is no field name. '''
-        if self.type == 'emit' and self.field_name == None:
+        if self.type == ActionType.EMIT and self.field_name == None:
             return True
         return False            
             
     def is_nothing(self):
-        return self.type == 'nothing'
+        return self.type == ActionType.NOTHING
     def is_error(self):
-        return self.type == 'error'
+        return self.type == ActionType.ERROR
     def is_return(self):
-        return self.type == 'return'
+        return self.type == ActionType.RETURN
     
     def is_nonterminal(self):
         if self.nt:
@@ -226,13 +259,13 @@ class action_t(object):
     
     def is_field_binding(self):
         """Return True if this action is a field binding."""
-        if self.type == 'FB':
+        if self.type == ActionType.FIELD_BINDING:
             return True
         return False
 
     def is_emit_action(self):
         """Return True if this action is an emit action."""
-        if self.type == 'emit':
+        if self.type == ActionType.EMIT:
             return True
         return False
 
@@ -248,7 +281,7 @@ class action_t(object):
             s.append(" ")
             s.append(self.value)
         if self.emit_type:
-            s.append(" emit_type=%s" % self.emit_type)
+            s.append(" emit_type=%s" % str(self.emit_type))
         if self.int_value != None:
             s.append(" value=0x%x" % self.int_value)
         if self.nbits != 0:
@@ -304,9 +337,9 @@ class action_t(object):
     def _generate_code_for_emit_action(self,bind_or_emit):
         """Emit code for emit action """
         if bind_or_emit == 'BIND':
-            if self.emit_type == 'letters' or self.field_name == None:
+            if self.emit_type == ActionEmitType.LETTERS or self.field_name == None:
                 return ''
-            elif self.emit_type == 'numeric':
+            elif self.emit_type == ActionEmitType.NUMERIC:
                 op_accessor = encutil.enc_strings['op_accessor']
                 operand_setter = "%s_set_%s" % (op_accessor,
                                                 self.field_name.lower())
@@ -315,14 +348,14 @@ class action_t(object):
                 code = "%s(%s, %s);" % (operand_setter, obj_name, hex_val)
                 return ['    ' + code]
             else:
-                genutil.die("Unknown emit_type %s" % self.emit_type)
+                genutil.die("Unknown emit_type %s" % str(self.emit_type))
         else:  # EMIT
             emit_util_function = encutil.enc_strings['emit_util_function']
             obj_name = encutil.enc_strings['obj_str']
             nbits = self.nbits
             code = ''
             if self.field_name == None:
-                if  self.emit_type == 'numeric':
+                if  self.emit_type == ActionEmitType.NUMERIC:
                     hex_val = hex(self.int_value)
                     code = "%s(%s, %d, %s);" % (emit_util_function,obj_name,
                                                 nbits,hex_val)

@@ -69,125 +69,6 @@ def security_level_match(env: dict, level: int) -> bool:
     ''' Return True if the "level" argument matches the build's security level '''
     return env['security_level'] >= level
 
-def compile_with_pin_crt_lin_mac_common_cplusplus(env):
-    env.add_to_var('LINKFLAGS','-lc++abi')
-    env.add_to_var('LINKFLAGS','-lc++')
-    env.add_to_var('CXXFLAGS','-fno-exceptions')
-    env.add_to_var('CXXFLAGS', '-fno-rtti')
-    
-def _compile_with_pin_crt_lin_mac_common(env):    
-    env.add_system_include_dir('%(pin_root)s/extras/cxx/include')
-    env.add_system_include_dir('%(pin_root)s/extras/crt/include')
-    env.add_system_include_dir(
-        '%(pin_root)s/extras/crt/include/arch-%(bionic_arch)s')
-    env.add_system_include_dir(
-        '%(pin_root)s/extras/crt/include/kernel/uapi')
-    env.add_system_include_dir(
-        '%(pin_root)s/extras/crt/include/kernel/uapi/asm-x86')
-
-    env.add_to_var('LINKFLAGS','-nostdlib')
-    env.add_to_var('LINKFLAGS','-lc-dynamic')
-    env.add_to_var('LINKFLAGS','-lm-dynamic')
-    env.add_to_var('LINKFLAGS','-L%(pin_crt_dir)s')
-
-    # FIXME: if we ever support kits with Pin CRT, we'll need to copy
-    # the PINCRT to the XED kit and use a different rpath.
-    env.add_to_var('example_linkflags','-Wl,-rpath,%(pin_crt_dir)s')
-
-    # -lpin3dwarf FIXME
-
-    if env['shared']:
-        # when building dynamic library
-        env['first_lib'] = '%(pin_crt_dir)s/crtbeginS%(OBJEXT)s'
-    env['first_example_lib'] = '%(pin_crt_dir)s/crtbegin%(OBJEXT)s'
-
-    _add_to_flags(env,'-funwind-tables')
-    
-def _compile_with_pin_crt_lin(env):
-    _compile_with_pin_crt_lin_mac_common(env)
-    env.add_define('TARGET_LINUX')
-    if env['shared']:
-        env['last_lib'] = '%(pin_crt_dir)s/crtendS%(OBJEXT)s' 
-    env['last_example_lib'] = '%(pin_crt_dir)s/crtend%(OBJEXT)s'    
-    
-def _compile_with_pin_crt_mac(env):
-    _compile_with_pin_crt_lin_mac_common(env)
-    env.add_define('TARGET_MAC')
-    env.add_to_var('LINKFLAGS','-Wl,-no_new_main')
-    
-def _compile_with_pin_crt_win(env):
-    env.add_include_dir('%(pin_root)s/extras/stlport/include')
-    env.add_include_dir('%(pin_root)s/extras')
-    env.add_include_dir('%(pin_root)s/extras/libstdc++/include')
-    env.add_include_dir('%(pin_root)s/extras/crt/include')
-    env.add_include_dir('%(pin_root)s/extras/crt')
-    env.add_include_dir('%(pin_root)s/extras/crt/include/arch-%(bionic_arch)s')
-    env.add_include_dir('%(pin_root)s/extras/crt/include/kernel/uapi')
-    env.add_include_dir('%(pin_root)s/extras/crt/include/kernel/uapi/asm-x86')
-
-    env.add_to_var('LINKFLAGS','/NODEFAULTLIB')
-    env.add_to_var('LINKFLAGS','stlport-static.lib')
-    env.add_to_var('LINKFLAGS','m-static.lib')
-    env.add_to_var('LINKFLAGS','c-static.lib')
-    env.add_to_var('LINKFLAGS','os-apis.lib')
-    env.add_to_var('LINKFLAGS','ntdll-%(arch)s.lib')
-    env.add_to_var('LINKFLAGS','/IGNORE:4210')
-    env.add_to_var('LINKFLAGS','/IGNORE:4049')
-    env.add_to_var('LINKFLAGS','/LIBPATH:%(pin_crt_dir)s')
-    env.add_to_var('LINKFLAGS','/LIBPATH:%(pin_root)s/%(pin_arch)s/lib-ext')
-
-    # for DLLs
-    if env['shared']:
-        env['first_lib'] = '%(pin_crt_dir)s/crtbeginS%(OBJEXT)s'
-
-    # for EXEs
-    env['first_example_lib'] = '%(pin_crt_dir)s/crtbegin%(OBJEXT)s'
-
-    _add_to_flags(env,'/GR-')
-    _add_to_flags(env,'/GS-')
-
-    env['original_windows_h_path'] = mbuild.join(
-                                   os.environ['WindowsSdkDir'], 'Include','um')
-    env.add_define('_WINDOWS_H_PATH_="%(original_windows_h_path)s"')
-    _add_to_flags(env,'/FIinclude/msvc_compat.h')
-    env.add_define('TARGET_WINDOWS')
-       
-def _compile_with_pin_crt(env):
-   if env['arch'] == '32':
-       env['pin_arch'] = 'ia32'
-       env['bionic_arch'] = 'x86'       
-       env.add_define('TARGET_IA32')
-   else:
-       env['pin_arch'] = 'intel64'
-       env['bionic_arch'] = 'x86_64'
-       env.add_define('TARGET_IA32E')
-
-   env['pin_root'] = env['pin_crt']
-   env['pin_crt_dir'] = '%(pin_root)s/%(pin_arch)s/runtime/pincrt'
-   env.add_define('__PIN__=1')
-   env.add_define('PIN_CRT=1')
-
-   env.add_include_dir('%(pin_root)s/extras/stlport/include')
-   env.add_include_dir('%(pin_root)s/extras')
-   env.add_include_dir('%(pin_root)s/extras/libstdc++/include')
-   env.add_include_dir('%(pin_root)s/extras/crt/include')
-   env.add_include_dir('%(pin_root)s/extras/crt')
-   env.add_include_dir('%(pin_root)s/extras/crt/include/arch-%(bionic_arch)s')
-   env.add_include_dir('%(pin_root)s/extras/crt/include/kernel/uapi')
-   env.add_include_dir('%(pin_root)s/extras/crt/include/kernel/uapi/asm-x86')
-
-   if get_arch(env) == '32':
-       env.add_define('__i386__')
-   else:
-       env.add_define('__LP64__')   
-    
-   if env.on_linux():
-       _compile_with_pin_crt_lin(env)
-   elif env.on_mac():
-       _compile_with_pin_crt_mac(env)
-   elif env.on_windows():
-       _compile_with_pin_crt_win(env)
-       
 def  _gcc_version_string(env):
     gcc = env.expand('%(CC)s')
     vstr = mbuild.get_gcc_version(gcc)
@@ -499,9 +380,6 @@ def init(env):
         cdie(f'"{env["compiler"]}" is no longer supported')
     else:
         cdie("Unknown compiler: " + env['compiler'])
-        
-    if env['pin_crt']:
-        _compile_with_pin_crt(env)
     
     if env['xed_messages']:
         env.add_define('XED_MESSAGES')

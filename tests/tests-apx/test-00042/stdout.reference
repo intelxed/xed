@@ -8,7 +8,7 @@ effective-address-width 64
 stack-address-width 64
 iform-enum-name VADDPD_XMMf64_MASKmskw_XMMf64_MEMf64_AVX512
 iform-enum-name-dispatch (zero based) 2
-iclass-max-iform-dispatch 11
+iclass-max-iform-dispatch 10
 Nominal opcode position 4
 Nominal opcode 0x58
 Operands
@@ -43,3 +43,30 @@ ISA SET: [AVX512F_128]
 		{Leaf 0x00000007, subleaf 0x00000000, EBX[16:16]} = 1
 	1	CPUID RECORD NAME: [AVX512VL]
 		{Leaf 0x00000007, subleaf 0x00000000, EBX[31:31]} = 1
+[Encoding Bits]
+====================== EVEX payload #0 ======================
+P0                             = 0x62
+====================== EVEX payload #1 ======================
+P1[2:0]  (EVEX.mmm)            = 0b001
+P1[3]    (EVEX.reserved / APX.B4) = 0b1
+P1[4]    (EVEX.R4)             = 0b1
+P1[5]    (EVEX.B3)             = 0b1
+P1[6]    (EVEX.X3)             = 0b0
+P1[7]    (EVEX.R3)             = 0b1
+====================== EVEX payload #2 ======================
+P2[1:0]  (EVEX.pp)             = 0b01
+P2[2]    (EVEX.U / APX.X4)     = 0b0
+P2[3:6]  (EVEX.vvvv / APX.DFV) = 0b1100
+P2[7]    (EVEX.W)              = 0b1
+====================== EVEX payload #3 ======================
+P3[0:2]  (EVEX.aaa)            = 0b010
+P3[3]    (EVEX.V4)             = 0b1
+P3[4]    (EVEX.b)              = 0b0
+P3[5:6]  (EVEX.LL/RC)          = 0b00
+P3[7]    (EVEX.z)              = 0b0
+========================== Opcode ===========================
+Nominal opcode                 = 0x58
+=========================== ModRM ===========================
+p[0:2]   (R/M)                 = 0b100
+p[3:5]   (REG)                 = 0b001
+p[6:7]   (MOD)                 = 0b00

@@ -25,3 +25,5 @@ Encode request for promoted No-Flags instruction should be built with the `NF` o
 The official Intel&reg; APX assembly syntax is not supported yet. 
 Current syntax is: `<MNEMONIC> <reg/mem>, <reg/mem/imm>, <dfv>`
 
+## IMUL/SETcc Zero-Upper variants (Encoder)
+No encoder support for zero-upper selection

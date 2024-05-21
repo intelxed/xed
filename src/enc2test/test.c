@@ -159,8 +159,8 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_
         }
         // FIXME: deal with BOUND IFORM mismatch
         else if (observed_iform != ref_iform 
-                && observed_iform != XED_IFORM_BOUND_GPRv_MEMa16 
-                && ref_iform != XED_IFORM_BOUND_GPRv_MEMa32) {
+                && observed_iform != XED_IFORM_BOUND_GPR16_MEMa16 
+                && ref_iform != XED_IFORM_BOUND_GPR32_MEMa32) {
             printf("//\ttest id %d IFORM MISMATCH: observed: %s expected: %s (%s)\n", test_id,
                    xed_iform_enum_t2str( observed_iform ),
                    xed_iform_enum_t2str( ref_iform ),

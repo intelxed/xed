@@ -2,7 +2,7 @@
 # Generic utilities
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import copy
 import re
 import stat
 import platform
-from typing import Tuple, Any, List, Dict
+from typing import Tuple, Any, List, Dict, Optional
 
 psystem = platform.system()
 if (psystem == 'Microsoft' or
@@ -83,6 +83,36 @@ def die(msg: str):
 def warn(msg: str):
     msgerr('[WARNING] ' + msg)
 
+
+def find_dir(d: str) -> Optional[str]:
+    """Attempts to find directory `d` in the current directory or any parent directory."""
+
+    directory = os.getcwd()
+    last = ''
+    while directory != last:
+        target_directory = os.path.join(directory, d)
+        if os.path.exists(target_directory):
+            return target_directory
+        last = directory
+        directory = os.path.split(directory)[0]
+    return None
+
+
+def add_mbuild_to_path():
+    """
+    Add the mbuild directory to the python path.
+
+    This will do nothing if `mbuild` already exists in the python path.
+    """
+    try:
+        if any('mbuild' in x for x in sys.path):
+            return
+    except:
+        pass
+    mbuild_dir = find_dir('mbuild')
+    if not mbuild_dir:
+        die('Could not find mbuild directory.')
+    sys.path = [mbuild_dir] + sys.path
 
 def check_python_version(argmaj: int, argmin: int):
     tup = sys.version_info

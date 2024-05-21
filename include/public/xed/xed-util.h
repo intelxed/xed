@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -150,6 +150,19 @@ XED_DLL_EXPORT void xed_register_abort_function(xed_user_abort_function_t fn,
 XED_DLL_EXPORT int xed_itoa(char* buf,
                             xed_uint64_t f,
                             int buflen);
+
+/**
+ * Convert the input value `f` into its binary representation as a string and store it in `buf`.
+ * @param buf Pointer to the character array where the binary representation will be stored.
+ * @param f Input value to be converted.
+ * @param bits_to_print Number of bits to print (limited to 64 bits).
+ * @param buflen Length of the `buf` array.
+ * @return The number of characters actually copied (excluding the null terminator).
+ */
+XED_DLL_EXPORT int xed_itoa_bin(char *buf,
+                                xed_uint64_t f,
+                                xed_uint_t bits_to_print,
+                                xed_uint_t buflen);
 
 /// defaults to lowercase
 XED_DLL_EXPORT int xed_itoa_hex_zeros(char* buf,

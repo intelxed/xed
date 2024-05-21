@@ -26,6 +26,8 @@ END_LEGAL */
 #include <assert.h>
 #include <string.h>
 
+#define TBUFSZ 90
+
 int main(int argc, char** argv);
 
 
@@ -360,7 +362,6 @@ void print_memops(xed_decoded_inst_t* xedd) {
 
 void print_operands(xed_decoded_inst_t* xedd) {
     unsigned int i, noperands;
-#define TBUFSZ 90
     char tbuf[TBUFSZ];
     const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
     xed_operand_action_enum_t rw;
@@ -514,6 +515,124 @@ void print_operands(xed_decoded_inst_t* xedd) {
     }
 }
 
+void print_enc_bits(xed_decoded_inst_t *d, xed_error_enum_t xed_error)
+{
+    char buf[TBUFSZ];
+#define FLDFMT "%-8s %-21s "        // Field format -> position (name)
+#define FLDFMT_S FLDFMT"= 0b%s\n"   // Row format -> position (name) = string
+#define FLDFMT_B FLDFMT"= 0b%01u\n" // Row format -> position (name) = bit
+    printf("[Encoding Bits]\n");
+    // EVEX payloads
+    if (xed3_operand_get_vexvalid(d) == 2)
+    {
+        // Prepare data
+        xed_bits_t evvspace = 0; // EVEX sub encoding space
+        xed_bits_t ubit_x4 = xed3_operand_get_ubit(d);
+        xed_bits_t vvvv; 
+#if defined(XED_APX)
+        xed_bool_t machine_mode64 = xed_decoded_inst_get_machine_mode_bits(d) == 64;
+        evvspace = xed3_operand_get_evvspace(d);
+        if (machine_mode64 && xed3_operand_get_mod(d) != 3)
+        {
+            // In this case, XED ILD forces UBIT=1 and uploads the bit value to REXX4
+            ubit_x4 = (~xed3_operand_get_rexx4(d))&1;
+        }
+#endif
+        vvvv = xed3_operand_get_vexdest210(d);
+        vvvv |= (xed3_operand_get_vexdest3(d) & 1) << 3;
+        
+        // Dump
+        printf("====================== EVEX payload #0 ======================\n");
+        printf("%-30s = 0x62\n", "P0");
+        printf("====================== EVEX payload #1 ======================\n");
+        xed_itoa_bin(buf, xed3_operand_get_map(d), 3, TBUFSZ);
+        printf(FLDFMT_S, "P1[2:0]", "(EVEX.mmm)", buf);
+        printf(FLDFMT_B, "P1[3]", "(EVEX.reserved / APX.B4)", xed3_operand_get_rexb4(d));
+        printf(FLDFMT_B, "P1[4]", "(EVEX.R4)", (~xed3_operand_get_rexr4(d)) & 1);
+        printf(FLDFMT_B, "P1[5]", "(EVEX.B3)", (~xed3_operand_get_rexb(d)) & 1);
+        printf(FLDFMT_B, "P1[6]", "(EVEX.X3)", (~xed3_operand_get_rexx(d)) & 1);
+        printf(FLDFMT_B, "P1[7]", "(EVEX.R3)", (~xed3_operand_get_rexr(d)) & 1);
+        printf("====================== EVEX payload #2 ======================\n");
+        xed_itoa_bin(buf, xed_operand_values_get_pp_vex_prefix(d), 2, TBUFSZ);
+        printf(FLDFMT_S, "P2[1:0]", "(EVEX.pp)", buf);
+        printf(FLDFMT_B, "P2[2]", "(EVEX.U / APX.X4)", ubit_x4);
+        xed_itoa_bin(buf, vvvv, 4, TBUFSZ);
+        printf(FLDFMT_S, "P2[3:6]", "(EVEX.vvvv / APX.DFV)", buf);
+        printf(FLDFMT_B, "P2[7]", "(EVEX.W)", xed3_operand_get_rexw(d));
+        printf("====================== EVEX payload #3 ======================\n");
+        /* P3[0:4] 
+         *
+         * EVVSPACE!=0 is a hint for a legal APX instruction
+         * APX instruction's NT resets several EVEX operands during the late decoding phase
+         * and replaces them with APX-specific operands. In this case, we should dump the 
+         * APX-specific operands.
+         */
+        if (xed_error != XED_ERROR_NONE) {
+            // Illegal instruction
+            // Dump both the EVEX and APX interpretation
+            xed_itoa_bin(buf, xed3_operand_get_mask(d), 3, TBUFSZ);
+            printf(FLDFMT_S, "P3[0:2]", "(EVEX.aaa)", buf);
+#if defined(XED_APX)
+            if (machine_mode64) {
+                printf(FLDFMT_B, "P3[2]", "(APX.NF)", xed3_operand_get_nf(d));
+                if (xed3_operand_get_map(d) == 4) {
+                    xed_itoa_bin(buf, xed3_operand_get_scc(d), 4, TBUFSZ);
+                    printf(FLDFMT_S, "P3[0:3]", "(APX.SCC)", buf);
+                }
+            }
+#endif
+            printf(FLDFMT_B, "P3[3]", "(EVEX.V4)", (~xed3_operand_get_vexdest4(d)) & 1);
+            printf(FLDFMT_B, "P3[4]", "(EVEX.b / APX.ND)", xed3_operand_get_bcrc(d));
+        }
+        else if (evvspace == 0)
+        {
+            // Traditional EVEX interpretation
+            xed_itoa_bin(buf, xed3_operand_get_mask(d), 3, TBUFSZ);
+            printf(FLDFMT_S, "P3[0:2]", "(EVEX.aaa)", buf);
+            printf(FLDFMT_B, "P3[3]", "(EVEX.V4)", (~xed3_operand_get_vexdest4(d)) & 1);
+            printf(FLDFMT_B, "P3[4]", "(EVEX.b)", xed3_operand_get_bcrc(d));
+        }
+#if defined(XED_APX)
+        else if (evvspace == 1)
+        {
+            // APX instruction
+            xed_itoa_bin(buf, xed3_operand_get_mask(d), 2, TBUFSZ);
+            printf(FLDFMT_S, "P3[0:1]", "(EVEX.aa)", buf);
+            printf(FLDFMT_B, "P3[2]", "(APX.NF)", xed3_operand_get_nf(d));
+            printf(FLDFMT_B, "P3[3]", "(EVEX.V4)", (~xed3_operand_get_vexdest4(d)) & 1);
+            printf(FLDFMT_B, "P3[4]", "(APX.ND)", xed3_operand_get_nd(d));
+        }
+        else if (evvspace == 2)
+        {
+            // APX SCC instruction
+            xed_itoa_bin(buf, xed3_operand_get_scc(d), 4, TBUFSZ);
+            printf(FLDFMT_S, "P3[0:3]", "(APX.SCC)", buf);
+            printf(FLDFMT_B, "P3[4]", "(APX.ND)", xed3_operand_get_nd(d));
+        }
+#endif
+        /* P3[5:7] */
+        xed_itoa_bin(buf, xed3_operand_get_llrc(d), 2, TBUFSZ);
+        printf(FLDFMT_S, "P3[5:6]", "(EVEX.LL/RC)", buf);
+        printf(FLDFMT_B, "P3[7]", "(EVEX.z)", xed3_operand_get_zeroing(d));
+    }
+
+    /* Opcode */
+    printf("========================== Opcode ===========================\n");
+    printf("%-30s = 0x%02x\n", "Nominal opcode", xed3_operand_get_nominal_opcode(d));
+
+    /* ModRM*/
+    if (xed3_operand_get_has_modrm(d))
+    {
+        printf("=========================== ModRM ===========================\n");
+        xed_itoa_bin(buf, xed3_operand_get_rm(d), 3, TBUFSZ);
+        printf(FLDFMT_S, "p[0:2]", "(R/M)", buf);
+        xed_itoa_bin(buf, xed3_operand_get_reg(d), 3, TBUFSZ);
+        printf(FLDFMT_S, "p[3:5]", "(REG)", buf);
+        xed_itoa_bin(buf, xed3_operand_get_mod(d), 2, TBUFSZ);
+        printf(FLDFMT_S, "p[6:7]", "(MOD)", buf);
+    }
+}
+
 int main(int argc, char** argv) {
     xed_state_t dstate;
     xed_decoded_inst_t xedd;
@@ -521,7 +640,7 @@ int main(int argc, char** argv) {
     xed_uint_t argcu = (xed_uint_t)argc;
     unsigned char itext[XED_MAX_INSTRUCTION_BYTES];
     xed_uint_t first_argv;
-    xed_bool_t already_set_mode = 0;
+    xed_bool_t already_set_mode = 0, verbose = 0;
     xed_chip_enum_t chip = XED_CHIP_INVALID;
     char const* decode_text=0;
     unsigned int len;
@@ -529,7 +648,7 @@ int main(int argc, char** argv) {
     xed_uint_t operands_index = 0;
     xed_operand_enum_t operands[XED_MAX_INPUT_OPERNADS] = {XED_OPERAND_INVALID};
     xed_uint32_t operands_value[XED_MAX_INPUT_OPERNADS] = {0};
-        
+
 #if defined(XED_MPX)
     unsigned int mpx_mode=0;
 #endif
@@ -580,6 +699,11 @@ int main(int argc, char** argv) {
             printf("Setting chip to %s\n", xed_chip_enum_t2str(chip));
             assert(chip != XED_CHIP_INVALID);
             first_argv+=2;
+        }
+        else if (strcmp(argv[i], "-v") == 0)
+        {
+            verbose = 1;
+            first_argv++;
         }
         else if (strcmp(argv[i], "-set") == 0) {
             assert(i+2 < argcu);    // needs 2 args
@@ -647,6 +771,9 @@ int main(int argc, char** argv) {
     if (xed_error != XED_ERROR_NONE) {
         xed_uint_t dec_length = xed_decoded_inst_get_length(&xedd);
         xed_decode_error(0, 0, itext, xed_error, dec_length);
+        if (verbose) {
+            print_enc_bits(&xedd, xed_error);
+        }
         exit(1);
     }
         
@@ -700,5 +827,10 @@ int main(int argc, char** argv) {
     print_misc(&xedd);
     print_branch_hints(&xedd);
     
-    return 0;
-}
+    if (verbose) {
+        // encoding
+        print_enc_bits(&xedd, xed_error);
+    }
+
+        return 0;
+    }

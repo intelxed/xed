@@ -31,3 +31,10 @@ ISA SET: [SSE2]
 0	CPUID GROUP NAME: [SSE2]
 	0	CPUID RECORD NAME: [SSE2]
 		{Leaf 0x00000001, subleaf 0x00000000, EDX[26:26]} = 1
+[Encoding Bits]
+========================== Opcode ===========================
+Nominal opcode                 = 0x12
+=========================== ModRM ===========================
+p[0:2]   (R/M)                 = 0b100
+p[3:5]   (REG)                 = 0b001
+p[6:7]   (MOD)                 = 0b01

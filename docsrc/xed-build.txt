@@ -445,7 +445,6 @@ Options:
                         Add orphan isa-sets to future chip definition.
   --test-perf           Do performance test (on linux). Requires specific
                         external test binary.
-  --pin-crt=PIN_CRT     Compile for the Pin C-runtime. Specify path to pin kit
   --static-stripped     Make a static libxed.a renaming internal symbols
   --set-copyright       Set the Intel copyright on Windows XED executable
   --asan                Use Address Sanitizer (on linux)

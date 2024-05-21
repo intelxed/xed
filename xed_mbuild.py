@@ -51,7 +51,7 @@ try:
 except:
    _fatal("xed_mbuild.py could not import xed_build_common.py")
 
-from pysrc import find_dir
+from pysrc import genutil
 
 ## END OF IMPORTS SETUP
 ############################################################################
@@ -587,7 +587,7 @@ def setup_hooks(env):
     shutil.copyfile(xed_pre_commit, pre_commit)
     shutil.copymode(xed_pre_commit, pre_commit)
 
-    mbuild_path = find_dir.find_dir('mbuild')
+    mbuild_path = genutil.find_dir('mbuild')
     pre_commit = Path(mbuild_path, '.git', 'hooks', 'pre-commit').resolve()
     mbuild.msgb('setup mbuild pre-commit hook', f'copy {xed_pre_commit} to {pre_commit}')
     shutil.copyfile(xed_pre_commit, pre_commit)
@@ -679,7 +679,6 @@ def mkenv():
                                  example_rpaths=[],
                                  android=False,
                                  copy_libc=False,
-                                 pin_crt='',
                                  static_stripped=False,
                                  set_copyright=False,
                                  asan=False,
@@ -1006,11 +1005,6 @@ def xed_args(env):
                           dest="test_perf",
                           help="Do performance test (on linux). Requires" + 
                           " specific external test binary.")
-    env.parser.add_option("--pin-crt", 
-                          action="store",
-                          dest="pin_crt",
-                          help="Compile for the Pin C-runtime. Specify" +
-                          " path to pin kit")
     env.parser.add_option("--static-stripped", 
                           action="store_true",
                           dest="static_stripped",

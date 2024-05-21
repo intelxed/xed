@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 #  
 #END_LEGAL
 import collections
+from pathlib import Path
 
 import ild_nt
 import ildutil
@@ -251,6 +252,18 @@ def gen_static_decode(agi,
                      'xed-ild-private.h']
     maplu_headers = []
     all_zero_by_map = {}
+
+    # vv3 files are specific to XOP instructions and taint builds with no-amd if the kits weren't clean
+    # Always clear these two files irrespective of the build
+    xop_phash_h = Path(agi.common.options.gendir, 'include-private', 'xed3-phash-vv3.h')
+    xop_phash_c = Path(agi.common.options.gendir, 'xed3-phash-lu-vv3.c')
+
+    if xop_phash_c.is_file():
+        xop_phash_c.unlink()
+    
+    if xop_phash_h.is_file():
+        xop_phash_h.unlink()
+    
     for vv in sorted(vv_lu.keys()):
         (phash_map_lu, lu_fo_list) = vv_lu[vv]
         all_zero_by_map[vv] = _test_map_all_zero(vv, phash_map_lu)

@@ -562,7 +562,6 @@ Developers can, however, dynamically disable Intel&reg; APX architecture encoder
 The xed3_operand_set_must_use_evex() API can also be used for APX promoted instructions in order to force EVEX space upon the encoding request.
 
 Developers wishing to encode No-Flags Intel&reg; APX instructions should set the NF Intel&reg; XED operand.
-Whereas those wishing to encode SETcc/IMUL with Zero Upper behavior should set the ND Intel&reg; XED operand.
 
 @subsection OPERAND_VISIBILITY Operand Resource Visibilities
 

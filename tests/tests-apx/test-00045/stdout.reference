@@ -26,3 +26,31 @@ ISA SET: [APX_F_BMI1]
 		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1
 	1	CPUID RECORD NAME: [BMI1]
 		{Leaf 0x00000007, subleaf 0x00000000, EBX[3:3]} = 1
+[Encoding Bits]
+====================== EVEX payload #0 ======================
+P0                             = 0x62
+====================== EVEX payload #1 ======================
+P1[2:0]  (EVEX.mmm)            = 0b100
+P1[3]    (EVEX.reserved / APX.B4) = 0b0
+P1[4]    (EVEX.R4)             = 0b1
+P1[5]    (EVEX.B3)             = 0b0
+P1[6]    (EVEX.X3)             = 0b1
+P1[7]    (EVEX.R3)             = 0b0
+====================== EVEX payload #2 ======================
+P2[1:0]  (EVEX.pp)             = 0b00
+P2[2]    (EVEX.U / APX.X4)     = 0b1
+P2[3:6]  (EVEX.vvvv / APX.DFV) = 0b1111
+P2[7]    (EVEX.W)              = 0b1
+====================== EVEX payload #3 ======================
+P3[0:1]  (EVEX.aa)             = 0b00
+P3[2]    (APX.NF)              = 0b1
+P3[3]    (EVEX.V4)             = 0b1
+P3[4]    (APX.ND)              = 0b0
+P3[5:6]  (EVEX.LL/RC)          = 0b00
+P3[7]    (EVEX.z)              = 0b0
+========================== Opcode ===========================
+Nominal opcode                 = 0xf4
+=========================== ModRM ===========================
+p[0:2]   (R/M)                 = 0b000
+p[3:5]   (REG)                 = 0b000
+p[6:7]   (MOD)                 = 0b11

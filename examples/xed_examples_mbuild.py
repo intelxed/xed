@@ -93,8 +93,7 @@ def mkenv():
                                  xed_enc2_libs=[],
                                  xed_dir='',
                                  build_cpp_examples=False,
-                                 set_copyright=False,
-                                 pin_crt='')
+                                 set_copyright=False)
 
     env['xed_defaults'] = standard_defaults
     env.set_defaults(env['xed_defaults'])
@@ -205,11 +204,6 @@ def xed_args(env):
                           action="store",
                           dest="strip",
                           help="Path to strip binary. (Linux only)")
-    env.parser.add_option("--pin-crt", 
-                          action="store",
-                          dest="pin_crt",
-                          help="Compile for the Pin C-runtime. Specify" +
-                          " path to pin kit")
     env.parser.add_option("--lib-dir", 
                           action='store',
                           dest="xed_lib_dir",
@@ -315,9 +309,6 @@ def build_examples(env, work_queue):
     env_c = copy.deepcopy(env)
     if env_c['compiler'] in ['gnu','clang']:
         env_c['LINK'] = '%(CC)s'
-        
-    if env['pin_crt']:
-        xbc.compile_with_pin_crt_lin_mac_common_cplusplus(env)
     
     # shared files
     cc_shared_files = env.src_dir_join([ 

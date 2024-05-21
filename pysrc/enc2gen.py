@@ -30,9 +30,7 @@ import argparse
 import itertools
 import collections
 import traceback
-
-import find_dir # finds mbuild and adds it to sys.path
-import mbuild
+from typing import Dict, Set
 
 import codegen
 import read_xed_db
@@ -41,8 +39,9 @@ import enc2test
 import enc2argcheck
 
 from enc2common import *
-from collections import defaultdict
-from typing import Dict, Set
+genutil.add_mbuild_to_path()
+import mbuild
+
 
 def get_fname(depth=1): # default is current caller
     #return sys._getframe(depth).f_code.co_name
@@ -129,6 +128,18 @@ arg_disp32 = 'xed_int32_t ' + var_disp32
 var_disp64 = 'disp64'
 arg_disp64 = 'xed_int64_t ' + var_disp64
 
+var_relb_disp8 = 'relb_disp8'
+arg_relb_disp8 = 'xed_int8_t ' + var_relb_disp8
+
+var_relb_disp16 = 'relb_disp16'
+arg_relb_disp16 = 'xed_int16_t ' + var_relb_disp16
+
+var_relb_disp32 = 'relb_disp32'
+arg_relb_disp32 = 'xed_int32_t ' + var_relb_disp32
+
+var_relb_disp64 = 'relb_disp64'
+arg_relb_disp64 = 'xed_int64_t ' + var_relb_disp64
+
 var_request = 'r'
 arg_request = 'xed_enc2_req_t* ' + var_request
 
@@ -210,7 +221,9 @@ var_immv_dct = { 0: '', 8: var_imm8, 16: var_imm16, 32: var_imm32, 64: var_imm64
 arg_immv_meta = { 0: '', 8:'int8', 16: 'int16', 32: 'int32', 64: 'int64' }
 
 arg_dispv = { 8: arg_disp8, 16: arg_disp16, 32: arg_disp32, 64: arg_disp64 }  # index by dispsz
-var_dispv = { 8: arg_disp8, 16:var_disp16, 32:var_disp32, 64:var_disp64 }
+arg_relb_dispv = { 8: arg_relb_disp8, 16: arg_relb_disp16, 32: arg_relb_disp32, 64: arg_relb_disp64 }  # index by relbr dispsz
+var_dispv = { 8: var_disp8, 16:var_disp16, 32:var_disp32, 64:var_disp64 }
+var_relb_dispv = { 8: var_relb_disp8, 16:var_relb_disp16, 32:var_relb_disp32, 64:var_relb_disp64 }
 arg_dispz = { 16: arg_disp16, 32: arg_disp32, 64: arg_disp32 }  # index by dispsz
 tag_dispz = { 16: 'int16', 32: 'int32', 64: 'int32' }  # index by dispsz
 var_dispz = { 16:var_disp16, 32:var_disp32, 64:var_disp32 }
@@ -447,7 +460,7 @@ def one_gpr_reg_one_mem_fixed(ii):
     n,r = 0,0
     for op in _gen_opnds(ii):
         # FIXME: sloppy could bemixing b and d operands, for example
-        if op_mem(op) and op.oc2 in ['b', 'w', 'd', 'q','dq']:
+        if op_mem(op) and op.oc2 in ['b', 'w', 'd', 'q','dq', 'a16', 'a32']:
             n += 1
         elif op_gpr8(op) or op_gpr16(op) or op_gpr32(op) or op_gpr64(op):
             r += 1
@@ -634,6 +647,17 @@ def one_x87_implicit_reg_one_memop(ii):
         
     return mem==1 and implicit_reg==1
 
+def esrc_and_imm(ii):
+    # operands encoded with _SE() are emitted with the imm, such that the first part is 
+    # the value of this reg and the second part is the partial value of the imm. 
+    # So either the imm value or the reg's value will be incorrect
+    imm, esrc = 0, 0
+    for op in _gen_opnds(ii):
+        if is_first_imm(op):
+            imm = 1
+        elif op.lookupfn_name and re.search(r'_(SE?)$', op.lookupfn_name):
+            esrc = 1
+    return imm == 1 and esrc == 1
 
 def zero_operands(ii):# allow all implicit regs
     n = 0
@@ -1373,7 +1397,7 @@ def create_legacy_relbr(env,ii):
         fo = make_function_object(env,ii,fname)
         fo.add_comment("created by create_legacy_relbr")
         fo.add_arg(arg_request,'req')
-        add_arg_disp(fo,osz)
+        add_arg_relb_disp(fo,osz)
 
         #if ii.iclass in ['JCXZ','JECXZ','JRCXZ']:
         if ii.easz != 'aszall':
@@ -1396,12 +1420,7 @@ def create_legacy_relbr(env,ii):
         emit_opcode(ii,fo)
         if modrm_required:
             emit_modrm(fo)
-        if osz == 8:
-            fo.add_code_eol('emit_i8(r,{})'.format(var_disp8))
-        elif osz == 16:
-            fo.add_code_eol('emit_i16(r,{})'.format(var_disp16))
-        elif osz == 32:
-            fo.add_code_eol('emit_i32(r,{})'.format(var_disp32))
+        emit_relb_disp(fo,osz)
         add_enc_func(ii,fo)
 
 def create_legacy_absbr(env, ii):
@@ -1916,6 +1935,8 @@ def add_arg_immz(fo,osz):
 def add_arg_immv(fo,osz): 
     global arg_immv_dct, arg_immv_meta
     fo.add_arg(arg_immv_dct[osz], arg_immv_meta[osz])
+def add_arg_relb_disp(fo,dispsz):
+    fo.add_arg(arg_relb_dispv[dispsz], arg_dispv_meta[dispsz])
 
 vlmap = { 'xmm': 0, 'ymm': 1, 'zmm': 2 }    
 def set_evexll_vl(ii,fo,vl):
@@ -1940,7 +1961,11 @@ def emit_disp(fo,dispsz):
     global var_dispv
     fo.add_code_eol('emit_i{}(r,{})'.format(dispsz,
                                             var_dispv[dispsz]))
-        
+
+def emit_relb_disp(fo,dispsz):
+    fo.add_code_eol('emit_i{}(r,{})'.format(dispsz,
+                                            var_relb_dispv[dispsz]))
+
 def cond_emit_imm8(ii,fo):
     global var_imm8, var_imm8_2
     if ii.has_imm8:
@@ -2902,7 +2927,6 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
         add_enc_func(ii,fo)
 def create_legacy_far_xfer_nonmem(env,ii):  # WRK
     '''call far and jmp far via ptr+imm. BRDISPz + IMMw'''
-    global var_immz_dct, argv_immz_dct,arg_immz_meta, var_imm16_2, arg_imm16_2
 
     for osz in [16,32]:
         fname = '{}_{}_o{}'.format(enc_fn_prefix,
@@ -2912,8 +2936,8 @@ def create_legacy_far_xfer_nonmem(env,ii):  # WRK
         fo = make_function_object(env,ii,fname, asz=env.asz)
         fo.add_comment('created by create_legacy_far_xfer_nonmem')
         fo.add_arg(arg_request,'req')
-        fo.add_arg(arg_immz_dct[osz],arg_immz_meta[osz])
-        fo.add_arg(arg_imm16_2,'int16')
+        fo.add_arg(arg_relb_dispv[osz],arg_dispv_meta[osz])
+        fo.add_arg(arg_imm16,'int16')
 
         if osz == 16 and env.mode != 16:
             fo.add_code_eol('emit(r,0x66)')
@@ -2921,8 +2945,8 @@ def create_legacy_far_xfer_nonmem(env,ii):  # WRK
             fo.add_code_eol('emit(r,0x66)')
         emit_required_legacy_prefixes(ii,fo)
         emit_opcode(ii,fo)
-        emit_immz(fo,osz)
-        fo.add_code_eol('emit_i16(r,{})'.format(var_imm16_2))
+        emit_relb_disp(fo,osz)
+        fo.add_code_eol('emit_i16(r,{})'.format(var_imm16))
         add_enc_func(ii,fo)
 
     
@@ -5461,6 +5485,9 @@ def create_enc_fn(env, ii):
             # legacy ops with REX.W=1 or EOSZ=3 are 64b mode only
             ii.encoder_skipped = True 
             return
+    
+    if is_pre_determined_unsupported_inst(ii):
+        return
 
     if ii.space == 'legacy':
         _enc_legacy(env,ii)
@@ -5679,6 +5706,14 @@ def dump_unsupported_iforms(unsupported_iforms: Dict[str, Set[str]], mode: int, 
         json.dump(unsupported_iforms, f, indent=2)
 
 
+def is_pre_determined_unsupported_inst(ii):
+    if ii.iclass in ['NOP']:
+        return True
+
+    if esrc_and_imm(ii):    # skip instructions with imm and _SE() encoded reg
+        return True
+    return False
+
 def work():
     
     arg_parser = argparse.ArgumentParser(description="Create XED encoder2")
@@ -5798,7 +5833,7 @@ def work():
 
     output_file_emitters = []
     # store unsupported IFORMS using a mapping of ISA-SET to set of IFORMs
-    unsupported_iforms = defaultdict(set)
+    unsupported_iforms = collections.defaultdict(set)
     
     #extra_headers =  ['xed/xed-encode-direct.h']
     for mode in args.modes:

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,18 +22,9 @@ import os
 import sys
 import re
 import codegen
+from genutil import add_mbuild_to_path
 
-def find_dir(d):
-    directory = os.getcwd()
-    last = ''
-    while directory != last:
-        target_dir = os.path.join(directory,d)
-        if os.path.exists(target_dir):
-            return target_dir
-        last = directory
-        directory = os.path.split(directory)[0]
-    return None
-sys.path.append(find_dir('mbuild'))
+add_mbuild_to_path()
 try:
    import mbuild
 except:

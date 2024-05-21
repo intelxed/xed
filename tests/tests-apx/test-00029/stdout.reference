@@ -2179,21 +2179,21 @@ XDIS 3efa: BINARY    APXEVEX    APX_F      62FCFD0CF7F8             idiv r16
 XDIS 3f00: BINARY    APXEVEX    APX_F      62BC790CF73C38           idiv word ptr [r16+r31*1]
 XDIS 3f07: BINARY    APXEVEX    APX_F      62BCF90CF73C38           idiv qword ptr [r16+r31*1]
 XDIS 3f0e: BINARY    APXEVEX    APX_F      62EC7C0869C102000000     imul r16d, r17d, 0x2
-XDIS 3f18: BINARY    APXEVEX    APX_F      62EC7C1869C102000000     imul r16d, r17d, 0x2
+XDIS 3f18: BINARY    APXEVEX    APX_F      62EC7C1869C102000000     imulzu r16d, r17d, 0x2
 XDIS 3f22: BINARY    APXEVEX    APX_F      62ECFC0869C102000000     imul r16, r17, 0x2
-XDIS 3f2c: BINARY    APXEVEX    APX_F      62ECFC1869C102000000     imul r16, r17, 0x2
+XDIS 3f2c: BINARY    APXEVEX    APX_F      62ECFC1869C102000000     imulzu r16, r17, 0x2
 XDIS 3f36: BINARY    APXEVEX    APX_F      62AC780869043102000000   imul r16d, dword ptr [r17+r30*1], 0x2
-XDIS 3f41: BINARY    APXEVEX    APX_F      62AC781869043102000000   imul r16d, dword ptr [r17+r30*1], 0x2
+XDIS 3f41: BINARY    APXEVEX    APX_F      62AC781869043102000000   imulzu r16d, dword ptr [r17+r30*1], 0x2
 XDIS 3f4c: BINARY    APXEVEX    APX_F      62ACF80869043102000000   imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 3f57: BINARY    APXEVEX    APX_F      62ACF81869043102000000   imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 3f57: BINARY    APXEVEX    APX_F      62ACF81869043102000000   imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 3f62: BINARY    APXEVEX    APX_F      62EC7C0C69C102000000     imul r16d, r17d, 0x2
-XDIS 3f6c: BINARY    APXEVEX    APX_F      62EC7C1C69C102000000     imul r16d, r17d, 0x2
+XDIS 3f6c: BINARY    APXEVEX    APX_F      62EC7C1C69C102000000     imulzu r16d, r17d, 0x2
 XDIS 3f76: BINARY    APXEVEX    APX_F      62ECFC0C69C102000000     imul r16, r17, 0x2
-XDIS 3f80: BINARY    APXEVEX    APX_F      62ECFC1C69C102000000     imul r16, r17, 0x2
+XDIS 3f80: BINARY    APXEVEX    APX_F      62ECFC1C69C102000000     imulzu r16, r17, 0x2
 XDIS 3f8a: BINARY    APXEVEX    APX_F      62AC780C69043102000000   imul r16d, dword ptr [r17+r30*1], 0x2
-XDIS 3f95: BINARY    APXEVEX    APX_F      62AC781C69043102000000   imul r16d, dword ptr [r17+r30*1], 0x2
+XDIS 3f95: BINARY    APXEVEX    APX_F      62AC781C69043102000000   imulzu r16d, dword ptr [r17+r30*1], 0x2
 XDIS 3fa0: BINARY    APXEVEX    APX_F      62ACF80C69043102000000   imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 3fab: BINARY    APXEVEX    APX_F      62ACF81C69043102000000   imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 3fab: BINARY    APXEVEX    APX_F      62ACF81C69043102000000   imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 3fb6: BINARY    APXEVEX    APX_F      62FC7C08F7E8             imul r16d
 XDIS 3fbc: BINARY    APXEVEX    APX_F      62FCFC08F7E8             imul r16
 XDIS 3fc2: BINARY    APXEVEX    APX_F      62BC7808F72C38           imul dword ptr [r16+r31*1]
@@ -2211,53 +2211,53 @@ XDIS 400a: BINARY    APXEVEX    APX_F      62FCFD0CF7E8             imul r16
 XDIS 4010: BINARY    APXEVEX    APX_F      62BC790CF72C38           imul word ptr [r16+r31*1]
 XDIS 4017: BINARY    APXEVEX    APX_F      62BCF90CF72C38           imul qword ptr [r16+r31*1]
 XDIS 401e: BINARY    APXEVEX    APX_F      62EC7D0869C10200         imul r16w, r17w, 0x2
-XDIS 4026: BINARY    APXEVEX    APX_F      62EC7D1869C10200         imul r16w, r17w, 0x2
+XDIS 4026: BINARY    APXEVEX    APX_F      62EC7D1869C10200         imulzu r16w, r17w, 0x2
 XDIS 402e: BINARY    APXEVEX    APX_F      62ECFD0869C102000000     imul r16, r17, 0x2
-XDIS 4038: BINARY    APXEVEX    APX_F      62ECFD1869C102000000     imul r16, r17, 0x2
+XDIS 4038: BINARY    APXEVEX    APX_F      62ECFD1869C102000000     imulzu r16, r17, 0x2
 XDIS 4042: BINARY    APXEVEX    APX_F      62AC79086904310200       imul r16w, word ptr [r17+r30*1], 0x2
-XDIS 404b: BINARY    APXEVEX    APX_F      62AC79186904310200       imul r16w, word ptr [r17+r30*1], 0x2
+XDIS 404b: BINARY    APXEVEX    APX_F      62AC79186904310200       imulzu r16w, word ptr [r17+r30*1], 0x2
 XDIS 4054: BINARY    APXEVEX    APX_F      62ACF90869043102000000   imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 405f: BINARY    APXEVEX    APX_F      62ACF91869043102000000   imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 405f: BINARY    APXEVEX    APX_F      62ACF91869043102000000   imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 406a: BINARY    APXEVEX    APX_F      62EC7D0C69C10200         imul r16w, r17w, 0x2
-XDIS 4072: BINARY    APXEVEX    APX_F      62EC7D1C69C10200         imul r16w, r17w, 0x2
+XDIS 4072: BINARY    APXEVEX    APX_F      62EC7D1C69C10200         imulzu r16w, r17w, 0x2
 XDIS 407a: BINARY    APXEVEX    APX_F      62ECFD0C69C102000000     imul r16, r17, 0x2
-XDIS 4084: BINARY    APXEVEX    APX_F      62ECFD1C69C102000000     imul r16, r17, 0x2
+XDIS 4084: BINARY    APXEVEX    APX_F      62ECFD1C69C102000000     imulzu r16, r17, 0x2
 XDIS 408e: BINARY    APXEVEX    APX_F      62AC790C6904310200       imul r16w, word ptr [r17+r30*1], 0x2
-XDIS 4097: BINARY    APXEVEX    APX_F      62AC791C6904310200       imul r16w, word ptr [r17+r30*1], 0x2
+XDIS 4097: BINARY    APXEVEX    APX_F      62AC791C6904310200       imulzu r16w, word ptr [r17+r30*1], 0x2
 XDIS 40a0: BINARY    APXEVEX    APX_F      62ACF90C69043102000000   imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 40ab: BINARY    APXEVEX    APX_F      62ACF91C69043102000000   imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 40ab: BINARY    APXEVEX    APX_F      62ACF91C69043102000000   imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 40b6: BINARY    APXEVEX    APX_F      62EC7C086BC102           imul r16d, r17d, 0x2
-XDIS 40bd: BINARY    APXEVEX    APX_F      62EC7C186BC102           imul r16d, r17d, 0x2
+XDIS 40bd: BINARY    APXEVEX    APX_F      62EC7C186BC102           imulzu r16d, r17d, 0x2
 XDIS 40c4: BINARY    APXEVEX    APX_F      62ECFC086BC102           imul r16, r17, 0x2
-XDIS 40cb: BINARY    APXEVEX    APX_F      62ECFC186BC102           imul r16, r17, 0x2
+XDIS 40cb: BINARY    APXEVEX    APX_F      62ECFC186BC102           imulzu r16, r17, 0x2
 XDIS 40d2: BINARY    APXEVEX    APX_F      62AC78086B043102         imul r16d, dword ptr [r17+r30*1], 0x2
-XDIS 40da: BINARY    APXEVEX    APX_F      62AC78186B043102         imul r16d, dword ptr [r17+r30*1], 0x2
+XDIS 40da: BINARY    APXEVEX    APX_F      62AC78186B043102         imulzu r16d, dword ptr [r17+r30*1], 0x2
 XDIS 40e2: BINARY    APXEVEX    APX_F      62ACF8086B043102         imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 40ea: BINARY    APXEVEX    APX_F      62ACF8186B043102         imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 40ea: BINARY    APXEVEX    APX_F      62ACF8186B043102         imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 40f2: BINARY    APXEVEX    APX_F      62EC7C0C6BC102           imul r16d, r17d, 0x2
-XDIS 40f9: BINARY    APXEVEX    APX_F      62EC7C1C6BC102           imul r16d, r17d, 0x2
+XDIS 40f9: BINARY    APXEVEX    APX_F      62EC7C1C6BC102           imulzu r16d, r17d, 0x2
 XDIS 4100: BINARY    APXEVEX    APX_F      62ECFC0C6BC102           imul r16, r17, 0x2
-XDIS 4107: BINARY    APXEVEX    APX_F      62ECFC1C6BC102           imul r16, r17, 0x2
+XDIS 4107: BINARY    APXEVEX    APX_F      62ECFC1C6BC102           imulzu r16, r17, 0x2
 XDIS 410e: BINARY    APXEVEX    APX_F      62AC780C6B043102         imul r16d, dword ptr [r17+r30*1], 0x2
-XDIS 4116: BINARY    APXEVEX    APX_F      62AC781C6B043102         imul r16d, dword ptr [r17+r30*1], 0x2
+XDIS 4116: BINARY    APXEVEX    APX_F      62AC781C6B043102         imulzu r16d, dword ptr [r17+r30*1], 0x2
 XDIS 411e: BINARY    APXEVEX    APX_F      62ACF80C6B043102         imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 4126: BINARY    APXEVEX    APX_F      62ACF81C6B043102         imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 4126: BINARY    APXEVEX    APX_F      62ACF81C6B043102         imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 412e: BINARY    APXEVEX    APX_F      62EC7D086BC102           imul r16w, r17w, 0x2
-XDIS 4135: BINARY    APXEVEX    APX_F      62EC7D186BC102           imul r16w, r17w, 0x2
+XDIS 4135: BINARY    APXEVEX    APX_F      62EC7D186BC102           imulzu r16w, r17w, 0x2
 XDIS 413c: BINARY    APXEVEX    APX_F      62ECFD086BC102           imul r16, r17, 0x2
-XDIS 4143: BINARY    APXEVEX    APX_F      62ECFD186BC102           imul r16, r17, 0x2
+XDIS 4143: BINARY    APXEVEX    APX_F      62ECFD186BC102           imulzu r16, r17, 0x2
 XDIS 414a: BINARY    APXEVEX    APX_F      62AC79086B043102         imul r16w, word ptr [r17+r30*1], 0x2
-XDIS 4152: BINARY    APXEVEX    APX_F      62AC79186B043102         imul r16w, word ptr [r17+r30*1], 0x2
+XDIS 4152: BINARY    APXEVEX    APX_F      62AC79186B043102         imulzu r16w, word ptr [r17+r30*1], 0x2
 XDIS 415a: BINARY    APXEVEX    APX_F      62ACF9086B043102         imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 4162: BINARY    APXEVEX    APX_F      62ACF9186B043102         imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 4162: BINARY    APXEVEX    APX_F      62ACF9186B043102         imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 416a: BINARY    APXEVEX    APX_F      62EC7D0C6BC102           imul r16w, r17w, 0x2
-XDIS 4171: BINARY    APXEVEX    APX_F      62EC7D1C6BC102           imul r16w, r17w, 0x2
+XDIS 4171: BINARY    APXEVEX    APX_F      62EC7D1C6BC102           imulzu r16w, r17w, 0x2
 XDIS 4178: BINARY    APXEVEX    APX_F      62ECFD0C6BC102           imul r16, r17, 0x2
-XDIS 417f: BINARY    APXEVEX    APX_F      62ECFD1C6BC102           imul r16, r17, 0x2
+XDIS 417f: BINARY    APXEVEX    APX_F      62ECFD1C6BC102           imulzu r16, r17, 0x2
 XDIS 4186: BINARY    APXEVEX    APX_F      62AC790C6B043102         imul r16w, word ptr [r17+r30*1], 0x2
-XDIS 418e: BINARY    APXEVEX    APX_F      62AC791C6B043102         imul r16w, word ptr [r17+r30*1], 0x2
+XDIS 418e: BINARY    APXEVEX    APX_F      62AC791C6B043102         imulzu r16w, word ptr [r17+r30*1], 0x2
 XDIS 4196: BINARY    APXEVEX    APX_F      62ACF90C6B043102         imul r16, qword ptr [r17+r30*1], 0x2
-XDIS 419e: BINARY    APXEVEX    APX_F      62ACF91C6B043102         imul r16, qword ptr [r17+r30*1], 0x2
+XDIS 419e: BINARY    APXEVEX    APX_F      62ACF91C6B043102         imulzu r16, qword ptr [r17+r30*1], 0x2
 XDIS 41a6: BINARY    APXEVEX    APX_F      62EC7C08AFC1             imul r16d, r17d
 XDIS 41ac: BINARY    APXEVEX    APX_F      62ECFC08AFC1             imul r16, r17
 XDIS 41b2: BINARY    APXEVEX    APX_F      62AC7808AF0431           imul r16d, dword ptr [r17+r30*1]
@@ -3222,69 +3222,69 @@ XDIS 5b8b: BINARY    APXEVEX    APX_F      62FCFC1083D902           sbb r16, r17
 XDIS 5b92: BINARY    APXEVEX    APX_F      62BC7810831C3102         sbb r16d, dword ptr [r17+r30*1], 0x2
 XDIS 5b9a: BINARY    APXEVEX    APX_F      62BCF810831C3102         sbb r16, qword ptr [r17+r30*1], 0x2
 XDIS 5ba2: SETCC     APXEVEX    APX_F      62FC7F0842C0             setb r16b
-XDIS 5ba8: SETCC     APXEVEX    APX_F      62FC7F1842C0             setb r16b
+XDIS 5ba8: SETCC     APXEVEX    APX_F      62FC7F1842C0             setzub r16b
 XDIS 5bae: SETCC     APXEVEX    APX_F      62BC7B08420438           setb byte ptr [r16+r31*1]
-XDIS 5bb5: SETCC     APXEVEX    APX_F      62BC7B18420438           setb byte ptr [r16+r31*1]
+XDIS 5bb5: SETCC     APXEVEX    APX_F      62BC7B18420438           setzub byte ptr [r16+r31*1]
 XDIS 5bbc: SETCC     APXEVEX    APX_F      62FC7F0846C0             setbe r16b
-XDIS 5bc2: SETCC     APXEVEX    APX_F      62FC7F1846C0             setbe r16b
+XDIS 5bc2: SETCC     APXEVEX    APX_F      62FC7F1846C0             setzube r16b
 XDIS 5bc8: SETCC     APXEVEX    APX_F      62BC7B08460438           setbe byte ptr [r16+r31*1]
-XDIS 5bcf: SETCC     APXEVEX    APX_F      62BC7B18460438           setbe byte ptr [r16+r31*1]
+XDIS 5bcf: SETCC     APXEVEX    APX_F      62BC7B18460438           setzube byte ptr [r16+r31*1]
 XDIS 5bd6: SETCC     APXEVEX    APX_F      62FC7F084CC0             setl r16b
-XDIS 5bdc: SETCC     APXEVEX    APX_F      62FC7F184CC0             setl r16b
+XDIS 5bdc: SETCC     APXEVEX    APX_F      62FC7F184CC0             setzul r16b
 XDIS 5be2: SETCC     APXEVEX    APX_F      62BC7B084C0438           setl byte ptr [r16+r31*1]
-XDIS 5be9: SETCC     APXEVEX    APX_F      62BC7B184C0438           setl byte ptr [r16+r31*1]
+XDIS 5be9: SETCC     APXEVEX    APX_F      62BC7B184C0438           setzul byte ptr [r16+r31*1]
 XDIS 5bf0: SETCC     APXEVEX    APX_F      62FC7F084EC0             setle r16b
-XDIS 5bf6: SETCC     APXEVEX    APX_F      62FC7F184EC0             setle r16b
+XDIS 5bf6: SETCC     APXEVEX    APX_F      62FC7F184EC0             setzule r16b
 XDIS 5bfc: SETCC     APXEVEX    APX_F      62BC7B084E0438           setle byte ptr [r16+r31*1]
-XDIS 5c03: SETCC     APXEVEX    APX_F      62BC7B184E0438           setle byte ptr [r16+r31*1]
+XDIS 5c03: SETCC     APXEVEX    APX_F      62BC7B184E0438           setzule byte ptr [r16+r31*1]
 XDIS 5c0a: SETCC     APXEVEX    APX_F      62FC7F0843C0             setnb r16b
-XDIS 5c10: SETCC     APXEVEX    APX_F      62FC7F1843C0             setnb r16b
+XDIS 5c10: SETCC     APXEVEX    APX_F      62FC7F1843C0             setzunb r16b
 XDIS 5c16: SETCC     APXEVEX    APX_F      62BC7B08430438           setnb byte ptr [r16+r31*1]
-XDIS 5c1d: SETCC     APXEVEX    APX_F      62BC7B18430438           setnb byte ptr [r16+r31*1]
+XDIS 5c1d: SETCC     APXEVEX    APX_F      62BC7B18430438           setzunb byte ptr [r16+r31*1]
 XDIS 5c24: SETCC     APXEVEX    APX_F      62FC7F0847C0             setnbe r16b
-XDIS 5c2a: SETCC     APXEVEX    APX_F      62FC7F1847C0             setnbe r16b
+XDIS 5c2a: SETCC     APXEVEX    APX_F      62FC7F1847C0             setzunbe r16b
 XDIS 5c30: SETCC     APXEVEX    APX_F      62BC7B08470438           setnbe byte ptr [r16+r31*1]
-XDIS 5c37: SETCC     APXEVEX    APX_F      62BC7B18470438           setnbe byte ptr [r16+r31*1]
+XDIS 5c37: SETCC     APXEVEX    APX_F      62BC7B18470438           setzunbe byte ptr [r16+r31*1]
 XDIS 5c3e: SETCC     APXEVEX    APX_F      62FC7F084DC0             setnl r16b
-XDIS 5c44: SETCC     APXEVEX    APX_F      62FC7F184DC0             setnl r16b
+XDIS 5c44: SETCC     APXEVEX    APX_F      62FC7F184DC0             setzunl r16b
 XDIS 5c4a: SETCC     APXEVEX    APX_F      62BC7B084D0438           setnl byte ptr [r16+r31*1]
-XDIS 5c51: SETCC     APXEVEX    APX_F      62BC7B184D0438           setnl byte ptr [r16+r31*1]
+XDIS 5c51: SETCC     APXEVEX    APX_F      62BC7B184D0438           setzunl byte ptr [r16+r31*1]
 XDIS 5c58: SETCC     APXEVEX    APX_F      62FC7F084FC0             setnle r16b
-XDIS 5c5e: SETCC     APXEVEX    APX_F      62FC7F184FC0             setnle r16b
+XDIS 5c5e: SETCC     APXEVEX    APX_F      62FC7F184FC0             setzunle r16b
 XDIS 5c64: SETCC     APXEVEX    APX_F      62BC7B084F0438           setnle byte ptr [r16+r31*1]
-XDIS 5c6b: SETCC     APXEVEX    APX_F      62BC7B184F0438           setnle byte ptr [r16+r31*1]
+XDIS 5c6b: SETCC     APXEVEX    APX_F      62BC7B184F0438           setzunle byte ptr [r16+r31*1]
 XDIS 5c72: SETCC     APXEVEX    APX_F      62FC7F0841C0             setno r16b
-XDIS 5c78: SETCC     APXEVEX    APX_F      62FC7F1841C0             setno r16b
+XDIS 5c78: SETCC     APXEVEX    APX_F      62FC7F1841C0             setzuno r16b
 XDIS 5c7e: SETCC     APXEVEX    APX_F      62BC7B08410438           setno byte ptr [r16+r31*1]
-XDIS 5c85: SETCC     APXEVEX    APX_F      62BC7B18410438           setno byte ptr [r16+r31*1]
+XDIS 5c85: SETCC     APXEVEX    APX_F      62BC7B18410438           setzuno byte ptr [r16+r31*1]
 XDIS 5c8c: SETCC     APXEVEX    APX_F      62FC7F084BC0             setnp r16b
-XDIS 5c92: SETCC     APXEVEX    APX_F      62FC7F184BC0             setnp r16b
+XDIS 5c92: SETCC     APXEVEX    APX_F      62FC7F184BC0             setzunp r16b
 XDIS 5c98: SETCC     APXEVEX    APX_F      62BC7B084B0438           setnp byte ptr [r16+r31*1]
-XDIS 5c9f: SETCC     APXEVEX    APX_F      62BC7B184B0438           setnp byte ptr [r16+r31*1]
+XDIS 5c9f: SETCC     APXEVEX    APX_F      62BC7B184B0438           setzunp byte ptr [r16+r31*1]
 XDIS 5ca6: SETCC     APXEVEX    APX_F      62FC7F0849C0             setns r16b
-XDIS 5cac: SETCC     APXEVEX    APX_F      62FC7F1849C0             setns r16b
+XDIS 5cac: SETCC     APXEVEX    APX_F      62FC7F1849C0             setzuns r16b
 XDIS 5cb2: SETCC     APXEVEX    APX_F      62BC7B08490438           setns byte ptr [r16+r31*1]
-XDIS 5cb9: SETCC     APXEVEX    APX_F      62BC7B18490438           setns byte ptr [r16+r31*1]
+XDIS 5cb9: SETCC     APXEVEX    APX_F      62BC7B18490438           setzuns byte ptr [r16+r31*1]
 XDIS 5cc0: SETCC     APXEVEX    APX_F      62FC7F0845C0             setnz r16b
-XDIS 5cc6: SETCC     APXEVEX    APX_F      62FC7F1845C0             setnz r16b
+XDIS 5cc6: SETCC     APXEVEX    APX_F      62FC7F1845C0             setzunz r16b
 XDIS 5ccc: SETCC     APXEVEX    APX_F      62BC7B08450438           setnz byte ptr [r16+r31*1]
-XDIS 5cd3: SETCC     APXEVEX    APX_F      62BC7B18450438           setnz byte ptr [r16+r31*1]
+XDIS 5cd3: SETCC     APXEVEX    APX_F      62BC7B18450438           setzunz byte ptr [r16+r31*1]
 XDIS 5cda: SETCC     APXEVEX    APX_F      62FC7F0840C0             seto r16b
-XDIS 5ce0: SETCC     APXEVEX    APX_F      62FC7F1840C0             seto r16b
+XDIS 5ce0: SETCC     APXEVEX    APX_F      62FC7F1840C0             setzuo r16b
 XDIS 5ce6: SETCC     APXEVEX    APX_F      62BC7B08400438           seto byte ptr [r16+r31*1]
-XDIS 5ced: SETCC     APXEVEX    APX_F      62BC7B18400438           seto byte ptr [r16+r31*1]
+XDIS 5ced: SETCC     APXEVEX    APX_F      62BC7B18400438           setzuo byte ptr [r16+r31*1]
 XDIS 5cf4: SETCC     APXEVEX    APX_F      62FC7F084AC0             setp r16b
-XDIS 5cfa: SETCC     APXEVEX    APX_F      62FC7F184AC0             setp r16b
+XDIS 5cfa: SETCC     APXEVEX    APX_F      62FC7F184AC0             setzup r16b
 XDIS 5d00: SETCC     APXEVEX    APX_F      62BC7B084A0438           setp byte ptr [r16+r31*1]
-XDIS 5d07: SETCC     APXEVEX    APX_F      62BC7B184A0438           setp byte ptr [r16+r31*1]
+XDIS 5d07: SETCC     APXEVEX    APX_F      62BC7B184A0438           setzup byte ptr [r16+r31*1]
 XDIS 5d0e: SETCC     APXEVEX    APX_F      62FC7F0848C0             sets r16b
-XDIS 5d14: SETCC     APXEVEX    APX_F      62FC7F1848C0             sets r16b
+XDIS 5d14: SETCC     APXEVEX    APX_F      62FC7F1848C0             setzus r16b
 XDIS 5d1a: SETCC     APXEVEX    APX_F      62BC7B08480438           sets byte ptr [r16+r31*1]
-XDIS 5d21: SETCC     APXEVEX    APX_F      62BC7B18480438           sets byte ptr [r16+r31*1]
+XDIS 5d21: SETCC     APXEVEX    APX_F      62BC7B18480438           setzus byte ptr [r16+r31*1]
 XDIS 5d28: SETCC     APXEVEX    APX_F      62FC7F0844C0             setz r16b
-XDIS 5d2e: SETCC     APXEVEX    APX_F      62FC7F1844C0             setz r16b
+XDIS 5d2e: SETCC     APXEVEX    APX_F      62FC7F1844C0             setzuz r16b
 XDIS 5d34: SETCC     APXEVEX    APX_F      62BC7B08440438           setz byte ptr [r16+r31*1]
-XDIS 5d3b: SETCC     APXEVEX    APX_F      62BC7B18440438           setz byte ptr [r16+r31*1]
+XDIS 5d3b: SETCC     APXEVEX    APX_F      62BC7B18440438           setzuz byte ptr [r16+r31*1]
 XDIS 5d42: SHIFT     APXEVEX    APX_F      62FC7C08C0E002           shl r16b, 0x2
 XDIS 5d49: SHIFT     APXEVEX    APX_F      62BC7808C0243802         shl byte ptr [r16+r31*1], 0x2
 XDIS 5d51: SHIFT     APXEVEX    APX_F      62FC7C0CC0E002           shl r16b, 0x2
@@ -4120,9 +4120,9 @@ XDIS 7447: UNCOND_BR APXLEGACY  APX_F      D500A10123456789012345   jmpabs 0x452
 # end of text section.
 # Errors: 0
 #XED3 DECODE STATS
-#Total DECODE cycles:        20318547
+#Total DECODE cycles:        18460576
 #Total instructions DECODE: 4069
-#Total tail DECODE cycles:        20869915
+#Total tail DECODE cycles:        19024044
 #Total tail instructions DECODE: 4119
-#Total cycles/instruction DECODE: 4993.50
-#Total tail cycles/instruction DECODE: 5066.74
+#Total cycles/instruction DECODE: 4536.88
+#Total tail cycles/instruction DECODE: 4618.61

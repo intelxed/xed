@@ -2,7 +2,7 @@
 
 ### License
 
-Intel&reg; X86 Encoder Decoder (Intel&reg; XED) is licensed under the terms in [MIT license](LICENSE). By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
+Intel&reg; X86 Encoder Decoder (Intel&reg; XED) is licensed under the terms in [Apache License 2.0](LICENSE). By contributing to the project, you agree to the license and copyright terms therein and release your contribution under these terms.
 
 ### Sign your work
 

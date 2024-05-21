@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -343,19 +343,39 @@ xed_operand_values_has_66_prefix(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_mandatory_66_prefix(const xed_operand_values_t* p)
 {
-    // For legacy instructions, the x66 prefix is mandatory if the REFINING66()/IGNORE66() prefix is used.
-    // When this prefix is used, the OSZ variable is zeroed; therefore we check both conditions.
-    // For {E,}VEX instructions, x66 is mandatory if it's an opcode extension and part of the pp field.
-    if(xed3_operand_get_vexvalid(p) != 0) // VEX or EVEX 
-    {
-        return (xed_operand_values_get_pp_vex_prefix(p) == 1);
-    }
-    else if (xed_operand_values_has_66_prefix(p) &&
-        xed_operand_values_has_operand_size_prefix(p) == 0) // legacy
-    {
-        return 1;
-    }
+    /*
+     * For legacy instructions, the x66 prefix is mandatory if the REFINING66()/IGNORE66() prefix is used.
+     * When this prefix is used, the OSZ variable is zeroed; therefore we check both conditions.
+     *
+     * For VEX instructions, x66 is mandatory if it's an opcode extension and part of the pp field.
+     * EVEX is akin, except for instructions featuring a scalable operand (0x66 used as an OSZ var)
+     */
 
+    // Legacy
+    xed_bool_t encspace = xed3_operand_get_vexvalid(p);
+    if (encspace == 0)
+    {
+        if (xed_operand_values_has_66_prefix(p) &&
+            xed_operand_values_has_operand_size_prefix(p) == 0)
+        {
+            return 1;
+        }
+    }
+    // VEX
+    else if (encspace == 1)
+    {
+        return ((xed_operand_values_get_pp_vex_prefix(p) == 1));
+    }
+    // EVEX
+    else if (encspace == 2)
+    {
+        if ((xed_operand_values_get_pp_vex_prefix(p) == 1) &&
+            (xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_SCALABLE) == 0))
+        {
+            return 1;
+        }
+    }
+    
     return 0;
 }
 

@@ -3,7 +3,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -42,24 +42,16 @@ import os
 import optparse
 import stat
 import copy
-
-def find_dir(d):
-    directory = os.getcwd()
-    last = ''
-    while directory != last:
-        target_directory = os.path.join(directory,d)
-        if os.path.exists(target_directory):
-            return target_directory
-        last = directory
-        directory = os.path.split(directory)[0]
-    return None
+from genutil import add_mbuild_to_path, find_dir
 
 mbuild_install_path = os.path.join(os.path.dirname(sys.argv[0]), 
                                    '..', '..', 'mbuild')
+if os.path.exists(mbuild_install_path):
+    sys.path = [mbuild_install_path]  + sys.path
+else:
+    add_mbuild_to_path()
 
-if not os.path.exists(mbuild_install_path):
-    mbuild_install_path =  find_dir('mbuild')
-sys.path=  [mbuild_install_path]  + sys.path
+
 try:
    import mbuild
 except:
@@ -90,6 +82,7 @@ except:
    sys.exit(1)
    
 import actions
+from actions import ActionEmitType, ActionType
 import ins_emit
 import encutil
 from patterns import *
@@ -721,7 +714,7 @@ class rule_t(object):
 
     def prepare_value_for_emit(self, a):
         """@return: (length-in-bits, value-as-hex)"""
-        if a.emit_type == 'numeric':
+        if a.emit_type == ActionEmitType.NUMERIC:
             v = hex(a.int_value)
             return (a.nbits, v) # return v with the leading 0x
         s = a.value
@@ -996,7 +989,7 @@ class rule_t(object):
 
                 if vtuples():
                     msgb("TUPLES", (" ,".join( [str(x) for x in list_of_tuples] )))
-                if len(list_of_tuples) == 0 or a.emit_type == 'numeric':
+                if len(list_of_tuples) == 0 or a.emit_type == ActionEmitType.NUMERIC:
                     # no substitutions required
                     (length, s) = self.prepare_value_for_emit(a)
                     if veemit():
@@ -1045,7 +1038,7 @@ class rule_t(object):
                 fbs.append(action)
                 if action.field_name == 'MAP': 
                     found_map_fb = True
-            if action.is_emit_action() and action.emit_type == 'numeric':
+            if action.is_emit_action() and action.emit_type == ActionEmitType.NUMERIC:
                 if action.field_name:
                     fbs.append(action)
 
@@ -1321,15 +1314,15 @@ class iform_t(object):
             modifying to input action_list
         '''
         
-        emit_actions = list(filter(lambda x: x.type == 'emit', action_list))
-        fb_actions = list(filter(lambda x: x.type == 'FB', action_list))
+        emit_actions = list(filter(lambda x: x.type == ActionType.EMIT, action_list))
+        fb_actions = list(filter(lambda x: x.type == ActionType.FIELD_BINDING, action_list))
         
         #iterate to find overlapping actions
         action_to_remove = []
         for fb in fb_actions:
             for emit in emit_actions:
                 if fb.field_name.lower() == emit.field_name and \
-                  emit.emit_type == 'numeric':
+                  emit.emit_type == ActionEmitType.NUMERIC:
                     if fb.int_value == emit.int_value:
                         # overlapping actions, recored this action
                         # and remove later
@@ -2331,6 +2324,9 @@ class encoder_configuration_t(object):
         iform = iform_t(self.map_info, iclass, conditions, actions, modal_patterns, uname,
                         real_opcode, isa_set)
 
+        # Current priorities are; P0: 0F1F NOP and EVEX RC instructions   P1: VEX and Legacy instructions  P2: rest of EVEX   P3: XOP
+        # split P1 into two priorities, such that instructions with no REP constraints (must use prefixes) are preferred in the sorting of the IFORMs
+        # This means that P2 and P3 now have the priorities 3 and 4 respectively
         if uname == 'NOP0F1F':
             # We have many fat NOPS, 0F1F is the preferred one so we
             # give it a higher priority in the iform sorting. 
@@ -2341,11 +2337,13 @@ class encoder_configuration_t(object):
             if 'BCRC=1' in ipattern:
                 iform.priority = 0
             else:
-                iform.priority = 2
+                iform.priority = 3
         elif 'VEXVALID=3' in ipattern: # XOP
-            iform.priority = 3
+            iform.priority = 4
         else:  # EVERYTHING ELSE
             iform.priority = 1
+            if 'REP=' in ipattern:
+                iform.priority = 2
 
         try:
             self.iarray[iclass].append ( iform )

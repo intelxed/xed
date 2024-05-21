@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -157,7 +157,30 @@ static int add_leading_zeros(char* buf,
     }
     return xed_strncpy(p,tbuf,buflen);
 }
-        
+
+int xed_itoa_bin(char *buf,
+                 xed_uint64_t f,
+                 xed_uint_t bits_to_print,
+                 xed_uint_t buflen)
+{
+    char tbuf[65];
+    xed_int_t i;
+    char *p = tbuf;
+    xed_uint64_t base_letter = XED_STATIC_CAST(xed_uint64_t, '0');
+    xed_uint_t num_bits = (bits_to_print > 64) ? 64 : bits_to_print;
+    if (num_bits >= buflen) {
+        // Adjust `num_bits` to fit within the available buffer size
+        num_bits = buflen - 1;
+    }
+
+    for (i = num_bits - 1; i >= 0; i--) {
+            *p++ = XED_STATIC_CAST(char, base_letter + ((f >> i) & 1));
+    }
+
+    // tack on a null
+    *p = 0;
+    return xed_strncpy(buf, tbuf, buflen);
+}
 
 int xed_itoa_hex_ul(char* buf, 
                     xed_uint64_t f, 
