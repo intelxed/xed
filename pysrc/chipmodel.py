@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -320,6 +320,7 @@ def work(arg):
         s3 = ['0']
         s4 = ['0']
         s5 = ['0']
+        s6 = ['0']
         # loop over the features
         for f in  chip_features_dict[c]:
             feature_index = _feature_index(isa_set,f)
@@ -336,10 +337,12 @@ def work(arg):
                 s4.append('(one<<(XED_ISA_SET_%s-256))' % (f))
             elif feature_index < 384:
                 s5.append('(one<<(XED_ISA_SET_%s-320))' % (f))
+            elif feature_index < 448:
+                s6.append('(one<<(XED_ISA_SET_%s-384))' % (f))
             else:
                 # Increase XED_FEATURE_VECTOR_MAX (xed-chip-features.h) and add support
-                # for larger indexes (above)
-                _die("Feature index > 384. Need another features array")
+                # for more indexes (above)
+                _die("Feature index >= 448. Need another features array")
 
         s0s = spacing.join(s0)
         s1s = spacing.join(s1)
@@ -347,8 +350,9 @@ def work(arg):
         s3s = spacing.join(s3)
         s4s = spacing.join(s4)
         s5s = spacing.join(s5)
+        s6s = spacing.join(s6)
         
-        for i,x in enumerate([s0s, s1s, s2s,s3s, s4s, s5s]):
+        for i,x in enumerate([s0s, s1s, s2s,s3s, s4s, s5s, s6s]):
             fo.add_code_eol("xed_chip_features[XED_CHIP_{}][{}] = {}".format(c, i, x))
 
     features = ['AVX512', 'APX']

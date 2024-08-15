@@ -2192,7 +2192,7 @@ class encoder_configuration_t(object):
                 # FIXME: 2016-01-28: MJC: HACK TO ENCODE ROUNDC/SAE CONSTRAINTS
                 if 'SAE' in pattern_str:
                     modal_patterns.append("SAE!=0")
-                elif '_ROUND()' in pattern_str:
+                elif re.search(r'AVX(256|512)_ROUND\(\)', pattern_str):
                     modal_patterns.append("ROUNDC!=0")
                 elif 'FIX_ROUND_LEN' in pattern_str:
                     # Catches SAE and ROUNDC ignored instructions

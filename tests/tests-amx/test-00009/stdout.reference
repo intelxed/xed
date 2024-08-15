@@ -1,29 +1,10 @@
-Attempting to decode: c4 e2 72 5c d0 
-iclass TDPBF16PS	category AMX_TILE	ISA-extension AMX_TILE	ISA-set AMX_BF16
-instruction-length 5
-operand-width 32
-effective-operand-width 32
-effective-address-width 64
-stack-address-width 64
-iform-enum-name TDPBF16PS_TMMf32_TMM2bf16_TMM2bf16
-iform-enum-name-dispatch (zero based) 0
-iclass-max-iform-dispatch 1
-Nominal opcode position 3
-Nominal opcode 0x5c
-Operands
-#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
-#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0             REG0=TMM2   EXPLICIT  RW        TV    0     0     0     32     SINGLE       TREG
-1   REG1             REG1=TMM0   EXPLICIT   R        TV    0     0     0     32   BFLOAT16       TREG
-2   REG2             REG2=TMM1   EXPLICIT   R        TV    0     0     0     32   BFLOAT16       TREG
-Memory Operands
-  MemopBytes = 0
+C4E2696CC1
+ICLASS:     TCMMIMFP16PS
+CATEGORY:   AMX_TILE
+EXTENSION:  AMX_TILE
+IFORM:      TCMMIMFP16PS_TMMf32_TMM2f16_TMM2f16
+ISA_SET:    AMX_COMPLEX
 ATTRIBUTES: NOTSX NO_REG_MATCH 
-EXCEPTION TYPE: AMX_E4
-AMX
-ISA SET: [AMX_BF16]
-0	CPUID GROUP NAME: [AMX_BF16]
-	0	CPUID RECORD NAME: [AMX_TILES]
-		{Leaf 0x00000007, subleaf 0x00000000, EDX[24:24]} = 1
-	1	CPUID RECORD NAME: [AMX_BF16]
-		{Leaf 0x00000007, subleaf 0x00000000, EDX[22:22]} = 1
+SHORT:      tcmmimfp16ps tmm0, tmm1, tmm2
+Encodable! C4E2696CC1
+Identical re-encoding

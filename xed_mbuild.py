@@ -1593,7 +1593,7 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'future')
             _add_normal_ext(env,'apx-f')
             _add_normal_ext(env,'rao-int')
-
+            _add_normal_ext(env,'avx10-2')            
 
     env['extf'] = newstuff + env['extf']
 
@@ -2139,8 +2139,10 @@ def build_examples(env):
     import xed_examples_mbuild
     env_ex = copy.deepcopy(env)
     
-    # Some build flags disturb the example build process (Fix is needed)
+    # Some build flags disturb the example build process
     exclude_flags: List[str] = []
+    if env.on_windows():
+        exclude_flags.append('/bigobj') # not supported by xed cmd tool
     for f in exclude_flags:
         env_ex['CCFLAGS'] = env_ex['CCFLAGS'].replace(f, '')
         env_ex['CXXFLAGS'] = env_ex['CXXFLAGS'].replace(f, '')
@@ -2653,6 +2655,7 @@ def _test_cmdline_decoder(env,osenv):
                                                               osenv=osenv)
     if retval:
         mbuild.msgb("XED CMDLINE TEST", "failed. retval={}".format(retval))
+        print("[CMD]" + cmd)
         if output:
             xbc.dump_lines("[STDOUT]", output)
         if oerror:
@@ -2670,7 +2673,7 @@ def _run_canned_tests(env,osenv):
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
     dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx', 'tests-prefetch',
-            'tests-apx']
+            'tests-apx', 'tests-avx10-256rc']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2708,6 +2711,7 @@ def _run_canned_tests(env,osenv):
         codes.append('AMD')
     if env['future']:
         codes.append('APX')
+        codes.append('AVX10_2')
     for c in codes:
         cmd += ' -c ' + c
 

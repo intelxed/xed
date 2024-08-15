@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -32,7 +32,9 @@ EXTENSION: MPX
 CATEGORY:  MPX
 ISA_SET:   MPX
 ATTRIBUTES: NO_RIP_REL
-PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() f3_refining_prefix mode64
+OPERANDS: REG0=BND_R():w  AGEN:r
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix not64 eamode32
 OPERANDS: REG0=BND_R():w  AGEN:r
 }
 
@@ -47,12 +49,14 @@ CATEGORY:  MPX
 ISA_SET:   MPX
 ATTRIBUTES: EXCEPTION_BR 
 COMMENT: 67 prefixes will be misinterpreted on MPX NI. XED cannot ignore them.
-PATTERN:  0x0F 0x1A MPXMODE=1  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix 
+PATTERN:  0x0F 0x1A MPXMODE=1  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix mode64
+OPERANDS: REG0=BND_R():r AGEN:r
+PATTERN:  0x0F 0x1A MPXMODE=1  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f3_refining_prefix not64 eamode32
 OPERANDS: REG0=BND_R():r AGEN:r
 
 PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f3_refining_prefix  mode64
 OPERANDS: REG0=BND_R():r REG1=GPR64_B():r
-PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f3_refining_prefix  not64
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f3_refining_prefix  not64 eamode32
 OPERANDS: REG0=BND_R():r REG1=GPR32_B():r
 }
 
@@ -64,12 +68,14 @@ CATEGORY:  MPX
 ISA_SET:   MPX
 ATTRIBUTES: EXCEPTION_BR 
 COMMENT: 67 prefixes will be misinterpreted on MPX NI. XED cannot ignore them.
-PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f2_refining_prefix
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f2_refining_prefix mode64
+OPERANDS: REG0=BND_R():r AGEN:r
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()  f2_refining_prefix not64 eamode32
 OPERANDS: REG0=BND_R():r AGEN:r
 
 PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f2_refining_prefix  mode64
 OPERANDS: REG0=BND_R():r REG1=GPR64_B():r
-PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f2_refining_prefix  not64
+PATTERN:  0x0F 0x1A MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]   f2_refining_prefix  not64 eamode32
 OPERANDS: REG0=BND_R():r REG1=GPR32_B():r
 }
 
@@ -81,12 +87,14 @@ CATEGORY:  MPX
 ISA_SET:   MPX
 ATTRIBUTES:  EXCEPTION_BR 
 COMMENT: 67 prefixes will be misinterpreted on MPX NI. XED cannot ignore them.
-PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() f2_refining_prefix 
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() f2_refining_prefix mode64
+OPERANDS: REG0=BND_R():r AGEN:r
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() f2_refining_prefix not64 eamode32
 OPERANDS: REG0=BND_R():r AGEN:r
 
 PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]  f2_refining_prefix  mode64
 OPERANDS: REG0=BND_R():r REG1=GPR64_B():r
-PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]  f2_refining_prefix  not64
+PATTERN:  0x0F 0x1B MPXMODE=1 MOD[mm] MOD=3 REG[rrr] RM[nnn]  f2_refining_prefix  not64 eamode32
 OPERANDS: REG0=BND_R():r REG1=GPR32_B():r
 
 }

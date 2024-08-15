@@ -259,6 +259,7 @@ def set_env_ms(env):
         flags += ' /wd4244'     # Disable warnings about changing widths.
         # Disable warnings about compiler limit in MSVC7(.NET / 2003)
         flags += ' /wd4292'
+
         if security_level_match(env, 2):
             env.add_to_var('LINKFLAGS','/WX')  # Warnings as errors (Linker specific)
 

@@ -12,3 +12,5 @@
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-via  -b bulk-tests/via-padlock-tests.txt 
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-syntax  -b bulk-tests/syntax-tests.txt
 ./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-prefetch  -b bulk-tests/prefetch-tests.txt
+
+./run-cmd.py --build-dir ../obj/wkit/bin --otests tests-avx10-256rc  -b bulk-tests/avx10-256rc-bulk-tests.txt

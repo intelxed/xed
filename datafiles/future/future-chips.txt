@@ -26,7 +26,45 @@ FUTURE:                         \
     ALL_OF(PANTHER_LAKE)        \
     ALL_OF(CLEARWATER_FOREST)   \
     RAO_INT                     \
-    ### APX-Foundational Promoted and New instructions: 
+    ########### AVX10.2 ###########
+    AVX10_2_RC_256              \  # Embedded-rounding-control YMM extension
+    AVX10_2_RC_SCALAR           \  # Embedded-rounding-control scalar extension
+    AVX512_BF16_NE_SCALAR       \
+    AVX512_BF16_NE_128          \
+    AVX512_BF16_NE_256          \
+    AVX512_BF16_NE_512          \
+    AVX512_COM_EF_SCALAR        \   
+    AVX512_MEDIAX_128           \
+    AVX512_MEDIAX_512           \
+    AVX512_MEDIAX_256           \
+    AVX512_FP16_CONVERT_128     \
+    AVX512_FP16_CONVERT_256     \
+    AVX512_FP16_CONVERT_512     \
+    AVX512_VNNI_INT8_128        \
+    AVX512_VNNI_FP16_256        \
+    AVX512_VNNI_FP16_512        \
+    AVX512_NE_CONVERT_FP8_128   \
+    AVX512_NE_CONVERT_FP8_256   \
+    AVX512_NE_CONVERT_FP8_512   \
+    AVX512_SAT_CVT_128          \
+    AVX512_SAT_CVT_256          \
+    AVX512_SAT_CVT_512          \
+    AVX512_VNNI_FP16_128        \
+    AVX512_VNNI_INT8_256        \
+    AVX512_VNNI_INT8_512        \
+    AVX512_MINMAX_128           \
+    AVX512_MINMAX_512           \
+    AVX512_MINMAX_256           \
+    AVX512_MINMAX_SCALAR        \
+    AVX512_SAT_CVT_DS_128       \
+    AVX512_SAT_CVT_DS_256       \
+    AVX512_SAT_CVT_DS_512       \
+    AVX512_SAT_CVT_DS_SCALAR    \
+    AVX512_MOVZXC_128           \
+    AVX512_VNNI_INT16_128       \
+    AVX512_VNNI_INT16_256       \
+    AVX512_VNNI_INT16_512       \
+    ### APX-Foundational Promoted and New instructions: ###
     APX_F                       \
     APX_F_ADX                   \
     APX_F_AMX                   \
