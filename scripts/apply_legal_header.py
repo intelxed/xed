@@ -157,10 +157,10 @@ def shell_script(lines):
     if len(lines) > 1:
         second = lines[1];
         
-    if re.match("#!",first):
+    if re.match(r"#!",first):
         #print "\t\t First script test true"
         return True
-    if re.search("-\*-",first) or re.search("-\*-",second):
+    if re.search(r"-\*-",first) or re.search(r"-\*-",second):
         #print "\t\t Second script test true"
         return True
     return False
@@ -171,7 +171,7 @@ def split_script(lines):
     body  = []
 
     f = lines.pop(0)
-    while re.match("#",f) or re.search("-\*-",f):
+    while re.match(r"#",f) or re.search(r"-\*-",f):
         header.append(f)
         f = lines.pop(0)
 

@@ -4656,17 +4656,36 @@ def get_filtered_osz_list_evex(env, ii, has_scalable = False):
         osz_list = [0] # ineffective when no scalable regs exist
     return osz_list
 
+def set_rounding_bits_if_needed(ii, fo):
+    """Sets the BCRC and UBIT bits in accordance to the rounding type/SAE"""
+    
+    might_emit_ubit = False
+    
+    if ii.rounding_form:
+        might_emit_ubit = True
+        fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
+        fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
+    elif ii.sae_form:
+        might_emit_ubit = True
+        fo.add_code_eol('set_evexb(r,1)', 'set sae')
+    elif ii.vl_ignored:
+        might_emit_ubit = True
+        fo.add_code_eol('set_evexb(r,1)')
+    
+    if might_emit_ubit:  # serves as UBIT setter restriction
+        if ii.u_bit == 0:    # no need to set zero values
+            fo.add_code_eol(f'set_rexx4(r,1)', 'Set the EVEX.U bit (AKA EVEX.X4)')
+            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
+
 def create_evex_xyztmm_and_gpr(env,ii): 
     """ 
     Supports EVEX instructions with combinations of up to three {x,y,z,t}mms and gprs (optional imm)
     """
-    sae,rounding,masking_allowed,scalable_reg,has_dfv =False,False,False,False,False
+    rounding,masking_allowed,scalable_reg,has_dfv = False,False,False,False
     imm8,imm16,imm32=False,False,False
     imm_width = 0
 
-    if ii.sae_form:
-        sae = True
-    elif ii.rounding_form:
+    if ii.rounding_form:
         rounding = True
     if ii.has_imm8:
         imm8 = True
@@ -4769,12 +4788,8 @@ def create_evex_xyztmm_and_gpr(env,ii):
         set_evexll_vl(ii,fo,vl)
         if ii.rexw_prefix == '1':
             fo.add_code_eol('set_rexw(r)')
-        if rounding:
-            fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
-            fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
-        elif sae:
-            fo.add_code_eol('set_evexb(r,1)', 'set sae')
-            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
+        
+        set_rounding_bits_if_needed(ii, fo)
             
         if masking:
             if not ii.write_masking_merging_only:
@@ -5124,12 +5139,7 @@ def create_evex_masks_regs(env, ii):
                 fo.add_code_eol('set_evexz(r,{})'.format(var_zeroing))
             fo.add_code_eol('enc_evex_kmask(r,{})'.format(var_kmask))
             
-        if ii.rounding_form:
-            fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
-            fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
-        elif ii.sae_form:
-            fo.add_code_eol('set_evexb(r,1)', 'set sae')
-            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
+        set_rounding_bits_if_needed(ii, fo)
         
         set_nf_nd(ii, fo)   # set NF and ND if necessary
 
@@ -5289,12 +5299,7 @@ def create_evex_mask_dest_mem(env, ii): # allows optional imm8
         if broadcast == 'broadcast': # ZERO INIT OPTIMIZATION
             fo.add_code_eol('set_evexb(r,1)')
             
-        if ii.rounding_form:
-            fo.add_code_eol('set_evexb(r,1)', 'set rc+sae')
-            fo.add_code_eol('set_evexll(r,{})'.format(var_rcsae))
-        elif ii.sae_form:
-            fo.add_code_eol('set_evexb(r,1)', 'set sae')
-            # ZERO INIT OPTIMIZATION for EVEX.LL/RC = 0
+        set_rounding_bits_if_needed(ii, fo)
         
         set_nf_nd(ii, fo)   # set NF and ND if necessary
 
@@ -5392,6 +5397,7 @@ def prep_instruction(ii):
     ii.write_masking_merging_only = False # if true, no zeroing allowed
     ii.rounding_form = False
     ii.sae_form = False
+    ii.vl_ignored= False
     
     if ii.space == 'evex':
         for op in ii.parsed_operands:
@@ -5405,10 +5411,12 @@ def prep_instruction(ii):
             if 'ZEROING=0' in ii.pattern:
                 ii.write_masking_merging_only = True
                 
-        if 'AVX512_ROUND()' in ii.pattern:
+        if re.search(r'AVX(256|512)_ROUND\(\)', ii.pattern):
             ii.rounding_form = True
-        if 'SAE()' in ii.pattern:
+        if re.search(r'SAE(256)?\(\)', ii.pattern):
             ii.sae_form = True
+        if re.search(r'FIX_ROUND_LEN256\(\)', ii.pattern):
+            ii.vl_ignored = True
 
 
 def xed_mode_removal(env,ii):
@@ -5707,7 +5715,8 @@ def dump_unsupported_iforms(unsupported_iforms: Dict[str, Set[str]], mode: int, 
 
 
 def is_pre_determined_unsupported_inst(ii):
-    if ii.iclass in ['NOP']:
+    if ii.iclass == 'NOP' and ii.isa_set != 'FAT_NOP':
+        # other NOPs aren't fully supported by ENC2
         return True
 
     if esrc_and_imm(ii):    # skip instructions with imm and _SE() encoded reg

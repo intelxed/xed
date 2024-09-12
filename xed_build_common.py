@@ -121,7 +121,8 @@ def gnu_secured_build(env: dict) -> str:
         ### Pre-processor Macros ###
         # enables the fortified source code features provided by the compiler, triggering
         # additional security checks and modifications in the generated code
-        flags += ' -D_FORTIFY_SOURCE=2'
+        if env['opt'] in ['2', '3']:  # requires compiling with optimization
+            flags += ' -D_FORTIFY_SOURCE=2'
 
         ### Stack Protection ###
         if env['debug']:

@@ -646,7 +646,12 @@ static void vex_scanner(xed_decoded_inst_t* d)
     /* this handles the AVX C4/C5 VEX prefixes and also the AMD XOP 0x8F
      * prefix */
     unsigned char length = xed_decoded_inst_get_length(d);
-    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+    xed_uint8_t b;
+    
+    // assumption: length < max_bytes (checked in prefix_scanner)
+    xed_assert(length < xed3_operand_get_max_bytes(d));
+    b = xed_decoded_inst_get_byte(d, length);
+
     if (b == 0xC5) {
         if (!xed3_operand_get_out_of_bytes(d)) 
             vex_c5_scanner(d);
@@ -1041,6 +1046,7 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
 // as instructions with the REX2 prefix should be fed to a dedicated REX2 scanner
 static XED_INLINE xed_bool_t opcode_scanner_needed(xed_decoded_inst_t *d)
 {
+    // FIXME: Consider skipping error check here — already validated earlier
 #if defined(XED_APX)
     return (xed3_operand_get_error(d) == XED_ERROR_NONE) && (xed3_operand_get_rex2(d) == 0);
 #else
@@ -1052,8 +1058,13 @@ static XED_INLINE xed_bool_t opcode_scanner_needed(xed_decoded_inst_t *d)
 static void opcode_scanner(xed_decoded_inst_t* d)
 {
     unsigned char length = xed_decoded_inst_get_length(d);
-    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+    xed_uint8_t b;
     xed_uint64_t i;
+    
+    // assumption: length < max_bytes (checked in prefix_scanner)
+    xed_assert(length < xed3_operand_get_max_bytes(d));
+    b = xed_decoded_inst_get_byte(d, length);
+
 
     // matching maps vs having a summary of which opcodes are definately map0.
     // Common case is map 0, but the loop would check them all and deduce map 0, slowly.
@@ -1240,19 +1251,16 @@ static XED_INLINE xed_uint8_t set_evex_map(xed_decoded_inst_t *d, xed_evex_paylo
 
 static void evex_scanner(xed_decoded_inst_t* d)
 {
-     /* assumption: length < max_bytes  
-     * This is checked in prefix_scanner.
-     * If any other scanner is added before evex_scanner, this condition 
-     * should be preserved.
-     * FIXME: check length < max_bytes here anyway? This will be less
-     * error-prone, but that's an additional non-necessary branch.
-     */
-    xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
     unsigned char length = xed_decoded_inst_get_length(d);
-    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+    xed_uint8_t b;
 
+    // assumption: length < max_bytes (checked in prefix_scanner)
+    xed_assert(length < xed3_operand_get_max_bytes(d));
+    b = xed_decoded_inst_get_byte(d, length);
+    
     if (b == 0x62)
     {
+        xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
         xed_evex_payload1_t evex1;
         // check that it is not a BOUND instruction
         if (length + 1 < max_bytes) {
@@ -1267,6 +1275,9 @@ static void evex_scanner(xed_decoded_inst_t* d)
             too_short(d);
             return;
         }
+        
+        // Link to the EVEX encoding space
+        xed3_operand_set_vexvalid(d, 2);
 
         if (evex1.coarse.map == 0) {
             xed_decoded_inst_set_length(d, length+2);
@@ -1281,8 +1292,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
         if (length + 4 < max_bytes) {
             xed_evex_payload2_t evex2;
             xed_uint_t eff_map;
-            
-            xed3_operand_set_vexvalid(d, 2);
 
             evex2.u8 = xed_decoded_inst_get_byte(d, length+2);
 
@@ -1398,13 +1407,12 @@ void late_evex_scanner(xed_decoded_inst_t *d)
 // then scans the instructions' opcode
 static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
 {
-    /* assumption: length < max_bytes  
-     * This is checked in prefix_scanner.
-     * If any other scanner is added before evex_scanner, this condition 
-     * should be preserved.
-     */
     xed_uint8_t length = xed_decoded_inst_get_length(d);
-    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+    xed_uint8_t b;
+    
+    // assumption: length < max_bytes (checked in prefix_scanner)
+    xed_assert(length < xed3_operand_get_max_bytes(d));
+    b = xed_decoded_inst_get_byte(d, length);
 
     /* REX2 Prefix */
     if (b == 0xD5)

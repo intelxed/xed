@@ -614,7 +614,7 @@ def mkenv():
                                  pedantic=True,
                                  clr=False,
                                  use_werror=True,
-                                 security_level=1,
+                                 security_level=2,
                                  show_dag=False,
                                  ext=[],
                                  extf=[],
@@ -2545,7 +2545,9 @@ def get_git_cmd(env):
 
 def get_git_version(env):
     NO_VERSION = '000'
-
+    if "XED_VERSION" in os.environ:
+        # Usual user should NOT use it
+        return f"v{os.environ['XED_VERSION'].strip()}"
     # are we in a GIT repo?
     if os.path.exists(mbuild.join(env['src_dir'],'.git')):
         cmd = get_git_cmd(env) + ' describe --tags'

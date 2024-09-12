@@ -700,6 +700,10 @@ class xed_reader_t(object):
             mod = mod_reg_required.search(v.pattern)
             if mod:
                 v.mod_required = 3
+            
+            v.u_bit = 0
+            if 'UBIT=1' in v.pattern:
+                v.u_bit=1
 
             v.has_modrm = False
             if 'MODRM' in v.pattern: # accounts for normal MODRM and various VSIB types
