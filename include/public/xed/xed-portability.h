@@ -158,7 +158,6 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 #       define XED_INLINE inline
 #    endif
 # endif
-# define XED_NORETURN __attribute__ ((noreturn))
 # if __GNUC__ == 2
 #   define XED_NOINLINE 
 # else
@@ -171,6 +170,15 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 # else
 #   define XED_NOINLINE __declspec(noinline)
 # endif
+#endif
+
+#if __STDC_VERSION__ >= 202311L
+# define XED_NORETURN [[noreturn]]
+#elif __STDC_VERSION__ >= 201112L
+# define XED_NORETURN _Noreturn
+#elif defined(__GNUC__)
+# define XED_NORETURN __attribute__ ((__noreturn__))
+#else
 # define XED_NORETURN __declspec(noreturn)
 #endif
 
