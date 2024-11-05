@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ main(int argc, char** argv)
     format_options.xml_a=0;
     format_options.omit_unit_scale=0;
     format_options.no_sign_extend_signed_immediates=0;
+    format_options.emit_ignored_branch_taken_hint=0;
 
     for(i=1;i<argc;i++) {
         if (strcmp(argv[i], "-xml") == 0) 

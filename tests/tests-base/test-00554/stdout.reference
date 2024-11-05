@@ -1,2 +1,8 @@
-Attempting to decode: ff00ff
-length = 2
+2E48FFC1
+ICLASS:     INC
+CATEGORY:   BINARY
+EXTENSION:  BASE
+IFORM:      INC_GPRv_FFr0
+ISA_SET:    I86
+ATTRIBUTES: SCALABLE 
+SHORT:      hint-not-taken inc rcx

@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ END_LEGAL */
 /// @ingroup INIT
 ///   This is the call to initialize the XED encode and decode tables. It
 ///   must be called once before using XED.
-void XED_DLL_EXPORT  xed_tables_init(void);
+XED_DLL_EXPORT void xed_tables_init(void);
 
 ////////////////////////////////////////////////////////////////////////////
 

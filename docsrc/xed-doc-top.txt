@@ -25,7 +25,7 @@
 /*! 
 @mainpage Intel&reg; X86 Encoder Decoder User Guide
 
-April 2024
+September 2024
 
 @section INTRO Introduction
 
@@ -1344,6 +1344,7 @@ Optional arguments:
     -uc           (upper case hex formatting)
     -pmd          (positive memory displacement formatting)
     -nwm          (Format AVX512 without curly braces for writemasks, include k0)
+    -emit-ignored-branch-hint (emit ignored branch hints during disassembly)
     -emit         (Output __emit statements for the Intel compiler)
     -S file       Read symbol table in "nm" format from file
     -dot FN       (Emit a register dependence graph file in dot format.

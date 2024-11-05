@@ -21,7 +21,6 @@
 import sys
 import re
 import collections
-from typing import List
 import patterns
 import slash_expand
 import genutil
@@ -409,7 +408,7 @@ class xed_reader_t(object):
     def _add_cpuid(self):
         '''set v.cpuid with list of cpuid bits for this instr'''
         for v in self.recs:
-            v.cpuid_groups: List[cpuid_rdr.group_record_t] = []
+            v.cpuid_groups: list[cpuid_rdr.group_record_t] = []
             ky = 'XED_ISA_SET_{}'.format(v.isa_set.upper())
             if ky in self.cpuid_map:
                 v.cpuid_groups = self.cpuid_map[ky]

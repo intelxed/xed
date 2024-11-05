@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2021 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -55,6 +55,9 @@ typedef struct {
     /// Show negative memory displacements as
     /// positive numbers.
     xed_bool_t positive_memory_displacements;
+
+    /// emit ignored branch hints
+    xed_bool_t emit_ignored_branch_taken_hint;
 
 } xed_format_options_t;
 

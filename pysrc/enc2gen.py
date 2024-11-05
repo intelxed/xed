@@ -30,7 +30,6 @@ import argparse
 import itertools
 import collections
 import traceback
-from typing import Dict, Set
 
 import codegen
 import read_xed_db
@@ -5695,7 +5694,7 @@ def emit_encode_functions(args,
     return file_emitters
 
 
-def dump_unsupported_iforms(unsupported_iforms: Dict[str, Set[str]], mode: int, gendir: str):
+def dump_unsupported_iforms(unsupported_iforms: dict[str, set[str]], mode: int, gendir: str):
     """
     dumps sorted dictionary (mapping of ISA to IFORM) into a json file.
 

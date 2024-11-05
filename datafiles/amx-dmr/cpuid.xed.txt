@@ -1,0 +1,38 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2024 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+
+XED_ISA_SET_AMX_FP8             : amx_fp8.1e.1.eax.4
+XED_ISA_SET_AMX_TRANSPOSE       : amx_transpose.1e.1.eax.5
+XED_ISA_SET_AMX_TF32            : amx_tf32.1e.1.eax.6
+XED_ISA_SET_AMX_AVX512          : amx_avx512.1e.1.eax.7 avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AMX_MOVRS           : amx_movrs.1e.1.eax.8
+
+XED_ISA_SET_AMX_TRANSPOSE_MOVRS : amx_transpose.1e.1.eax.5 amx_movrs.1e.1.eax.8
+XED_ISA_SET_AMX_TRANSPOSE_COMPLEX : amx_transpose.1e.1.eax.5 amx_complex_mirrored.1e.1.eax.2
+XED_ISA_SET_AMX_TRANSPOSE_BF16 : amx_transpose.1e.1.eax.5 amx_bf16_mirrored.1e.1.eax.1
+XED_ISA_SET_AMX_TRANSPOSE_FP16 : amx_transpose.1e.1.eax.5 amx_fp16_mirrored.1e.1.eax.3
+XED_ISA_SET_AMX_TRANSPOSE_TF32 : amx_transpose.1e.1.eax.5 amx_tf32.1e.1.eax.6
+
+# Starting with AVX10, feature bits for state-features have moved to their own leaf. 
+# This change provides a single location for developers to find feature bits, simplifying 
+# the process.
+
+XED_ISA_SET_AMX_INT8, AVX10       :  amx_int8_mirrored.1e.1.eax.0
+XED_ISA_SET_AMX_BF16, AVX10       :  amx_bf16_mirrored.1e.1.eax.1
+XED_ISA_SET_AMX_COMPLEX, AVX10    :  amx_complex_mirrored.1e.1.eax.2
+XED_ISA_SET_AMX_FP16, AVX10       :  amx_fp16_mirrored.1e.1.eax.3

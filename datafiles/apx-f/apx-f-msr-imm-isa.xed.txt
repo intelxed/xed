@@ -1,0 +1,59 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2024 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+EVEX_INSTRUCTIONS()::
+# EMITTING RDMSR (RDMSR-128-2)
+{
+ICLASS:      RDMSR
+CPL:         0
+CATEGORY:    SYSTEM
+EXTENSION:   APXEVEX
+ISA_SET:     APX_F_MSR_IMM
+EXCEPTIONS:  MSR-IMM-EVEX
+REAL_OPCODE: N
+ATTRIBUTES:  NOTSX 
+PATTERN:     EVV 0xF6 VF2 MAP7 MOD[0b11] MOD=3 UBIT=1 REG[0b000] RM[nnn] ND=0 NF=0 VL128 mode64 NOEVSR EVAPX() UIMM32()
+OPERANDS:    REG0=GPR64_B():w:q:u64 IMM0:r:d REG1=XED_REG_MSRS:r:SUPP
+IFORM:       RDMSR_GPR64u64_IMM32_APX
+}
+
+
+# EMITTING WRMSRNS (WRMSRNS-128-2)
+{
+ICLASS:      WRMSRNS
+CPL:         0
+CATEGORY:    APX
+EXTENSION:   APXEVEX
+ISA_SET:     APX_F_MSR_IMM
+EXCEPTIONS:  MSR-IMM-EVEX
+REAL_OPCODE: N
+ATTRIBUTES:  NOTSX 
+PATTERN:     EVV 0xF6 VF3 MAP7 MOD[0b11] MOD=3 UBIT=1 REG[0b000] RM[nnn] ND=0 NF=0 VL128 mode64 NOEVSR EVAPX() UIMM32()
+OPERANDS:    IMM0:r:d REG0=GPR64_B():r:q:u64 REG1=XED_REG_MSRS:w:SUPP
+IFORM:       WRMSRNS_IMM32_GPR64u64_APX
+}
+
+

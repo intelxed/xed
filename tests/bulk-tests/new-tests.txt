@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -100,3 +100,5 @@ DEC ENC           ; BUILDDIR/xed -de 660F1F440000
 DEC ENC           ; BUILDDIR/xed -de 0F1F8000000000
 DEC ENC           ; BUILDDIR/xed -de 0F1F840000000000
 DEC ENC           ; BUILDDIR/xed -de 660F1F840000000000
+# Test disassembly of ignored branch hints
+DEC               ; BUILDDIR/xed -64 -emit-ignored-branch-hint -d 2E48FFC1

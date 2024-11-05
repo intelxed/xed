@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -281,7 +281,7 @@ void xed_print_hex_line(char* buf,
 
 
 
-void XED_NORETURN xedex_derror(const char* s) {
+XED_NORETURN void xedex_derror(const char* s) {
     printf("[XED CLIENT ERROR] %s\n",s);
     exit(1);
 }
@@ -1130,7 +1130,7 @@ check_resync(xed_disas_info_t* di,
     return 0;
 }
     
-static void XED_NORETURN
+XED_NORETURN static void
 die_zero_len(
     xed_uint64_t runtime_instruction_address,
     unsigned char* z,

@@ -34,7 +34,6 @@ import copy
 import time
 import collections
 import stat
-from typing import List
 
 def _fatal(m):
     sys.stderr.write("\n\nXED ERROR: %s\n\n" % (m) )
@@ -596,11 +595,7 @@ def setup_hooks(env):
     
 def mkenv():
     """External entry point: create the environment"""
-    if sys.version_info[0] == 3:
-        if sys.version_info[1] < 8:
-            xbc.cdie("Need python version 3.8 or later.")
-    else:
-        xbc.cdie("Need python version 3.8 or later.")
+    mbuild.check_python_version(3,9)
 
     # create an environment, parse args
     env = mbuild.env_t()
@@ -638,6 +633,7 @@ def mkenv():
                                  spr=True,
                                  srf=True,  # sierra forest
                                  gnr=True,  # granite rapids
+                                 dmr=True,  # Diamond rapids
                                  arl=True,  # arrow lake
                                  lnl=True,  # lunar lake
                                  cwf=True,  # clearwater forest
@@ -686,6 +682,7 @@ def mkenv():
                                  enc2_test=False,
                                  enc2_test_checked=False,
                                  enc2_operands_checked=False,
+                                 py_export=False,
                                  first_lib=None,
                                  last_lib=None,
                                  setup_hooks=False)
@@ -885,6 +882,10 @@ def xed_args(env):
                           action="store_false",
                           dest="gnr",
                           help="Disable Granite Rapids public instructions")
+    env.parser.add_option("--no-dmr",
+                          action="store_false",
+                          dest="dmr",
+                          help="Disable Diamond Rapids public instructions")
     env.parser.add_option("--no-srf",
                           action="store_false",
                           dest="srf",
@@ -1037,6 +1038,10 @@ def xed_args(env):
                           action="store",
                           dest="encoder_chip",
                           help="Specific encoder chip. Default is ALL")
+    env.parser.add_option("--py-export", 
+                          action="store_true",
+                          dest="py_export",
+                          help="Export XED APIs with a '_py' suffixed func name")
     env.parser.add_option("--setup-hooks", 
                           action="store_true",
                           dest="setup_hooks",
@@ -1059,7 +1064,7 @@ def init(env):
                 xbc.cdie("Cannot build with cygwin python. " +
                            "Please install win32 python")
             if mbuild.is_python3():
-                vers = ['311', '310', '39', '38', '37', '36', '35']
+                vers = ['312', '311', '310', '39']
                 python_commands = [ 'c:/python{}/python.exe'.format(x) for x in vers ]
             else:
                 vers = ['27','26','25']
@@ -1333,6 +1338,12 @@ def _parse_extf_files_new(env, gc):
             else:
                 mbuild.vmsgb(1, f'[ENC2] EXCLUDED ISA FILE: {f}')
 
+    if not env['py_export']:
+        # TBD - the 'xed-export-functions.c' file should be generated on build phase
+        py_export_sources = ['xed-export-functions.c']
+        for s in py_export_sources:
+            sources_to_remove.append(s)
+
     return (sources_to_remove, sources_to_add, sources_to_replace )
 
 def _replace_sources(srclist, sources_to_replace):
@@ -1364,7 +1375,7 @@ def _configure_libxed_extensions(env):
     if env['avx']:
         env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr', 'gnr']):
+    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr', 'gnr', 'dmr']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['mpx']:
         env.add_define('XED_MPX')
@@ -1531,7 +1542,6 @@ def _configure_libxed_extensions(env):
         if env['spr']:
             _add_normal_ext(env,'spr')
             _add_normal_ext(env,'hreset')
-            _add_normal_ext(env,'uintr')
             _add_normal_ext(env,'cldemote')
             _add_normal_ext(env,'avx-vnni')
             _add_normal_ext(env,'amx-spr')
@@ -1550,6 +1560,23 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'amx-fp16')
             _add_normal_ext(env,'amx-complex')
             _add_normal_ext(env,'iprefetch')
+        if env['dmr']:
+            _add_normal_ext(env,'dmr')
+            _add_normal_ext(env,'vex-map5')
+            _add_normal_ext(env,'apx-f') # No promoted rao-int
+            _add_normal_ext(env,'amx-dmr')
+            _add_normal_ext(env,'avx10-2')
+            _add_normal_ext(env,'movrs')
+            _add_normal_ext(env,'sm4-evex')
+            _add_normal_ext(env,'avx-ifma')
+            _add_normal_ext(env,'avx-ne-convert')
+            _add_normal_ext(env,'avx-vnni-int8')
+            _add_normal_ext(env,'cmpccxadd')
+            _add_normal_ext(env,'avx-vnni-int16')
+            _add_normal_ext(env,'sha512')
+            _add_normal_ext(env,'sm3')
+            _add_normal_ext(env,'sm4')
+            _add_normal_ext(env,'uintr')
         if env['srf']:
             _add_normal_ext(env,'srf')  
             _add_normal_ext(env,'avx-ifma')
@@ -1569,6 +1596,7 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'sm3')
             _add_normal_ext(env,'sm4')
             _add_normal_ext(env,'vex-map7')
+            _add_normal_ext(env,'msr-imm')
         if env['arl']:
             _add_normal_ext(env,'arrow-lake')
             _add_normal_ext(env, 'uintr')
@@ -1582,7 +1610,6 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'sm4')
         if env['lnl']:
             _add_normal_ext(env,'lunar-lake')
-            _add_normal_ext(env,'pbndkb')
         if env['ptl']:
             _add_normal_ext(env,'ptl')
             _add_normal_ext(env,'iprefetch')
@@ -1591,9 +1618,10 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'fred')
         if env['future']:
             _add_normal_ext(env,'future')
-            _add_normal_ext(env,'apx-f')
+            _add_normal_ext(env,'pbndkb')
             _add_normal_ext(env,'rao-int')
-            _add_normal_ext(env,'avx10-2')            
+            _add_normal_ext(env,'apx-f', 'apx-f-future-ext.cfg')
+            
 
     env['extf'] = newstuff + env['extf']
 
@@ -2140,7 +2168,7 @@ def build_examples(env):
     env_ex = copy.deepcopy(env)
     
     # Some build flags disturb the example build process
-    exclude_flags: List[str] = []
+    exclude_flags: list[str] = []
     if env.on_windows():
         exclude_flags.append('/bigobj') # not supported by xed cmd tool
     for f in exclude_flags:
@@ -2781,6 +2809,7 @@ def verify_args(env):
         env['cwf'] = False
         env['ptl'] = False
         env['emr'] = False
+        env['dmr'] = False
         env['future'] = False
 
     # default is enabled. oldest disable disables upstream (younger, newer) stuff.
@@ -2830,13 +2859,15 @@ def verify_args(env):
         env['emr'] = False
     if not env['emr']:
         env['gnr'] = False
+    if not env['gnr']:
+        env['dmr'] = False
     if not env['arl']:
         env['lnl'] = False
     if not env['srf']:
         env['cwf'] = False
     if not env['lnl']:
         env['ptl'] = False
-    if not env['gnr'] or not env['cwf'] or not env['ptl']: 
+    if not env['dmr'] or not env['cwf'] or not env['ptl']: 
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:

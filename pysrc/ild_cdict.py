@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 #  
 #END_LEGAL
 from enum import Enum, auto
-from typing import Dict, List
 import math
 import copy
 import collections
@@ -252,13 +251,13 @@ class bit(Enum):
     ZERO  = auto()
     DCARE = auto() # Don't-care
 
-def get_constraint_bit(constraints : Dict[str, dict], op : str,
+def get_constraint_bit(constraints : dict[str, dict], op : str,
                        all_ops_widths: dict ) -> bit:
     """
     Represent XED operand constraint as a bit, if possible.
 
     Args:
-        constraints (Dict[str, dict]): All pattern constraints
+        constraints (dict[str, dict]): All pattern constraints
         op (str): Convert this operand constraints into bit representation
         all_ops_widths (dict): dict of operands width
 
@@ -271,7 +270,7 @@ def get_constraint_bit(constraints : Dict[str, dict], op : str,
             # No operand constrains means don't-care
             return bit.DCARE
         
-        constr : Dict[int, bool] = constraints[op]
+        constr : dict[int, bool] = constraints[op]
         if constr == {1:True}:
                 return bit.ONE
         elif constr == {0:True}:
@@ -282,7 +281,7 @@ def get_constraint_bit(constraints : Dict[str, dict], op : str,
     
     return None 
 
-def _has_VEXDEST_equals_1F_restriction(cnames : set, ptrn_list : 'List[ild.pattern_t]',
+def _has_VEXDEST_equals_1F_restriction(cnames : set, ptrn_list : 'list[ild.pattern_t]',
                                        all_ops_widths : dict):
     """Return true if all patterns includes VVVVV=1F or VVVVV=any restriction.
        In this case, we can replace all VEXDEST210, VEXDEST3, VEXDEST4 restrictions with one 
@@ -319,7 +318,7 @@ def _has_VEXDEST_equals_1F_restriction(cnames : set, ptrn_list : 'List[ild.patte
     # At this point, all patterns restrictions are VVVVV trivial (all_ones or don't-care)
     return True
 
-def _replace_VEXDEST_with_VD1F(cnames : set, ptrn_list : 'List[ild.pattern_t]'):
+def _replace_VEXDEST_with_VD1F(cnames : set, ptrn_list : 'list[ild.pattern_t]'):
     """ Replace VEXDEST210, VEXDEST3, VEXDEST4 constrains with  VEXDEST_1F """    
     cnames.remove(_vd_token_7_ones)
     cnames.remove(_vd_token3)
@@ -416,7 +415,7 @@ def _has_MASK_ZERO_restriction(cnames, ptrn_list):
         return False
     for ptrn in ptrn_list:
         if _mask_token in ptrn.constraints:
-            cvals : Dict[int, bool] = ptrn.constraints[_mask_token]
+            cvals : dict[int, bool] = ptrn.constraints[_mask_token]
             if cvals == {0:True}:
                 for bt in ptrn.ii.ipattern.bits:
                     if bt.token == _mask_token:
@@ -489,7 +488,7 @@ def replacement_stats():
         s.append('{} {}'.format(x,y))
     return ', '.join(s)
 
-def _get_united_cdict(ptrn_list : list, state_space : Dict[str, Dict[int,bool]], 
+def _get_united_cdict(ptrn_list : list, state_space : dict[str, dict[int,bool]], 
                       vexvalid : str, all_ops_widths : dict):
     """@param ptrn_list: list of ild.pattern_t
     @param state_space: all legal values for xed operands:
@@ -513,7 +512,7 @@ def _get_united_cdict(ptrn_list : list, state_space : Dict[str, Dict[int,bool]],
     # avoid the following filtering by vexvalid.
     
     #filter by encoding space (vexvalid)
-    ptrns : List[ild.pattern_t] = []
+    ptrns : list[ild.pattern_t] = []
     ivv = int(vexvalid)
     for ptrn in ptrn_list:
         #FIXME: 2019-10-30: if vexvalid in list(ptrn.special_constraints['VEXVALID'].keys()):

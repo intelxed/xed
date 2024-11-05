@@ -54,7 +54,7 @@ void xed_print_hex_line(char* buf,
                         const unsigned int length, 
                         const unsigned int buflen); 
 
-void XED_NORETURN xedex_derror(const char* s);
+XED_NORETURN void xedex_derror(const char* s);
 void xedex_dwarn(const char* s);
 
 //////////////////////////////////////////////////////////////////////

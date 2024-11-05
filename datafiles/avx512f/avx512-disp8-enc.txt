@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -46,49 +46,14 @@ otherwise -> nothing
 NELEM_EIGHTHMEM():: 
 otherwise -> nothing
 
-NELEM_GPR_READER_BYTE()::
-otherwise -> nothing
-NELEM_GPR_READER_WORD()::
-otherwise -> nothing
-NELEM_GPR_WRITER_LDOP_D()::
-otherwise -> nothing
-NELEM_GPR_WRITER_LDOP_Q()::
-otherwise -> nothing
-NELEM_GPR_WRITER_STORE_BYTE()::
-otherwise -> nothing
-NELEM_GPR_WRITER_STORE_WORD()::
-otherwise -> nothing
-NELEM_TUPLE1_BYTE()::
-otherwise -> nothing
-NELEM_TUPLE1_WORD()::
-otherwise -> nothing
-
-NELEM_SCALAR()::
-otherwise -> nothing
-NELEM_TUPLE1_SUBDWORD()::
-otherwise -> nothing
-NELEM_GPR_READER()::
-otherwise -> nothing
-NELEM_GPR_READER_SUBDWORD()::
-otherwise -> nothing
-NELEM_GPR_WRITER_LDOP()::
-otherwise -> nothing
-NELEM_GPR_WRITER_STORE()::
-otherwise -> nothing
-NELEM_GPR_WRITER_STORE_SUBDWORD()::
-otherwise -> nothing
-
 NELEM_MEM128()::
 BCAST!=0    -> error
 otherwise   -> BCRC=0
 
-# TUPLE1,2,4,8, FULL and HALF
-
-NELEM_TUPLE1()::
+NELEM_ONE()::
 otherwise -> nothing
 
-NELEM_GSCAT()::
-otherwise -> nothing
+# TUPLE 2,4,8, FULL and HALF
 
 NELEM_TUPLE2()::
 otherwise -> nothing

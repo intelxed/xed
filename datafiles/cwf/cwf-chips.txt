@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,4 +23,5 @@ CLEARWATER_FOREST:      \
   AVX_VNNI_INT16        \
   SM4                   \
   SM3                   \
-  SHA512
+  SHA512                \
+  MSR_IMM

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -174,14 +174,6 @@ xed_operand_values_get_displacement_for_memop(const xed_operand_values_t* p);
 XED_DLL_EXPORT xed_bool_t
 xed_operand_values_has_immediate(const xed_operand_values_t* p);  
 
-
-/// @ingroup OPERANDS    
-/// ALIAS for has_displacement().
-/// Deprecated. See has_memory_displacement() and
-/// has_branch_displacement().
-XED_DLL_EXPORT xed_bool_t
-xed_operand_values_has_disp(const xed_operand_values_t* p);  
-
 /// @ingroup OPERANDS    
 /// This indicates the presence of a 67 prefix.
 XED_DLL_EXPORT xed_bool_t 
@@ -216,10 +208,6 @@ xed_operand_values_has_segment_prefix(const xed_operand_values_t* p);
 /// Return the segment prefix, if any, as a #xed_reg_enum_t value.
 XED_DLL_EXPORT xed_reg_enum_t
 xed_operand_values_segment_prefix(const xed_operand_values_t* p);
-
-/// @ingroup OPERANDS    
-XED_DLL_EXPORT xed_bool_t
-xed_operand_values_is_prefetch(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS    
 XED_DLL_EXPORT xed_bool_t
@@ -294,6 +282,16 @@ xed_operand_values_branch_not_taken_hint(const xed_operand_values_t* p);
 /// Returns  true if 0x3E prefix on Jcc
 XED_DLL_EXPORT xed_bool_t
 xed_operand_values_branch_taken_hint(const xed_operand_values_t* p);
+
+/// @ingroup OPERANDS
+/// Returns  true if instruction has ignored 0x2E prefix
+xed_bool_t
+xed_operand_values_ignored_branch_not_taken_hint(const xed_operand_values_t* p);
+
+/// @ingroup OPERANDS
+/// Returns  true if instruction has ignored 0x3E prefix
+xed_bool_t
+xed_operand_values_ignored_branch_taken_hint(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS
 /// Returns true for indirect call/jmp with 0x3E prefix (if the legacy prefix rules are obeyed)

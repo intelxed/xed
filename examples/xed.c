@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -274,6 +274,7 @@ static void usage(char* prog) {
       "\t-uc           (upper case hex formatting)",
       "\t-pmd          (positive memory displacement formatting)",
       "\t-nwm          (Format AVX512 without curly braces for writemasks, include k0)",
+      "\t-emit-ignored-branch-hint (emit ignored branch hints during disassembly)",
       "\t-emit         (Output __emit statements for the Intel compiler)",
       "\t-S file       Read symbol table in \"nm\" format from file",
 #if defined(XED_DWARF) 
@@ -518,6 +519,9 @@ main(int argc, char** argv)
         }
         else if (strcmp(argv[i],"-nwm")==0)      {
             format_options.write_mask_curly_k0 = 0;
+        }
+        else if (strcmp(argv[i],"-emit-ignored-branch-hint")==0)         {
+            format_options.emit_ignored_branch_taken_hint = 1;
         }
 #if defined(XED_DWARF) 
         else if (strcmp(argv[i],"-line")==0)      {

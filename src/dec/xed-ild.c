@@ -1262,6 +1262,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
     {
         xed_uint8_t max_bytes = xed3_operand_get_max_bytes(d);
         xed_evex_payload1_t evex1;
+        xed_uint_t eff_map;
         // check that it is not a BOUND instruction
         if (length + 1 < max_bytes) {
             evex1.u8 = xed_decoded_inst_get_byte(d, length+1);
@@ -1279,7 +1280,8 @@ static void evex_scanner(xed_decoded_inst_t* d)
         // Link to the EVEX encoding space
         xed3_operand_set_vexvalid(d, 2);
 
-        if (evex1.coarse.map == 0) {
+        eff_map = set_evex_map(d, evex1);
+        if (eff_map == 0) {
             xed_decoded_inst_set_length(d, length+2);
             bad_map(d);
             return; 
@@ -1291,7 +1293,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
         for an opcode */
         if (length + 4 < max_bytes) {
             xed_evex_payload2_t evex2;
-            xed_uint_t eff_map;
 
             evex2.u8 = xed_decoded_inst_get_byte(d, length+2);
 
@@ -1303,7 +1304,6 @@ static void evex_scanner(xed_decoded_inst_t* d)
                 xed3_operand_set_rexr4(d, ~evex1.s.rr_inv & 1);
             }
 
-            eff_map = set_evex_map(d, evex1);
             if (xed_ild_map_valid_evex(eff_map) == 0) {
                 xed_decoded_inst_set_length(d, length+4);    // we saw 62 xx xx xx opc
                 bad_map(d);

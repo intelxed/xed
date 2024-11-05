@@ -19,7 +19,7 @@
 #END_LEGAL
 
 import re
-from typing import Optional, List, Dict, Set
+from typing import Optional
 
 from verbosity import *
 import genutil
@@ -47,7 +47,7 @@ class operand_info_t(object):
                  lookupfn_name: Optional[str] = None,
                  vis: str = 'DEFAULT',
                  oc2: Optional[str] = None,
-                 cvt: Optional[List[str]] = None,
+                 cvt: Optional[list[str]] = None,
                  xtype: Optional[str] = None,
                  internal: bool = False,
                  multireg: int = 0):
@@ -300,8 +300,8 @@ convert_pattern = re.compile(r'TXT=(?P<rhs>[0-9A-Za-z_]+)')
 
 def parse_one_operand(w,
                       default_vis: str = 'DEFAULT',
-                      xtypes: Optional[Set[str]] = None,
-                      default_xtypes: Optional[Dict[str, str]] = None,
+                      xtypes: Optional[set[str]] = None,
+                      default_xtypes: Optional[dict[str, str]] = None,
                       internal: bool = False,
                       skip_encoder_conditions: bool = True) -> Optional[operand_info_t]:
     """

@@ -65,7 +65,7 @@ import glob
 import re
 import optparse
 import collections
-from typing import Dict, List, Optional
+from typing import Optional
 
 from genutil import add_mbuild_to_path, find_dir
 
@@ -106,7 +106,7 @@ if send_stdout_message_to_file:
    set_msgs(open(fn,"w"))
    sys.stderr.write("Writing messages to file: [" + fn + "]\n")
 
-check_python_version(2,4)
+genutil.check_python_version(3,9)
 
 from codegen import *
 import metaenum
@@ -930,14 +930,14 @@ class partitionable_info_t(object):
 
       self.ipattern_input = ipattern_input
       self.ipattern : bits_list_t = None
-      self.prebindings : Dict[str, prebinding_t] = {}
+      self.prebindings : dict[str, prebinding_t] = {}
 
       if operands_input:
           self.operands_input = operands_input
       else:
           self.operands_input = []
 
-      self.operands : List[opnds.operand_info_t] = []
+      self.operands : list[opnds.operand_info_t] = []
 
       # FOR HIERARCHICAL RECORDS -- THESE GET SPLIT OFF AFTER RECORD-READ
       self.extra_ipatterns = []
@@ -4870,23 +4870,23 @@ class generator_common_t(object):
 
    def __init__(self):
       self.options: Optional[object] = None
-      self.state_bits: Optional[Dict[str, state_info_t]] = None
+      self.state_bits: Optional[dict[str, state_info_t]] = None
 
       # dictionary of all values of each state restriction (operand_decider)
-      self.state_space: Optional[Dict[str, List[str]]] = None
+      self.state_space: Optional[dict[str, list[str]]] = None
 
       self.enc_file: Optional[xed_file_emitter_t] = None
       self.inst_file: Optional[xed_file_emitter_t] = None
       self.operand_storage_header_file: Optional[xed_file_emitter_t] = None
       self.operand_storage_src_file: Optional[xed_file_emitter_t] = None
 
-      self.header_file_names: List[str] = []
-      self.source_file_names: List[str] = []
-      self.file_pointers: List[xed_file_emitter_t] = []
+      self.header_file_names: list[str] = []
+      self.source_file_names: list[str] = []
+      self.file_pointers: list[xed_file_emitter_t] = []
 
-      self.inst_table_file_names: List[str] = []
+      self.inst_table_file_names: list[str] = []
 
-   def get_state_space_values(self, od_token: str) -> List[str]:
+   def get_state_space_values(self, od_token: str) -> list[str]:
        """
        Get the list of values associated with `operand_decider_token`
        """
@@ -4978,13 +4978,13 @@ class generator_info_t(generator_common_t):
       self.graph: Optional[graph_node] = None
 
       # Unique list of iclasses
-      self.iclasses: Dict[str, bool] = {}
+      self.iclasses: dict[str, bool] = {}
 
       # list of tuples of (nonterminal names, max count of how many
       # there are of this one per instruction)
-      self.nonterminals: List[Tuple[str, int]] = []
+      self.nonterminals: list[tuple[str, int]] = []
 
-      self.operands: Optional[List[opnds.operand_info_t]] = None
+      self.operands: Optional[list[opnds.operand_info_t]] = None
 
       
    def nonterminal_name(self) -> str:
@@ -5010,7 +5010,7 @@ class generator_info_t(generator_common_t):
 # $$ all_generator_info_t
 class all_generator_info_t(object):
    """
-   List of generators, each with its own graph
+   list of generators, each with its own graph
    """
 
    def __init__(self,options):
@@ -5019,25 +5019,25 @@ class all_generator_info_t(object):
       self.common.options = options
       self.common.open_all_files()
 
-      self.generator_list: List[generator_info_t] = []
-      self.generator_dict: Dict[str, generator_info_t] = {} # access by NT name
+      self.generator_list: list[generator_info_t] = []
+      self.generator_dict: dict[str, generator_info_t] = {} # access by NT name
       self.nonterminal_dict: nonterminal_dict_t = nonterminal_dict_t()
 
-      self.src_files: List[str] = []
-      self.hdr_files: List[str] = []
+      self.src_files: list[str] = []
+      self.hdr_files: list[str] = []
 
       # list of map_info_rdr.map_info_t describing valid maps for this
       # build.
-      self.map_info: List[map_info_rdr.map_info_t] = []
+      self.map_info: list[map_info_rdr.map_info_t] = []
 
       # enum lists
-      self.operand_types: Dict[str, bool] = {} # typename -> True
-      self.operand_widths: Dict[str, bool] = {} # width -> True # oc2
-      self.operand_names: Dict[str, str] = {} # name -> Type
-      self.iclasses: List[str] = []
-      self.categories: List[str] = []
-      self.extensions: List[str] = []
-      self.attributes: List[str] = []
+      self.operand_types: dict[str, bool] = {} # typename -> True
+      self.operand_widths: dict[str, bool] = {} # width -> True # oc2
+      self.operand_names: dict[str, str] = {} # name -> Type
+      self.iclasses: list[str] = []
+      self.categories: list[str] = []
+      self.extensions: list[str] = []
+      self.attributes: list[str] = []
 
       # for emitting defines with limits
       self.max_iclass_strings: int = 0
@@ -5046,12 +5046,12 @@ class all_generator_info_t(object):
 
       # this is the iclasses in the order of the enumeration for us in
       # initializing other structures.
-      self.iclasses_enum_order: Optional[List[str]] = None
+      self.iclasses_enum_order: Optional[list[str]] = None
 
       # function_object_ts
       self.itable_init_functions: table_init_object_t = table_init_object_t('xed-init-inst-table-',
                                                                     'xed_init_inst_table_')
-      self.encode_init_function_objects: List[function_object_t] = []
+      self.encode_init_function_objects: list[function_object_t] = []
 
       self.operand_storage: Optional[operands_storage_t] = None
 
@@ -5069,17 +5069,17 @@ class all_generator_info_t(object):
 
       # dict "iclass:extension" -> ( iclass,extension, 
       #                               category, iform_enum, properties-list)
-      self.iform_info: Dict[str, Tuple[str, str, str, str, List[str], int]] = {}
+      self.iform_info: dict[str, tuple[str, str, str, str, list[str], int]] = {}
 
-      self.attributes_dict: Dict[str, int] = {}
+      self.attributes_dict: dict[str, int] = {}
       self.attr_next_pos: int  = 0
-      self.attributes_ordered: Optional[list[Tuple[int, str]]]  = None
-      self.sorted_attributes_dict: Dict[str, int] = {}
+      self.attributes_ordered: Optional[list[tuple[int, str]]]  = None
+      self.sorted_attributes_dict: dict[str, int] = {}
 
       # a dict of all the enum names to their values.
       # passed to operand storage in order to calculate
       # the number of required bits
-      self.all_enums: Dict[str, list[str]] = {}
+      self.all_enums: dict[str, list[str]] = {}
 
       # these are xed_file_emitter_t objects
       self.flag_simple_file = self.common.open_file("xed-flags-simple.c", start=False)
@@ -5287,7 +5287,7 @@ class all_generator_info_t(object):
       fi.close()
 
       
-   def handle_prefab_enum(self, enum_file_name: str) -> List[str]:
+   def handle_prefab_enum(self, enum_file_name: str) -> list[str]:
       # parse the enum file and get the c and h file names
       gendir = self.common.options.gendir
       m=metaenum.metaenum_t(enum_file_name,gendir)

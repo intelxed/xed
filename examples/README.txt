@@ -1,6 +1,6 @@
 
 
-To build the examples, a relatively recent version of python 3.8 is required.
+To build the examples, a relatively recent version of python 3.9 is required.
 
 ================================
 STATIC LIBRARY XED BUILD:

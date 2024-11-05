@@ -19,7 +19,6 @@ from enum import Enum
 import genutil
 from genutil import die
 import re
-from typing import Dict, List
 
 ### Data types ###
 class cpuid_record_t:
@@ -191,7 +190,7 @@ class group_record_t:
         self.name: str = self.isa_set
         if self.kind != DEFAULT_CPUID_GROUP:
             self.name = f'{self.name}_{self.get_kind_name()}'
-        self.records: List[cpuid_record_t] = []
+        self.records: list[cpuid_record_t] = []
     
     def get_name(self) -> str:
         """ Return the group name """
@@ -205,7 +204,7 @@ class group_record_t:
         """ Returns a sorting key for isa-set's group list """
         return self.kind.value
 
-    def get_records(self) -> List[cpuid_record_t]:
+    def get_records(self) -> list[cpuid_record_t]:
         """ Return a list of the group's cpuid records """
         return self.records
 
@@ -213,13 +212,13 @@ class group_record_t:
         """ Returns the number of cpuid records """
         return len(self.get_records())
 
-    def add_records_from_str(self, records: List[str]) -> int:
+    def add_records_from_str(self, records: list[str]) -> int:
         """
         Convert a string of cpuid records to cpuid_record_t and store as a
         group record.
 
         Args:
-            records (List[str]): cpuid records in a XED config format
+            records (list[str]): cpuid records in a XED config format
 
         Returns:
             int: Returns the total number of group's records
@@ -258,9 +257,9 @@ class group_record_t:
 
 
 ### Type Hints ###
-cpuid_rec_info_map_t = Dict[str, cpuid_record_t]     # d[cpuid-name] = cpuid_record_t
-cpuid_group_info_map_t = Dict[str, group_record_t]   # d[group-name] = group_record_t
-isaset_cpuid_map_t = Dict[str, List[group_record_t]] # d[isa-set] = Lits[group_record_t]
+cpuid_rec_info_map_t = dict[str, cpuid_record_t]     # d[cpuid-name] = cpuid_record_t
+cpuid_group_info_map_t = dict[str, group_record_t]   # d[group-name] = group_record_t
+isaset_cpuid_map_t = dict[str, list[group_record_t]] # d[isa-set] = Lits[group_record_t]
 ##################
 
 def make_cpuid_rec_info_map(isaset_cpuid_map : isaset_cpuid_map_t) -> cpuid_rec_info_map_t:
@@ -336,7 +335,7 @@ def read_file(fn : str) -> isaset_cpuid_map_t:
     d: isaset_cpuid_map_t = {}  # d[isa-set] = Lits[group_record_t]
     for line in lines:
         row_key, row_val = line.split(':', 1)
-        row_key_list: List[str] = row_key.replace(' ', '').upper().split(',')
+        row_key_list: list[str] = row_key.replace(' ', '').upper().split(',')
         assert len(row_key_list) in [1,2], f'Illegal cpuid key format: {row_key}'
         
         isa_set = row_key_list[0]
@@ -352,7 +351,7 @@ def read_file(fn : str) -> isaset_cpuid_map_t:
             group_kind = group_kind_t.AVX10
             
         if isa_set in d:
-            isa_set_groups: List[group_kind_t] = [grp.kind for grp in d[isa_set]]
+            isa_set_groups: list[group_kind_t] = [grp.kind for grp in d[isa_set]]
             if group_kind in isa_set_groups:
                 msg = "Duplicate group definition for isa set. isa-set={} \nold={} \nnew={}"
                 genutil.die(msg.format(isa_set, d[isa_set], line))

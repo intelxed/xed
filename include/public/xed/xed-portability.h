@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -147,6 +147,15 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 # define XED_FMT_SIZET "%lu"
 #endif
 
+// Use modern C-standard declaration. 
+// If unavailable, fallback to compiler-specific attributes (below)
+#if __STDC_VERSION__ >= 202311L
+# define XED_NORETURN [[noreturn]]
+#elif __STDC_VERSION__ >= 201112L
+# define XED_NORETURN _Noreturn
+#endif
+
+
 #if defined(__GNUC__)    
      /* gcc4.2.x has a bug with c99/gnu99 inlining */
 #  if __GNUC__ == 4 && __GNUC_MINOR__ == 2
@@ -157,8 +166,10 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 #    else 
 #       define XED_INLINE inline
 #    endif
+#  endif
+# if !defined(XED_NORETURN) // If not set according to a modern C standard syntax
+#   define XED_NORETURN __attribute__((noreturn))
 # endif
-# define XED_NORETURN __attribute__ ((noreturn))
 # if __GNUC__ == 2
 #   define XED_NOINLINE 
 # else
@@ -171,7 +182,9 @@ XED_DLL_EXPORT int xed_strncat(char* dst, const char* src,  int len);
 # else
 #   define XED_NOINLINE __declspec(noinline)
 # endif
-# define XED_NORETURN __declspec(noreturn)
+# if !defined(XED_NORETURN) // If not set according to a modern C standard syntax
+#   define XED_NORETURN __declspec(noreturn)
+# endif
 #endif
 
 

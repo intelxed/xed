@@ -233,6 +233,7 @@ static xed_format_options_t xed_format_options = {
     1, /* writemask with curly brackets, omit k0 */
     1, /* lowercase hexadecimal */
     0, /* 0=allow negative memory displacements */
+    0, /* emit ignored branch hints */
 };
 
 void xed_format_set_options(xed_format_options_t format_options) {
@@ -327,6 +328,12 @@ xed_decoded_inst_dump_common(xed_print_info_t* pi)
         xed_prefixes(pi,"hint-taken");
     else if (xed_operand_values_cet_no_track(ov))
         xed_prefixes(pi,"notrack");
+    else if (pi->format_options.emit_ignored_branch_taken_hint 
+                && xed_operand_values_ignored_branch_not_taken_hint(ov))
+        xed_prefixes(pi,"hint-not-taken");
+    else if (pi->format_options.emit_ignored_branch_taken_hint
+                 && xed_operand_values_ignored_branch_taken_hint(ov))
+        xed_prefixes(pi,"hint-taken");
 
     if (xed_operand_values_has_address_size_prefix(ov)) {
         if (xed_decoded_inst_explicit_memop(pi->p) == 0) {

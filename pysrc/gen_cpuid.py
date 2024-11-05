@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #  
 #END_LEGAL
 from __future__ import print_function
-from typing import Set
+
 import sys
 import gen_setup
 
@@ -39,7 +39,7 @@ def work(args):  # main function
     for r in xeddb.recs:
         if not r.cpuid_groups:
             continue
-        cpuids: Set[str] = set()
+        cpuids: set[str] = set()
         for grp in r.cpuid_groups:
             cpuids.update([str(rec) for rec in grp.get_records()])
         if r.space in ['vex','evex']:

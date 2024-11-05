@@ -74,12 +74,7 @@ def find_mbuild_import():
     sys.path.insert(0,mbuild_install_path)
     
 def work():
-    if sys.version_info[0] == 3:
-        if sys.version_info[1] < 8:
-            fatal("Need python version 3.8 or later.")
-    else:
-        fatal("Need python version 3.8 or later.")
-        
+    genutil.check_python_version(3,9)
     try:
         find_mbuild_import()
     except:

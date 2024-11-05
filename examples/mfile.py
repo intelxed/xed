@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -64,12 +64,8 @@ def _find_common():
     _fatal("Could not find xed_build_common.py")
 
 def setup():
-    if sys.version_info[0] == 3:
-        if sys.version_info[1] < 8:
-            _fatal("Need python version 3.8 or later.")
-    else:
-        _fatal("Need python version 3.8 or later.")
     _find_mbuild_import()
+    mbuild.check_python_version(3,9)
     # when building in the source tree the xed_build_common.py file is
     # in the parent directory of the examples. When building in the
     # kit that file is in the example source directory.

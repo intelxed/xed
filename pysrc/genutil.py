@@ -25,7 +25,7 @@ import copy
 import re
 import stat
 import platform
-from typing import Tuple, Any, List, Dict, Optional
+from typing import Any, Optional
 
 psystem = platform.system()
 if (psystem == 'Microsoft' or
@@ -121,7 +121,7 @@ def check_python_version(argmaj: int, argmin: int):
     if ((major > argmaj) or
             (major == argmaj and minor >= argmin)):
         return
-    die('Need Python version %d.%d or later.' % (argmaj, argmin))
+    die(f'Need Python version {argmaj}.{argmin} or later (current version: {major}.{minor}).')
 
 def make_readable_by_all_writeable_by_owner(file_name: str, errorname: str = ''):
     try:
@@ -166,7 +166,7 @@ def format_resource_usage(x) -> str:
     #s += ' maxstk: ' + str(x[5])
     return s
 
-def get_memory_usage() -> Tuple[int, int, int]:
+def get_memory_usage() -> tuple[int, int, int]:
     """Return a tuple of (vmsize, vmrss, vmdata) on linux systems with
     /proc filesystems."""
     try:
@@ -202,7 +202,7 @@ def flatten_sub(retlist, cur_list, rest):
         flatten_sub(retlist, cur_list, rest[1:])
 
 
-def flatten(list_with_sublists: List[List[Any]]) -> List[Any]:
+def flatten(list_with_sublists: list[list[Any]]) -> list[Any]:
     """
     Take a list with some possible sublists, and return a list of
     lists of flat lists. All possible combinations.
@@ -217,7 +217,7 @@ def flatten(list_with_sublists: List[List[Any]]) -> List[Any]:
     return retval
 
 
-def flatten_dict_sub(retlist: List[Any], cur_dict: Dict[Any, Any], main_dict_with_lists: Dict[Any, Any], rest_keys: List[Any]):
+def flatten_dict_sub(retlist: list[Any], cur_dict: dict[Any, Any], main_dict_with_lists: dict[Any, Any], rest_keys: list[Any]):
     if len(rest_keys) == 0:
         retlist.append(cur_dict)
         return
@@ -236,7 +236,7 @@ def flatten_dict_sub(retlist: List[Any], cur_dict: Dict[Any, Any], main_dict_wit
         flatten_dict_sub(retlist, cur_dict, main_dict_with_lists, rest_keys[1:])
 
 
-def flatten_dict(dict_with_lists: Dict[Any, Any]) -> List[Dict[Any, Any]]:
+def flatten_dict(dict_with_lists: dict[Any, Any]) -> list[dict[Any, Any]]:
     """
     Take a dict with some possible sublists, and return a list of
     dicts where no rhs is a list. All possible combinations.
@@ -272,7 +272,7 @@ def convert_binary_to_hex(bit_string: str) -> str:
     return hexnum
 
 
-def decimal_to_binary(i: int) -> List[str]:
+def decimal_to_binary(i: int) -> list[str]:
     """Take a decimal integer, and return a list of bits MSB to LSB"""
     if i == 0:
         return ['0']
@@ -287,13 +287,13 @@ def decimal_to_binary(i: int) -> List[str]:
     return rev_out
 
 
-def hex_to_binary(x: str) -> List[str]:
+def hex_to_binary(x: str) -> list[str]:
     """Take a hex number, no 0x prefix required, and return a list of bits MSB to LSB"""
     i = int(x, 16)
     return decimal_to_binary(i)
 
 
-def stringify_list(lst: List[Any]) -> str:
+def stringify_list(lst: list[Any]) -> str:
     return ' '.join([str(x) for x in lst])
 
 
@@ -372,12 +372,12 @@ def make_numeric(s: str, restriction_pattern=None) -> int:
 
 #########################
 
-def find_runs(blist: List[str]) -> List[Tuple[str, int]]:
+def find_runs(blist: list[str]) -> list[tuple[str, int]]:
     """Accept a bit list. Return a list tuples (letter,count)
    describing bit runs, the same bit repeated n times"""
     last = None
     run = 1
-    output: List[Tuple[str, int]] = []
+    output: list[tuple[str, int]] = []
     if blist == None:
         return output
     for b in blist:
@@ -415,9 +415,9 @@ def blank_line(line: str) -> bool:
 
 
 continuation_pattern = re.compile(r'\\$')
-def process_continuations(lines: List[str]) -> List[str]:
+def process_continuations(lines: list[str]) -> list[str]:
     global continuation_pattern
-    olines: List[str] = []
+    olines: list[str] = []
     while len(lines) != 0:
         line = no_comments(lines[0])
         line = line.strip()
@@ -485,9 +485,9 @@ def is_stringish(x: Any) -> bool:
     return isinstance(x, bytes) or isinstance(x, str)
 
 
-def make_list_of_str(lst: List[Any]) -> List[str]:
+def make_list_of_str(lst: list[Any]) -> list[str]:
     return [str(x) for x in lst]
 
 
-def open_readlines(file_name: str) -> List[str]:
+def open_readlines(file_name: str) -> list[str]:
     return open(file_name, 'r').readlines()

@@ -24,7 +24,6 @@ import re
 import enum_txt_writer
 import codegen
 import genutil
-from typing import List, Tuple, Dict
 
 def _die(s):
     genutil.die(s)
@@ -141,7 +140,7 @@ def recursive_expand(d):
         expand_chip(chip,d)
             
 
-def read_database(filename) -> Tuple[List[str], Dict[str,str]]:
+def read_database(filename) -> tuple[list[str], dict[str,str]]:
     lines = open(filename,'r').readlines()
     lines = filter_comments(lines)
     lines = genutil.process_continuations(lines)
