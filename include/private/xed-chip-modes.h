@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,5 +25,5 @@ END_LEGAL */
 
 void set_chip_modes(xed_decoded_inst_t* xedd,
                     xed_chip_enum_t chip,
-                    xed_chip_features_t* features);
+                    xed_features_elem_t const*const features);
 #endif

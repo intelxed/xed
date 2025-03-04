@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ END_LEGAL */
 #include "xed-decoded-inst.h"
 #include "xed-error-enum.h"
 #include "xed-chip-features.h"
+#include "xed-decoder-modes.h"
 
 /// This is the main interface to the decoder.
 ///  @param xedd the decoded instruction of type #xed_decoded_inst_t . Mode/state sent in via xedd; See the #xed_state_t

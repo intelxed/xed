@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -44,3 +44,4 @@ DEC ENC AVX512X      ; BUILDDIR/xed -32 -de 62 f5 7e 08 79 c0
 DEC AVX512X          ; BUILDDIR/xed -set NO_VEX 1 -d C4E1FB93D8
 DEC AVX512X          ; BUILDDIR/xed -set NO_EVEX 1 -d  62 F2 7D 48 13 C0
 DEC AVX512X          ; BUILDDIR/xed -64 -d 26 26 26 26 26 26 26 26 26 26 26 26 26 62 00
+ENC AVX512X          ; BUILDDIR/xed -64 -set ROUNDC 1 -e VADDPS zmm1 k2 zmm2 zmm3

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1112,6 +1112,8 @@ def init(env):
             mbuild.msgb("INFO",
                         "added examples to target list since running tests")
             env['targets'].append('examples')
+    if env['py_export']:
+        env['generator_options'].append('--py-export')
 
 def _wk_show_errors_only():
     #True means show errors only when building.
@@ -1129,7 +1131,9 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
                       'xed-chip-features.c',       # dec
                       'xed-isa-set.c',             # common
                       'xed-chip-modes.c',          # common
-                      'xed-chip-modes-override.c'] # common  (overrideable)
+                      'xed-chip-modes-override1.c', # common  (overrideable)
+                      'xed-chip-modes-override2.c', # common  (overrideable)
+                      'xed-decoder-modes.c',       ] # common
     common_sources = _replace_sources(common_sources, sources_to_replace)
     # strip paths coming from the replaced sources.
     common_sources = [ os.path.basename(x) for x in  common_sources]
@@ -1138,7 +1142,8 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
                        'xed-ild-eosz.c',            # generated
                        'xed-ild-easz.c',            # generated
                        'xed-ild-imm-l3.c',          # generated
-                       'xed-error-enum.c',]         # generated
+                       'xed-error-enum.c',          # generated
+                       'xed-operand-accessors.c']   # generated
     common_objs = lib_env.make_obj(common_sources)
     
     ild_objs += xbc.build_dir_join(lib_env, common_objs)
@@ -1337,12 +1342,6 @@ def _parse_extf_files_new(env, gc):
                 gc.add_file('enc2-instructions', f)
             else:
                 mbuild.vmsgb(1, f'[ENC2] EXCLUDED ISA FILE: {f}')
-
-    if not env['py_export']:
-        # TBD - the 'xed-export-functions.c' file should be generated on build phase
-        py_export_sources = ['xed-export-functions.c']
-        for s in py_export_sources:
-            sources_to_remove.append(s)
 
     return (sources_to_remove, sources_to_add, sources_to_replace )
 
@@ -1563,6 +1562,7 @@ def _configure_libxed_extensions(env):
         if env['dmr']:
             _add_normal_ext(env,'dmr')
             _add_normal_ext(env,'vex-map5')
+            _add_normal_ext(env,'vex-map7')
             _add_normal_ext(env,'apx-f') # No promoted rao-int
             _add_normal_ext(env,'amx-dmr')
             _add_normal_ext(env,'avx10-2')
@@ -1584,6 +1584,7 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'avx-vnni-int8')
             _add_normal_ext(env,'cmpccxadd')
             _add_normal_ext(env,'msrlist')
+            _add_normal_ext(env,'vex-map7')
             _add_normal_ext(env,'wrmsrns')
             _add_normal_ext(env,'uintr')
             _add_normal_ext(env,'enqcmd')
@@ -1595,7 +1596,6 @@ def _configure_libxed_extensions(env):
             _add_normal_ext(env,'sha512')
             _add_normal_ext(env,'sm3')
             _add_normal_ext(env,'sm4')
-            _add_normal_ext(env,'vex-map7')
             _add_normal_ext(env,'msr-imm')
         if env['arl']:
             _add_normal_ext(env,'arrow-lake')
@@ -2729,6 +2729,7 @@ def _run_canned_tests(env,osenv):
     if env['gnr']:
         codes.append('IPREFETCH') # ICACHE PREFETCH
         codes.append('AVX10')
+        codes.append('AMX_GNR')
     if env['knm'] or env['knl']:
         codes.append('AVX512PF')
     if env['hsw']: 
@@ -2843,8 +2844,9 @@ def verify_args(env):
         env['skx'] = False
     if not env['skx']:
         env['cnl'] = False
-        env['clx'] = False
-        env['cpx'] = False        
+        env['clx'] = False  
+    if not env['clx']:
+        env['cpx'] = False
     if not env['cnl']:
         env['icl'] = False
     if not env['icl']:
@@ -2855,6 +2857,7 @@ def verify_args(env):
         env['spr'] = False
     if not env['adl']:
         env['arl'] = False
+        env['gnr'] = False
     if not env['spr']:
         env['emr'] = False
     if not env['emr']:

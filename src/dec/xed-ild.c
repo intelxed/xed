@@ -29,24 +29,9 @@ END_LEGAL */
 #include "xed-operand-accessors.h"
 #include "xed-ild-enum.h"
 #include "xed-map-feature-tables.h"
+#include "xed-chip-features-private.h"
 #include "xed-chip-features-table.h"
 #include "xed-ild-extension.h"
-
-#define XED_GRAMMAR_MODE_64 2
-#define XED_GRAMMAR_MODE_32 1
-#define XED_GRAMMAR_MODE_16 0
-
-static XED_INLINE xed_uint_t mode_64b(xed_decoded_inst_t* d) 
-{
-    return (xed3_operand_get_mode(d) == XED_GRAMMAR_MODE_64);
-}
-
-#if defined(XED_APX)
-static XED_INLINE xed_bool_t apx_supported(xed_decoded_inst_t *d)
-{
-    return (!xed3_operand_get_no_apx(d) && mode_64b(d));
-}
-#endif
 
 static void set_has_modrm(xed_decoded_inst_t* d);
 
@@ -917,23 +902,27 @@ static void disp_scanner(xed_decoded_inst_t* d)
           
             switch(ilog2[disp_bytes]) { 
               case 0: { // 1B=8b. ilog2(1) = 0
-                  xed_int8_t byte = *(xed_int8_t*)disp_ptr;
-                  xed3_operand_set_disp(d, byte);  
+                  xed_int8_t disp = 0;
+                  memcpy(&disp, disp_ptr, sizeof(disp));
+                  xed3_operand_set_disp(d, disp);
                   break;
               }
               case 1: { // 2B=16b ilog2(2) = 1
-                  xed_int16_t word = *(xed_int16_t*)disp_ptr;
-                  xed3_operand_set_disp(d, word);  
+                  xed_int16_t disp = 0;
+                  memcpy(&disp, disp_ptr, sizeof(disp));
+                  xed3_operand_set_disp(d, disp);
                   break;
               }
               case 2: { // 4B=32b ilog2(4) = 2
-                  xed_int32_t dword = *(xed_int32_t*)disp_ptr;
-                  xed3_operand_set_disp(d, dword);
+                  xed_int32_t disp = 0;
+                  memcpy(&disp, disp_ptr, sizeof(disp));
+                  xed3_operand_set_disp(d, disp);
                   break;
               }
               case 3: {// 8B=64b ilog2(8) = 3
-                  xed_int64_t qword = *(xed_int64_t*)disp_ptr;
-                  xed3_operand_set_disp(d, qword);
+                  xed_int64_t disp = 0;
+                  memcpy(&disp, disp_ptr, sizeof(disp));
+                  xed3_operand_set_disp(d, disp);
                   break;
               }
               default:
@@ -1020,13 +1009,7 @@ static void catch_invalid_rex_or_legacy_prefixes(xed_decoded_inst_t* d)
               xed3_operand_get_ild_f2(d) )
         xed3_operand_set_error(d,XED_ERROR_BAD_LEGACY_PREFIX);
 }
-static void catch_invalid_mode(xed_decoded_inst_t* d)
-{
-    // we know we have VEX or EVEX instr.
-    if (xed3_operand_get_realmode(d)) {
-        xed3_operand_set_error(d,XED_ERROR_INVALID_MODE);
-    }
-}
+
 
 static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
 {
@@ -1207,39 +1190,20 @@ typedef union{
 #endif // XED_APX
 } xed_evex_payload3_t;
 
-// indicate whether the current chip supports AVX512 architecture.
-// Uses a pre-detirmined mapping of chips to boolean values (xed_chip_supports_avx512)
-static XED_INLINE xed_bool_t chip_supports_avx512(xed_decoded_inst_t* d)
+// indicate whether the current decoder features/chip supports AVX512 architecture
+static XED_INLINE xed_bool_t 
+decoder_supports_avx512(xed_decoded_inst_t *d)
 {
-    xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
     if (xed3_operand_get_no_vex(d) || xed3_operand_get_no_evex(d))
         return 0;
-    if (chip == XED_CHIP_INVALID)
-        chip = XED_CHIP_ALL;
-    if (chip < XED_CHIP_LAST)
-        return xed_chip_supports_avx512[chip];
-    return 0;
+    return 1;
 }
-
-#if defined(XED_APX)
-// indicate whether the current chip supports APX architecture.
-// Uses a pre-detirmined mapping of chips to boolean values (xed_chip_supports_apx)
-xed_bool_t chip_supports_apx(xed_decoded_inst_t* d)
-{
-    xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(d);
-    if (chip == XED_CHIP_INVALID)
-        chip = XED_CHIP_ALL;
-    if (chip < XED_CHIP_LAST)
-        return xed_chip_supports_apx[chip];
-    return 0;
-}
-#endif
 
 static XED_INLINE xed_uint8_t set_evex_map(xed_decoded_inst_t *d, xed_evex_payload1_t evex1)
 {
     xed_uint8_t map = evex1.s.map; // 4 bits map
 #if defined(XED_APX)
-    if (apx_supported(d))
+    if (decoder_supports_apx(d))
     {
         map = evex1.apx.map;       // 3 bits map
         xed3_operand_set_rexb4(d, evex1.apx.rexb4);
@@ -1344,7 +1308,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
                     bad_z_aaa(d);
             
 #if defined(XED_APX)
-                if (apx_supported(d))
+                if (decoder_supports_apx(d))
                 {
                     /* Set the APX reinterpreted EVEX bits */
                     // APX promoted instruction's NT will clear the MASK and BCRC XED operands, 
@@ -1389,7 +1353,8 @@ void late_evex_scanner(xed_decoded_inst_t *d)
 #if defined(XED_APX)
     xed_uint_t mod3 = xed3_operand_get_mod3(d);
     xed_assert(xed3_operand_get_vexvalid(d)==2);
-    if (!mod3 && apx_supported(d)) {
+    if (!mod3 && decoder_supports_apx(d))
+    {
         // [APX] Reinterpret the Ubit with memory index fourth EGPR bit.
         // Pacify the iPattern's UBIT condition and set the X4 inverted value.
         xed_uint_t ubit = xed3_operand_get_ubit(d);
@@ -1555,23 +1520,32 @@ static void imm_scanner(xed_decoded_inst_t* d)
   switch(imm_bytes)  {
   case 0:
       break;
-  case 1:    {
-        xed_uint8_t uimm0 =  *imm_ptr;
-        xed_uint8_t esrc = uimm0 >> 4;
-        
-        xed3_operand_set_uimm0(d, uimm0);
-        xed3_operand_set_esrc(d, esrc);
-        break;
-    }
-  case 2:
-      xed3_operand_set_uimm0(d, *(xed_uint16_t*)imm_ptr);
+  case 1: {
+      xed_uint8_t esrc, uimm0 = 0;
+      memcpy(&uimm0, imm_ptr, sizeof(uimm0));
+      esrc = uimm0 >> 4;
+      xed3_operand_set_uimm0(d, uimm0);
+      xed3_operand_set_esrc(d, esrc);
       break;
-  case 4:
-      xed3_operand_set_uimm0(d, *(xed_uint32_t*)imm_ptr);
+  }
+  case 2: {
+      xed_uint16_t uimm0 = 0;
+      memcpy(&uimm0, imm_ptr, sizeof(uimm0));
+      xed3_operand_set_uimm0(d, uimm0);
       break;
-  case 8:
-      xed3_operand_set_uimm0(d, *(xed_uint64_t*)imm_ptr);
+  }
+  case 4: {
+      xed_uint32_t uimm0 = 0;
+      memcpy(&uimm0, imm_ptr, sizeof(uimm0));
+      xed3_operand_set_uimm0(d, uimm0);
       break;
+  }
+  case 8: {
+      xed_uint64_t uimm0 = 0;
+      memcpy(&uimm0, imm_ptr, sizeof(uimm0));
+      xed3_operand_set_uimm0(d, uimm0);
+      break;
+  }
   default:
       /*Unexpected immediate width, this should never happen*/
       xed_assert(0);
@@ -1611,7 +1585,7 @@ void xed_ild_init(void) {
 
 
 void
-xed_instruction_length_decode(xed_decoded_inst_t* ild)
+xed_instruction_length_decode(xed_decoded_inst_t *ild)
 {
     prefix_scanner(ild);
 #if defined(XED_AVX) 
@@ -1629,7 +1603,7 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     // if we got a vex prefix (which also sucks down the opcode),
     // then we do not need to scan for evex prefixes.
     if (!xed3_operand_get_vexvalid(ild)) {
-        if (chip_supports_avx512(ild)) {
+        if (decoder_supports_avx512(ild)) {
             // Scan EVEX prefixes only if chip supports AVX512
             evex_scanner(ild);
         }
@@ -1641,13 +1615,12 @@ xed_instruction_length_decode(xed_decoded_inst_t* ild)
     
     if (xed3_operand_get_vexvalid(ild)) {
         catch_invalid_rex_or_legacy_prefixes(ild);
-        catch_invalid_mode(ild);
     }
 
     if (!xed3_operand_get_vexvalid(ild)) {
         // Scan the legacy encoding space
 #if defined(XED_APX)
-        if (chip_supports_apx(ild) && apx_supported(ild)) {
+        if (decoder_supports_apx(ild)) {
             rex2_scanner(ild);
         }
 #endif // XED_APX
@@ -1678,10 +1651,12 @@ xed_ild_decode(xed_decoded_inst_t* xedd,
            const unsigned int bytes)
 {
     xed_uint_t tbytes;
+    xed_features_elem_t const *features = 0;
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(xedd);
+    if (chip != XED_CHIP_INVALID)
+        features = xed_get_features(chip);
+    set_chip_modes(xedd, chip, features); // FIXME: add support for cpuid features
 
-    set_chip_modes(xedd,chip,0); //FIXME: add support for cpuid features
-    
     xedd->_byte_array._dec = itext;
 
     tbytes =  bytes;

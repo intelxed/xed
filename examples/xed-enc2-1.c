@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@ Copyright (c) 2023 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
+
+/// @file xed-enc2-1.c
+/// @brief Showcases the use of ENC2 encode APIs
 
 #include "xed/xed-interface.h"
 #include "xed/xed-enc2-m64-a64.h"

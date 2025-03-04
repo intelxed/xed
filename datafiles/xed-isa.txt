@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -829,6 +829,7 @@ ATTRIBUTES: NOTSX
 CPL       : 3
 CATEGORY  : X87_ALU
 EXTENSION : SSE3
+ISA_SET   : SSE3X87
 FLAGS     : MUST [ fc0-u   fc1-mod fc2-u   fc3-u   ]
 PATTERN   : 0xDB MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM()
 OPERANDS  : MEM0:w:mem32int REG0=XED_REG_ST0:r:IMPL:f80  REG1=XED_REG_X87POP:r:SUPP REG2=XED_REG_X87STATUS:w:SUPP
@@ -4729,7 +4730,7 @@ ATTRIBUTES: NOP
 EXTENSION : BASE
 ISA_SET   : FAT_NOP
 
-PATTERN   : 0x0F 0x18 MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM()
+PATTERN   : 0x0F 0x18 MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() PREFETCHRST=0
 OPERANDS  : MEM0:r:v
 IFORM     : NOP_MEMv_0F18r4
 }
@@ -4743,7 +4744,7 @@ ATTRIBUTES: NOP
 EXTENSION : BASE
 ISA_SET   : FAT_NOP
 
-PATTERN   : 0x0F 0x18 MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM()
+PATTERN   : 0x0F 0x18 MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() PREFETCHIT=0
 OPERANDS  : MEM0:r:v
 IFORM     : NOP_MEMv_0F18r6
 }
@@ -4757,7 +4758,7 @@ ATTRIBUTES: NOP
 EXTENSION : BASE
 ISA_SET   : FAT_NOP
 
-PATTERN   : 0x0F 0x18 MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM()
+PATTERN   : 0x0F 0x18 MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() PREFETCHIT=0
 OPERANDS  : MEM0:r:v
 IFORM     : NOP_MEMv_0F18r7
 }
@@ -6431,8 +6432,13 @@ EXTENSION : LONGMODE
 COMMENT   : Prescott reads 32b for the 16b version. My testing indicates Merom, Nehalem and later reference 16b \
             for the 16b version. I did not find an accessible Penryn. Oct 2017 (rev64) SDM documents modern behavior. \
             2019 AMD docs say "mem32" and I am told AMD does reference 32b always.
-PATTERN   : 0x63 MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64 MODRM()
-OPERANDS  : REG0=GPRv_R():w MEM0:r:z
+# Usage of MOVSXD without REXW is discouraged by the SDM
+PATTERN   : 0x63 MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64 MODRM() norexw_prefix
+OPERANDS  : REG0=GPRz_R():w MEM0:r:z
+IFORM     : MOVSXD_GPRz_MEMz
+PATTERN   : 0x63 MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64 MODRM() rexw_prefix
+OPERANDS  : REG0=GPR64_R():w MEM0:r:d
+IFORM     : MOVSXD_GPR64_MEMd
 }
 {
 ICLASS    : MOVSXD
@@ -8877,7 +8883,7 @@ ISA_SET   : LONGMODE
 FLAGS     : MUST [ id-mod vip-mod vif-mod ac-mod vm-0 rf-0 nt-mod iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x05 mode64 FORCE64()
 OPERANDS  : REG0=XED_REG_RIP:w:SUPP REG1=XED_REG_RCX:w:SUPP REG2=XED_REG_R11:w:SUPP
-COMMENT   : 32B VERSION ONLY SUPPORTED ON Intel FRED or AMD systems
+COMMENT   : 32B VERSION IS ONLY SUPPORTED ON AMD
 }
 {
 ICLASS    : CLTS
@@ -8989,19 +8995,35 @@ ATTRIBUTES : simd_scalar
 CATEGORY  : DATAXFER
 EXTENSION : SSE
 EXCEPTIONS: SSE_TYPE_5
-PATTERN   : 0x0F 0x10 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:dq:f32 MEM0:r:ss
-
 PATTERN   : 0x0F 0x10 f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
 OPERANDS  : REG0=XMM_R():w:ss REG1=XMM_B():r:ss
 IFORM     : MOVSS_XMMss_XMMss_0F10
 
-PATTERN   : 0x0F 0x11 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : MEM0:w:ss REG0=XMM_R():r:ss
-
 PATTERN   : 0x0F 0x11 f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
 OPERANDS  : REG0=XMM_B():w:ss REG1=XMM_R():r:ss
 IFORM     : MOVSS_XMMss_XMMss_0F11
+}
+{
+ICLASS    : MOVSS
+UNAME     : MOVSS_10
+CPL       : 3
+ATTRIBUTES : simd_scalar 
+CATEGORY  : DATAXFER
+EXTENSION : SSE
+EXCEPTIONS: SSE_TYPE_5
+PATTERN   : 0x0F 0x10 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
+OPERANDS  : REG0=XMM_R():w:dq:f32 MEM0:r:ss
+}
+{
+ICLASS    : MOVSS
+UNAME     : MOVSS_11
+CPL       : 3
+ATTRIBUTES : simd_scalar 
+CATEGORY  : DATAXFER
+EXTENSION : SSE
+EXCEPTIONS: SSE_TYPE_5
+PATTERN   : 0x0F 0x11 f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
+OPERANDS  : MEM0:w:ss REG0=XMM_R():r:ss
 }
 {
 ICLASS    : MOVSLDUP
@@ -9099,6 +9121,7 @@ OPERANDS  : MEM0:w:q REG0=XMM_R():r:sd
 }
 {
 ICLASS    : MOVSD_XMM
+UNAME     : MOVSD_XMM_10
 DISASM    : movsd
 CPL       : 3
 ATTRIBUTES : simd_scalar 
@@ -9107,13 +9130,30 @@ EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_5
 PATTERN   : 0x0F 0x10 f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
 OPERANDS  : REG0=XMM_R():w:dq:f64 MEM0:r:sd
-
+}
+{
+ICLASS    : MOVSD_XMM
+UNAME     : MOVSD_XMM_11
+DISASM    : movsd
+CPL       : 3
+ATTRIBUTES : simd_scalar 
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
+PATTERN   : 0x0F 0x11 f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
+OPERANDS  : MEM0:w:sd REG0=XMM_R():r:sd
+}
+{
+ICLASS    : MOVSD_XMM
+DISASM    : movsd
+CPL       : 3
+ATTRIBUTES : simd_scalar 
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
 PATTERN   : 0x0F 0x10 f2_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
 OPERANDS  : REG0=XMM_R():w:sd REG1=XMM_B():r:sd
 IFORM     : MOVSD_XMM_XMMsd_XMMsd_0F10
-
-PATTERN   : 0x0F 0x11 f2_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : MEM0:w:sd REG0=XMM_R():r:sd
 
 PATTERN   : 0x0F 0x11 f2_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
 OPERANDS  : REG0=XMM_B():w:sd REG1=XMM_R():r:sd
@@ -10437,17 +10477,43 @@ OPERANDS  : REG0=GPRv_R():w MEM0:r:p2 REG1=XED_REG_GS:w:SUPP
 }
 {
 ICLASS    : MOVZX
-UNAME     : MOVZX
+UNAME     : MOVZX_B6
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : BASE
 ISA_SET   : I386
 PATTERN   : 0x0F 0xB6 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : REG0=GPRv_R():w MEM0:r:b
+}
+{
+ICLASS    : MOVZX
+UNAME     : MOVZX_B7
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : BASE
+ISA_SET   : I386
+# Usage of MOVZX 0xB7 with 66prefix is not recommended by the SDM
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() not64
+OPERANDS  : REG0=GPRv_R():w MEM0:r:w
+IFORM     : MOVZX_GPRv_MEMw
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 no66_prefix
+OPERANDS  : REG0=GPRy_R():w MEM0:r:w
+IFORM     : MOVZX_GPRy_MEMw
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix norexw_prefix
+OPERANDS  : REG0=GPR16_R():w MEM0:r:w
+IFORM     : MOVZX_GPR16_MEMw
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix rexw_prefix
+OPERANDS  : REG0=GPR64_R():w MEM0:r:w
+IFORM     : MOVZX_GPR64_MEMw
+}
+{
+ICLASS    : MOVZX
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : BASE
+ISA_SET   : I386
 PATTERN   : 0x0F 0xB6 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPRv_R():w REG1=GPR8_B():r
-PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPRv_R():w MEM0:r:w
 PATTERN   : 0x0F 0xB7 MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPRv_R():w REG1=GPR16_B():r
 }
@@ -12352,27 +12418,44 @@ OPERANDS  : REG0=MMX_R():rw:q:i32 REG1=MMX_B():r:q:i32
 }
 {
 ICLASS    : MOVD
+UNAME     : MOVD_6E
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_5
-ATTRIBUTES : 
+ATTRIBUTES: 
 PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 norexw_prefix MODRM()
 OPERANDS  : REG0=XMM_R():w:dq MEM0:r:d
-PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() mode64 norexw_prefix
-OPERANDS  : REG0=XMM_R():w:dq REG1=GPR32_B():r
 PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64 MODRM()
 OPERANDS  : REG0=XMM_R():w:dq MEM0:r:d
+}
+{
+ICLASS    : MOVD
+UNAME     : MOVD_7E
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
+ATTRIBUTES: 
+PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 norexw_prefix  MODRM()
+OPERANDS  : MEM0:w:d REG0=XMM_R():r:d
+PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64 MODRM()
+OPERANDS  : MEM0:w:d REG0=XMM_R():r:d
+}
+{
+ICLASS    : MOVD
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
+ATTRIBUTES: 
+PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() mode64 norexw_prefix
+OPERANDS  : REG0=XMM_R():w:dq REG1=GPR32_B():r
 PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() not64
 OPERANDS  : REG0=XMM_R():w:dq REG1=GPR32_B():r
 
-
-PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 norexw_prefix  MODRM()
-OPERANDS  : MEM0:w:d REG0=XMM_R():r:d
 PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() mode64 norexw_prefix
 OPERANDS  : REG0=GPR32_B():w REG1=XMM_R():r:d
-PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() not64 MODRM()
-OPERANDS  : MEM0:w:d REG0=XMM_R():r:d
 PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() not64
 OPERANDS  : REG0=GPR32_B():w REG1=XMM_R():r:d
 }
@@ -12416,36 +12499,59 @@ CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : SSE2
 EXCEPTIONS: SSE_TYPE_5
-ATTRIBUTES : 
-PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 rexw_prefix MODRM()
-OPERANDS  : REG0=XMM_R():w:dq MEM0:r:q
-IFORM     : MOVQ_XMMdq_MEMq_0F6E
-
+ATTRIBUTES: 
 PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() mode64 rexw_prefix
 OPERANDS  : REG0=XMM_R():w:dq REG1=GPR64_B():r
-
-PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 rexw_prefix MODRM()
-OPERANDS  : MEM0:w:q REG0=XMM_R():r:q
-IFORM     : MOVQ_MEMq_XMMq_0F7E
-
 PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66() mode64 rexw_prefix
 OPERANDS  : REG0=GPR64_B():w REG1=XMM_R():r:q
-
-PATTERN   : 0x0F 0xD6 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
-OPERANDS  : MEM0:w:q REG0=XMM_R():r:q
-IFORM     : MOVQ_MEMq_XMMq_0FD6
-
 PATTERN   : 0x0F 0xD6 osz_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  REFINING66()
 OPERANDS  : REG0=XMM_B():w:dq REG1=XMM_R():r:q
 IFORM     : MOVQ_XMMdq_XMMq_0FD6
-
-PATTERN   : 0x0F 0x7E f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
-OPERANDS  : REG0=XMM_R():w:dq MEM0:r:q
-IFORM     : MOVQ_XMMdq_MEMq_0F7E
-
 PATTERN   : 0x0F 0x7E f3_refining_prefix MOD[0b11] MOD=3 REG[rrr] RM[nnn]  IGNORE66()
 OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_B():r:q
 IFORM     : MOVQ_XMMdq_XMMq_0F7E
+}
+
+{
+ICLASS    : MOVQ
+UNAME     : MOVQ_6E
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
+ATTRIBUTES: 
+PATTERN   : 0x0F 0x6E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 rexw_prefix MODRM()
+OPERANDS  : REG0=XMM_R():w:dq MEM0:r:q
+IFORM     : MOVQ_XMMdq_MEMq_0F6E
+}
+
+{
+ICLASS    : MOVQ
+UNAME     : MOVQ_7E
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
+ATTRIBUTES: 
+PATTERN   : 0x0F 0x7E osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() mode64 rexw_prefix MODRM()
+OPERANDS  : MEM0:w:q REG0=XMM_R():r:q
+IFORM     : MOVQ_MEMq_XMMq_0F7E
+PATTERN   : 0x0F 0x7E f3_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  IGNORE66() MODRM()
+OPERANDS  : REG0=XMM_R():w:dq MEM0:r:q
+IFORM     : MOVQ_XMMdq_MEMq_0F7E
+}
+
+{
+ICLASS    : MOVQ
+UNAME     : MOVQ_D6
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : SSE2
+EXCEPTIONS: SSE_TYPE_5
+ATTRIBUTES: 
+PATTERN   : 0x0F 0xD6 osz_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn]  REFINING66() MODRM()
+OPERANDS  : MEM0:w:q REG0=XMM_R():r:q
+IFORM     : MOVQ_MEMq_XMMq_0FD6
 }
 
 
@@ -13203,20 +13309,44 @@ OPERANDS  : REG0=GPRv_R():cw REG1=GPRv_B():r
 }
 {
 ICLASS    : MOVSX
-UNAME     : MOVSX
+UNAME     : MOVSX_BE
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : BASE
+ISA_SET   : I386
+PATTERN   : 0x0F 0xBE MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=GPRv_R():w MEM0:r:b
+}
+{
+ICLASS    : MOVSX
+UNAME     : MOVSX_BF
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : BASE
+ISA_SET   : I386
+# Usage of MOVSX 0xBF with 66prefix is not recommended by the SDM
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() not64
+OPERANDS  : REG0=GPRv_R():w MEM0:r:w
+IFORM     : MOVSX_GPRv_MEMw
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 no66_prefix
+OPERANDS  : REG0=GPRy_R():w MEM0:r:w
+IFORM     : MOVSX_GPRy_MEMw
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix norexw_prefix
+OPERANDS  : REG0=GPR16_R():w MEM0:r:w
+IFORM     : MOVSX_GPR16_MEMw
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix rexw_prefix
+OPERANDS  : REG0=GPR64_R():w MEM0:r:w
+IFORM     : MOVSX_GPR64_MEMw
+}
+{
+ICLASS    : MOVSX
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : BASE
 ISA_SET   : I386
 
-PATTERN   : 0x0F 0xBE MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPRv_R():w MEM0:r:b
-
 PATTERN   : 0x0F 0xBE MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPRv_R():w REG1=GPR8_B():r
-
-PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=GPRv_R():w MEM0:r:w
 
 PATTERN   : 0x0F 0xBF MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=GPRv_R():w REG1=GPR16_B():r

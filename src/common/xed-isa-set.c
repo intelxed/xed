@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ xed_isa_set_is_valid_for_chip(xed_isa_set_enum_t isa_set,
     const xed_uint64_t one=1;
     const unsigned int n = XED_CAST(unsigned int,isa_set) / 64;
     const unsigned int r = XED_CAST(unsigned int,isa_set) - (64*n);
-    xed_uint64_t features = 0;
+    xed_features_elem_t const* features = 0;
     
     xed_assert(chip < XED_CHIP_LAST); 
     xed_assert(isa_set > XED_ISA_SET_INVALID && isa_set  < XED_ISA_SET_LAST);
-    features = xed_chip_features[chip][n];
-    if (features & (one<<r))
+    features = xed_get_features(chip);
+    if (features[n] & (one<<r))
         return 1;
     return 0;
 }

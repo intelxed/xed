@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -49,9 +49,9 @@ DIAMOND_RAPIDS:              \
    ########### AVX10.2 ###########
    AVX10_2_RC_256            \  # Embedded-rounding-control YMM extension
    AVX10_2_RC_SCALAR         \  # Embedded-rounding-control scalar extension
-   AVX512_NE_CONVERT_FP8_128 \
-   AVX512_NE_CONVERT_FP8_256 \
-   AVX512_NE_CONVERT_FP8_512 \
+   AVX512_FP8_CONVERT_128    \
+   AVX512_FP8_CONVERT_256    \
+   AVX512_FP8_CONVERT_512    \
    AVX512_MINMAX_128         \
    AVX512_MINMAX_256         \
    AVX512_MINMAX_512         \
@@ -83,10 +83,10 @@ DIAMOND_RAPIDS:              \
    AVX512_FP16_CONVERT_128   \
    AVX512_FP16_CONVERT_256   \
    AVX512_FP16_CONVERT_512   \
-   AVX512_BF16_NE_128        \
-   AVX512_BF16_NE_256        \
-   AVX512_BF16_NE_512        \
-   AVX512_BF16_NE_SCALAR     \
+   AVX10_2_BF16_128        \
+   AVX10_2_BF16_256        \
+   AVX10_2_BF16_512        \
+   AVX10_2_BF16_SCALAR     \
    ### APX-Foundational Promoted and New instructions: 
    APX_F                     \
    APX_F_ADX                 \
@@ -107,5 +107,9 @@ DIAMOND_RAPIDS:              \
    APX_F_MOVDIR64B           \
    APX_F_POPCNT              \
    APX_F_USER_MSR            \
-   APX_F_VMX                    
+   APX_F_VMX                 \
+   APX_F_AMX_MOVRS           \
+   APX_F_AMX_TRANSPOSE_MOVRS \
+   APX_F_AMX_TRANSPOSE       \
+   APX_F_MOVRS
    ##############################

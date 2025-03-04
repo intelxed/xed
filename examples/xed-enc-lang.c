@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@ Copyright (c) 2023 Intel Corporation
   
 END_LEGAL */
 
-// This is an example of how to use the encoder from scratch in the context
-// of parsing a string from the command line.  
+/// @file xed-enc-lang.c
+/// @brief This is an example of how to use the encoder from scratch in the context of parsing a string from the command line.  
 
 #include <assert.h>
 #include <string.h>

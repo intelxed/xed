@@ -302,9 +302,9 @@ def work(arg):
     cfe.start()
     hfe.start()
 
-    
-    cfe.write("xed_uint64_t xed_chip_features[XED_CHIP_LAST][XED_FEATURE_VECTOR_MAX];\n")
-    hfe.write("extern xed_uint64_t xed_chip_features[XED_CHIP_LAST][XED_FEATURE_VECTOR_MAX];\n")
+
+    cfe.write("xed_features_elem_t xed_chip_features[XED_CHIP_LAST][XED_FEATURE_VECTOR_MAX];\n")
+    hfe.write("extern xed_features_elem_t xed_chip_features[XED_CHIP_LAST][XED_FEATURE_VECTOR_MAX];\n")
 
     fo = codegen.function_object_t('xed_init_chip_model_info', 'void')    
     fo.add_code_eol("const xed_uint64_t one=1")
@@ -354,20 +354,15 @@ def work(arg):
         for i,x in enumerate([s0s, s1s, s2s,s3s, s4s, s5s, s6s]):
             fo.add_code_eol("xed_chip_features[XED_CHIP_{}][{}] = {}".format(c, i, x))
 
-    features = ['AVX512', 'APX']
-    # declare tables, where each entry indicates whether the chip supports the corrisponding feature
-    for feature in features:
-        cfe.write(f"xed_bool_t xed_chip_supports_{feature.lower()}[XED_CHIP_LAST];\n")
-        hfe.write(f"extern xed_bool_t xed_chip_supports_{feature.lower()}[XED_CHIP_LAST];\n")
-
-    for feature in features:
-        # populate the chip support tables with appropriate values then pour into dynamic function
-        feature_support_table = get_chip_supports_feature_dict(feature, chip_features_dict)
-        for chip, is_supported in feature_support_table.items():
-            fo.add_code_eol(f'xed_chip_supports_{feature.lower()}[XED_CHIP_{chip}]={is_supported}')
-
     cfe.write(fo.emit())
     hfe.write(fo.emit_header())
+
+    fo = codegen.function_object_t('xed_get_features', 'xed_features_elem_t const*')
+    fo.add_arg('xed_chip_enum_t chip')
+    fo.add_code_eol("return xed_chip_features[chip]")
+    cfe.write(fo.emit())
+    hfe.write(fo.emit_header())
+
     cfe.close()    
     hfe.close()
 

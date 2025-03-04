@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,8 +15,9 @@ Copyright (c) 2023 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
-/// @file xed-min.c
-/// @brief a minimal toy example of using the decoder. 
+
+/// @file xed-reps.c
+/// @brief showcases the usage of XED REP APIs (retrieve non-REP variant of instructiuon or vice versa)
 
 #include "xed/xed-interface.h"
 #include <stdio.h>

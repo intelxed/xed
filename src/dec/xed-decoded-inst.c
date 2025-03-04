@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ END_LEGAL */
 #include "xed-decoded-inst.h"
 #include "xed-decoded-inst-api.h"
 #include "xed-decoded-inst-private.h"
+#include "xed-chip-features-private.h"
 #include "xed-util.h"
 #include "xed-operand-values-interface.h"
 #include "xed-reg-class.h"
@@ -679,26 +680,32 @@ xed_decoded_inst__compute_masked_immediate( const xed_decoded_inst_t* p)
     return masked_imm_byte;
 }
 
+xed_bool_t xed_decoded_inst_has_default_flags_values(const xed_decoded_inst_t* xedd){
 #if defined(XED_APX)
-xed_reg_enum_t xed_decoded_inst_get_dfv_reg(const xed_decoded_inst_t* xedd){
-    /* returns default flag values reg if a decoded instruction uses DFV and INVALID reg otherwise.*/
-    const xed_inst_t* inst = xed_decoded_inst_inst(xedd);
-    const xed_int_t noperands = xed_inst_noperands(inst);
-    xed_int_t i = noperands-1;
-    // DFV is usually the last operand. Scan in reverse order:
-    for(; i>=0; i--)
-    {
-        const xed_operand_t* o = xed_inst_operand(inst,i);
-        const xed_operand_enum_t op_name = xed_operand_name(o);
-        xed_reg_enum_t r = xed_decoded_inst_get_reg(xedd, op_name);
-        if (r >= XED_REG_DFV0 && r <= XED_REG_DFV15)
-        {
-            return r;
-        }
-    }
-    return XED_REG_INVALID;
-}
+    if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_DEFAULT_FLAGS))
+        return 1;
 #endif
+    (void)xedd;
+    return 0;
+}
+
+xed_bool_t xed_decoded_inst_get_default_flags_values(const xed_decoded_inst_t* xedd, xed_flag_dfv_t* p){
+#if defined(XED_APX)
+    if(xed_decoded_inst_has_default_flags_values(xedd))
+    {
+        xed_bits_t dfv_mask = xed3_operand_get_dfv(xedd);
+        p->flat = 0;
+        p->s.of = (dfv_mask >> 3) & 0x1;
+        p->s.sf = (dfv_mask >> 2) & 0x1; 
+        p->s.zf = (dfv_mask >> 1) & 0x1; 
+        p->s.cf = (dfv_mask >> 0) & 0x1;
+        return 1;
+    }
+#endif
+    (void) xedd;
+    (void) p;
+    return 0;
+}
 
 const xed_simple_flag_t*
 xed_decoded_inst_get_rflags_info(const xed_decoded_inst_t* q) 
@@ -751,7 +758,7 @@ xed_decoded_inst_get_rflags_info(const xed_decoded_inst_t* q)
 xed_bool_t
 xed_decoded_inst_is_prefetch(const xed_decoded_inst_t* p) 
 {
-    return xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_PREFETCH);    
+    return xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_PREFETCH);
 }
 
 xed_uint_t
@@ -832,10 +839,16 @@ xed_bool_t
 xed_decoded_inst_valid_for_chip(xed_decoded_inst_t const* const p,
                                 xed_chip_enum_t chip)
 {
-    xed_isa_set_enum_t isa_set;
-    
-    isa_set = xed_decoded_inst_get_isa_set( p);
+    xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(p);
     return xed_isa_set_is_valid_for_chip(isa_set, chip);
+}
+
+xed_bool_t
+xed_decoded_inst_valid_for_features(xed_decoded_inst_t const *const p,
+                                    xed_chip_features_t const *const chip_features)
+{
+    xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(p);
+    return xed_test_chip_features(chip_features, isa_set);
 }
 
 xed_uint_t

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -169,10 +169,10 @@ SEQUENCE  NEWVEX3_ENC_EMIT
 ##############################################################################
 
 AVX512_ROUND()::
-ROUNDC=1 -> LLRC=0 BCRC=1
-ROUNDC=2 -> LLRC=1 BCRC=1
-ROUNDC=3 -> LLRC=2 BCRC=1
-ROUNDC=4 -> LLRC=3 BCRC=1
+ROUNDC=1 -> LLRC=0 BCRC=1 SAE=1
+ROUNDC=2 -> LLRC=1 BCRC=1 SAE=1
+ROUNDC=3 -> LLRC=2 BCRC=1 SAE=1
+ROUNDC=4 -> LLRC=3 BCRC=1 SAE=1
 
 SAE()::
 SAE=1 -> BCRC=1

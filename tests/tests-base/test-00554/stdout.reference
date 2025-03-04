@@ -5,4 +5,4 @@ EXTENSION:  BASE
 IFORM:      INC_GPRv_FFr0
 ISA_SET:    I86
 ATTRIBUTES: SCALABLE 
-SHORT:      hint-not-taken inc rcx
+SHORT:      cs inc rcx

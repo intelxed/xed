@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@ Copyright (c) 2019 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
+
 /// @file xed-disas-macho.cpp
+/// @brief designed to disassemble Mach-O binaries on macOS
 
 #include "xed/xed-interface.h" // to get defines
 #if defined(__APPLE__) && defined(XED_DECODER)

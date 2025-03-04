@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,8 +24,12 @@ END_LEGAL */
 #include "xed-isa-set.h"
 
 xed_bool_t
-xed_test_chip_features(xed_chip_features_t* p,
+xed_test_chip_features(xed_chip_features_t const*const p,
                        xed_isa_set_enum_t isa_set);
+
+xed_bool_t
+xed_test_features(xed_features_elem_t const*const p,
+                  xed_isa_set_enum_t isa_set);
 
     
 #endif

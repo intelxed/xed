@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -123,18 +123,9 @@ def _get_mempop_width_code(v):
 
 def get_scc_value(v) -> int:
     """Retrieve SCC value (SC3...SC0 bits) for APX SCC instructions (VEXDEST4 and MASK)"""
-    v4_pattern = re.compile(r'VEXDEST4=([0-1])')
-    mask_pattern = re.compile(r'MASK=([0-7])')
-
-    v4_match =  v4_pattern.search(v.pattern)
-    mask_match =  mask_pattern.search(v.pattern)
-    assert v4_match and mask_match, 'APX SCC instruction with no SCC value'
-
-    v4 = not int(v4_match.group(1)) # v4 is inverted
-    mask = int(mask_match.group(1))
-    scc = (v4 << 3) | mask
-    return scc
-
+    scc_match =  re.search(r'SCC=(\d+)', v.pattern)
+    assert scc_match, 'APX SCC instruction with no SCC value'
+    return int(scc_match.group(1))
 
 def _set_eosz(v):
     eosz = 'oszall'

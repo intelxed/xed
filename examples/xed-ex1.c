@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,8 +16,10 @@ Copyright (c) 2024 Intel Corporation
   
 END_LEGAL */
 
-/// This is the place to start learning about the decoder APIs. It
-/// exercises most of the essential features of the decoder.
+/// @file xed-ex1.c
+/// @brief quintessential decoder example that highlights all the different decoder APIs
+/// exercises most of the essential features of the decoder including emittal of instruction metadata
+/// CPUID-based defeaturing and highly-descriptive EVEX/VEX prefix payload compositions
 
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
@@ -278,18 +280,25 @@ void print_flags(xed_decoded_inst_t* xedd) {
                    xed_flag_set_mask(undefined_set));
         }
 #if defined(XED_APX)
-        /* print Default Flags Values based on the DFV pseudo register*/
-        xed_reg_enum_t dfv_enum = xed_decoded_inst_get_dfv_reg(xedd);
-        if (dfv_enum != XED_REG_INVALID){
-            xed_flag_dfv_t dfv_reg;
-            xed_bool_t okay = xed_flag_dfv_get_default_flags_values(dfv_enum, &dfv_reg);
+        /* print Default Flags Values */
+        if (xed_decoded_inst_has_default_flags_values(xedd)){
+            xed_flag_dfv_t dfv_mask;
+            /* Direct access to the DFV 4-bit mask:
+             *  xed_bits_t dfv_mask = xed3_operand_get_dfv(xedd);
+             *  CF -> dfv_mask.bit[0]
+             *  ZF -> dfv_mask.bit[1]
+             *  SF -> dfv_mask.bit[2]
+             *  OF -> dfv_mask.bit[3]
+             *  Here, we use the XED built-in API and structure: 
+             */
+            xed_bool_t okay = xed_decoded_inst_get_default_flags_values(xedd, &dfv_mask);
             assert(okay);
             printf("    default:%13sof=%u, sf=%u, zf=%u, cf=%u\n",
                     "",
-                    dfv_reg.s.of,
-                    dfv_reg.s.sf,
-                    dfv_reg.s.zf,
-                    dfv_reg.s.cf);
+                    dfv_mask.s.of,
+                    dfv_mask.s.sf,
+                    dfv_mask.s.zf,
+                    dfv_mask.s.cf);
         }
 #endif
     }
@@ -528,12 +537,11 @@ void print_enc_bits(xed_decoded_inst_t *d, xed_error_enum_t xed_error)
         // Prepare data
         xed_bits_t evvspace = 0; // EVEX sub encoding space
         xed_bits_t ubit_x4 = xed3_operand_get_ubit(d);
-        xed_bits_t vvvv; 
+        xed_bits_t vvvv;
+        xed_bool_t apx_supported = (xed3_operand_get_no_apx(d)==0) && (xed_decoded_inst_get_machine_mode_bits(d)==64);
 #if defined(XED_APX)
-        xed_bool_t machine_mode64 = xed_decoded_inst_get_machine_mode_bits(d) == 64;
         evvspace = xed3_operand_get_evvspace(d);
-        if (machine_mode64 && xed3_operand_get_mod(d) != 3)
-        {
+        if (apx_supported && xed3_operand_get_mod(d) != 3) {
             // In this case, XED ILD forces UBIT=1 and uploads the bit value to REXX4
             ubit_x4 = (~xed3_operand_get_rexx4(d))&1;
         }
@@ -545,9 +553,15 @@ void print_enc_bits(xed_decoded_inst_t *d, xed_error_enum_t xed_error)
         printf("====================== EVEX payload #0 ======================\n");
         printf("%-30s = 0x62\n", "P0");
         printf("====================== EVEX payload #1 ======================\n");
-        xed_itoa_bin(buf, xed3_operand_get_map(d), 3, TBUFSZ);
-        printf(FLDFMT_S, "P1[2:0]", "(EVEX.mmm)", buf);
-        printf(FLDFMT_B, "P1[3]", "(EVEX.reserved / APX.B4)", xed3_operand_get_rexb4(d));
+        if (apx_supported) {
+            xed_itoa_bin(buf, xed3_operand_get_map(d), 3, TBUFSZ);
+            printf(FLDFMT_S, "P1[2:0]", "(EVEX.mmm)", buf);
+            printf(FLDFMT_B, "P1[3]", "(EVEX.reserved / APX.B4)", xed3_operand_get_rexb4(d));
+        }
+        else {
+            xed_itoa_bin(buf, xed3_operand_get_map(d), 4, TBUFSZ);
+            printf(FLDFMT_S, "P1[3:0]", "(EVEX.mmmm)", buf);
+        }
         printf(FLDFMT_B, "P1[4]", "(EVEX.R4)", (~xed3_operand_get_rexr4(d)) & 1);
         printf(FLDFMT_B, "P1[5]", "(EVEX.B3)", (~xed3_operand_get_rexb(d)) & 1);
         printf(FLDFMT_B, "P1[6]", "(EVEX.X3)", (~xed3_operand_get_rexx(d)) & 1);
@@ -573,7 +587,7 @@ void print_enc_bits(xed_decoded_inst_t *d, xed_error_enum_t xed_error)
             xed_itoa_bin(buf, xed3_operand_get_mask(d), 3, TBUFSZ);
             printf(FLDFMT_S, "P3[0:2]", "(EVEX.aaa)", buf);
 #if defined(XED_APX)
-            if (machine_mode64) {
+            if (apx_supported) {
                 printf(FLDFMT_B, "P3[2]", "(APX.NF)", xed3_operand_get_nf(d));
                 if (xed3_operand_get_map(d) == 4) {
                     xed_itoa_bin(buf, xed3_operand_get_scc(d), 4, TBUFSZ);
@@ -648,6 +662,10 @@ int main(int argc, char** argv) {
     xed_uint_t operands_index = 0;
     xed_operand_enum_t operands[XED_MAX_INPUT_OPERNADS] = {XED_OPERAND_INVALID};
     xed_uint32_t operands_value[XED_MAX_INPUT_OPERNADS] = {0};
+    xed_uint_t features_index = 0;
+    xed_isa_set_enum_t features[XED_MAX_INPUT_OPERNADS] = {XED_ISA_SET_INVALID};
+    xed_bool_t features_value[XED_MAX_INPUT_OPERNADS] = {0};
+    xed_chip_features_t chip_features;
 
 #if defined(XED_MPX)
     unsigned int mpx_mode=0;
@@ -721,21 +739,49 @@ int main(int argc, char** argv) {
             operands_index++;
             first_argv+=3;
         }
+        else if (strcmp(argv[i], "-feature") == 0)
+        {
+            assert(i + 2 < argcu); // needs 2 args
+            if (features_index >= XED_MAX_INPUT_OPERNADS)
+            {
+                printf("ERROR: too many -features, max is %d\n", XED_MAX_INPUT_OPERNADS);
+                exit(1);
+            }
+
+            features[features_index] = str2xed_isa_set_enum_t(argv[i + 1]);
+            if (features[features_index] == XED_ISA_SET_INVALID)
+            {
+                printf("ERROR: '%s' ISA-SET doesn't exist\n", argv[i + 1]);
+                exit(1);
+            }
+            features_value[features_index] = XED_STATIC_CAST(xed_uint8_t, xed_atoi_general(argv[i + 2], 1));
+            features_index++;
+            first_argv += 3;
+        }
     }
 
     assert(first_argv < argcu);
 
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
+    if (chip == XED_CHIP_INVALID) {
+        // Enable all features if a chip is not chosen.
+        chip = XED_CHIP_ALL;
+    }
     xed_decoded_inst_set_input_chip(&xedd, chip);
+    xed_get_chip_features(&chip_features, chip);
 #if defined(XED_MPX)
-    xed3_operand_set_mpxmode(&xedd, mpx_mode);
+    xed_modify_chip_features(&chip_features, XED_ISA_SET_MPX, mpx_mode);
 #endif
 #if defined(XED_CET)
-    xed3_operand_set_cet(&xedd, cet_mode);
+    xed_modify_chip_features(&chip_features, XED_ISA_SET_CET, cet_mode);
 #endif
     // set the value of operands referenced after '-set'
     for (i = 0; i < operands_index; i++)    
         xed3_set_generic_operand(&xedd, operands[i], operands_value[i]);
+
+    // set the value of isa-set features referenced after '-feature'
+    for (i = 0; i < features_index; i++)
+        xed_modify_chip_features(&chip_features, features[i], features_value[i]);
 
     // convert ascii hex to hex bytes
     for(i=first_argv; i< argcu;i++) 
@@ -764,10 +810,11 @@ int main(int argc, char** argv) {
         printf("%02x ", XED_STATIC_CAST(xed_uint_t,itext[i]));
     printf("\n");
 
-    xed_error = xed_decode(&xedd, 
-                           XED_REINTERPRET_CAST(const xed_uint8_t*,itext), 
-                           bytes);
-    
+    xed_error = xed_decode_with_features(&xedd,
+                                         XED_REINTERPRET_CAST(const xed_uint8_t *, itext),
+                                         bytes,
+                                         &chip_features);
+
     if (xed_error != XED_ERROR_NONE) {
         xed_uint_t dec_length = xed_decoded_inst_get_length(&xedd);
         xed_decode_error(0, 0, itext, xed_error, dec_length);

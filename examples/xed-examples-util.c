@@ -27,6 +27,7 @@ END_LEGAL */
 # include <sys/types.h>
 # include <sys/stat.h>
 # include <fcntl.h>
+#include <cpuid.h>
 #endif
 #include <ctype.h>
 #include <stdlib.h>
@@ -333,12 +334,28 @@ void init_xedd(xed_decoded_inst_t* xedd,
     xed_decoded_inst_zero_set_mode(xedd, &(di->dstate));
 #endif
     xed_decoded_inst_set_input_chip(xedd, di->chip);
+    /* Default-on for an easy usage (Can be overwritten using the `-set` knobs or XED chip) */
+    // `P4`: Enables the `PAUSE` instruction (replacing a previous `NOP`)
+    xed3_operand_set_p4(xedd, 1);
+    // `LZCNT`: Enables the `LZCNT` instruction (replacing a previous `BSR`)
+    xed3_operand_set_lzcnt(xedd, 1);
+    // `TZCNT`: Enables the `TZCNT` instruction (replacing a previous `BSF`)
+    xed3_operand_set_tzcnt(xedd, 1);
+    // TBD - Enable prefetches as well (requires the update of numerous tests)
+    // // `PREFETCHIT`: Enables the `PREFETCHIT{0,1}` instruction (replacing a previous `NOP`)
+    // xed3_operand_set_prefetchit(xedd, 1);
+    // // `PREFETCHRST`: Enables the `PREFETCHRST2` instruction (replacing a previous `NOP`)
+    // xed3_operand_set_prefetchrst(xedd, 1);
+
+    /* Controllable decoder support according to fixed knobs */
 #if defined(XED_MPX)
     xed3_operand_set_mpxmode(xedd, di->mpx_mode);
 #endif
 #if defined(XED_CET)
     xed3_operand_set_cet(xedd, di->cet_mode);
 #endif
+    
+    /* Controllable decoder support according to XED operands knobs (`-set`) */
     for(i = 0; i < XED_MAX_INPUT_OPERNADS; i++) {
         if (di->operands[i] != XED_OPERAND_INVALID) 
             xed3_set_generic_operand(xedd, di->operands[i], di->operands_value[i]);
@@ -1691,4 +1708,21 @@ void xed_print_intel_asm_emit(const xed_uint8_t* array, unsigned int olen) {
     unsigned int i;
     for(i=0;i<olen;i++) 
         printf("     __emit 0x%02x\n",(xed_uint32_t)(array[i]));
+}
+
+
+/////////////////////////////////////
+
+void get_cpuid(xed_uint32_t leaf, xed_uint32_t subleaf, 
+               xed_uint32_t* eax, xed_uint32_t* ebx, xed_uint32_t* ecx, xed_uint32_t* edx) {
+#if defined(XED_MAC) || defined(XED_LINUX) || defined(XED_BSD)
+    __cpuid_count(leaf, subleaf, eax, ebx, ecx, edx);
+#else
+    int cpu_info[4];
+    __cpuidex(cpu_info, leaf, subleaf);
+    *eax = (xed_uint32_t)cpu_info[0];
+    *ebx = (xed_uint32_t)cpu_info[1];
+    *ecx = (xed_uint32_t)cpu_info[2];
+    *edx = (xed_uint32_t)cpu_info[3];
+#endif
 }

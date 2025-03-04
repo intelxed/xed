@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1534,6 +1534,7 @@ IFORM     : VMOVAPS_YMMqq_YMMqq_29
 
 {
 ICLASS    : VMOVD
+UNAME     : VMOVD_6E
 EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : DATAXFER
@@ -1542,34 +1543,86 @@ EXTENSION : AVX
 # 32b load
 PATTERN : VV1 0x6E  VL128 V66 V0F not64 NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:d
+# 32b load
+PATTERN : VV1 0x6E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:d
+}
 
+{
+ICLASS    : VMOVD
+UNAME     : VMOVD_7E
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+# 32b store
+PATTERN : VV1 0x7E  VL128 V66 V0F not64 NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : MEM0:w:d           REG0=XMM_R():r:d
+# 32b store
+PATTERN : VV1 0x7E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : MEM0:w:d           REG0=XMM_R():r:d
+}
+
+
+{
+ICLASS    : VMOVD
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
 PATTERN : VV1 0x6E  VL128 V66 V0F not64  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq  REG1=VGPR32_B():r:d
-
-# 32b store
-PATTERN : VV1 0x7E  VL128 V66 V0F not64  NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : MEM0:w:d           REG0=XMM_R():r:d
 
 PATTERN : VV1 0x7E  VL128 V66 V0F not64  NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:d
 
-
-
-# 32b load
-PATTERN : VV1 0x6E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:d
-
 PATTERN : VV1 0x6E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq  REG1=VGPR32_B():r:d
 
-# 32b store
-PATTERN : VV1 0x7E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : MEM0:w:d           REG0=XMM_R():r:d
-
 PATTERN : VV1 0x7E  VL128 V66 V0F mode64 norexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=VGPR32_B():w:d REG1=XMM_R():r:d
+}
 
+{
+ICLASS    : VMOVQ
+UNAME     : VMOVQ_6E
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+# 64b load
+PATTERN : VV1 0x6E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:q
+IFORM     : VMOVQ_XMMdq_MEMq_6E
+}
 
+{
+ICLASS    : VMOVQ
+UNAME     : VMOVQ_7E
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+# 64b store
+PATTERN : VV1 0x7E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : MEM0:w:q           REG0=XMM_R():r:q
+IFORM     : VMOVQ_MEMq_XMMq_7E
+# 2nd page of MOVQ forms
+PATTERN : VV1 0x7E  VL128 VF3 V0F NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq   MEM0:r:q
+IFORM     : VMOVQ_XMMdq_MEMq_7E
+}
+
+{
+ICLASS    : VMOVQ
+UNAME     : VMOVQ_D6
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+PATTERN : VV1 0xD6  VL128 V66 V0F NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
+OPERANDS  : MEM0:w:q   REG0=XMM_R():r:q
+IFORM     : VMOVQ_MEMq_XMMq_D6
 }
 
 {
@@ -1579,40 +1632,19 @@ CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : AVX
 
-# 64b load
-PATTERN : VV1 0x6E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=XMM_R():w:dq  MEM0:r:q
-IFORM     : VMOVQ_XMMdq_MEMq_6E
-
 PATTERN : VV1 0x6E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq  REG1=VGPR64_B():r:q
 
-# 64b store
-PATTERN : VV1 0x7E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : MEM0:w:q           REG0=XMM_R():r:q
-IFORM     : VMOVQ_MEMq_XMMq_7E
-
 PATTERN : VV1 0x7E  VL128 V66 V0F mode64 rexw_prefix NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=VGPR64_B():w:q REG1=XMM_R():r:q
-
-
-# 2nd page of MOVQ forms
-PATTERN : VV1 0x7E  VL128 VF3 V0F NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=XMM_R():w:dq   MEM0:r:q
-IFORM     : VMOVQ_XMMdq_MEMq_7E
 
 PATTERN : VV1 0x7E  VL128 VF3 V0F NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq   REG1=XMM_B():r:q
 IFORM     : VMOVQ_XMMdq_XMMq_7E
 
-PATTERN : VV1 0xD6  VL128 V66 V0F NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
-OPERANDS  : MEM0:w:q   REG0=XMM_R():r:q
-IFORM     : VMOVQ_MEMq_XMMq_D6
-
 PATTERN : VV1 0xD6  VL128 V66 V0F NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_B():w:dq  REG1=XMM_R():r:q
 IFORM     : VMOVQ_XMMdq_XMMq_D6
-
 }
 
 
@@ -3652,30 +3684,50 @@ OPERANDS  : REG0=YMM_R():w:qq REG1=YMM_N():r:qq REG2=YMM_B():r:qq
 
 {
 ICLASS    : VMOVSS
+UNAME     : VMOVSS_10
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+ATTRIBUTES : simd_scalar
+# NOTE: REG1 is ignored!!!
+PATTERN : VV1 0x10  VF3 V0F MOD[mm] MOD!=3  NOVSR REG[rrr] RM[nnn] MODRM()
+OPERANDS  : REG0=XMM_R():w:dq:f32  MEM0:r:d:f32
+}
+
+{
+ICLASS    : VMOVSS
+UNAME     : VMOVSS_11
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+ATTRIBUTES : simd_scalar
+PATTERN : VV1 0x11  VF3 V0F  MOD[mm] MOD!=3 NOVSR  REG[rrr] RM[nnn] MODRM()
+OPERANDS  : MEM0:w:d:f32          REG0=XMM_R():r:d:f32
+}
+
+{
+ICLASS    : VMOVSS
 EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : DATAXFER
 EXTENSION : AVX
 ATTRIBUTES : simd_scalar
 
-# NOTE: REG1 is ignored!!!
-PATTERN : VV1 0x10  VF3 V0F MOD[mm] MOD!=3  NOVSR REG[rrr] RM[nnn] MODRM()
-OPERANDS  : REG0=XMM_R():w:dq:f32  MEM0:r:d:f32
-
 PATTERN   : VV1 0x10  VF3 V0F MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq:f32  REG1=XMM_N():r:dq:f32    REG2=XMM_B():r:d:f32
 IFORM     : VMOVSS_XMMdq_XMMdq_XMMd_10
-
-PATTERN : VV1 0x11  VF3 V0F  MOD[mm] MOD!=3 NOVSR  REG[rrr] RM[nnn] MODRM()
-OPERANDS  : MEM0:w:d:f32          REG0=XMM_R():r:d:f32
 
 PATTERN : VV1 0x11  VF3 V0F  MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_B():w:dq:f32   REG1=XMM_N():r:dq:f32   REG2=XMM_R():r:d:f32
 IFORM     : VMOVSS_XMMdq_XMMdq_XMMd_11
 }
+
 ############################################################################
 {
 ICLASS    : VMOVSD
+UNAME     : VMOVSD_10
 EXCEPTIONS: avx-type-5
 CPL       : 3
 CATEGORY  : DATAXFER
@@ -3685,13 +3737,29 @@ ATTRIBUTES : simd_scalar
 # NOTE: REG1 is ignored!!!
 PATTERN : VV1 0x10  VF2 V0F MOD[mm] MOD!=3  NOVSR REG[rrr] RM[nnn] MODRM()
 OPERANDS  : REG0=XMM_R():w:dq:f64   MEM0:r:q:f64
+}
+{
+ICLASS    : VMOVSD
+UNAME     : VMOVSD_11
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+ATTRIBUTES : simd_scalar
+PATTERN : VV1 0x11  VF2 V0F MOD[mm] MOD!=3 NOVSR REG[rrr] RM[nnn] MODRM()
+OPERANDS  : MEM0:w:q:f64           REG0=XMM_R():r:q:f64
+}
+{
+ICLASS    : VMOVSD
+EXCEPTIONS: avx-type-5
+CPL       : 3
+CATEGORY  : DATAXFER
+EXTENSION : AVX
+ATTRIBUTES : simd_scalar
 
 PATTERN : VV1 0x10  VF2 V0F MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_R():w:dq:f64  REG1=XMM_N():r:dq:f64    REG2=XMM_B():r:q:f64
 IFORM     : VMOVSD_XMMdq_XMMdq_XMMq_10
-
-PATTERN : VV1 0x11  VF2 V0F MOD[mm] MOD!=3 NOVSR REG[rrr] RM[nnn] MODRM()
-OPERANDS  : MEM0:w:q:f64           REG0=XMM_R():r:q:f64
 
 PATTERN : VV1 0x11  VF2 V0F  MOD[0b11] MOD=3 REG[rrr] RM[nnn]
 OPERANDS  : REG0=XMM_B():w:dq:f64   REG1=XMM_N():r:dq:f64  REG2=XMM_R():r:q:f64

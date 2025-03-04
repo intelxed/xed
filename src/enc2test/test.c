@@ -104,6 +104,13 @@ static void dump_json_object(xed_uint8_t* buf, xed_uint32_t len, char const* fn_
     printf("}\n");
 }
 
+int is_allowed_iform_mismatch(xed_iform_enum_t observed_iform, xed_iform_enum_t ref_iform){
+    if (observed_iform == XED_IFORM_BOUND_GPR16_MEMa16 && ref_iform == XED_IFORM_BOUND_GPR32_MEMa32){
+        return 1;   // FIXME: deal with BOUND IFORM mismatch
+    }
+    return 0;
+}
+
 xed_uint64_t total = 0;
 xed_uint_t reps = 100;
 int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_enum_t ref_iform) {
@@ -113,10 +120,15 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_
     xed_uint64_t t1, t2, delta;
     xed_uint_t i;
 
+    xed_chip_enum_t init_chip = XED_CHIP_ALL;
+    xed_chip_features_t chip_features;
+
     xed_decoded_inst_zero_set_mode(&xedd, &dstate);
-    xed3_operand_set_cet(&xedd, 1);
-    xed3_operand_set_cldemote(&xedd, 1);
-    xed3_operand_set_wbnoinvd(&xedd, 1);
+    xed_get_chip_features(&chip_features, init_chip);
+    // disable PPRO_UD0_SHORT, prefer PPRO_UD0_LONG
+    xed_modify_chip_features(&chip_features, XED_ISA_SET_PPRO_UD0_SHORT, 0);
+    // sets the desired XED operands based on the chip's features
+    xed_set_decoder_modes(&xedd, init_chip, &chip_features);
 
     if (enable_emit_test_name)
         printf("//\ttest id %d  iform: %s (%s)\n",
@@ -157,10 +169,8 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_
             output_buffer[enclen-1] == 0x90) {
             // allow variants of 0x90 to masquerade as NOPs
         }
-        // FIXME: deal with BOUND IFORM mismatch
         else if (observed_iform != ref_iform 
-                && observed_iform != XED_IFORM_BOUND_GPR16_MEMa16 
-                && ref_iform != XED_IFORM_BOUND_GPR32_MEMa32) {
+                && !is_allowed_iform_mismatch(observed_iform, ref_iform) ){
             printf("//\ttest id %d IFORM MISMATCH: observed: %s expected: %s (%s)\n", test_id,
                    xed_iform_enum_t2str( observed_iform ),
                    xed_iform_enum_t2str( ref_iform ),

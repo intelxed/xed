@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ GENERAL_ERROR    ///< XED could not decode the given instruction
 INVALID_FOR_CHIP ///< The instruciton is not valid for the specified chip
 BAD_REGISTER     ///< XED could not decode the given instruction because an invalid register encoding was used.
 BAD_LOCK_PREFIX   ///< A lock prefix was found where none is allowed.
-BAD_REP_PREFIX    ///< An F2 or F3 prefix was found where none is allowed.
 BAD_LEGACY_PREFIX ///< A 66, F2 or F3 prefix was found where none is allowed.
 BAD_REX_PREFIX    ///< A REX prefix was found where none is allowed.
 BAD_MAP          ///< An illegal value for the MAP field was detected in the instruction.

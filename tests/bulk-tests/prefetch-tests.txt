@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,5 +15,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-DEC ENC IPREFETCH        ; BUILDDIR/xed -64 -de 0f1838   # PREFETCHIT0
-DEC ENC IPREFETCH        ; BUILDDIR/xed -64 -de 0f1830   # PREFETCHIT1
+DEC ENC IPREFETCH        ; BUILDDIR/xed -64 -set PREFETCHIT 1 -de 0f1838   # PREFETCHIT0
+DEC ENC IPREFETCH        ; BUILDDIR/xed -64 -set PREFETCHIT 1 -de 0f1830   # PREFETCHIT1
+
+# Test decoding of PREFETCH vs NOP via the decode APIs
+DEC IPREFETCH   ; BUILDDIR/xed-ex1 -chip GRANITE_RAPIDS  -64  0f1838    #expected PREFETCH
+DEC IPREFETCH   ; BUILDDIR/xed-ex1 -chip HASWELL  -64  0f1838           #expected NOP

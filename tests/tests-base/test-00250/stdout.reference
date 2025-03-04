@@ -1,3 +1,4 @@
+Setting chip to PENTIUM4
 Attempting to decode: 0f b2 00 00 
 iclass LSS	category SEGOP	ISA-extension BASE	ISA-set I386
 instruction-length 3

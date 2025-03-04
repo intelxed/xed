@@ -3,7 +3,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -2180,6 +2180,10 @@ class encoder_configuration_t(object):
             # NF=1 should not be an encoder input if it represents other properties (see {,CF}CMOV)
             elif p == 'NF=1' and attribute_str and 'APX_NF' not in attribute_str:
                 do_encoder_input_check = False
+            elif 'NF' in p and 'EVAPX()' not in pattern_str:
+                # Non-standard APX instructions (e.g., APX_SCC) use NF for pattern 
+                # optimization. In such cases, NF should not be provided as an encoder input.
+                do_encoder_input_check = False
 
             if do_encoder_input_check:
                 if p_short in storage_fields and storage_fields[p_short].encoder_input:
@@ -2216,7 +2220,11 @@ class encoder_configuration_t(object):
             _vmsgb("EXTRABINDING LIST", str(extra_bindings_list))
             patterns.extend(pattern_list)
             extra_bindings.extend(extra_bindings_list)
-            
+
+        if 'RM!=4' in pattern_str and 'MOD!=3' in pattern_str:
+            # these instructions don't have SIB, and therefore shouldn't have an index register
+            modal_patterns.append("INDEX=XED_REG_INVALID")
+        
         # Decode operands are type:rw:[lencode|SUPP|IMPL|EXPL|ECOND]
         # where type could be X=y or MEM0.  Most decode operands
         # become encode conditions, but some of them get converted in
@@ -2342,8 +2350,6 @@ class encoder_configuration_t(object):
             iform.priority = 4
         else:  # EVERYTHING ELSE
             iform.priority = 1
-            if 'REP=' in ipattern:
-                iform.priority = 2
 
         try:
             self.iarray[iclass].append ( iform )
@@ -2393,7 +2399,15 @@ class encoder_configuration_t(object):
                 iclass = m.group('iclass')
                 self.deleted_instructions[iclass] = True
                 continue
-      
+
+            # pattern must be deleted -> ignore all lines up until next pattern or end of block
+            # This check is more flexible than checking if a variant ends with operands or IFORM
+            if 'ENCDELETE' in line:
+                line = lines.pop(0).strip()
+                while (not right_curly_pattern.match(line) and not ipattern_pattern.match(line)):
+                    line = lines.pop(0).strip()
+                lines.insert(0, line)
+                continue
             
             line = self.expand_state_bits_one_line(line)
             p = nt_pattern.match(line)

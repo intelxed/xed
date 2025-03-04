@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ Copyright (c) 2023 Intel Corporation
   
 END_LEGAL */
 
+/// @file xed-ex-ild.c
+/// @brief instruction-length decoder (ILD) API usage
 
 #include <stdio.h>
 #include <assert.h>

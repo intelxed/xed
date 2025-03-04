@@ -26,9 +26,11 @@ END_LEGAL */
 
 #define XED_FEATURE_VECTOR_MAX 7
 /// @ingroup ISASET
-typedef struct 
+
+typedef xed_uint64_t xed_features_elem_t;
+typedef struct
 {
-    xed_uint64_t f[XED_FEATURE_VECTOR_MAX];
+    xed_features_elem_t f[XED_FEATURE_VECTOR_MAX];
 } xed_chip_features_t;
 
 

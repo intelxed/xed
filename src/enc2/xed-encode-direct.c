@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -329,10 +329,6 @@ void enc_evex_vvvv_reg_tmm(xed_enc2_req_t* r,
 
 #endif
 
-void enc_dfv(xed_enc2_req_t* r, xed_reg_enum_t dst){
-    xed_uint_t offset =  dst-XED_REG_DFV0;
-    set_vvvv(r, offset & 15);
-}
 
 void enc_vvvv_reg_gpr32(xed_enc2_req_t* r,
                       xed_reg_enum_t dst) {

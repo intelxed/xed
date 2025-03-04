@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -22,8 +22,38 @@ END_LEGAL */
 # include "xed-chip-enum.h"
 # include "xed-decoded-inst.h"
 # include "xed-chip-features.h"
+#include "xed-chip-features-private.h"
+#include "xed-operand-accessors.h"
+#include "xed-isa-set.h"
 
-void xed_chip_modes_override(xed_decoded_inst_t* xedd,
-                             xed_chip_enum_t chip,
-                             xed_chip_features_t* features);
+typedef struct{
+    xed_uint64_t isa_set;
+    xed_uint64_t operand; // xed operand
+} isa2op_t;
+
+void xed_chip_modes_override1(xed_decoded_inst_t* xedd,
+                              xed_chip_enum_t chip,
+                              xed_features_elem_t const*const features);
+
+void xed_chip_modes_override2(xed_decoded_inst_t* xedd,
+                              xed_chip_enum_t chip,
+                              xed_features_elem_t const*const features);
+
+static XED_INLINE void set_decoder_control_ops(xed_decoded_inst_t* xedd,
+                                        isa2op_t const*const isa2op,
+                                        xed_features_elem_t const*const features)
+{
+    xed_uint_t i = 0;
+
+    xed_assert(features);
+    xed_assert(isa2op);
+
+    while (isa2op[i].isa_set != XED_ISA_SET_INVALID)
+    {
+        xed_bool_t status = xed_test_features(features, isa2op[i].isa_set);
+        xed3_set_generic_operand(xedd, isa2op[i].operand, status);
+        i++;
+    }
+}
+
 #endif

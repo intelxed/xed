@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -27,6 +27,11 @@ END_LEGAL */
 
 #include "xed-ild.h"
 #include "xed-machine-mode-enum.h"
+
+#define XED_GRAMMAR_MODE_64 2
+#define XED_GRAMMAR_MODE_32 1
+#define XED_GRAMMAR_MODE_16 0
+
 static XED_INLINE xed_uint_t xed_modrm_mod(xed_uint8_t m) { return m>>6; }
 static XED_INLINE xed_uint_t xed_modrm_reg(xed_uint8_t m) { return (m>>3)&7; }
 static XED_INLINE xed_uint_t xed_modrm_rm(xed_uint8_t m) { return m&7; }
@@ -35,10 +40,6 @@ static XED_INLINE xed_uint_t xed_sib_index(xed_uint8_t m) { return (m>>3)&7; }
 static XED_INLINE xed_uint_t xed_sib_base(xed_uint8_t m) { return m&7; }
 static XED_INLINE xed_uint_t bits2bytes(xed_uint_t bits) { return bits>>3; }
 static XED_INLINE xed_uint_t bytes2bits(xed_uint_t bytes) { return bytes<<3; }
-
-#if defined(XED_APX)
-xed_bool_t chip_supports_apx(xed_decoded_inst_t* d);
-#endif
 
 typedef void(*xed_ild_l1_func_t)(xed_decoded_inst_t*);
 typedef xed_uint32_t(*xed3_find_func_t)(const xed_decoded_inst_t*);
@@ -171,9 +172,19 @@ xed_uint32_t xed3_operand_get_vexdest_1f(const xed_decoded_inst_t* d) {
 }
 #endif
 
-void
-xed_instruction_length_decode(xed_decoded_inst_t* d);
+static XED_INLINE xed_bool_t mode_64b(xed_decoded_inst_t* d)
+{
+    return (xed3_operand_get_mode(d) == XED_GRAMMAR_MODE_64);
+}
 
+#if defined(XED_APX)
+static XED_INLINE xed_bool_t decoder_supports_apx(xed_decoded_inst_t *d)
+{
+    return (!xed3_operand_get_no_apx(d) && mode_64b(d));
+}
+#endif
+
+void xed_instruction_length_decode(xed_decoded_inst_t* d);
 
 #endif
 

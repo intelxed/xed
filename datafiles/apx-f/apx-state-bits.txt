@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,27 +22,34 @@ EVEX_APX          EVVSPACE=1  # APX Promoted-like EVEX encoding (ND/ZU/NF)
 EVEX_APX_SCC      EVVSPACE=2  # APX CCMP/CTEST encoding
 
 ##############  SCC  ##############
-# (VEXDEST4=~EVEX.V4 -> the inverted encoding bit)
-SCC0     VEXDEST4=1  MASK=0
-SCC1     VEXDEST4=1  MASK=1
-SCC2     VEXDEST4=1  MASK=2
-SCC3     VEXDEST4=1  MASK=3
-SCC4     VEXDEST4=1  MASK=4
-SCC5     VEXDEST4=1  MASK=5
-SCC6     VEXDEST4=1  MASK=6
-SCC7     VEXDEST4=1  MASK=7
-SCC8     VEXDEST4=0  MASK=0
-SCC9     VEXDEST4=0  MASK=1
-SCC10    VEXDEST4=0  MASK=2
-SCC11    VEXDEST4=0  MASK=3
-SCC12    VEXDEST4=0  MASK=4
-SCC13    VEXDEST4=0  MASK=5
-SCC14    VEXDEST4=0  MASK=6
-SCC15    VEXDEST4=0  MASK=7
+# The SSC xed-operand is set by the ILD for EVEX_MAP4 instructions - use it as a pattern restriction.
+#
+# Explicitly define MASK and NF conditions to prevent them from being "don't-care" and increase
+# code-size. (No need to specify VEXDEST4 due to "all-ones" condition optimization)
+# SCC[0] <-> EVEX.mask[0]
+# SCC[1] <-> EVEX.mask[1]
+# SCC[2] <-> EVEX.mask[2] / APX.NF
+# SCC[3] <-> EVEX.V4
+#
+SCC0  SCC=0  NF=0  MASK=0
+SCC1  SCC=1  NF=0  MASK=1
+SCC2  SCC=2  NF=0  MASK=2
+SCC3  SCC=3  NF=0  MASK=3
+SCC4  SCC=4  NF=1  MASK=4
+SCC5  SCC=5  NF=1  MASK=5
+SCC6  SCC=6  NF=1  MASK=6
+SCC7  SCC=7  NF=1  MASK=7
+SCC8  SCC=8  NF=0  MASK=0
+SCC9  SCC=9  NF=0  MASK=1
+SCC10 SCC=10 NF=0  MASK=2
+SCC11 SCC=11 NF=0  MASK=3
+SCC12 SCC=12 NF=1  MASK=4
+SCC13 SCC=13 NF=1  MASK=5
+SCC14 SCC=14 NF=1  MASK=6
+SCC15 SCC=15 NF=1  MASK=7
 
 # Use NO_SSC pattern conditions for instructions that share (enc-space, mapId, opcode) combination 
 # with APX/SCC instructions.
-# Explicitly define a MASK condition to prevent it from being "don't-care" and increase
-# code-size (with all MASK={0-7} options).
+# Explicitly define a MASK condition to verify zeroed lower bits (MASK[0-1])
 NO_SCC_NF0   NF=0 MASK=0
 NO_SCC_NF1   NF=1 MASK=4

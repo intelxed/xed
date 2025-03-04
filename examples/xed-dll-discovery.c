@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,21 +16,21 @@ Copyright (c) 2024 Intel Corporation
   
 END_LEGAL */
 
-/// @file xed-min.cpp
+/// @file xed-dll-discovery.c
 /// @brief how to discover enum names for xed_iclass_enum_t
 
 /*************************************************************************
    When using XED as a DLL or shared object, the enumerations can change
    from one version of XED to another if instructions (or features) are
    added. Each XED enumeration must be mapped to something your XED client
-   can use for indepedent compilation.  This example shows how to discover
-   the XED values for the xed_iclass_enum_t and construct a mapping from
-   names that are constant to your tool to names that can vary.  You would
-   need to this for each XED enumeration that your XED client uses.
+   can use for indepedent compilation (custom fixed enumeration).  This example 
+   shows how to discover the XED values for the xed_iclass_enum_t and construct
+   a mapping from names that are constant to your tool to names that can vary. 
+   You would need to do this for each XED enumeration that your XED client uses.
 
    This builds a one map so that you can map things from your clients code
    to XED's names as would be required for an encoder. For a decoder you'd
-   also need to invert the mapping so that you can mape from XED names to
+   also need to invert the mapping so that you can map from XED names to
    your client's names.
 **************************************************************************/
 

@@ -1,0 +1,22 @@
+Setting chip to HASWELL
+Attempting to decode: 0f 18 38 
+iclass NOP	category WIDENOP	ISA-extension BASE	ISA-set FAT_NOP
+instruction-length 3
+operand-width 32
+effective-operand-width 32
+effective-address-width 64
+stack-address-width 64
+iform-enum-name NOP_MEMv_0F18r7
+iform-enum-name-dispatch (zero based) 22
+iclass-max-iform-dispatch 28
+Nominal opcode position 1
+Nominal opcode 0x18
+Operands
+#   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
+#   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
+0   MEM0           (see below)   EXPLICIT   R         V   32     4     1     32        INT    INVALID
+Memory Operands
+  0    read BASE= RAX/GPR  ASZ0=64
+  MemopBytes = 4
+ATTRIBUTES: NOP SCALABLE 
+ISA SET: [FAT_NOP]

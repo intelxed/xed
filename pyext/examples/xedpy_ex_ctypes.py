@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ def print_decoded_instruction_info(lib: ctypes.CDLL, xedd: xed_decoded_inst_t, b
 
     # Get and print the instruction extension
     extension: xed_enum = lib.xed_decoded_inst_get_extension_py(ctypes.byref(xedd))
-    extension_str: str = lib.xed_category_enum_t2str_py(extension)
+    extension_str: str = lib.xed_extension_enum_t2str_py(extension)
     print(f'{"EXTENSION":<{PAD}}: {extension_str.decode("utf-8")}')
 
     # Get and print the instruction IFORM

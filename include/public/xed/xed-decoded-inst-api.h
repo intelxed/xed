@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ END_LEGAL */
 #include "xed-state.h"
 #include "xed-operand-values-interface.h"
 #include "xed-print-info.h"
+#include "xed-chip-features.h"
 
 ///////////////////////////////////////////////////////
 /// API
@@ -363,10 +364,14 @@ XED_DLL_EXPORT xed_bool_t
 xed_decoded_inst_valid_for_chip(xed_decoded_inst_t const* const p, 
                                 xed_chip_enum_t chip);
 
+/// Indicate if this decoded instruction is valid for the specified
+/// #xed_chip_features_t chip
+/// @ingroup DEC
+XED_DLL_EXPORT xed_bool_t
+xed_decoded_inst_valid_for_features(xed_decoded_inst_t const *const p,
+                                    xed_chip_features_t const *const chip_features);
+
 //@}
-
-
-
 
 /// @name IFORM handling
 //@{
@@ -530,10 +535,16 @@ xed_decoded_inst_get_reg(const xed_decoded_inst_t* p,
                          xed_operand_enum_t reg_operand);
 
 /// @ingroup DEC
-/// Return DFV register enumeration if one of the instruction's operands
-/// is a "default flags values" pseudo-register and invalid register enumeration otherwise
-XED_DLL_EXPORT xed_reg_enum_t 
-xed_decoded_inst_get_dfv_reg(const xed_decoded_inst_t* xedd);
+/// Returns a non-zero value if the instruction supports "Default Flags Values" (DFV).
+XED_DLL_EXPORT xed_bool_t 
+xed_decoded_inst_has_default_flags_values(const xed_decoded_inst_t* xedd);
+
+/// @ingroup DEC
+/// Extracts the default flags values into the provided xed_flag_dfv_t struct.
+/// Returns 0 if the DFV is invalid.
+XED_DLL_EXPORT xed_bool_t 
+xed_decoded_inst_get_default_flags_values(const xed_decoded_inst_t* xedd, 
+                                          xed_flag_dfv_t* p);
 
 /// See the comment on xed_decoded_inst_uses_rflags(). This can return 
 /// 0 if the flags are really not used by this instruction.

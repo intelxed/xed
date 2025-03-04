@@ -145,13 +145,13 @@ def gnu_secured_build(env: dict) -> str:
                 env.add_to_var('LINKFLAGS','-z noexecstack')
         else:  # Windows
             # Enables Data Execution Prevention (DEP) for executables.
-            env.add_to_var('LINKFLAGS','-z /NXCOMPAT')
+            env.add_to_var('LINKFLAGS','-Wl,-nxcompat')
             # Enables address space layout randomization (ASLR) for executables.
-            env.add_to_var('LINKFLAGS','-z /DYNAMICBASE')
+            env.add_to_var('LINKFLAGS','-Wl,--dynamicbase')
             # Warnings as errors (Linker specific)
-            env.add_to_var('LINKFLAGS','-z /WX')
+            env.add_to_var('LINKFLAGS','-Werror')
             # Enables Link-Time Code Generation
-            env.add_to_var('LINKFLAGS', '-z /LTCG')
+            env.add_to_var('LINKFLAGS', '-flto')
 
     return flags
 
@@ -389,7 +389,7 @@ def init(env):
         env.add_define("XED_ASSERTS")
 
 def strip_file(env,fn,options=''):
-    if env.on_windows(): 
+    if env.on_windows():
         return
     fne = env.expand(fn)
     mbuild.msgb("STRIPPING", fne)

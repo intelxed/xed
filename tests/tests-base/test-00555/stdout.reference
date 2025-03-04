@@ -1,2 +1,2 @@
-Attempting to decode: ff00ff
-length = 2
+0F004540
+ERROR: INVALID_MODE Could not decode at offset: 0x0 len: 4 PC: 0x0: [0F004540]

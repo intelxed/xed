@@ -99,6 +99,7 @@ import opnds
 import opnd_types
 import cpuid_rdr
 import map_info_rdr
+import gen_py_wrappers
 
 send_stdout_message_to_file = False
 if send_stdout_message_to_file:
@@ -268,6 +269,10 @@ def setup_arg_parser():
                           dest="add_orphan_inst_to_future_chip",
                           default=False,
                           help="Add orphan isa-sets to future chip definition.")
+    arg_parser.add_option("--py-export", 
+                          action="store_true",
+                          dest="py_export",
+                          help="Export XED APIs with a '_py' suffixed func name")
     return arg_parser
 
 #####################################################################
@@ -5672,6 +5677,8 @@ def call_ctables(agi):
     srcs = ctables.work(lines,
                         xeddir=agi.common.options.xeddir,
                         gendir=agi.common.options.gendir)
+    for f in srcs:
+        agi.add_file_name(f,is_header(f))
 
 def call_chipmodel(agi):
     args = chipmodel.args_t()
@@ -6038,6 +6045,13 @@ def emit_width_lookup(options, widths_list):
    fp.close()
    return fp.full_file_name
 
+def gen_python_wrappers(options, agi: all_generator_info_t):
+   """Generate the python wrapper APIs """
+   if not options.py_export:
+      return
+   msge("MAKING PYTHON WRAPPERS")
+   cfn = gen_py_wrappers.gen(options, agi)
+   agi.add_file_name(cfn)
 
 def gen_errors_enum(agi):
    """Read in the information about xed errors"""
@@ -6381,6 +6395,8 @@ def main():
    
    gen_cpuid_map(agi)
    agi.close_output_files()
+   # This should be executed only after the file generation phase is complete:
+   gen_python_wrappers(options,agi)
    agi.dump_generated_files()
 
 ################################################

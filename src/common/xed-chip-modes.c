@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2021 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -19,42 +19,17 @@ END_LEGAL */
 #include "xed-interface.h"
 #include "xed-isa-set.h"
 #include "xed-chip-features-private.h"
-
+#include "xed-chip-features-table.h"
+#include "xed-chip-modes.h"
 #include "xed-chip-modes-override.h"
-
-static void
-xed_chip_modes_wbnoinvd_cldemote(xed_decoded_inst_t* xedd,
-                                 xed_chip_enum_t chip,
-                                 xed_chip_features_t* features)
-{
-    // WBNOINVD repurposes an existing encoding (prefixed WBINVD) so we
-    // need to rely on the xed chip to tell us which semantics are associated
-    // with that encoding.
-    
-    xed_chip_features_t* f = features;
-    xed_chip_features_t loc_features;
-    if (f==0) {
-        // if no features supplied, get default features for specified chip.
-        xed_get_chip_features(&loc_features, chip);
-        f = &loc_features;
-    }
-#if defined(XED_SUPPORTS_WBNOINVD)
-    if (xed_test_chip_features(f, XED_ISA_SET_WBNOINVD)) 
-        xed3_operand_set_wbnoinvd(xedd,1);
-#endif
-    if (xed_test_chip_features(f, XED_ISA_SET_CLDEMOTE))  
-        xed3_operand_set_cldemote(xedd,1);
-}
 
 
 void
 set_chip_modes(xed_decoded_inst_t* xedd,
                xed_chip_enum_t chip,
-               xed_chip_features_t* features)
+               xed_features_elem_t const*const features)
 {
-    xed_bool_t first_prefix = 0;
-    xed_uint_t p4, lzcnt, tzcnt;
-
+    /* Initializes chip-specific decoder behavior, independent of ISA-SETs */
     switch(chip) {
       case XED_CHIP_INVALID:
         break;
@@ -70,67 +45,90 @@ set_chip_modes(xed_decoded_inst_t* xedd,
       case XED_CHIP_I386FP:
       case XED_CHIP_I486REAL:
       case XED_CHIP_I486:
-        first_prefix = 1;
+      case XED_CHIP_QUARK: // Quark is PENTIUM ISA but not PENTIUM implementation
+        xed3_operand_set_mode_first_prefix(xedd, 1);
         break;
-        
-      case XED_CHIP_QUARK:
-        // Quark is PENTIUM ISA but not PENTIUM implementation
-        first_prefix = 1;
-        break;
-        
+
       case XED_CHIP_PENTIUM:
       case XED_CHIP_PENTIUMREAL:
-        xed3_operand_set_modep5(xedd,1);
-        first_prefix = 1;
-        break;
       case XED_CHIP_PENTIUMMMX:
       case XED_CHIP_PENTIUMMMXREAL:
-        xed3_operand_set_modep5(xedd,1);
-        xed3_operand_set_modep55c(xedd,1);
-        first_prefix = 1;
+        xed3_operand_set_modep5(xedd, 1);
+        xed3_operand_set_mode_first_prefix(xedd, 1);
         break;
 
       default:
         break;
     }
 
-    xed_chip_modes_override(xedd, chip, features);  //replaceable function
-    xed_chip_modes_wbnoinvd_cldemote(xedd, chip, features); 
-    
-    if (first_prefix)
-        xed3_operand_set_mode_first_prefix(xedd,1);
-
-    /* set the P4-ness for ISA-set rejection */
-    p4 = 1;
-    if (chip != XED_CHIP_INVALID)
-        if ( xed_isa_set_is_valid_for_chip(XED_ISA_SET_PAUSE, chip) == 0 )
-            p4 = 0;
-    xed3_operand_set_p4(xedd,p4);
-
-#if defined(XED_SUPPORTS_LZCNT_TZCNT)
-    /* LZCNT / TZCNT show up on HSW. LZCNT has its own CPUID bit, TZCNT is on
-     * BMI1.  */
-    lzcnt = 1;
-    tzcnt = 1;
-    if (chip != XED_CHIP_INVALID) {
-        if ( xed_isa_set_is_valid_for_chip(XED_ISA_SET_LZCNT, chip) == 0 )
-            lzcnt = 0;
-        if ( xed_isa_set_is_valid_for_chip(XED_ISA_SET_BMI1, chip) == 0 )
-            tzcnt = 0;
-    }
-    if (features) {
-        lzcnt = xed_test_chip_features(features, XED_ISA_SET_LZCNT);
-        tzcnt = xed_test_chip_features(features, XED_ISA_SET_BMI1);
-    }
-    xed3_operand_set_lzcnt(xedd,lzcnt);
-    xed3_operand_set_tzcnt(xedd,tzcnt);
+    /* Initializes decoder according to supported ISA-SETs */
+    if (features)
+    {
+        xed_bool_t support;
+        /* List of dual encoding instructions: depending on the host, a given encoding can be
+        * interpreted as two different instructions.
+        * For those, XED sets internal operands to support the matching ISA-SETs.
+        */
+        static const isa2op_t isa2op[] = {
+            // `MODE_SHORT_UD0`: Control the `UD0` instruction length
+            {XED_ISA_SET_PPRO_UD0_SHORT, XED_OPERAND_MODE_SHORT_UD0},
+            // `P4`: Enables the `PAUSE` instruction (replacing a previous `NOP`)
+            {XED_ISA_SET_PAUSE, XED_OPERAND_P4},
+#if defined(XED_ISA_SET_ICACHE_PREFETCH_DEFINED)
+            // `PREFETCHIT`: Enables the `PREFETCHIT{0,1}` instruction (replacing a previous `NOP`)
+            {XED_ISA_SET_ICACHE_PREFETCH, XED_OPERAND_PREFETCHIT},
 #endif
-    (void) lzcnt; (void) tzcnt; //pacify compiler
+#if defined(XED_ISA_SET_MOVRS_DEFINED)
+            // `PREFETCHRST`: Enables the `PREFETCHRST2` instruction (replacing a previous `NOP`)
+            {XED_ISA_SET_MOVRS, XED_OPERAND_PREFETCHRST},
+#endif
+#if defined(XED_SUPPORTS_WBNOINVD)
+            // `WBNOINVD`: Enables the `WBNOINVD` instruction (replacing a previous `WBINVD`)
+            {XED_ISA_SET_WBNOINVD, XED_OPERAND_WBNOINVD},
+            // `CLDEMOTE`: Enables the `CLDEMOTE` instruction (replacing a previous `NOP`)
+            {XED_ISA_SET_CLDEMOTE, XED_OPERAND_CLDEMOTE},
+#endif
+#if defined(XED_SUPPORTS_LZCNT_TZCNT)
+            // `LZCNT`: Enables the `LZCNT` instruction (replacing a previous `BSR`)
+            {XED_ISA_SET_LZCNT, XED_OPERAND_LZCNT},
+            // `TZCNT`: Enables the `TZCNT` instruction (replacing a previous `BSF`)
+            {XED_ISA_SET_BMI1, XED_OPERAND_TZCNT},
+#endif
+#if defined(XED_MPX)
+            // `MPXMODE`: Enables the `MPX` ISA-SET instructions (replacing a previous `NOP`)
+            {XED_ISA_SET_MPX, XED_OPERAND_MPXMODE},
+#endif
+#if defined(XED_CET)
+            // `CET`: Enables the `CET` ISA-SET instructions (replacing a previous `NOP`)
+            {XED_ISA_SET_CET, XED_OPERAND_CET},
+#endif
+            // EO isa2op
+            {XED_ISA_SET_INVALID, XED_OPERAND_INVALID}
+        };
 
-    if (chip != XED_CHIP_INVALID)  {
-        if ( xed_isa_set_is_valid_for_chip(XED_ISA_SET_PPRO_UD0_SHORT, chip)  ) {
-            xed3_operand_set_mode_short_ud0(xedd, 1);
-        }
+        set_decoder_control_ops(xedd, isa2op, features);
+
+        /* set support of major architectures (mainly affects the XED ILD) */
+        // AVX2
+#if defined(XED_AVX)
+        support = xed_test_features(features, XED_ISA_SET_AVX);
+        xed3_operand_set_no_vex(xedd, !support);
+#endif
+        // AVX512
+#if defined(XED_SUPPORTS_AVX512)
+        support = xed_test_features(features, XED_ISA_SET_AVX512F_SCALAR); // Catches both SKX and KNL
+        support |= xed_test_features(features, XED_ISA_SET_AVX512F_128); // For backwards compatibility
+        xed3_operand_set_no_evex(xedd, !support);
+#endif
+#if defined(XED_APX)
+        // APX
+        support = xed_test_features(features, XED_ISA_SET_APX_F);
+        xed3_operand_set_no_apx(xedd, !support);
+#endif
+
+        /* replaceable functions */
+        xed_chip_modes_override1(xedd, chip, features);
+        xed_chip_modes_override2(xedd, chip, features);
     }
-
 }
+

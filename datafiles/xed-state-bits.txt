@@ -24,7 +24,8 @@
 #all_modes             ALL_MODES=1
 not64                  MODE!=2 
 mode64                 MODE=2  
-mode32                 MODE=1  
+mode32                 MODE=1 
+not16                  MODE!=0 
 mode16                 MODE=0  
 
 # effective addressing mode
@@ -114,6 +115,9 @@ ss_prefix               SEG_OVD=6
 # default (or not) to 64b width in 64b mode
 nrmw                   DF64=0
 df64                   DF64=1
+
+# If such macro exists in a pattern, the encoder skips the instruction variant
+ENCDELETE              ENC_DELETE=1
 
 # default choice for encoder when there are multiple choices for a
 # nonterminal. The ISA is not uniquely determined for encoding so we

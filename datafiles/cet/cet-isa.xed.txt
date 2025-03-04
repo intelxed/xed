@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,7 +33,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn]  f3_refining_prefix     MODRM()  
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0xAE MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() f3_refining_prefix
 OPERANDS:    MEM0:rw:q:u64
 IFORM:       CLRSSBSY_MEMu64
 }
@@ -47,7 +48,7 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b011]  f3_refining_prefix     CET=1 
+PATTERN:     0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b011] f3_refining_prefix CET=1
 OPERANDS:    
 IFORM:       ENDBR32
 }
@@ -61,7 +62,7 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x1E MOD[0b11] MOD=3  REG[0b111] RM[0b010]  f3_refining_prefix     CET=1 
+PATTERN:     0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b010] f3_refining_prefix CET=1
 OPERANDS:    
 IFORM:       ENDBR64
 }
@@ -75,7 +76,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b101] RM[nnn] f3_refining_prefix norexw_prefix 
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0xAE MOD[0b11] MOD=3 REG[0b101] RM[nnn] norexw_prefix f3_refining_prefix
 OPERANDS:    REG0=GPR32_B():r:d:u8 REG1=XED_REG_SSP:rw:SUPP:u64
 IFORM:       INCSSPD_GPR32u8
 }
@@ -89,7 +91,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0xAE MOD[0b11] MOD=3  REG[0b101] RM[nnn] f3_refining_prefix rexw_prefix mode64 
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0xAE MOD[0b11] MOD=3 REG[0b101] RM[nnn] rexw_prefix f3_refining_prefix mode64
 OPERANDS:    REG0=GPR64_B():r:q:u8 REG1=XED_REG_SSP:rw:SUPP:u64
 IFORM:       INCSSPQ_GPR64u8
 }
@@ -103,7 +106,7 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn] f3_refining_prefix norexw_prefix CET=1
+PATTERN:     0x0F 0x1E MOD[0b11] MOD=3 REG[0b001] RM[nnn] norexw_prefix f3_refining_prefix CET=1
 OPERANDS:    REG0=GPR32_B():w:d:u32 REG1=XED_REG_SSP:r:SUPP:u64
 IFORM:       RDSSPD_GPR32u32
 }
@@ -117,7 +120,7 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x1E MOD[0b11] MOD=3  REG[0b001] RM[nnn] f3_refining_prefix rexw_prefix mode64 CET=1 
+PATTERN:     0x0F 0x1E MOD[0b11] MOD=3 REG[0b001] RM[nnn] rexw_prefix f3_refining_prefix mode64 CET=1
 OPERANDS:    REG0=GPR64_B():w:q:u64 REG1=XED_REG_SSP:r:SUPP:u64
 IFORM:       RDSSPQ_GPR64u64
 }
@@ -131,7 +134,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x01 MOD[mm] MOD!=3 REG[0b101] RM[nnn]  MODRM()  f3_refining_prefix     
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x01 MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() f3_refining_prefix
 OPERANDS:    MEM0:rw:q:u64 REG0=XED_REG_SSP:w:SUPP:u64
 IFORM:       RSTORSSP_MEMu64
 }
@@ -145,7 +149,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b010]  f3_refining_prefix     
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b101] RM[0b010] f3_refining_prefix
 OPERANDS:    REG0=XED_REG_SSP:r:SUPP:u64
 IFORM:       SAVEPREVSSP
 }
@@ -159,7 +164,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b101] RM[0b000]  f3_refining_prefix     
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b101] RM[0b000] f3_refining_prefix
 OPERANDS:    
 IFORM:       SETSSBSY
 }
@@ -173,7 +179,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() no_refining_prefix norexw_prefix
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() norexw_prefix no_refining_prefix
 OPERANDS:    MEM0:w:d:u32 REG0=GPR32_R():r:d:u32
 IFORM:       WRSSD_MEMu32_GPR32u32
 }
@@ -187,7 +194,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() no_refining_prefix rexw_prefix mode64
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x38 0xF6 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() rexw_prefix no_refining_prefix mode64
 OPERANDS:    MEM0:w:q:u64 REG0=GPR64_R():r:q:u64
 IFORM:       WRSSQ_MEMu64_GPR64u64
 }
@@ -201,7 +209,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x38 0xF5 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() osz_refining_prefix norexw_prefix
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x38 0xF5 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() norexw_prefix osz_refining_prefix
 OPERANDS:    MEM0:w:d:u32 REG0=GPR32_R():r:d:u32
 IFORM:       WRUSSD_MEMu32_GPR32u32
 }
@@ -215,7 +224,8 @@ CATEGORY:    CET
 EXTENSION:   CET
 ISA_SET:     CET
 REAL_OPCODE: Y
-PATTERN:    0x0F 0x38 0xF5 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() osz_refining_prefix rexw_prefix mode64
+ATTRIBUTES:  PROTECTED_MODE 
+PATTERN:     0x0F 0x38 0xF5 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() rexw_prefix osz_refining_prefix mode64
 OPERANDS:    MEM0:w:q:u64 REG0=GPR64_R():r:q:u64
 IFORM:       WRUSSQ_MEMu64_GPR64u64
 }

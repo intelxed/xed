@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,9 +15,9 @@ Copyright (c) 2019 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
-/// @file xed-ex6.c
 
-// decoder->encoder example. 
+/// @file xed-ex6.c
+/// @brief simple decode-encode flow example
 
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
@@ -79,6 +79,10 @@ main(int argc, char** argv) {
 
     xed_decoded_inst_zero(&xedd);
     xed_decoded_inst_set_mode(&xedd, mmode, stack_addr_width);
+    // Default-on for an easy usage:
+    xed3_operand_set_p4(&xedd, 1);
+    xed3_operand_set_lzcnt(&xedd, 1);
+    xed3_operand_set_tzcnt(&xedd, 1);
 
     for( i=first_argv ;i < argcu; i++)    {
         if (strlen(argv[i]) != 2) {

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ xed_get_chip_features(xed_chip_features_t* p, xed_chip_enum_t chip)
 {
     if (p)
     {
-        if (chip < XED_CHIP_LAST)
+        if (chip < XED_CHIP_LAST && chip != XED_CHIP_INVALID)
         {
             xed_uint_t i;
             for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
@@ -68,15 +68,23 @@ xed_modify_chip_features(xed_chip_features_t* p,
 }
 
 xed_bool_t
-xed_test_chip_features(xed_chip_features_t* p,
-                       xed_isa_set_enum_t isa_set)
+xed_test_features(xed_features_elem_t const*const p,
+                  xed_isa_set_enum_t isa_set)
 {
     const xed_uint64_t one = 1;
-    const unsigned int n = XED_CAST(unsigned int,isa_set) / 64;
-    const unsigned int r = XED_CAST(unsigned int,isa_set) - (64*n);
+    const unsigned int n = XED_CAST(unsigned int, isa_set) / 64;
+    const unsigned int r = XED_CAST(unsigned int, isa_set) - (64 * n);
+    xed_assert(p);
     xed_assert(n < XED_FEATURE_VECTOR_MAX);
-    if (p->f[n] & (one<<r))
+    if (p[n] & (one<<r))
         return 1;
     return 0;
 }
 
+xed_bool_t
+xed_test_chip_features(xed_chip_features_t const*const p,
+                       xed_isa_set_enum_t isa_set)
+{
+    xed_assert(p);
+    return xed_test_features(p->f,isa_set);
+}

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -120,7 +120,10 @@ typedef unsigned int xed_extension_enum_t;
 typedef unsigned int xed_isa_set_enum_t;
 typedef unsigned int xed_iclass_enum_t;
 typedef unsigned int xed_iform_enum_t;
-
+typedef unsigned int xed_chip_enum_t;
+typedef unsigned int xed_operand_enum_t;
+typedef unsigned int xed_operand_visibility_enum_t;
+typedef unsigned int xed_operand_action_enum_t;
 '''
 
 cdef_string = BASE_TYPES + EMPTY_ENUMS + '''
@@ -153,7 +156,6 @@ typedef enum {
   XED_ERROR_INVALID_FOR_CHIP, ///< The instruciton is not valid for the specified chip
   XED_ERROR_BAD_REGISTER, ///< XED could not decode the given instruction because an invalid register encoding was used.
   XED_ERROR_BAD_LOCK_PREFIX, ///< A lock prefix was found where none is allowed.
-  XED_ERROR_BAD_REP_PREFIX, ///< An F2 or F3 prefix was found where none is allowed.
   XED_ERROR_BAD_LEGACY_PREFIX, ///< A 66, F2 or F3 prefix was found where none is allowed.
   XED_ERROR_BAD_REX_PREFIX, ///< A REX prefix was found where none is allowed.
   XED_ERROR_BAD_MAP, ///< An illegal value for the MAP field was detected in the instruction.
@@ -449,5 +451,23 @@ typedef struct xed_state_s {
   /// for 16b/32b modes
   xed_address_width_enum_t stack_addr_width; 
 } xed_state_t;
+
+typedef struct xed_operand_s
+{
+    xed_uint8_t         _name; // xed_operand_enum_t
+    
+     // implicit, explicit, suppressed
+    xed_uint8_t         _operand_visibility; // xed_operand_visibility_enum_t
+    xed_uint8_t         _rw;   // read or written // xed_operand_action_enum_t
+    
+     // width code, could be invalid (then use register name)
+    xed_uint8_t         _oc2; // xed_operand_width_enum_t
+    
+     // IMM, IMM_CONST, NT_LOOKUP_FN, REG, ERROR
+    xed_uint8_t         _type; //xed_operand_type_enum_t
+    xed_uint8_t         _xtype; // xed data type: u32, f32, etc. //xed_operand_element_xtype_enum_t
+    xed_uint8_t         _cvt_idx; //  decoration index
+    xed_uint8_t         _nt; 
+}  xed_operand_t;  
 '''
 

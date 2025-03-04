@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ var_kreg2 = 'kreg2'
 arg_kreg2 = 'xed_reg_enum_t ' + var_kreg2
 
 var_dfv = 'dfv'
-arg_dfv = 'xed_reg_enum_t ' + var_dfv
+arg_dfv = 'xed_uint8_t ' + var_dfv
 
 var_rcsae = 'rcsae'
 arg_rcsae = 'xed_uint_t ' + var_rcsae
@@ -409,11 +409,6 @@ def op_x87(op):
           re.match(r'XED_REG_ST[0-7]',op.bits) ):
         return True
     return False
-def op_dfv(op):
-    if op.lookupfn_name:
-        if 'DFV' in op.lookupfn_name:
-            return True
-        return False
 
 def implicit_imm_one(op):
     return op.name == 'IMM0' and op.type == 'imm_const' and op.bits == '1' and op.visibility == 'IMPLICIT'
@@ -425,7 +420,7 @@ def one_scalable_gpr_and_one_mem(ii): # allows optional imm8,immz, one implicit 
             n += 1
         elif op_reg(op) and op_implicit_specific_reg(op):
             implicit += 1
-        elif op_gprv(op): #or op_gpry(op):
+        elif op_gprv(op) or op_gpry(op):
             r += 1
         elif op_imm8(op) or op_immz(op):
             i += 1
@@ -1166,8 +1161,6 @@ def make_opnd_signature(env, ii, using_width=None, broadcasting=False, special_x
             s.append('dr')
         elif op_seg(op):
             s.append('seg')
-        elif op_dfv(op):
-            s.append('dfv')
         elif op.name in ['REG0','REG1'] and op_luf(op,'OrAX'):
             if using_width:
                 s.append( _translate_rax_name(using_width) )
@@ -2116,8 +2109,6 @@ def get_opnd_types(env, ii, osz=0):
             s.append('kreg')
         elif op_implicit(op) and op.name == 'IMM0': # implicit imm like ONE
             s.append(get_implicit_operand_name(op))
-        elif op_dfv(op):
-            s.append('dfv')
         else:
             die("Unhandled operand {}".format(op))
     return s
@@ -2842,8 +2833,6 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     """GPRv-MEMv, MEMv-GPRv, GPRy-MEMv, MEMv-GPRy w/optional imm8 or immz.  This
        will work with anything that has one scalable register operand
        and another fixed or scalable memory operand. """
-    # The GPRy stuff is not working yet
-    global arg_reg0, var_reg0, widths_to_bits, widths_to_bits_y
     dispsz_list = get_dispsz_list(env)
 
     op = first_opnd(ii)
@@ -2851,10 +2840,13 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
     if env.mode == 64:
         widths.append('q')
 
-    gpry=False
+    gpry = False
     for op in _gen_opnds(ii):
         if op_gpry(op):
             gpry=True
+    
+    if env.mode == 64 and 'OSZ=0' in ii.pattern:
+        widths.pop(0)   # 66prefix in pattern
 
     fixed_reg = False
     if ii.iclass == 'NOP' and ii.iform.startswith('NOP_MEMv_GPRv_0F1C'):
@@ -2900,6 +2892,8 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
             fo.add_code_eol('emit(r,0x66)')
         elif width == 'd' and  env.mode == 16:
             fo.add_code_eol('emit(r,0x66)')
+        elif ii.rexw_prefix == '0':
+            pass    # pattern restricts REXW=0
         elif width == 'q' and  ii.default_64b == False:
             rexw_forced = True
             fo.add_code_eol('set_rexw(r)', 'forced rexw on memop')
@@ -2916,7 +2910,7 @@ def create_legacy_one_gpr_reg_one_mem_scalable(env,ii):
                 fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required),
                                 'reg opcode extension')
         else:
-            d=widths_to_bits_y if gpry else widths_to_bits
+            d = widths_to_bits_y if gpry else widths_to_bits
             fo.add_code_eol('enc_modrm_reg_gpr{}(r,{})'.format(d[width],
                                                                var_reg0))
 
@@ -4586,7 +4580,7 @@ def vex_one_mask_reg_and_one_gpr(ii):
 
 def evex_xyztmm_and_gprs(env, ii): 
     # allows 1-3 {x,y,z, t}mms and gprs (optional imm)
-    simd, gprs, imm, regs, dfv = 0, 0, 0, 0, 0
+    simd, gprs, imm, regs = 0, 0, 0, 0
     
     for op in _gen_opnds(ii):
         if op_xmm(op) or op_ymm(op) or op_zmm(op) or op_tmm(op):
@@ -4599,21 +4593,18 @@ def evex_xyztmm_and_gprs(env, ii):
             gprs += 1
         elif op_implicit_specific_reg(op): # implicit CL for instance
             continue
-        elif op_dfv(op) and ii.is_apx_scc: # allow dfv pseudo-reg for CCMPcc and CTESTcc instructions
-            dfv += 1
         else:
             return False
     
     regs = gprs + simd
     regs_pass: bool = 1<=regs<=3 
     imm_pass: bool = imm <= 1 
-    dfv_pass: bool = dfv <= 1
-    return regs_pass and imm_pass and dfv_pass
+    return regs_pass and imm_pass
 
 def evex_regs_mem(env, ii): 
     # allows one mem operand with up to three {x,y,z,t}mm regs or gprs
     # optional fixed imm and kreg
-    k, simd, imm, mem, gpr, dfv = 0, 0, 0, 0, 0, 0
+    k, simd, imm, mem, gpr = 0, 0, 0, 0, 0
     
     for op in _gen_opnds(ii):
         if op_mask_reg(op):
@@ -4630,8 +4621,6 @@ def evex_regs_mem(env, ii):
             gpr += 1
         elif op_implicit_specific_reg(op): # implicit CL for instance
             continue
-        elif op_dfv(op) and ii.is_apx_scc: # allow dfv pseudo-reg for CCMPcc and CTESTcc instructions
-            dfv += 1
         else:
             return False
     
@@ -4640,8 +4629,7 @@ def evex_regs_mem(env, ii):
     regs_pass: bool = regs < 3 
     imm_pass: bool = imm <= 1
     mask_pass: bool = k <= 1
-    dfv_pass: bool = dfv <= 1
-    return mem_pass and regs_pass and imm_pass and mask_pass and dfv_pass
+    return mem_pass and regs_pass and imm_pass and mask_pass
 
 def get_filtered_osz_list_evex(env, ii, has_scalable = False):
     """returns osz pool based on mode and whether the instruction has any scalable operands"""
@@ -4680,7 +4668,7 @@ def create_evex_xyztmm_and_gpr(env,ii):
     """ 
     Supports EVEX instructions with combinations of up to three {x,y,z,t}mms and gprs (optional imm)
     """
-    rounding,masking_allowed,scalable_reg,has_dfv = False,False,False,False
+    rounding,masking_allowed,scalable_reg = False,False,False
     imm8,imm16,imm32=False,False,False
     imm_width = 0
 
@@ -4716,10 +4704,6 @@ def create_evex_xyztmm_and_gpr(env,ii):
             reg_type_names.append('gpr32')
         elif op_gpr64(op):
             reg_type_names.append('gpr64')
-        elif op_dfv(op):
-           # since it's not an actual reg we can't treat it like one
-           # we need it to be distinguishable for enc2test value getters so we don't add it to reg_type_names
-           has_dfv = True
         elif op_gprv(op):
             reg_type_names.append('gprv')
             scalable_reg = True
@@ -4759,10 +4743,10 @@ def create_evex_xyztmm_and_gpr(env,ii):
             fo.add_arg(arg_reg1,opnd_types.pop(0))
         if nregs == 3:
             fo.add_arg(arg_reg2, opnd_types.pop(0))
-        
-        if has_dfv:
-            fo.add_arg(arg_dfv,'dfv')
 
+        if ii.is_apx_scc:
+            fo.add_arg(arg_dfv,'dfv')
+        
         imm16 = ii.has_imm16 or (ii.has_immz and osz == 16)
         imm32 = ii.has_imm32 or (ii.has_immz and osz > 16)
         if imm8:
@@ -4809,8 +4793,6 @@ def create_evex_xyztmm_and_gpr(env,ii):
                     var_b, var_b_type = vars[i], reg_type_names[i]
                 elif re.search(r'(_N3?$)|(_N3?_)', op.lookupfn_name):
                     var_n, var_n_type = vars[i], reg_type_names[i]
-                elif re.search('DFV', op.lookupfn_name):
-                    continue # DFV pseudo-regs are treated as regs in XED grammar - ignore them
                 else:
                     die("SHOULD NOT REACH HERE")
                 i += 1
@@ -4818,6 +4800,7 @@ def create_evex_xyztmm_and_gpr(env,ii):
             fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(var_n_type, var_n))
         elif ii.is_apx_scc: # indirectly sets the vvvv bits based on scc value
             fo.add_code_eol('set_scc(r,{})'.format(ii.scc_val))
+            fo.add_code_eol('set_vvvv(r, dfv & 0xf)', 'DFV is encoded as EVEX.vvvv')
         else:
             fo.add_code_eol('set_vvvv(r,0x0)',"must be 1111 (inverted)")
             fo.add_code_eol('set_evexvv(r,0)',"must be 1 (inverted)")
@@ -4834,9 +4817,6 @@ def create_evex_xyztmm_and_gpr(env,ii):
             if ii.rm_required: # ZERO INIT OPTIMIZATION
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
 
-        if has_dfv:
-            fo.add_code_eol('enc_dfv(r,dfv)')
-        
         if ii.is_apx_scc:
             fo.add_code_eol('emit_evex_apx_scc(r)')
         else:   
@@ -4864,7 +4844,6 @@ def create_evex_regs_mem(env, ii):
     immw = 0
     vl = vl2names[ii.vl]
     mask_variant_name  = { False:'', True: '_msk' }
-    has_dfv = False
     
     mask_versions = [False]
     if ii.write_masking_notk0:
@@ -4927,14 +4906,14 @@ def create_evex_regs_mem(env, ii):
                 fo.add_arg(arg_imm32,'int32')
             elif optype in ['one']: # ignore implicit ONE immediate
                 continue
-            elif optype == 'dfv':
-                fo.add_arg(arg_dfv,'dfv')
             else:
                 die("UNHANDLED ARG {} in {}".format(optype, ii.iclass))
             # add masking after 0th argument except for gather prefetch
             if i == 0 and  masking and not gather_prefetch:
                 _add_mask_arg(ii,fo)
 
+        if ii.is_apx_scc:
+            fo.add_arg(arg_dfv,'dfv')
         # ===== ENCODING ======
         if dispsz in [16,32]: # the largest displacements 16 for 16b addressing, 32 for 32/64b addressing
             add_evex_displacement_var(fo)
@@ -4968,8 +4947,6 @@ def create_evex_regs_mem(env, ii):
                     var_b,sz_b = var_regs[i], reg_type_names[i]
                 elif re.search(r'_(N3?)$', op.lookupfn_name):
                     var_n,sz_n = var_regs[i], reg_type_names[i]
-                elif re.search('DFV', op.lookupfn_name):
-                    has_dfv = True  # DFV pseudo-regs are treated as regs in XED grammar - ignore them
                 else:
                     die("SHOULD NOT REACH HERE")
                 i += 1
@@ -4977,6 +4954,7 @@ def create_evex_regs_mem(env, ii):
             fo.add_code_eol('enc_evex_vvvv_reg_{}(r,{})'.format(sz_n, var_n))
         elif ii.is_apx_scc: # indirectly sets the vvvv bits based on scc value
             fo.add_code_eol('set_scc(r,{})'.format(ii.scc_val))
+            fo.add_code_eol('set_vvvv(r, dfv & 0xf)', 'DFV is encoded as EVEX.vvvv')
         else:
             fo.add_code_eol('set_vvvv(r,0x0)',"must be 1111 (inverted)")
             fo.add_code_eol('set_evexvv(r,0)',"must be 1 (inverted)")
@@ -4992,11 +4970,7 @@ def create_evex_regs_mem(env, ii):
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
 
         if var_b:
-            die("SHOULD NOT REACH HERE")
-
-        if has_dfv:
-            fo.add_code_eol('enc_dfv(r,dfv)')
-            
+            die("SHOULD NOT REACH HERE")            
 
         mod = get_modval(dispsz)
         if mod:  # ZERO-INIT OPTIMIZATION
@@ -5432,6 +5406,10 @@ def xed_mode_removal(env,ii):
     if 'MODEP5=1' in ii.pattern:
         return True
     if 'CET=0' in ii.pattern:
+        return True
+    if 'PREFETCHIT=0' in ii.pattern:
+        return True
+    if 'PREFETCHRST=0' in ii.pattern:
         return True
     if 'MARKER' in ii.pattern:
         return True

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ ENC                  ; BUILDDIR/xed-ex3 -64 MOV/64 R9 RDX
 ENC                  ; BUILDDIR/xed-ex3 -64 AND/64 RSP SIMM:f0
 ENC                  ; BUILDDIR/xed-ex3 JMP_FAR PTR:11223344 IMM:5566
 DEC                  ; BUILDDIR/xed -d EA112233445566
-ENC                  ; BUILDDIR/xed-ex3 JLE BRDISP:11223344
+ENC                  ; BUILDDIR/xed-ex3 JLE RELBR:11223344
 DEC ENC              ; BUILDDIR/xed -v 4 -64 -de 488B05411D1100
 DEC                  ; BUILDDIR/xed -d 90
 DEC ENC              ; BUILDDIR/xed -de f390
@@ -64,7 +64,7 @@ ENC                  ; BUILDDIR/xed-ex3 -64 LEA/64 RAX AGEN:R13
 DEC                  ; BUILDDIR/xed -d 0f ad c3
 DEC ENC              ; BUILDDIR/xed -de f30f7edf
 DEC ENC              ; BUILDDIR/xed -de 660fd6fb
-DEC ENC              ; BUILDDIR/xed -64 -de 66450f7e07
+DEC                  ; BUILDDIR/xed -64 -d 66450f7e07
 DEC ENC              ; BUILDDIR/xed -64 -de 66480f7ec0
 ENC                  ; BUILDDIR/xed-ex3 -64 ADD/64 RAX MEM8:RIP,-,-,11223344
 DEC ENC              ; BUILDDIR/xed -64 -de 48030544332211
@@ -257,7 +257,7 @@ ENC                  ; BUILDDIR/xed-ex3 -16 pop/32 edx
 ENC                  ; BUILDDIR/xed-ex3 -32 pop/16 dx
 ENC                  ; BUILDDIR/xed-ex3 -32 pop    edx
 ENC                  ; BUILDDIR/xed-ex3 -32 pop    rdx
-DEC                  ; BUILDDIR/xed -32 -d 0f05
+DEC AMD              ; BUILDDIR/xed -32 -d 0f05
 DEC                  ; BUILDDIR/xed -64 -d 0f05
 ENC                  ; BUILDDIR/xed-ex3 -64 sysret
 ENC                  ; BUILDDIR/xed-ex3 -64 sysret/64
@@ -265,7 +265,7 @@ ENC                  ; BUILDDIR/xed-ex3 -32 sysret
 ENC AMD              ; BUILDDIR/xed-ex3 -32 sysret_amd
 DEC                  ; BUILDDIR/xed -64 -d 66 36 64 2e    f0 67 f2 26     3e f3 65 0f     16 8d 4b
 DEC                  ; BUILDDIR/xed -64 -d 66 36 64 2e    f0 67 f2 26     3e f3 65 0f     16 8d
-DEC                  ; BUILDDIR/xed-ex1 -64 0fb20000
+DEC                  ; BUILDDIR/xed-ex1 -chip PENTIUM4 -64 0fb20000
 DEC                  ; BUILDDIR/xed-ex1 -64 ff18
 DEC                  ; BUILDDIR/xed-ex1 -64 48ff18
 DEC                  ; BUILDDIR/xed-ex1 0f01c8

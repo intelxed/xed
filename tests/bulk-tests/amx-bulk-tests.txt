@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e27a5ed1   # TDPBSUD
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2795ed1   # TDPBUSD
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2785ed1   # TDPBUUD
 DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2725cd0   # TDPBF16PS
-DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2696cc1   # TCMMIMFP16PS
-DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2686cc1   # TCMMRLFP16PS
-DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2706cc0   # TCMMRLFP16PS dst=src1  -> UD
-DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2786cc1   # TCMMRLFP16PS dst=src2  -> UD
-DEC ENC AMX          ; BUILDDIR/xed -64 -de c4e2706cc1   # TCMMRLFP16PS src1=src2 -> UD
+DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2696cc1   # TCMMIMFP16PS
+DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2686cc1   # TCMMRLFP16PS
+DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2706cc0   # TCMMRLFP16PS dst=src1  -> UD
+DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2786cc1   # TCMMRLFP16PS dst=src2  -> UD
+DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2706cc1   # TCMMRLFP16PS src1=src2 -> UD
 

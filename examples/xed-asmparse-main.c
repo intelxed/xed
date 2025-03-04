@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@ Copyright (c) 2024 Intel Corporation
   
 END_LEGAL */
 
-// more natural assembly language parser
+/// @file xed-asmparse-main.c
+/// @brief parses assembly format encode requests and encodes them
 
 #include <assert.h>
 #include <stdint.h>

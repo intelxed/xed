@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,11 +42,6 @@ typedef union xed_flag_dfv_s {
         xed_uint32_t pad:4;
     } s;
 } xed_flag_dfv_t;
-
-/// @ingroup FLAGS
-/// extracts the default flags values from XED DFV pseudo-register to a given xed_flag_dfv_t pointer
-/// If the given DFV enumeration is invalid, the function returns 0
-XED_DLL_EXPORT xed_bool_t xed_flag_dfv_get_default_flags_values(xed_reg_enum_t dfv_reg, xed_flag_dfv_t* p);
 
 /// @ingroup FLAGS
 /// a union of flags bits

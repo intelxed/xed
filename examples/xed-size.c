@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@ Copyright (c) 2023 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
+
+/// @file xed-size.c
+/// @brief can be used for analytical purposes to inspect how certian XED data structures grow with certain builds
 
 #include "xed/xed-interface.h"
 #include <stdio.h>

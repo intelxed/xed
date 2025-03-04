@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -549,14 +549,20 @@ New and promoted APX-F instructions are defined in one of the following Intel&re
 - XED_EXTENSION_APXLEGACY: For new APX-F instructions within the Legacy encoding space
 - XED_EXTENSION_APXEVEX: For new and promoted APX-F instructions within the EVEX encoding space
 
-CCMP and CTEST are two new sets of instructions for conditional CMP and TEST, respectively. These instructions
-introduce a new 4-bit pseudo-register for "Default Flags Values" called DFV (EVEX.[OF, SF, ZF, CF]).
+CCMP and CTEST are new instruction sets for conditional CMP and TEST, introducing a 4-bit "Default Flags Values" 
+behavior, represented in Intel&reg; XED as the DFV XED-operand.
+The DFV XED-operand encodes default flag bits as:
+- DFV.bit[0]: Carry Flag (CF)
+- DFV.bit[1]: Zero Flag (ZF)
+- DFV.bit[2]: Sign Flag (SF)
+- DFV.bit[3]: Overflow Flag (OF)
 
-The register index represents the bits for the default flags, for example, DFV10.index == 10 == 0b1010  ->  OF=1, SF=0, ZF=1, CF=0.
-The DFV pseudo-register should be explicitly defined in an encoder request.
-
-The xed_decoded_inst_get_dfv_reg() API can be used to retrieve a DFV register enumeration from a decoded instruction.
-The xed_flag_dfv_get_default_flags_values() API can be used to get the default flags values given a DFV register enumeration.
+To use DFV:
+- Decoder:
+  - Use xed_decoded_inst_has_default_flags_values() to detect DFV-supported instructions.
+  - Use xed_decoded_inst_get_default_flags_values() to retrieve default flags as a xed_flag_dfv_t struct.
+- Intel&reg; XED CLI encode request:
+  - Set the DFV XED-operand as an integer representing these 4 bits in the encoder request.
 
 Developers can, however, dynamically disable Intel&reg; APX architecture encoder support using the 'NO_APX' API xed3_operand_set_no_apx().
 The xed3_operand_set_must_use_evex() API can also be used for APX promoted instructions in order to force EVEX space upon the encoding request.
@@ -1466,22 +1472,68 @@ pieces.
 
 The source code for the examples is in the "examples" subdirectory.
 
-There is a makefile that will build all the examples on linux or
+There is a makefile that will build all the examples on Linux or
 windows.
 
-There are several examples:
+There are several examples, mainly:
       <ul>
       
-      <li> xed-ex1.c: a simple decoder that prints the decode data
-      structure. This is included in the "Small Examples" section
-      below. It is a good example for using the major decoder APIs.
-      
-      <li> xed-ex4.c:a simple decoder with different disassmebly output formats
-      <li> xed-ex5-enc.c: encoder example using the high-level encoding API.
-      <li> xed.c: a decoder, encoder, image file reader, etc.
-      <li> xed-ex3.c: an encoder (subset of the xed command line
-         tool). Documented with "xed" on the @ref CMDLINE page.
+      <li> xed.c: This is the main Intel&reg; XED example. It's a complete example touching down on most of Intel&reg; XED's capabilities
+      and APIs, including decoding, encoding, image file reading and chip-check APIs and functionality.
+      <li> xed-ex1.c: A quintessential decoder example that uses most of the decode APIs.
+      It is recommended for users who want to deeply understand the numerous APIs for decoded instructions and their usages.
+      This is included in the "Small Examples" section below. It is a good example for using the major decoder APIs.
+      This example supports emitting detailed instruction metadata: prefixes, CPUID leaves, rounding modes, branch-hints, flags, operands and more.
+      This example can also elaborate on EVEX/VEX prefix bit info using a specified verbosity mode. It supports CPUID-based defeaturing as well.
+      <li> xed-ex3.c: A lightweight encoder example used to parse command line arguments and encode them into a stream of bytes. 
+      For more insight on the encode request syntax and the encoder examples, please see @ref CMDLINE page.
+      <li> xed-ex4.c: A simple decoder example with different disassembly output formats. It contains highly descriptive
+      usages of the new decode-with-features APIs.
+      <li> xed-ex5-enc.c: A simple non-dynamic encoder example using the high-level encoding API.
+      <li> xed-ex6.c: This is a subset of the main example, which works as a concentrated example of the decode-encode (-de) feature.
+      <li> xed-ex9-patch.c: A non-dynamic example that shows how to patch (modify) the xed_encoder_instruction data structure
+      yielded from the encoder.
+      <li> xed-asmparse-main.c: A unique encoder example showcasing how to process command-line encode requests in assembly format
+      It allows processing multiple requests separated by a semicolon. This is different from other encoder examples in that the input
+      is not in Intel&reg; XED encode request format.
+
       </ul>
+
+Other specific use-case examples:
+      <ul>
+      
+      <li> xed-dll-discovery.c: When using Intel&reg; XED as a DLL or shared object, the enumerations can change from one version to another if instructions (or features) 
+      are added. Each Intel&reg; XED enumeration must be mapped to something your Intel&reg; XED client can use for indepedent compilation (custom fixed enumeration).
+      This example shows how to discover the Intel&reg; XED values for the xed_iclass_enum_t and construct a mapping from names that are constant to your tool to 
+      names that can vary. You would need to do this for each Intel&reg; XED enumeration that your Intel&reg; XED client uses.
+      <li> xed-enc2-*.c: These examples showcase the use of ENC2 encode APIs. ENC2 is our much faster, low-level encoder.
+      <li> xed-ex-agen.c: Creates an artificial AGEN (address generation) calculator for testing and works as a valuable example for using xed_agen API.
+      <li> xed-ild-dec.c: An example for using the instruction length decoder API.
+      <li> xed-ild-dec2.c: An example that compares the results of regular decoding and instruction length decoding for further validation.
+      <li> xed-tables.c: An example that shows how to access Intel&reg; XED's internal tables, which contain static data for all Intel&reg; XED-supported instructions.
+      <li> xed-size.c: Outputs the sizes of Intel&reg; XED data structures. Can be useful for analytical purposes and auto-generation workflows.
+      <li> xed-reps.c: Shows the use of the REP prefix APIs, which basically returns the non-REP variant of a REP ICLASS and vice versa.
+
+      </ul>
+
+
+The above examples use the following utilities to process different inputs:
+      <ul>
+      
+      <li> xed-disas-elf: Used to disassemble ELF (Executable and Linkable Format) binaries. 
+      If the binary contains DWARF debugging information (generated by the compiler in a specific format), this example can map 
+      addresses to source code line numbers, making it easier to correlate the disassembled code with the original source code.
+      <li> xed-disas-macho: Useful for disassembling Mach-O binaries on macOS.
+      <li> xed-disas-hex: Used to disassemble hexadecimal byte sequences from a file.
+      <li> xed-disas-raw: Used to disassemble raw binary data.
+      <li> xed-disas-pecoff: Used to disassemble PE/COFF (Portable Executable/Common Object File Format) binaries on Windows.
+      <li> xed-enc-lang: A very detailed component that shows how to parse encode requests from the command line and then perform the encoding.
+      <li> xed-dot: Generates a dependency graph from a set of decoded instructions and pours the results into a dot file.
+      The dot file can be converted into a .png to visualize the results. Each node represents an instruction, an edge is added based on 
+      dependency between involved regs (RAW, WAW, WAR).
+
+      </ul>
+
 
 The examples are described in the following subsections:
     - @ref SMALLEXAMPLES  "Small Examples"  Small Examples

@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@ Copyright (c) 2019 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
+
+/// @file xed-dot.c
+/// @brief decode the input instructions and generate a register dependency graph (for data hazards) in dot format
+/// The dependency graph can be converted to png for visualization
+/// These dependecies include read after write (RAW), write after read (WAR), an anti-dependency
+/// write after write (WAW)
+
 /*
   take xed_decoded_inst_t* and add it to a graph.
   The input operands are input edges.

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ APX DEC     ; BUILDDIR/xed -64 -d  67      A101234567          # MOV,    EASZ=2
 ################### APX chip-check ################### 
 APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip FUTURE 62D2FC00F3D9       # EGPR
 APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip FUTURE 66d580124C8300     # REX2
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip ICE_LAKE 62B9E10A580C38   # using B4 and X4
+APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip ICE_LAKE 62B1E10A580C38   # using B4 and X4
 APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip FUTURE 62B9E10A580C38     # using B4 and X4
 
 ################## miscellaneous Example1 Tests ################
@@ -119,3 +119,5 @@ APX ENC     ; BUILDDIR/xed -64 -e vaddpd ymm20 k4 ymm21 mem64:r28
 APX ENC     ; BUILDDIR/xed -64 -e vaddpd ymm20 k4 ymm21 mem64:r29
 APX ENC     ; BUILDDIR/xed -64 -e vaddpd ymm20 k4 ymm21 mem64:r29,r14,8,-
 
+# DFV disassembly syntax test
+APX DEC     ; BUILDDIR/xed -64 -isa-set -ih TESTDIR/../dfv-disas-var.txt

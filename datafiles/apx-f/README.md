@@ -21,9 +21,8 @@ Encode request for promoted No-Flags instruction should be built with the `NF` o
     $ xed.exe -set NF 1 ....
     ```
 
-## CCMPcc/CTESTcc (Encode/Decode)
-The official Intel&reg; APX assembly syntax is not supported yet. 
-Current syntax is: `<MNEMONIC> <reg/mem>, <reg/mem/imm>, <dfv>`
+## CCMPcc/CTESTcc (XED CLI Encoder)
+Intel&reg; XED CLI encode request syntax: `xed -64 -set DFV <int> -e <MNEMONIC> <reg/mem>, <reg/mem/imm>`
 
 ## IMUL/SETcc Zero-Upper variants (Encoder)
 No encoder support for zero-upper selection

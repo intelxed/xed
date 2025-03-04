@@ -29,7 +29,7 @@
 @mainpage *INTERNAL* Intel&reg; XED Build Guide
 @endif
 
-April 2024
+November 2024
 
 @section INTRO Introduction
 

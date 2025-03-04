@@ -15,8 +15,7 @@ Operands
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
 0   REG0               REG0=R8   EXPLICIT   R         V   64     8     1     64        INT        GPR
 1   REG1               REG1=R9   EXPLICIT   R         V   64     8     1     64        INT        GPR
-2   REG2            REG2=DFV14   EXPLICIT   R   INVALID    4     1     1      4        INT     PSEUDO
-3   REG3           REG3=RFLAGS SUPPRESSED   W   INVALID   64     8     1     64        INT      FLAGS
+2   REG2           REG2=RFLAGS SUPPRESSED   W   INVALID   64     8     1     64        INT      FLAGS
 Memory Operands
   MemopBytes = 0
 FLAGS:
@@ -25,7 +24,7 @@ FLAGS:
     written:             of sf zf af pf cf  mask=0x8d5
   undefined:                                mask=0x0
     default:             of=1, sf=1, zf=1, cf=0
-ATTRIBUTES: SCALABLE 
+ATTRIBUTES: DEFAULT_FLAGS SCALABLE 
 66-OSZ PREFIX
 EXCEPTION TYPE: APX_EVEX_CCMP
 [APX] 

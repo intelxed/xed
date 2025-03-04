@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -481,8 +481,6 @@ void enc_evex_modrm_reg_gpr64(xed_enc2_req_t* r,
                               xed_reg_enum_t dst);
 void enc_evex_modrm_rm_gpr64(xed_enc2_req_t* r,
                              xed_reg_enum_t dst);
-
-void enc_dfv(xed_enc2_req_t* r, xed_reg_enum_t dst);
 
 
 void enc_vvvv_reg_xmm(xed_enc2_req_t* r,

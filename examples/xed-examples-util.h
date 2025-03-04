@@ -47,6 +47,11 @@ unsigned int xed_convert_ascii_to_hex(const char* src,
                                       xed_uint8_t* dst, 
                                       unsigned int max_bytes);
 
+static XED_INLINE xed_uint32_t get_bit32(xed_uint32_t x, xed_uint32_t b)
+{
+    return ((x >> b) & 1);
+}
+
 #define XED_MAX_INPUT_OPERNADS 4
 #define XED_HEX_BUFLEN 200
 void xed_print_hex_line(char* buf,
@@ -182,4 +187,6 @@ void xed_free_token_list(xed_str_list_t* token_list);
 
 void xed_print_intel_asm_emit(const xed_uint8_t* array, unsigned int olen);
 void xed_print_bytes_pseudo_op(const xed_uint8_t* array, unsigned int olen);
+
+void get_cpuid(xed_uint32_t leaf, xed_uint32_t subleaf, xed_uint32_t* eax, xed_uint32_t* ebx, xed_uint32_t* ecx, xed_uint32_t* edx);
 #endif // file

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -43,6 +43,28 @@ EVAPX()::
     NO_APX=0 NF=1 MASK=4 | EVEX_APX  MASK=0 SCC=0 BCRC=0
     # Default: otherwise | error 
 
+DFV_PARSER()::
+    # The DFV xed-operand is an integer representation for default flags values - (OF, SF, ZF, CF). 
+    # For example: DFV=10 == 0b1010  ->  OF=1, SF=0, ZF=1, CF=0
+    VEXDEST3=0 VEXDEST210=0 | DFV=0
+    VEXDEST3=0 VEXDEST210=1 | DFV=1
+    VEXDEST3=0 VEXDEST210=2 | DFV=2
+    VEXDEST3=0 VEXDEST210=3 | DFV=3
+    VEXDEST3=0 VEXDEST210=4 | DFV=4
+    VEXDEST3=0 VEXDEST210=5 | DFV=5
+    VEXDEST3=0 VEXDEST210=6 | DFV=6
+    VEXDEST3=0 VEXDEST210=7 | DFV=7
+    
+    VEXDEST3=1 VEXDEST210=0 | DFV=8
+    VEXDEST3=1 VEXDEST210=1 | DFV=9
+    VEXDEST3=1 VEXDEST210=2 | DFV=10
+    VEXDEST3=1 VEXDEST210=3 | DFV=11
+    VEXDEST3=1 VEXDEST210=4 | DFV=12
+    VEXDEST3=1 VEXDEST210=5 | DFV=13
+    VEXDEST3=1 VEXDEST210=6 | DFV=14
+    VEXDEST3=1 VEXDEST210=7 | DFV=15
+
 EVAPX_SCC()::
-    # Clear Legacy reinterpreted bits by the SCC field and set EVEX sub-encoding space
-    true  | EVEX_APX_SCC MASK=0 VEXDEST4=0 NF=0 BCRC=0
+    # - Clear Legacy reinterpreted bits by the SCC field and set EVEX sub-encoding space
+    # - Set the DFV operand value
+    true DFV_PARSER() | EVEX_APX_SCC MASK=0 VEXDEST4=0 NF=0 BCRC=0

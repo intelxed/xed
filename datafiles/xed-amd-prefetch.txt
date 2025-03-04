@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ CPL       : 3
 CATEGORY  : WIDENOP
 EXTENSION : BASE
 ISA_SET   : PREFETCH_NOP
+ATTRIBUTES: NOP
 COMMENT   : AMD 3DNOW prefetches that do not touch memory. This is the reg/reg form.
 
 PATTERN   : 0x0F 0x0D MOD[0b11] MOD=3 REG[rrr] RM[nnn] 

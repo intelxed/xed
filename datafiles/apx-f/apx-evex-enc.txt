@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -97,23 +97,22 @@ EVAPX()::
     true      -> EVEX_APX
 
 EVAPX_SCC()::
-    # SSC reinterprets the original EVEX encoding bits (VEXDEST4(V4) and MASK(aaaa)).
-    # Note the ILD store the inverted VEXDEST4 value, just like the encoded bit.
-    #                     -> SCC     EVEX encoding sub-space  Clear original interpretation
-    VEXDEST4=1  MASK=0    ->  SCC=0        EVEX_APX_SCC                VEXDEST4=0
-    VEXDEST4=1  MASK=1    ->  SCC=1        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=1  MASK=2    ->  SCC=2        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=1  MASK=3    ->  SCC=3        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=1  MASK=4    ->  SCC=4        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=1  MASK=5    ->  SCC=5        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=1  MASK=6    ->  SCC=6        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=1  MASK=7    ->  SCC=7        EVEX_APX_SCC         MASK=0 VEXDEST4=0
-    VEXDEST4=0  MASK=0    ->  SCC=8        EVEX_APX_SCC
-    VEXDEST4=0  MASK=1    ->  SCC=9        EVEX_APX_SCC         MASK=0
-    VEXDEST4=0  MASK=2    ->  SCC=10       EVEX_APX_SCC         MASK=0
-    VEXDEST4=0  MASK=3    ->  SCC=11       EVEX_APX_SCC         MASK=0
-    VEXDEST4=0  MASK=4    ->  SCC=12       EVEX_APX_SCC         MASK=0
-    VEXDEST4=0  MASK=5    ->  SCC=13       EVEX_APX_SCC         MASK=0
-    VEXDEST4=0  MASK=6    ->  SCC=14       EVEX_APX_SCC         MASK=0
-    VEXDEST4=0  MASK=7    ->  SCC=15       EVEX_APX_SCC         MASK=0
+# The APX DFV (Defaults Flags Values) data is encoded in EVEX.vvvv
+    DFV=0  -> VEXDEST3=0 VEXDEST210=0 EVEX_APX_SCC
+    DFV=1  -> VEXDEST3=0 VEXDEST210=1 EVEX_APX_SCC
+    DFV=2  -> VEXDEST3=0 VEXDEST210=2 EVEX_APX_SCC
+    DFV=3  -> VEXDEST3=0 VEXDEST210=3 EVEX_APX_SCC
+    DFV=4  -> VEXDEST3=0 VEXDEST210=4 EVEX_APX_SCC
+    DFV=5  -> VEXDEST3=0 VEXDEST210=5 EVEX_APX_SCC
+    DFV=6  -> VEXDEST3=0 VEXDEST210=6 EVEX_APX_SCC
+    DFV=7  -> VEXDEST3=0 VEXDEST210=7 EVEX_APX_SCC
+    DFV=8  -> VEXDEST3=1 VEXDEST210=0 EVEX_APX_SCC
+    DFV=9  -> VEXDEST3=1 VEXDEST210=1 EVEX_APX_SCC
+    DFV=10 -> VEXDEST3=1 VEXDEST210=2 EVEX_APX_SCC
+    DFV=11 -> VEXDEST3=1 VEXDEST210=3 EVEX_APX_SCC
+    DFV=12 -> VEXDEST3=1 VEXDEST210=4 EVEX_APX_SCC
+    DFV=13 -> VEXDEST3=1 VEXDEST210=5 EVEX_APX_SCC
+    DFV=14 -> VEXDEST3=1 VEXDEST210=6 EVEX_APX_SCC
+    DFV=15 -> VEXDEST3=1 VEXDEST210=7 EVEX_APX_SCC
+
 ######################################################

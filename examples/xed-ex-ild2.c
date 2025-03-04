@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@ Copyright (c) 2019 Intel Corporation
   
 END_LEGAL */
 
+/// @file xed-ex-ild2.c
+/// @brief instruction-length decoder (ILD) API usage for XED validation (compared with decode API)
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,20 @@
 #  
 #END_LEGAL
 
-INSTRUCTIONS()::
-
-UDELETE: NOP0F18r4
+DFVSTR(XED_OPERAND_DFV)::
+0   -> '{dfv=}'
+1   -> '{dfv=cf}'
+2   -> '{dfv=zf}'
+3   -> '{dfv=zf,cf}'
+4   -> '{dfv=sf}'
+5   -> '{dfv=sf,cf}'
+6   -> '{dfv=sf,zf}'
+7   -> '{dfv=sf,zf,cf}'
+8   -> '{dfv=of}'
+9   -> '{dfv=of,cf}'
+10  -> '{dfv=of,zf}'
+12  -> '{dfv=of,zf,cf}'
+12  -> '{dfv=of,sf}'
+13  -> '{dfv=of,sf,cf}'
+14  -> '{dfv=of,sf,zf}'
+15  -> '{dfv=of,sf,zf,cf}'

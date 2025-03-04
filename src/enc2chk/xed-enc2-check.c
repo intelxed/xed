@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -48,11 +48,6 @@ void xed_enc2_invalid_dr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname
 void xed_enc2_invalid_seg(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     if (reg < XED_REG_ES || reg > XED_REG_GS) 
         xed_enc2_error("Bad seg reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
-    (void)mode;
-}
-void xed_enc2_invalid_dfv(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
-    if (reg < XED_REG_DFV0 || reg > XED_REG_DFV15) 
-        xed_enc2_error("Bad dfv pseudo-reg %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
     (void)mode;
 }
 void xed_enc2_invalid_gpr16(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
@@ -170,6 +165,11 @@ void xed_enc2_invalid_zeroing(xed_uint_t mode, xed_uint_t zeroing,const char* ar
     if (zeroing != 0 && zeroing != 1)
         xed_enc2_error("Bad zeroing value %d arg_name %s in function %s", zeroing, argname, pfn);
     (void) mode;
+}
+void xed_enc2_invalid_dfv(xed_uint_t mode, xed_uint_t dfv,const char* argname,const char* pfn) {
+    if (dfv > 15) 
+        xed_enc2_error("Bad dfv value %d arg_name %s in function %s", dfv, argname, pfn);
+    (void)mode;
 }
 void xed_enc2_invalid_zmm(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {
     if (reg < XED_REG_ZMM_FIRST || reg > XED_REG_ZMM_LAST) 

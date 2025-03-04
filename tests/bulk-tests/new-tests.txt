@@ -46,7 +46,7 @@ DEC AVX              ; BUILDDIR/xed -64 -d 65  C4 E3 FB  F0 BC 35 79 4A B6 0D 67
 DEC AVX              ; BUILDDIR/xed-ex-cpuid f3 0f bc 00
 DEC AVX              ; BUILDDIR/xed-ex-cpuid -nobmi f3 0f bc 00
 DEC AVX              ; BUILDDIR/xed -d c4 e2 b1 92 12
-ENC                  ; BUILDDIR/xed -64 -e JRCXZ BRDISP:1E
+ENC                  ; BUILDDIR/xed -64 -e JRCXZ RELBR:1E
 DEC ENC              ; BUILDDIR/xed -64 -de e31e
 DEC                  ; BUILDDIR/xed -64 -d e31e
 DEC AVX              ; BUILDDIR/xed -d C4C3F916E0F8
@@ -85,12 +85,12 @@ DEC               ; BUILDDIR/xed -64 -d 62
 DEC               ; BUILDDIR/xed -64 -d c4
 DEC               ; BUILDDIR/xed -64 -d c5
 DEC AVX           ; BUILDDIR/xed -64 -d 67 67 c4 ff 79 62 e6 55 bc bc bc bc bc bc bc
-ENC               ; BUILDDIR/xed.exe -64 -e PUSH RBP
-ENC               ; BUILDDIR/xed.exe -64 -e PUSH EBP
-ENC               ; BUILDDIR/xed.exe -e PUSH RBP
-ENC               ; BUILDDIR/xed.exe -e PUSH EBP
-ENC               ; BUILDDIR/xed.exe -64 -e ADD RAX RBX
-ENC               ; BUILDDIR/xed.exe -64 -e ADD EAX EBX
+ENC               ; BUILDDIR/xed -64 -e PUSH RBP
+ENC               ; BUILDDIR/xed -64 -e PUSH EBP
+ENC               ; BUILDDIR/xed -e PUSH RBP
+ENC               ; BUILDDIR/xed -e PUSH EBP
+ENC               ; BUILDDIR/xed -64 -e ADD RAX RBX
+ENC               ; BUILDDIR/xed -64 -e ADD EAX EBX
 # Test SDM's recommended NOPs
 DEC ENC           ; BUILDDIR/xed -de 6690
 DEC ENC           ; BUILDDIR/xed -de 0F1F00
@@ -102,3 +102,5 @@ DEC ENC           ; BUILDDIR/xed -de 0F1F840000000000
 DEC ENC           ; BUILDDIR/xed -de 660F1F840000000000
 # Test disassembly of ignored branch hints
 DEC               ; BUILDDIR/xed -64 -emit-ignored-branch-hint -d 2E48FFC1
+# Test PROTECTED_MODE instruction in REAL_MODE
+DEC               ; BUILDDIR/xed -r -d 0f004540

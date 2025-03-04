@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2024 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ EXTENSION:   ICACHE_PREFETCH
 ISA_SET:     ICACHE_PREFETCH
 REAL_OPCODE: Y
 ATTRIBUTES:  PREFETCH 
-PATTERN:     0x0F 0x18 MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM()
+PATTERN:     0x0F 0x18 MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() PREFETCHIT=1
 OPERANDS:    MEM0:r:mprefetch
 IFORM:       PREFETCHIT0_MEMu8
 }
@@ -49,7 +49,7 @@ EXTENSION:   ICACHE_PREFETCH
 ISA_SET:     ICACHE_PREFETCH
 REAL_OPCODE: Y
 ATTRIBUTES:  PREFETCH 
-PATTERN:     0x0F 0x18 MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM()
+PATTERN:     0x0F 0x18 MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() PREFETCHIT=1
 OPERANDS:    MEM0:r:mprefetch
 IFORM:       PREFETCHIT1_MEMu8
 }

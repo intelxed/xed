@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -94,8 +94,6 @@ xmm_not64 = [ 'XMM{}'.format(i) for i in range(0,8)]
 ymm_not64 = [ 'YMM{}'.format(i) for i in range(0,8)]
 zmm_not64 = [ 'ZMM{}'.format(i) for i in range(0,8)]
 
-dfv = [ 'DFV{}'.format(i) for i in range(0,16)]
-
 tmm = [ 'TMM{}'.format(i) for i in range(0,8)]
 
 seg = 'ES CS SS DS FS GS'.split()
@@ -107,6 +105,7 @@ dr = [ 'DR{}'.format(i) for i in range(0,8)]
 rcsae = [0,1,2,3]
 scale = [1,2,4,8]
 zeroing = [0,1]
+dfv = list(range(16))
 
 
 def set_test_gen_counters(env):
@@ -345,8 +344,8 @@ def  get_rcsae(env, ii):  # 0,1,2
 def  get_scale(env, ii): # 1,2,4,8
     return gen_int(env,'scale')
 
-def  get_dfv(env, ii):
-    return gen_reg(env,'dfv')
+def  get_dfv(env, ii): # 0-15
+    return gen_int(env,'dfv')
 
 # FIXED VALUES
 def  get_ax(env, ii): # always this value
@@ -400,7 +399,6 @@ arginfo2value_creator = {
      'kreg!0': get_kreg_not0,
      'x87': get_x87,
      'mmx': get_mmx,
-     'dfv': get_dfv,
     
      'imm8': get_imm8,
      'imm16': get_imm16,
@@ -422,6 +420,7 @@ arginfo2value_creator = {
      'zeroing': get_zeroing,
      'rcsae': get_rcsae,
      'scale': get_scale,
+     'dfv': get_dfv,
      'ax': get_ax,
      'eax': get_eax,
      'rax': get_rax
@@ -437,6 +436,7 @@ trivial_arg_getter = {
     'relb_disp64': 'xed3_operand_get_disp',
     'index': 'xed3_operand_get_index',
     'scale': 'xed3_operand_get_scale',
+    'dfv'  : 'xed3_operand_get_dfv',
     'index_xmm' : 'xed3_operand_get_index',
     'index_ymm' : 'xed3_operand_get_index',
     'index_zmm' : 'xed3_operand_get_index',
@@ -448,7 +448,6 @@ trivial_arg_getter = {
     'gpr32_1': 'xed3_operand_get_reg1',
     'gpr64_0': 'xed3_operand_get_reg0',
     'gpr64_1': 'xed3_operand_get_reg1',
-    'dfv': 'xed_decoded_inst_get_dfv_reg'
 }
 
 def get_mask0_index(ii, testfn):

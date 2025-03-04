@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -15,8 +15,13 @@ Copyright (c) 2023 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
-/// @file xed-disas-pecoff.cpp
 
+/// @file xed-disas-pecoff.cpp
+/// @brief Designed to disassemble PE/COFF (Portable Executable/Common Object File Format) binaries on Windows
+/// a file format for executables, object code, and DLLs (Dynamic Link Libraries) used in Windows os.
+/// @note This file may optionally use 'dbghelp.dll' for symbol resolution and debugging utilities
+/// The dependency is controlled via the XED_DBGHELP macro
+/// If enabled, users must ensure that 'dbghelp.dll' is available on their system (typically included with Windows)
 //// ONLY COMPILES IF -mno-cygwin is thrown on to GCC compilations
 extern "C" {
 #include "xed/xed-interface.h"  // for XED_DECODER

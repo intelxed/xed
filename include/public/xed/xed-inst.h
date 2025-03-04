@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2024 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -354,7 +354,6 @@ XED_DLL_EXPORT xed_attribute_enum_t xed_attribute(unsigned int i);
 //@{
 /// @ingroup DEC
 /// Return #xed_exception_enum_t if present for the specified instruction.
-/// This is currently only used for SSE and AVX instructions.
 static XED_INLINE
 xed_exception_enum_t xed_inst_exception(const xed_inst_t* p) {
     return (xed_exception_enum_t)p->_exceptions;

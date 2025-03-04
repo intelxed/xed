@@ -6,5 +6,3 @@ IFORM:      MOVD_MEMd_XMMd
 ISA_SET:    SSE2
 ATTRIBUTES: 
 SHORT:      movd dword ptr [r15], xmm8
-Encodable! 66450F7E07
-Identical re-encoding

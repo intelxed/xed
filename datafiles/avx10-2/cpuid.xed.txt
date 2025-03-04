@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ XED_ISA_SET_AVX512_SAT_CVT_128:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[
 XED_ISA_SET_AVX512_SAT_CVT_256:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
 XED_ISA_SET_AVX512_SAT_CVT_512:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
 
-XED_ISA_SET_AVX512_NE_CONVERT_FP8_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_NE_CONVERT_FP8_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_NE_CONVERT_FP8_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_FP8_CONVERT_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
+XED_ISA_SET_AVX512_FP8_CONVERT_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
+XED_ISA_SET_AVX512_FP8_CONVERT_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
 
 XED_ISA_SET_AVX512_FP16_CONVERT_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
 XED_ISA_SET_AVX512_FP16_CONVERT_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
@@ -57,10 +57,10 @@ XED_ISA_SET_AVX512_VNNI_INT16_128:       avx10_enabled.7.1.edx[19] avx10_ver2.24
 XED_ISA_SET_AVX512_VNNI_INT16_256:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
 XED_ISA_SET_AVX512_VNNI_INT16_512:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
 
-XED_ISA_SET_AVX512_BF16_NE_SCALAR:  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
-XED_ISA_SET_AVX512_BF16_NE_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_BF16_NE_256:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_BF16_NE_512:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX10_2_BF16_SCALAR:  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
+XED_ISA_SET_AVX10_2_BF16_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
+XED_ISA_SET_AVX10_2_BF16_256:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
+XED_ISA_SET_AVX10_2_BF16_512:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
 
 XED_ISA_SET_AVX512_MOVZXC_128   : avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
 

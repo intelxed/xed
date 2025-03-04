@@ -9,7 +9,7 @@ To ensure that the Intel&reg; XED shared library is built with Python bindings, 
 Run the following command from the root directory:
 
 ```bash
-python3 mfile.py --shared --py-export
+python mfile.py --shared --py-export
 ```
 
 This command will:
@@ -34,7 +34,7 @@ Currently, the examples include minimal Python bindings for the XED C APIs.
 The Python examples provided allow you to specify the location of the XED shared library using the `--xed-lib` option. If this option is not used, the default location for the shared library is assumed to be `obj/`.
 
 ```bash
-python3 examples/xedpy_ex_ctypes.py --xed-lib /path/to/libxed.so
+python pyext/examples/xedpy_ex_cffi.py --xed-lib /path/to/libxed.so
 ```
 
 ### Example Python Scripts:

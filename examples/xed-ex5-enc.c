@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ Copyright (c) 2023 Intel Corporation
 END_LEGAL */
     
 /// @file xed-ex5-enc.c
-
-// encoder example. (uses decoder too)
+/// @brief showcases the use of encoder APIs
 
 #include "xed/xed-interface.h"
 #include "xed-examples-util.h"
