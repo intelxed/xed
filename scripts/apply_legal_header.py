@@ -275,7 +275,7 @@ def replace_headers(files, year=''):
 
 def get_years_from_copyrights(copyrights):
     """Returns the year from a given copyright string. If not found, return None."""
-    regx = '.*copyright.* (\d+\d+)[ ,].*'
+    regx = r'.*copyright.* (\d+\d+)[ ,].*'
     re_obj = re.compile(regx, re.IGNORECASE)
     match = re_obj.search(copyrights)
 
@@ -318,7 +318,7 @@ def check_years(curr_header, file, issues):
 
 def remove_year_from_header(copyright_lines):
     """Removes the line with the year from the legal header."""
-    regx= '.*Copyright \(C\) .* intel corporation.*'
+    regx= r'.*Copyright \(C\) .* intel corporation.*'
     re_obj = re.compile(regx, re.IGNORECASE)
     match = re_obj.search(copyright_lines)
     if match:
@@ -363,9 +363,9 @@ def check_copyright_text(file_content, file, issues):
 
 def check_header_existence(file_content, file, issues):
     """Checks whether the legal header exists in the file."""
-    start_hdr_pattern = ('.*BEGIN_LEGAL.*(\n)*'
-                   '(:?.+\n)*'
-                   '.*Copyright \(C\) (\d+) intel corporation.*\n')
+    start_hdr_pattern = (r'.*BEGIN_LEGAL.*(\n)*'
+                   r'(:?.+\n)*'
+                   r'.*Copyright \(C\) (\d+) intel corporation.*\n')
     match = re.compile(start_hdr_pattern, re.IGNORECASE).search(file_content)
     if not match:
         issues[file] = 'Intel legal string not found.'
