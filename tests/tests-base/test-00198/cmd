@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex1 -chip PENTIUM    f2 e0 aa
+ BUILDDIR/xed-dec -chip PENTIUM    f2 e0 aa

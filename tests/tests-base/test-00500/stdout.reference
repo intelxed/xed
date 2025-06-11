@@ -1,2 +1,3 @@
 PARSING BYTES: f3 0f bc 00 
-DISASM tzcnt eax, dword ptr [eax]
+Using decode_with_chip(), Repeat=False
+0: tzcnt eax, dword ptr [eax]

@@ -1,1 +1,0 @@
- BUILDDIR/xed -64 -set ROUNDC 1 -e VCVTPH2W ymm1 k2 ymm3

@@ -874,6 +874,7 @@ xed_decoded_inst_vector_length_bits(xed_decoded_inst_t const* const p)
 xed_bool_t
 xed_decoded_inst_masked_vector_operation(xed_decoded_inst_t* p)
 {
+#if defined(XED_SUPPORTS_AVX512)
     // pre-evex masked operations
     xed_uint32_t maskop =
         xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_MASKOP);
@@ -897,7 +898,8 @@ xed_decoded_inst_masked_vector_operation(xed_decoded_inst_t* p)
             }
         }
     }
-    
+#endif   
+(void)p; // pacify compiler
     return 0;
 }
                                          

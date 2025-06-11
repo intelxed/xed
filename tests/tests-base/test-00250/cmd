@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex1 -chip PENTIUM4 -64 0fb20000
+ BUILDDIR/xed-dec -chip PENTIUM4 -64 0fb20000

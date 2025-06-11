@@ -14,7 +14,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
+#  
 #END_LEGAL
 import argparse
 import sys
@@ -74,14 +74,20 @@ class XedInstructionOperand:
     operand_reg: Optional[str]
     operand_length: int
     action: str
-    visibility: str
-    is_mem: bool
-    is_imm: bool
+    visibility: str = 'EXPLICIT'
     imm_value: int = field(default=None)
     base_reg: str = field(default=None)
     index_reg: str = field(default=None)
     displacement: int = field(default=None)
     scale: int = field(default=None)
+
+    @property
+    def is_imm(self) -> bool:
+        return self.imm_value is not None
+
+    @property
+    def is_mem(self) -> bool:
+        return any([self.base_reg, self.index_reg, self.displacement, self.scale])
 
     def __str__(self):
         return (
@@ -100,7 +106,37 @@ class XedInstructionOperand:
             f"  scale={self.scale}\n"
             f")"
         )
+    
+    def to_xed_encoder_operand_t(self, ffi, lib):
+        """
+        Convert a Pythonic XedInstructionOperand instance into a C-compatible xed_encoder_operand_t struct
+        Map the dataclass fields to the corresponding C struct fields, preparing the operand for the XED encoder API
 
+        Returns:
+            A cdata pointer to a fully initialized xed_encoder_operand_t instance.
+        """
+        op = ffi.new("xed_encoder_operand_t *")
+        
+        assert not (self.is_imm and self.is_mem), 'Operand cannot be both immediate and memory'
+        
+        if self.is_mem:
+            op[0].type = lib.XED_ENCODER_OPERAND_TYPE_MEM
+            op[0].u.mem.base = lib.str2xed_reg_enum_t_py(self.base_reg.encode())
+            op[0].u.mem.index = lib.str2xed_reg_enum_t_py(self.index_reg.encode())
+            op[0].u.mem.seg = lib.XED_REG_INVALID   # segment is not supported yet
+            op[0].u.mem.scale = self.scale if self.scale is not None else 1
+            op[0].u.mem.disp.displacement = self.displacement if self.displacement is not None else 0
+            op[0].u.mem.disp.displacement_bits = 8 * (self.operand_length if self.operand_length else 0)
+        elif self.is_imm:
+            op[0].type = lib.XED_ENCODER_OPERAND_TYPE_IMM0
+            assert self.imm_value is not None, 'Immediate value is missing'
+            op[0].u.imm0 = self.imm_value
+        else:   # register
+            op[0].type = lib.XED_ENCODER_OPERAND_TYPE_REG
+            op[0].u.reg = lib.str2xed_reg_enum_t_py(self.operand_reg.encode())
+        
+        op[0].width_bits = self.operand_length * 8 if self.operand_length else 0
+        return op
 
 class XedPy:
     BUFFER_SIZE = 700  # Constant for string buffer size
@@ -161,6 +197,39 @@ class XedPy:
     def get_xed_enum_val(self, enum: str) -> xedEnum:
         """Get the value of a given XED enumeration."""
         return getattr(self.lib, enum, None)
+    
+        
+    def _set_encode_request(self, iclass_name: str, eosz: int, operands: list[XedInstructionOperand]= []):
+        """
+        Construct and return a `xed_encoder_instruction_t` structure for encoding.
+
+        Parameters:
+            iclass_name (str): The instruction class name (e.g., "MOV", "ADD") as a string
+            eosz (int): Effective operand size
+            operands (list): Optional list of XedInstructionOperand operands instances
+
+        Returns:
+            xed_encoder_instruction_t *: A pointer to the populated instruction structure
+        """        
+        inst = self.ffi.new("xed_encoder_instruction_t *")
+
+        iclass = self.lib.str2xed_iclass_enum_t_py(self.str_to_cstr(iclass_name))
+
+        assert iclass, 'Invalid ICLASS'
+
+        c_operands = [op.to_xed_encoder_operand_t(self.ffi, self.lib) for op in operands]
+        
+        # populate the instruction fields
+        inst[0].mode = self.xed_dstate[0]
+        inst[0].iclass = iclass
+        inst[0].effective_operand_width = eosz
+        inst[0].effective_address_width = 64  # Instead of 0
+        inst[0].prefixes.i = 0
+        for i, opnd in enumerate(c_operands):
+            inst[0].operands[i] = opnd[0]
+        inst[0].noperands = len(c_operands)
+
+        return inst
 
     def init_xedd(self) -> None:
         """Initialize the XED decoded instruction object with the current state and chip."""
@@ -178,14 +247,70 @@ class XedPy:
         ilen = min(len(instruction_bytes), self.MAX_INSTRUCTION_BYTES)
         err: xedEnum = self.lib.xed_decode_py(self.xedd, instruction_bytes, ilen)
         if err != self.lib.XED_ERROR_NONE:
+            idec_m = f'Failed to decode: {instruction_bytes[:ilen]}'
             if err is None:
-                raise RuntimeError('XED decode_instruction returned None. Aborting.')
+                raise RuntimeError(f'XED decode_instruction returned None. {idec_m}')
             error_string: str = self.cstr_to_str(self.lib.xed_error_enum_t2str_py(err))
-            raise RuntimeError(f'XED ERROR: {error_string}')
+            raise RuntimeError(f'XED ERROR: {error_string}. {idec_m}')
+
+    def encode_instruction(self, iclass: str, eosz: int, operands: list[XedInstructionOperand]= []) -> bytes:
+        """
+        Encode a given xed_encoder_instruction_t into machine code.
+
+        Returns:
+            The encoded instruction as bytes.
+        """
+
+        inst = self._set_encode_request(iclass, eosz, operands)
+
+        enc_req = self.ffi.new("xed_encoder_request_t*")
+        self.lib.xed_encoder_request_zero_set_mode_py(enc_req, self.ffi.addressof(inst, 'mode'))
+
+        # Convert to encoder request
+        convert_ok = self.lib.xed_convert_to_encoder_request_py(enc_req, inst)
+        if not convert_ok:
+            raise RuntimeError("Failed to convert encoder instruction to encoder request.")
+
+        # Allocate output buffer
+        ilen = self.MAX_INSTRUCTION_BYTES
+        itext = self.ffi.new("xed_uint8_t[]", ilen)
+        olen = self.ffi.new("unsigned int*")
+
+        # Encode
+        err = self.lib.xed_encode_py(enc_req, itext, ilen, olen)
+        if err != self.lib.XED_ERROR_NONE:
+            error_str = self.cstr_to_str(self.lib.xed_error_enum_t2str_py(err))
+            raise RuntimeError(f"XED ENCODE ERROR: {error_str}")
+
+        return bytes(self.ffi.buffer(itext, olen[0]))
 
     def get_iclass(self) -> str:
         iclass: xedEnum = self.lib.xed_decoded_inst_get_iclass_py(self.xedd)
         return self.cstr_to_str(self.lib.xed_iclass_enum_t2str_py(iclass))
+
+    def get_mnemonic(self, syntax: xedEnum = None) -> str:
+        """
+        Get the mnemonic of the decoded instruction in the specified syntax.
+        Args:
+            syntax (xedEnum): The syntax to use for disassembly
+            (e.g., XedPy.lib.XED_SYNTAX_INTEL Intel or XedPy.lib.XED_SYNTAX_ATT).
+        Returns:
+            str: The mnemonic of the decoded instruction.
+        """
+        if not syntax:
+            syntax = self.disas_syntax_default
+
+        iform: xedEnum = self.lib.xed_decoded_inst_get_iform_enum_py(self.xedd)
+
+        if syntax == self.lib.XED_SYNTAX_INTEL:
+            mnemonic_cstr = self.lib.xed_iform_to_iclass_string_intel_py(iform)
+        elif syntax == self.lib.XED_SYNTAX_ATT:
+            mnemonic_cstr = self.lib.xed_iform_to_iclass_string_att_py(iform)
+        else:
+            raise RuntimeError(f'XED ERROR: Illegal syntax provided: {syntax}')
+
+        mnemonic = self.cstr_to_str(mnemonic_cstr).lower()
+        return mnemonic
 
     def get_category(self) -> str:
         category: xedEnum = self.lib.xed_decoded_inst_get_category_py(self.xedd)
@@ -203,10 +328,14 @@ class XedPy:
         isa_set: xedEnum = self.lib.xed_decoded_inst_get_isa_set_py(self.xedd)
         return self.cstr_to_str(self.lib.xed_isa_set_enum_t2str_py(isa_set))
 
+    def get_decoded_inst_length(self) -> int:
+        return self.lib.xed_decoded_inst_get_length_py(self.xedd)
+
     def print_decoded_instruction_info(self) -> None:
         """Print detailed information about the decoded instruction."""
         PAD = 12
 
+        print(f'{"MNEMONIC":<{PAD}}: {self.get_mnemonic()}')
         print(f'{"ICLASS":<{PAD}}: {self.get_iclass()}')
         print(f'{"CATEGORY":<{PAD}}: {self.get_category()}')
         print(f'{"EXTENSION":<{PAD}}: {self.get_extension()}')
@@ -246,7 +375,7 @@ class XedPy:
 
         mem_operand_index = 0
         for op_num in range(noperands):
-            xed_operand_t = self.lib.xed_inst_operand_py(self.xedd._inst, op_num)
+            xed_operand_t = self.lib.xed_inst_operand_py(xi, op_num)
 
             op_enum = self.lib.xed_operand_name_py(xed_operand_t)
             op_c_str = self.lib.xed_operand_enum_t2str_py(op_enum)
@@ -283,8 +412,6 @@ class XedPy:
                     operand_length=operand_length,
                     action=action_str,
                     visibility=visibility_str,
-                    is_mem=is_mem,
-                    is_imm=is_imm,
                     imm_value=imm_val
                 )
             elif not is_mem:
@@ -294,8 +421,6 @@ class XedPy:
                     operand_length=operand_length,
                     action=action_str,
                     visibility=visibility_str,
-                    is_mem=is_mem,
-                    is_imm=is_imm,
                 )
             else:
                 base_reg_enum = self.lib.xed_decoded_inst_get_base_reg_py(self.xedd, mem_operand_index)
@@ -324,8 +449,6 @@ class XedPy:
                     operand_length=operand_length,
                     action=action_str,
                     visibility=visibility_str,
-                    is_mem=is_mem,
-                    is_imm=is_imm,
                     base_reg=base_reg_str,
                     index_reg=index_reg_str,
                     scale=scale,
@@ -347,6 +470,12 @@ def parse_arguments() -> argparse.Namespace:
                         help='Path to XED shared object library.',
                         type=Path,
                         default=None)
+    parser.add_argument('--encode', 
+                        action='store_true',
+                        help='Run the encoder example')
+    parser.add_argument('--decode', 
+                        action='store_true',
+                        help='Run the decoder example (default if no action is specified)')
     args = parser.parse_args()
 
     # Default to the expected library path
@@ -356,14 +485,16 @@ def parse_arguments() -> argparse.Namespace:
         if not args.lib_path.exists():
             args.lib_path = args.lib_path.with_name('libxed.so')
         assert args.lib_path.exists(), f'Could not find XED library {args.lib_path}'
+    
+    if not args.decode and not args.encode: 
+        args.decode = True
+        print('Neither decode nor encode options were specified - defaulting to decode...')
 
     return args
 
 
-def example_run() -> None:
-    """Example function to handle library loading, instruction decoding, and output."""
-    args = parse_arguments()
-    load_xed_shared_library(args.lib_path) # load the XED library and init CFFi binding
+def run_decoder_example() -> None:
+    """Example function to handle instruction decoding and output"""
 
     xed = XedPy()
 
@@ -386,7 +517,7 @@ def example_run() -> None:
         xed.decode_instruction(inst_p)
 
         # Get the length of the decoded instruction
-        decoded_length = xed.lib.xed_decoded_inst_get_length_py(xed.xedd)
+        decoded_length = xed.get_decoded_inst_length()
         # Check for zero-length decoded instruction to avoid infinite loops
         if decoded_length == 0:
             raise RuntimeError(f'Decoded instruction has zero length. Aborting. Instruction bytes: {inst_p.hex()}')
@@ -417,8 +548,73 @@ def example_run() -> None:
     # belongs to the APX instruction set. This method allows extending features
     # not natively provided by the xedpy wrapper.
     apx: bool = XedPy.lib.xed_classify_apx_py(xed.xedd)
-    print(f'\n[Direct XED C API Call] xed_classify_apx_py(): returns {apx}')
+    print(f'\n[Direct XED C API Call]\n xed_classify_apx_py(): returns {apx}\n')
+
+    # Decoding a single instruction example
+    print("[Single instruction decoding]")
+    PAD = 20
+    single_instr_encoding = bytes([0x66, 0xd5, 0x80, 0x12, 0x4C, 0x83, 0x00])
+    xed.decode_instruction(single_instr_encoding)
+    print(f"{'Instruction Bytes':<{PAD}}: {single_instr_encoding.hex()}")
+    print(f"{'Disassembly':<{PAD}}: {xed.disassemble()}")
+
+
+def run_encoder_example():
+    """Example function to handle instruction encoding"""
+    xed = XedPy()
+
+
+    ######################### encoding REPE_CMPSB ###################
+
+    encoded_bytes: bytes = xed.encode_instruction('REPE_CMPSB', 0)
+    print(f"Encoded Bytes of REPE_CMPSB: {encoded_bytes.hex()}")
+
+    ######################### encoding PUSH RCX #####################
+
+    op0 = XedInstructionOperand(
+        operand_name="rcx",
+        operand_reg="RCX",
+        operand_length=8,
+        action="READ",
+    )
+
+    encoded_bytes: bytes = xed.encode_instruction('PUSH', 64, [op0])
+    print(f"Encoded Bytes of PUSH RCX: {encoded_bytes.hex()}")
+
+    ######################### encoding MOV_MEMv_IMMz ##################
+
+    op0 = XedInstructionOperand(
+        operand_name="mem",
+        operand_reg=None,
+        operand_length=4,
+        action="WRITE",
+        base_reg="R8",
+        index_reg="RBP",
+        displacement=-8,
+        scale=1
+    )
+    op1 = XedInstructionOperand(
+        operand_name="imm",
+        operand_reg=None,
+        operand_length=4,
+        action="READ",
+        imm_value=7
+    )
+
+    encoded_bytes: bytes = xed.encode_instruction('MOV', 32, [op0, op1])
+    print(f"Encoded Bytes of MOV [R8 + RBP*1 - 0x08], 0x07: {encoded_bytes.hex()}")
 
 
 if __name__ == '__main__':
-    example_run()
+    
+    args = parse_arguments()
+    load_xed_shared_library(args.lib_path) # load the XED library and init CFFi binding
+
+    if args.decode:
+        print(f'Running decoder example...')
+        run_decoder_example()
+    if args.encode:
+        print(f'Running encoder example...')
+        run_encoder_example()
+
+    print('Done')

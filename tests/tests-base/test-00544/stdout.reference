@@ -1,4 +1,4 @@
-Request: ADD EOSZ:3, MODE:2, REG0:RAX, REG1:RBX, SMODE:2
+Request: ADD MODE:2, REG0:EAX, REG1:EBX, SMODE:2
 OPERAND ORDER: REG0 REG1 
-Encodable! 4801D8
-.byte 0x48,0x01,0xd8
+Encodable! 01D8
+.byte 0x01,0xd8

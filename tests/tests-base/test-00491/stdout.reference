@@ -1,10 +1,5 @@
-F2F00103
-ICLASS:     ADD_LOCK
-CATEGORY:   BINARY
-EXTENSION:  BASE
-IFORM:      ADD_LOCK_MEMv_GPRv
-ISA_SET:    I86
-ATTRIBUTES: HLE_ACQ_ABLE HLE_REL_ABLE LOCKED SCALABLE 
-SHORT:      xacquire lock add dword ptr [ebx], eax
-Encodable! F2F00103
-Identical re-encoding
+Request: MOVSD_XMM EASZ:2, MEM0:dword ptr [EAX], MEM_WIDTH:4, MODE:1, REG0:XMM0, SMODE:1
+OPERAND ORDER: REG0 MEM0 
+Could not encode: movsd_xmm xmm0 MEM4:eax 
+Error code was: GENERAL_ERROR
+[XED CLIENT ERROR] Dying

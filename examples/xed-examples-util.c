@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ END_LEGAL */
 #include <ctype.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "xed-dot-prep.h"
+#include "xed-util-dot-prep.h"
 
 
 #include "xed/xed-ild.h"

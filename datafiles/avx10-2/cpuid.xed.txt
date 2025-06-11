@@ -16,52 +16,57 @@
 #  
 #END_LEGAL
 
-XED_ISA_SET_AVX10_2_RC_256   : avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX10_2_RC_SCALAR: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
+XED_ISA_SET_AVX512_SAT_CVT_128:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_SAT_CVT_256:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_SAT_CVT_512:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_SAT_CVT_128:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_SAT_CVT_256:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_SAT_CVT_512:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_FP8_CONVERT_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_FP8_CONVERT_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_FP8_CONVERT_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_FP8_CONVERT_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_FP8_CONVERT_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_FP8_CONVERT_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_FP16_CONVERT_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_FP16_CONVERT_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_FP16_CONVERT_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_FP16_CONVERT_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_FP16_CONVERT_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_FP16_CONVERT_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_VNNI_INT8_128, AVX10: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_VNNI_INT8_256, AVX10: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_VNNI_INT8_512, AVX10: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_VNNI_INT8_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_VNNI_INT8_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_VNNI_INT8_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_VNNI_INT8_128, FBIT : avx10_vnni_int.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT8_256, FBIT : avx10_vnni_int.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT8_512, FBIT : avx10_vnni_int.24.1.ecx[2] 
 
-XED_ISA_SET_AVX512_VNNI_FP16_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_VNNI_FP16_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_VNNI_FP16_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_VNNI_FP16_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_VNNI_FP16_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_VNNI_FP16_512: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_MEDIAX_128:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_MEDIAX_256:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_MEDIAX_512:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_MEDIAX_128:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_MEDIAX_256:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_MEDIAX_512:   avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
 XED_ISA_SET_AVX512_MINMAX_SCALAR:  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
-XED_ISA_SET_AVX512_MINMAX_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_MINMAX_256:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_MINMAX_512:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_MINMAX_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_MINMAX_256:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_MINMAX_512:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_SAT_CVT_DS_128   :  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_SAT_CVT_DS_256   :  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_SAT_CVT_DS_512   :  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_SAT_CVT_DS_128   :  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_SAT_CVT_DS_256   :  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_SAT_CVT_DS_512   :  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 XED_ISA_SET_AVX512_SAT_CVT_DS_SCALAR:  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
 
-XED_ISA_SET_AVX512_VNNI_INT16_128:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX512_VNNI_INT16_256:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX512_VNNI_INT16_512:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX512_VNNI_INT16_128, AVX10:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_VNNI_INT16_256, AVX10:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX512_VNNI_INT16_512, AVX10:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+
+XED_ISA_SET_AVX512_VNNI_INT16_128, FBIT : avx10_vnni_int.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT16_256, FBIT : avx10_vnni_int.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT16_512, FBIT : avx10_vnni_int.24.1.ecx[2] 
 
 XED_ISA_SET_AVX10_2_BF16_SCALAR:  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
-XED_ISA_SET_AVX10_2_BF16_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX10_2_BF16_256:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX10_2_BF16_512:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX10_2_BF16_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX10_2_BF16_256:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
+XED_ISA_SET_AVX10_2_BF16_512:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_MOVZXC_128   : avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
+XED_ISA_SET_AVX512_MOVZXC_128   : avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
 XED_ISA_SET_AVX512_COM_EF_SCALAR    : avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2

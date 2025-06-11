@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q call_near eax
+ BUILDDIR/xed-enc-asmparse -q call_near eax

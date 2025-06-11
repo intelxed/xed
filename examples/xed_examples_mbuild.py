@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -268,12 +268,12 @@ def _add_libxed_rpath(env):
 
 
 def build_asmparse(env, dag, otherobj):
-    srcs = env.src_dir_join(['xed-asmparse.c'])
+    srcs = env.src_dir_join(['xed-util-asmparse.c'])
     objs = env.compile(dag, srcs)
 
     exe = ex_compile_and_link(env,
                               dag,
-                              env.src_dir_join('xed-asmparse-main.c'),
+                              env.src_dir_join('xed-enc-asmparse.c'),
                               objs + otherobj + [env['link_libxed']])
     return exe
 
@@ -311,16 +311,16 @@ def build_examples(env, work_queue):
           'xed-examples-util.c'])
     if env['decoder']:
         cc_shared_files.extend(env.src_dir_join([ 
-          'xed-dot.c',
-          'xed-dot-prep.c']))
+          'xed-util-dot.c',
+          'xed-util-dot-prep.c']))
         
     if env['encoder']:
-       cc_shared_files += env.src_dir_join([ 'xed-enc-lang.c'])
+       cc_shared_files += env.src_dir_join([ 'xed-util-enc-lang.c'])
     cc_shared_objs  = env.compile( examples_dag, cc_shared_files)
     # the XED command line tool
-    xed_cmdline_files = [ 'xed-disas-raw.c',
+    xed_cmdline_files = [ 'xed-util-disas-raw.c',
                           'avltree.c',
-                          'xed-disas-hex.c',
+                          'xed-util-disas-hex.c',
                           'xed-symbol-table.c']
     if env.on_windows() and env['set_copyright']:
         # AUTOMATICALLY UPDATE YEAR IN THE RC FILE
@@ -334,14 +334,14 @@ def build_examples(env, work_queue):
     if env['decoder']:
 
         if env.on_linux() or env.on_freebsd() or env.on_netbsd():
-            xed_cmdline_files.append('xed-disas-filter.c')
+            xed_cmdline_files.append('xed-util-disas-filter.c')
             xed_cmdline_files.append('xed-nm-symtab.c')
             
         elif env.on_mac():
-            xed_cmdline_files.append('xed-disas-macho.c')
+            xed_cmdline_files.append('xed-util-disas-macho.c')
 
         elif env.on_windows():
-            xed_cmdline_files.append('xed-disas-pecoff.cpp')
+            xed_cmdline_files.append('xed-util-disas-pecoff.cpp')
             if ( env['dbghelp'] and 
                  env['compiler'] == 'ms' and
                  env['msvs_version'] not in ['6','7'] ):
@@ -362,7 +362,7 @@ def build_examples(env, work_queue):
         xbc.cond_add_elf_dwarf(cenv)
         
     if env.on_linux() or env.on_freebsd() or env.on_netbsd():
-        src_elf = env.src_dir_join('xed-disas-elf.c')
+        src_elf = env.src_dir_join('xed-util-disas-elf.c')
         if env['use_elf_dwarf_precompiled']:
             cenv2 = copy.deepcopy(cenv)
             # need to remove -pedantic because of redundant typedef Elf in dwarf header file
@@ -388,33 +388,22 @@ def build_examples(env, work_queue):
     ild_examples = []
     other_c_examples = []
     enc2_examples = []
-    small_examples = ['xed-size.c']
+    small_examples = []
     if env['enc2']:
-        enc2_examples += [ 'xed-enc2-1.c',
-                           'xed-enc2-2.c',
-                           'xed-enc2-3.c' ]
+        enc2_examples += [ 'xed-enc2.c']
     if env['encoder']:
-       small_examples += ['xed-ex5-enc.c']
-       other_c_examples += ['xed-ex3.c']
+       small_examples += ['xed-enc-direct.c']
+       other_c_examples += ['xed-enc.c']
     if env['decoder'] and env['encoder']:
-       other_c_examples += ['xed-ex6.c',
-                            'xed-ex9-patch.c' ]
+       other_c_examples += ['xed-enc-override.c' ]
     if env['decoder']:
-       ild_examples += [ 'xed-ex-ild.c' ]
-       other_c_examples += ['xed-ex1.c',
-                            'xed-ex-ild2.c',
-                            'xed-min.c',
-                            'xed-reps.c',
-                            'xed-ex4.c',
-                            'xed-tester.c',
-                            'xed-dec-print.c',           
-                            'xed-ex-agen.c',
-                            'xed-ex7.c',
-                            'xed-ex8.c',
-                            'xed-ex-cpuid.c',
-                            'xed-tables.c',
-                            'xed-find-special.c',                            
-                            'xed-dll-discovery.c']
+       ild_examples += [ 'xed-dec-ild.c' ]
+       other_c_examples += ['xed-dec.c',
+                            'xed-dec-control.c',
+                            'xed-dec-min.c',
+                            'xed-rep-string.c',     
+                            'xed-dec-agen.c',
+                            'xed-tables.c']
 
     # compile & link other_c_examples
     for example in env.src_dir_join(other_c_examples):

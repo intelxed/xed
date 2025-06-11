@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ VL256  VL=1
 
 VV1    VEXVALID=1
 VV0    VEXVALID=0
+EVV    VEXVALID=2   # Introduced with AVX512 but kept here for maintainability
 
 VMAP0  MAP=0
 V0F    MAP=1

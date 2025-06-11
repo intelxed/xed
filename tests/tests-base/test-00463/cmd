@@ -1,1 +1,1 @@
- BUILDDIR/xed -64 -d C4 E1 E9 C4 C8 FF
+ BUILDDIR/xed-enc -64 vbroadcastss/32 xmm1 MEM4:rax

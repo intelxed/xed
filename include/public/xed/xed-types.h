@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,28 +26,15 @@ END_LEGAL */
 
 #include "xed-common-hdrs.h"
 
-#if defined(__GNUC__) || defined(__ICC) || defined(__clang__)
 #  include <stdint.h>
-#  define xed_uint8_t   uint8_t 
-#  define xed_uint16_t  uint16_t
-#  define xed_uint32_t  uint32_t
-#  define xed_uint64_t  uint64_t
-#  define xed_int8_t     int8_t 
-#  define xed_int16_t 	 int16_t
-#  define xed_int32_t    int32_t
-#  define xed_int64_t    int64_t
-#elif defined(_WIN32)
-#  define xed_uint8_t  unsigned __int8
-#  define xed_uint16_t unsigned __int16
-#  define xed_uint32_t unsigned __int32
-#  define xed_uint64_t unsigned __int64
-#  define xed_int8_t   __int8
-#  define xed_int16_t  __int16
-#  define xed_int32_t  __int32
-#  define xed_int64_t  __int64
-#else
-#  error "XED types unsupported platform? Need windows, gcc, or clang."
-#endif
+typedef uint8_t  xed_uint8_t;
+typedef uint16_t xed_uint16_t;
+typedef uint32_t xed_uint32_t;
+typedef uint64_t xed_uint64_t;
+typedef int8_t  xed_int8_t;
+typedef int16_t xed_int16_t;
+typedef int32_t xed_int32_t;
+typedef int64_t xed_int64_t;
 
 typedef unsigned int  xed_uint_t;
 typedef          int  xed_int_t;

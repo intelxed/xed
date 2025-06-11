@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,20 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+This script generates a list of instruction differences between two chips, specifically
+focusing on instructions that are present in one chip but not the other.
+
+Functionality:
+- Reads the XED database and chip database.
+- Generates a list of instructions for two specified chips (base chip and new chip).
+- Compares the instruction sets of the two chips and identifies instructions that are missing in the new chip compared to the base chip, and vice versa.
+- Prints the differences in instruction sets between the two chips.
+
+Output:
+- Prints instructions that are present in the base chip but missing in the new chip.
+- Prints instructions that are present in the new chip but missing in the base chip.
+"""
 from __future__ import print_function
 import sys
 import read_xed_db

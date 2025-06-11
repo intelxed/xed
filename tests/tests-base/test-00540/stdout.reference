@@ -1,4 +1,5 @@
-Request: PUSH EOSZ:3, MODE:2, REG0:RBP, SMODE:2
+Request: PUSH MODE:2, REG0:EBP, SMODE:2
 OPERAND ORDER: REG0 
-Encodable! 55
-.byte 0x55
+Could not encode: PUSH EBP 
+Error code was: GENERAL_ERROR
+[XED CLIENT ERROR] Dying

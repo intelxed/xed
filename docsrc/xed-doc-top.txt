@@ -25,7 +25,7 @@
 /*! 
 @mainpage Intel&reg; X86 Encoder Decoder User Guide
 
-September 2024
+May 2025
 
 @section INTRO Introduction
 
@@ -339,7 +339,6 @@ and instructions at a given Intel&reg; AVX10 version number. This approach also 
 to be checked to determine feature support. This way, usually, it is only needed to check three fields:
 1.	A CPUID feature bit indicating that the Intel&reg; AVX10 ISA is supported
 2.	A version number to ensure that the supported version is greater than or equal to the desired version
-3.	A vector length bit indicating the maximum supported vector length 
 
 Determining whether an ISA-SET is supported by a chip:
 For ISA-SETs with a single CPUID group, all of its CPUID records must be set in order to be supported by the chip.
@@ -354,24 +353,22 @@ Since the CPUID group itself is an "AND" expression between all of its CPUID rec
 in order to satisfy the sub-expression.
 
 For instance, the ISA-SET AVX512F_512 has the following CPUIDS groups: 
-The Intel&reg; AVX10 CPUID group with three CPUID records:
+The Intel&reg; AVX10 CPUID group with two CPUID records:
 <ul>
     <li> CPUID name avx10_enabled, leaf 0x7, sub-leaf 0x1, register EDX, bit 19
     <li> CPUID name avx10_ver1, leaf 0x24, sub-leaf 0x0, register EBX, bits 0 to 7
-    <li> CPUID name avx10_512vl, leaf 0x24, sub-leaf 0x0, register EBX, bit 18
 </ul>
 The feature group with a single CPUID record:
 <ul>
     <li> CPUID name avx512f, leaf 0x7, sub-leaf 0x0, register EBX, bit 16
 </ul>
 This means that a chip supports AVX512F_512 ISA if at least one of the two groups has a match.
-In order to match one CPUID group, all of its records must be set. So either the first group's three CPUID records or the second 
+In order to match one CPUID group, all of its records must be set. So either the first group's two CPUID records or the second 
 group's single CPUID record must be set.
 
 To provide further insight on Intel&reg; AVX10 CPUID, let's discuss the first CPUID group of AVX512F_512:
 The first record ("AVX10 Converged Vector ISA Enable" bit) is indicative of processor support of Intel&reg; AVX10 ISA. The second CPUID record 
-specifies the processor's minimal required Intel&reg; AVX10 version (in this case, AVX10.1). The last CPUID record is the vector length bit indicating 
-the maximum supported VL (512).
+specifies the processor's minimal required Intel&reg; AVX10 version (in this case, AVX10.1).
 
 For the recommended usage of the Intel&reg; XED CPUID APIS, see @ref SMALLEXAMPLES .
 
@@ -562,10 +559,10 @@ To use DFV:
   - Use xed_decoded_inst_has_default_flags_values() to detect DFV-supported instructions.
   - Use xed_decoded_inst_get_default_flags_values() to retrieve default flags as a xed_flag_dfv_t struct.
 - Intel&reg; XED CLI encode request:
-  - Set the DFV XED-operand as an integer representing these 4 bits in the encoder request.
+  - Set the DFV XED-operand as an integer representing these 4 bits in the encoder request (-set DFV <int>).
 
 Developers can, however, dynamically disable Intel&reg; APX architecture encoder support using the 'NO_APX' API xed3_operand_set_no_apx().
-The xed3_operand_set_must_use_evex() API can also be used for APX promoted instructions in order to force EVEX space upon the encoding request.
+The xed3_operand_set_must_use_evex() API can also be used for Intel&reg; APX promoted instructions in order to force EVEX space upon the encoding request.
 
 Developers wishing to encode No-Flags Intel&reg; APX instructions should set the NF Intel&reg; XED operand.
 
@@ -852,9 +849,9 @@ in the #xed_encoder_request_t.
 
 This is a higher level API for encoding instructions.
 
-A full example is present in examples/xed-ex5-enc.c
+A full example is present in examples/xed-enc-direct.c
 
-In the following example we create one instructions template that can
+In the following example we create one instruction template that can
 be passed to the encoder.
 
     @code
@@ -908,7 +905,7 @@ The decode step required to create patchable instructions obviously
 takes additional time so it is suggested one only create patchable
 instructions once as templates and re-use them as needed.
 
-See examples/xed-ex9-patch.c for an example.
+See examples/xed-enc-override.c for an example.
 */
 
 
@@ -985,7 +982,7 @@ instruction is decoded and then its IFORM and all operands involved in the encod
 
 Users can install their own error handler by calling
 #xed_enc2_set_error_handler() passing a function pointer that takes
-stdarg variable arguments.  See examples/xed-enc2-2.c for an example.
+stdarg variable arguments.  See examples/xed-enc2.c for an example.
 
 When using the checked interface, one can disable the checking at
 runtime by calling
@@ -1029,9 +1026,7 @@ output buffer. Getting the length of the encoding is useful for
 setting the correct buffer pointer for subsequent encoder requests.
 
 
-See examples/xed-enc2-1.c and
-    examples/xed-enc2-2.c 
-for examples.
+See examples/xed-enc2.c
  */
 
 
@@ -1131,7 +1126,7 @@ legacy instruction with REX2 prefix, EVEX instruction with EGPR as one of its op
 Each Intel&reg; XED ISA-SET can be mapped to one or more CPUID groups (feature bit, Intel&reg; AVX10...) and each CPUID group is mapped to one or
 more CPUID records.
 For each ISA-SET, the CPUID scan should accrue in two nested loops; by iterating through all ISA-SET's CPUID groups and by iterating through all group's CPUID records.
-For more usage example, please check the xed-ex1.c example (@ref SMALLEXAMPLES).
+For more usage example, please check the xed-dec.c example (@ref SMALLEXAMPLES).
 
 */
 
@@ -1252,7 +1247,7 @@ jump to the examples.
 
 This section also explains a little language for writing the
 instructions for encode requests (-e option).  This tool is constantly updated.
-The xed-ex3 (xed-ex3.exe) example is just
+The xed-enc (xed-enc.exe) example is just
 the encoder portion of the xed command line tool.
 
 The SUPPRESSED operands emitted by the decoder are not used when
@@ -1275,7 +1270,9 @@ The operand specifier is one of the following.
 
 - An immediate specifier such as IMM:12ff 
 
-- A branch displacement specifier such as BRDISP:0000001f
+- A branch displacement specifier such as RELBR:0000001f for instructions that use relative offsets
+
+- A branch displacement specifier such as ABSBR:0000001f0000001f for instructions that specify an absolute address
 
 - A memory specifier that indicates the base register, index register,
 scale value, and displacement value. If one of the fields is not
@@ -1414,18 +1411,18 @@ OPERAND ORDER: REG0 MEM0
 Encodable! 8B0424
 .byte 0x8b,0x04,0x24
 
-% xed -64 -e CCMPB r8b r9b dfv14
-Request: CCMPB MODE:2, REG0:R8B, REG1:R9B, REG2:DFV14, SMODE:2
-OPERAND ORDER: REG0 REG1 REG2 
+% xed -64 -set DFV 14 -e CCMPB r8b r9b
+Request: CCMPB DFV:14, MODE:2, REG0:R8B, REG1:R9B, SMODE:2
+OPERAND ORDER: REG0 REG1
 Encodable! 6254740238C8
 .byte 0x62,0x54,0x74,0x02,0x38,0xc8
 
 @endcode 
 
-Or using the xed-ex3 example tool:
+Or using the xed-enc example tool:
 @code 
-% obj/xed-ex3
-Usage: obj/xed-ex3 [-16|-32|-64] [-s16|-s32] encode-string
+% obj/xed-enc
+Usage: obj/xed-enc [-16|-32|-64] [-s16|-s32] encode-string
 @endcode
 
 The -16, -32 or -64 are for specifying the major mode of the machine.
@@ -1440,14 +1437,14 @@ addressing in 32b mode. The -s32 is for specifying 32b stack
 addressing in 16 bit mode.
 
 @code
-% obj/xed-ex3 -64 PUSH/64 RAX
+% obj/xed-enc -64 PUSH/64 RAX
 Encode request:
 PUSH EOSZ:3, MODE:2, REG0:RAX, SMODE:2
 OPERAND ORDER: REG0
 
 Encodable! 50
 
-% obj/xed-ex3 MOV MEM4:EAX IMM:11223344
+% obj/xed-enc MOV MEM4:EAX IMM:11223344
 Encode request:
 MOV EASZ:2, IMM0:0x11223344, IMM_WIDTH:32, MEM0:dword ptr [EAX], MEM_WIDTH:4, MODE:1, SMODE:1
 OPERAND ORDER: MEM0 IMM0
@@ -1463,7 +1460,7 @@ string to drive the creation of the instruction, but that is just an
 example. Look at the parse_encode_request function for the required
 pieces.
 
-\include xed-enc-lang.c
+\include xed-util-enc-lang.c
  
 
  */
@@ -1472,28 +1469,26 @@ pieces.
 
 The source code for the examples is in the "examples" subdirectory.
 
-There is a makefile that will build all the examples on Linux or
-windows.
+To compile the examples manually please see @ref SMALLEXAMPLES
 
 There are several examples, mainly:
       <ul>
       
       <li> xed.c: This is the main Intel&reg; XED example. It's a complete example touching down on most of Intel&reg; XED's capabilities
       and APIs, including decoding, encoding, image file reading and chip-check APIs and functionality.
-      <li> xed-ex1.c: A quintessential decoder example that uses most of the decode APIs.
+      <li> xed-dec.c: A quintessential decoder example that uses most of the decode APIs.
       It is recommended for users who want to deeply understand the numerous APIs for decoded instructions and their usages.
       This is included in the "Small Examples" section below. It is a good example for using the major decoder APIs.
       This example supports emitting detailed instruction metadata: prefixes, CPUID leaves, rounding modes, branch-hints, flags, operands and more.
       This example can also elaborate on EVEX/VEX prefix bit info using a specified verbosity mode. It supports CPUID-based defeaturing as well.
-      <li> xed-ex3.c: A lightweight encoder example used to parse command line arguments and encode them into a stream of bytes. 
+      <li> xed-enc.c: A lightweight encoder example used to parse command line arguments and encode them into a stream of bytes. 
       For more insight on the encode request syntax and the encoder examples, please see @ref CMDLINE page.
-      <li> xed-ex4.c: A simple decoder example with different disassembly output formats. It contains highly descriptive
+      <li> xed-dec-control.c: A simple decoder example with different disassembly output formats. It contains highly descriptive
       usages of the new decode-with-features APIs.
-      <li> xed-ex5-enc.c: A simple non-dynamic encoder example using the high-level encoding API.
-      <li> xed-ex6.c: This is a subset of the main example, which works as a concentrated example of the decode-encode (-de) feature.
-      <li> xed-ex9-patch.c: A non-dynamic example that shows how to patch (modify) the xed_encoder_instruction data structure
+      <li> xed-enc-direct.c: A simple non-dynamic encoder example using the high-level encoding API.
+      <li> xed-enc-override.c: A non-dynamic example that shows how to patch (modify) the xed_encoder_instruction data structure
       yielded from the encoder.
-      <li> xed-asmparse-main.c: A unique encoder example showcasing how to process command-line encode requests in assembly format
+      <li> xed-enc-asmparse.c: A unique encoder example showcasing how to process command-line encode requests in assembly format
       It allows processing multiple requests separated by a semicolon. This is different from other encoder examples in that the input
       is not in Intel&reg; XED encode request format.
 
@@ -1502,17 +1497,11 @@ There are several examples, mainly:
 Other specific use-case examples:
       <ul>
       
-      <li> xed-dll-discovery.c: When using Intel&reg; XED as a DLL or shared object, the enumerations can change from one version to another if instructions (or features) 
-      are added. Each Intel&reg; XED enumeration must be mapped to something your Intel&reg; XED client can use for indepedent compilation (custom fixed enumeration).
-      This example shows how to discover the Intel&reg; XED values for the xed_iclass_enum_t and construct a mapping from names that are constant to your tool to 
-      names that can vary. You would need to do this for each Intel&reg; XED enumeration that your Intel&reg; XED client uses.
-      <li> xed-enc2-*.c: These examples showcase the use of ENC2 encode APIs. ENC2 is our much faster, low-level encoder.
-      <li> xed-ex-agen.c: Creates an artificial AGEN (address generation) calculator for testing and works as a valuable example for using xed_agen API.
-      <li> xed-ild-dec.c: An example for using the instruction length decoder API.
-      <li> xed-ild-dec2.c: An example that compares the results of regular decoding and instruction length decoding for further validation.
+      <li> xed-enc2.c: This example showcase the use of ENC2 encode APIs. ENC2 is our much faster, low-level encoder.
+      <li> xed-dec-agen.c: Creates an artificial AGEN (address generation) calculator for testing and works as a valuable example for using xed_agen API.
+      <li> xed-dec-ild.c: An example for using the instruction length decoder API. This example loads only the xed-ild library.
       <li> xed-tables.c: An example that shows how to access Intel&reg; XED's internal tables, which contain static data for all Intel&reg; XED-supported instructions.
-      <li> xed-size.c: Outputs the sizes of Intel&reg; XED data structures. Can be useful for analytical purposes and auto-generation workflows.
-      <li> xed-reps.c: Shows the use of the REP prefix APIs, which basically returns the non-REP variant of a REP ICLASS and vice versa.
+      <li> xed-rep-string.c: Shows the use of the REP prefix APIs, which basically returns the non-REP variant of a REP ICLASS and vice versa.
 
       </ul>
 
@@ -1520,15 +1509,15 @@ Other specific use-case examples:
 The above examples use the following utilities to process different inputs:
       <ul>
       
-      <li> xed-disas-elf: Used to disassemble ELF (Executable and Linkable Format) binaries. 
+      <li> xed-util-disas-elf: Used to disassemble ELF (Executable and Linkable Format) binaries. 
       If the binary contains DWARF debugging information (generated by the compiler in a specific format), this example can map 
       addresses to source code line numbers, making it easier to correlate the disassembled code with the original source code.
-      <li> xed-disas-macho: Useful for disassembling Mach-O binaries on macOS.
-      <li> xed-disas-hex: Used to disassemble hexadecimal byte sequences from a file.
-      <li> xed-disas-raw: Used to disassemble raw binary data.
-      <li> xed-disas-pecoff: Used to disassemble PE/COFF (Portable Executable/Common Object File Format) binaries on Windows.
-      <li> xed-enc-lang: A very detailed component that shows how to parse encode requests from the command line and then perform the encoding.
-      <li> xed-dot: Generates a dependency graph from a set of decoded instructions and pours the results into a dot file.
+      <li> xed-util-disas-macho: Useful for disassembling Mach-O binaries on macOS.
+      <li> xed-util-disas-hex: Used to disassemble hexadecimal byte sequences from a file.
+      <li> xed-util-disas-raw: Used to disassemble raw binary data.
+      <li> xed-util-disas-pecoff: Used to disassemble PE/COFF (Portable Executable/Common Object File Format) binaries on Windows.
+      <li> xed-util-enc-lang: A very detailed component that shows how to parse encode requests from the command line and then perform the encoding.
+      <li> xed-util-dot: Generates a dependency graph from a set of decoded instructions and pours the results into a dot file.
       The dot file can be converted into a .png to visualize the results. Each node represents an instruction, an edge is added based on 
       dependency between involved regs (RAW, WAW, WAR).
 
@@ -1544,32 +1533,30 @@ The examples are described in the following subsections:
 
 /*! @defgroup SMALLEXAMPLES  Small Examples of using Intel&reg; XED
 
-Here is a minimal example of using Intel&reg; XED from the file examples/xed-min.c.
+Here is a minimal example of using Intel&reg; XED from the file examples/xed-dec-min.c.
 
-\include xed-min.c
+\include xed-dec-min.c
 
-There is a makefile in the examples directory. Here's how to compile
-it from a kit:
-@code
+The examples can be compiled manually from a kit, using the following steps:
 % gcc -Ipath-to-xed-kit/include -Ipath-to-xed-kit/examples \
-      -c path-to-xed-kit/examples/xed-min.c
-% gcc -o xed-min xed-min.o path-to-xed-kit/lib/libxed.a
+      -c path-to-xed-kit/examples/xed-dec-min.c
+% gcc -o xed-dec-min xed-dec-min.o path-to-xed-kit/lib/libxed.a
 @endcode
 where path-to-xed-kit is where you have your include, examples and
 lib directories from an installed Intel&reg; XED kit.
 
 
-Here is a more detailed example (examples/xed-ex1.c) that walks the
+Here is a more detailed example (examples/xed-dec.c) that walks the
 operands much like the printing routines do for the
 #xed_decoded_inst_t .
 
-\include xed-ex1.c
+\include xed-dec.c
 
 Here are a few examples of running the program:
 
 @code
 
-% ./xed-ex1 01 c0
+% ./xed-dec 01 c0
 
 iclass ADD      category BINARY ISA-extension BASE      ISA-set I86
 instruction-length 2
@@ -1600,7 +1587,7 @@ ISA SET: [I86]
 
 ===============================================================================
 
-% ./xed-ex1 f2 0f 58 9c 24 e0 00 00 00
+% ./xed-dec f2 0f 58 9c 24 e0 00 00 00
 
 iclass ADDSD    category SSE    ISA-extension SSE2      ISA-set SSE2
 instruction-length 9
@@ -1634,7 +1621,7 @@ ISA SET: [SSE2]
 
 ===============================================================================
 
-./xed-ex1 f3 90
+./xed-dec f3 90
 
 iclass PAUSE    category MISC   ISA-extension PAUSE     ISA-set PAUSE
 instruction-length 2

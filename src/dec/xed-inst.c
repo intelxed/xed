@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -94,11 +94,13 @@ xed_uint32_t xed_inst_flag_info_index(const xed_inst_t* p) {
 }
 
 
-void xed_operand_print(const xed_operand_t* p, char* buf, int buflen) {
+void xed_operand_print(const xed_decoded_inst_t* xedd, unsigned int i, char* buf, int buflen) {
     int blen = buflen;
+    const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
+    const xed_operand_t* p = xed_inst_operand(xi,i);
     blen = xed_strncpy(buf,xed_operand_enum_t2str(p->_name),blen);
     blen = xed_strncat(buf,"/",blen);
-    blen = xed_strncat(buf,xed_operand_action_enum_t2str(p->_rw),blen);
+    blen = xed_strncat(buf, xed_operand_action_enum_t2str(xed_decoded_inst_operand_action(xedd,i)),blen);
     blen = xed_strncat(buf,"/",blen);
     blen = xed_strncat(buf, xed_operand_width_enum_t2str(p->_oc2),blen);
     blen = xed_strncat(buf,"/",blen);

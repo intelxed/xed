@@ -13,7 +13,7 @@
 #  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
-#
+#  
 #END_LEGAL
 
 # Temporary file for a partial initialization and binding
@@ -39,6 +39,7 @@ xed_iclass_enum_t xed_decoded_inst_get_iclass_py(const xed_decoded_inst_t* p);
 
 const char* xed_extension_enum_t2str_py(const xed_extension_enum_t p);
 const char* xed_iclass_enum_t2str_py(const xed_iclass_enum_t p);
+xed_iclass_enum_t str2xed_iclass_enum_t_py(const char* s);
 xed_iform_enum_t xed_decoded_inst_get_iform_enum_py(const xed_decoded_inst_t* p);
 const char* xed_iform_enum_t2str_py(const xed_iform_enum_t p);
 const char* xed_isa_set_enum_t2str_py(const xed_isa_set_enum_t p);
@@ -68,6 +69,7 @@ xed_operand_enum_t xed_operand_name_py(const xed_operand_t* p);
 const char* xed_operand_enum_t2str_py(const xed_operand_enum_t p);
 xed_reg_enum_t xed_decoded_inst_get_reg_py(const xed_decoded_inst_t* p, xed_operand_enum_t reg_operand);
 const char* xed_reg_enum_t2str_py(const xed_reg_enum_t p);
+xed_reg_enum_t str2xed_reg_enum_t_py(const char* s);
 xed_operand_visibility_enum_t xed_operand_operand_visibility_py( const xed_operand_t* p);
 const char* xed_operand_visibility_enum_t2str_py(const xed_operand_visibility_enum_t p);
 xed_operand_action_enum_t xed_decoded_inst_operand_action_py(const xed_decoded_inst_t* p, unsigned int operand_index);
@@ -84,4 +86,18 @@ xed_uint_t xed_decoded_inst_get_immediate_is_signed_py(const xed_decoded_inst_t*
 xed_int32_t xed_decoded_inst_get_signed_immediate_py(const xed_decoded_inst_t* p);
 xed_uint64_t xed_decoded_inst_get_unsigned_immediate_py(const xed_decoded_inst_t* p);
 xed_uint8_t xed_decoded_inst_get_second_immediate_py(const xed_decoded_inst_t* p);
+char const* xed_iform_to_iclass_string_intel_py(xed_iform_enum_t iform);
+char const* xed_iform_to_iclass_string_att_py(xed_iform_enum_t iform);
+'''
+
+################################# ENCODER APIs ##################################
+
+cdef_string += '''
+void xed_encoder_request_zero_set_mode_py(xed_encoder_request_t* p, const xed_state_t* dstate);
+xed_bool_t xed_convert_to_encoder_request_py(xed_encoder_request_t* out, xed_encoder_instruction_t* in);
+xed_error_enum_t xed_encode_py(xed_encoder_request_t* r,
+                                           xed_uint8_t* array, 
+                                           const unsigned int ilen,
+                                           unsigned int* olen);
+void xed_encode_request_print_py(const xed_encoder_request_t* p, char* buf, xed_uint_t buflen);
 '''

@@ -1,1 +1,1 @@
- BUILDDIR/xed -d C4 E3 69 20C8FF
+ BUILDDIR/xed-enc -64 vpinsrw xmm1 xmm2 eax IMM:ff

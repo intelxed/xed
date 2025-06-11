@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex-cpuid f3 0f bc 00
+ BUILDDIR/xed-dec-control -de-method 1 f3 0f bc 00

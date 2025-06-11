@@ -1,5 +1,10 @@
-Request: MOVSD_XMM EASZ:2, MEM0:dword ptr [EAX], MEM_WIDTH:4, MODE:1, REG0:XMM0, SMODE:1
-OPERAND ORDER: REG0 MEM0 
-Could not encode: movsd_xmm xmm0 MEM4:eax 
-Error code was: GENERAL_ERROR
-[XED CLIENT ERROR] Dying
+F30F5100
+ICLASS:     SQRTSS
+CATEGORY:   SSE
+EXTENSION:  SSE
+IFORM:      SQRTSS_XMMss_MEMss
+ISA_SET:    SSE
+ATTRIBUTES: MXCSR SIMD_SCALAR 
+SHORT:      sqrtss xmm0, dword ptr [eax]
+Encodable! F30F5100
+Identical re-encoding

@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q cmpxchg dword ptr [ebx], esi
+ BUILDDIR/xed-enc-asmparse -q cmpxchg dword ptr [ebx], esi

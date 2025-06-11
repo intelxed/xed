@@ -82,9 +82,11 @@ set_chip_modes(xed_decoded_inst_t* xedd,
             // `PREFETCHRST`: Enables the `PREFETCHRST2` instruction (replacing a previous `NOP`)
             {XED_ISA_SET_MOVRS, XED_OPERAND_PREFETCHRST},
 #endif
-#if defined(XED_SUPPORTS_WBNOINVD)
+#if defined(XED_ISA_SET_WBNOINVD_DEFINED)
             // `WBNOINVD`: Enables the `WBNOINVD` instruction (replacing a previous `WBINVD`)
             {XED_ISA_SET_WBNOINVD, XED_OPERAND_WBNOINVD},
+#endif
+#if defined(XED_ISA_SET_CLDEMOTE_DEFINED)
             // `CLDEMOTE`: Enables the `CLDEMOTE` instruction (replacing a previous `NOP`)
             {XED_ISA_SET_CLDEMOTE, XED_OPERAND_CLDEMOTE},
 #endif
@@ -115,9 +117,11 @@ set_chip_modes(xed_decoded_inst_t* xedd,
         xed3_operand_set_no_vex(xedd, !support);
 #endif
         // AVX512
-#if defined(XED_SUPPORTS_AVX512)
+#if defined(XED_ISA_SET_AVX512F_SCALAR_DEFINED)
         support = xed_test_features(features, XED_ISA_SET_AVX512F_SCALAR); // Catches both SKX and KNL
-        support |= xed_test_features(features, XED_ISA_SET_AVX512F_128); // For backwards compatibility
+#if defined(XED_ISA_SET_AVX512F_128_DEFINED)
+        support |= xed_test_features(features, XED_ISA_SET_AVX512F_128); // For backwards compatibility (SKX only)
+#endif
         xed3_operand_set_no_evex(xedd, !support);
 #endif
 #if defined(XED_APX)

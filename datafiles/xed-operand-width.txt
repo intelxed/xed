@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -126,3 +126,5 @@ i8          int   8bits
 var         var      0  # relies on NELEM * ELEMENT_SIZE to get the number of bits.
 bnd32       u32     12  # MPX 32b BNDLDX/BNDSTX memop 3x4B
 bnd64       u64     24  # MPX 32b BNDLDX/BNDSTX memop 3x8B
+wrd         u16     16bits
+

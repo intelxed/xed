@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@
 XED_ISA_SET_AMX_FP8             : amx_fp8.1e.1.eax.4
 XED_ISA_SET_AMX_TRANSPOSE       : amx_transpose.1e.1.eax.5
 XED_ISA_SET_AMX_TF32            : amx_tf32.1e.1.eax.6
-XED_ISA_SET_AMX_AVX512          : amx_avx512.1e.1.eax.7 avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AMX_AVX512          : amx_avx512.1e.1.eax.7
 XED_ISA_SET_AMX_MOVRS           : amx_movrs.1e.1.eax.8
 
 XED_ISA_SET_AMX_TRANSPOSE_MOVRS : amx_transpose.1e.1.eax.5 amx_movrs.1e.1.eax.8

@@ -1,1 +1,1 @@
- BUILDDIR/xed      -de 66 62 00
+ BUILDDIR/xed -chip-check SKYLAKE_SERVER -d 66 0fae 30

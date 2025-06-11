@@ -29,7 +29,7 @@ APX DEC ENC ; BUILDDIR/xed -64 -de d50080C401       # No [A,C,D,B]h on REX2 (tes
 APX DEC ENC ; BUILDDIR/xed -64 -de 66d5C0124C8300   # Ignore non-reg rex2.r4 bit
 APX DEC ENC ; BUILDDIR/xed -64 -de 440f2203         # mov_cr cr8, rbx (REX Prefix)
 APX DEC ENC ; BUILDDIR/xed -64 -de d5842203         # mov_cr cr8, rbx (REX2 Prefix)
-APX DEC     ; BUILDDIR/xed -64 -d d5c42203          # mov_cr cr8, rbx (illegal REX2.R4=1)
+APX DEC     ; BUILDDIR/xed -64 -d d5c02213          # mov_cr cr2, rbx (illegal REX2.R4=1)
 APX DEC ENC ; BUILDDIR/xed -64 -de f36764d598aef7   # UMONITOR A_GPR_B()
 APX DEC ENC ; BUILDDIR/xed -64 -de 66d5cdc5db08     # PEXTRW    (0xC5 opcode)
 APX DEC ENC ; BUILDDIR/xed -64 -de d598c4fe77       # PINSRW    (0xC4 opcode)
@@ -47,7 +47,7 @@ APX DEC     ; BUILDDIR/xed -64 -d d588ae2411        # REX2 prefix Error
 APX DEC     ; BUILDDIR/xed -64 -d d5 00 a4
 
 # Disable APX decode support
-DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d d5 84 67 0f  # REX2 prefix
+APX DEC     ; BUILDDIR/xed -64 -set NO_APX 1 -d d5 84 67 0f  # REX2 prefix
 
 
 ########################## EVEX EGPRs ########################## 
@@ -61,8 +61,11 @@ APX DEC     ; BUILDDIR/xed -64 -d 6265FE082DC0    # GPR64_R() using R4 bit
 
 APX DEC     ; BUILDDIR/xed -64 -d 62fa7d49a02c00  # VSCATTER VSIB memory pattern
 
-DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d 6265FE082DC0        # R4 | no-APX + EGPR -> error
-DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d 62 61 fa 48 7a f7   # Check Ubit error w/o APX
+# Add APX test code because with out it the result would be BAD_MAP
+# which would cause test mismatch when XED is built without a chip containing APX
+APX DEC     ; BUILDDIR/xed -64 -set NO_APX 1 -d 6265FE082DC0        # R4 | no-APX + EGPR -> error
+
+APX DEC     ; BUILDDIR/xed -64 -set NO_APX 1 -d 62 61 fa 48 7a f7   # Check Ubit error w/o APX
 
 ########################## EVEX Promoted ISA ###################
 APX DEC     ; BUILDDIR/xed -64 -isa-set -ih TESTDIR/../gen-enc-layer-apx-f.txt    # Decode all iforms
@@ -73,27 +76,27 @@ APX DEC     ; BUILDDIR/xed -64 -d 62D4 FD 0881EC33C00003  # EOSZ=3 (w=1, pp=1)
 APX DEC     ; BUILDDIR/xed -64 -d 62D4 7C 0881EC33C00003  # EOSZ=2 (w=0, pp=0)
 APX DEC     ; BUILDDIR/xed -64 -d 62D4 7D 0881EC33C0      # EOSZ=1 (w=0, pp=1)
 
-DEC         ; BUILDDIR/xed -64 -set NO_APX 1 -d 62F2E408F2C2 # NO_APX + promoted-from-vex -> error
+APX DEC     ; BUILDDIR/xed -64 -set NO_APX 1 -d 62F2E408F2C2 # NO_APX + promoted-from-vex -> error
 
 ########################## JMPABS ################### 
 APX DEC     ; BUILDDIR/xed -64 -d  67 D500 A10123456789012345  # JMPABS, EASZ=2 -> illegal
-APX DEC     ; BUILDDIR/xed-ex1 -64    D500 A10123456789012345  # JMPABS, EASZ=3
+APX DEC     ; BUILDDIR/xed-dec -64    D500 A10123456789012345  # JMPABS, EASZ=3
 APX DEC     ; BUILDDIR/xed -64 -d          A10123456789012345  # MOV,    EASZ=3
 APX DEC     ; BUILDDIR/xed -64 -d  67      A101234567          # MOV,    EASZ=2
 
 ################### APX chip-check ################### 
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip FUTURE 62D2FC00F3D9       # EGPR
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip FUTURE 66d580124C8300     # REX2
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip ICE_LAKE 62B1E10A580C38   # using B4 and X4
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 -chip FUTURE 62B9E10A580C38     # using B4 and X4
+APX DEC     ; BUILDDIR/xed-dec -v -64 -chip FUTURE 62D2FC00F3D9       # EGPR
+APX DEC     ; BUILDDIR/xed-dec -v -64 -chip FUTURE 66d580124C8300     # REX2
+APX DEC     ; BUILDDIR/xed-dec -v -64 -chip ICE_LAKE 62B1E10A580C38   # using B4 and X4
+APX DEC     ; BUILDDIR/xed-dec -v -64 -chip FUTURE 62B9E10A580C38     # using B4 and X4
 
 ################## miscellaneous Example1 Tests ################
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 6254F50239C8          # DFV
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 62D4BC1883D001        # NDD + ZU
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 6254FC0CF4C0          # NF
+APX DEC     ; BUILDDIR/xed-dec -v -64 6254F50239C8          # DFV
+APX DEC     ; BUILDDIR/xed-dec -v -64 62D4BC1883D001        # NDD + ZU
+APX DEC     ; BUILDDIR/xed-dec -v -64 6254FC0CF4C0          # NF
 
 ################## Instruction Restrictions Tests ################
-APX DEC     ; BUILDDIR/xed-ex1 -v -64 62D434188FC1             # POP2 has dest1!=dest2 restriction
+APX DEC     ; BUILDDIR/xed-dec -v -64 62D434188FC1             # POP2 has dest1!=dest2 restriction
 
 ######################## Encoder / REX2 #########################
 APX ENC     ; BUILDDIR/xed -64 -e add r16 r31               # REX2 MAP0 w/ EGPR

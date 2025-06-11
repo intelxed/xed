@@ -6,5 +6,3 @@ IFORM:      JRCXZ_RELBRb
 ISA_SET:    LONGMODE
 ATTRIBUTES: 
 SHORT:      jrcxz 0x20
-Encodable! E31E
-Identical re-encoding

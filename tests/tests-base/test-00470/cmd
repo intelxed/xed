@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 -64 vgatherdps ymm1 MEM4:RAX,YMM2,2  YMM3
+ BUILDDIR/xed-enc -64 vgatherdps ymm1 MEM4:RBP,YMM2,2  YMM3

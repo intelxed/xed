@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex1 -chip I286 da c0
+ BUILDDIR/xed-dec -chip I286 da c0

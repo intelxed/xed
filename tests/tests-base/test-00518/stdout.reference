@@ -1,3 +1,9 @@
-Setting chip to CANNONLAKE
+Setting chip to ICE_LAKE_SERVER
 660FAE30
-ERROR: INVALID_FOR_CHIP Could not decode at offset: 0x0 len: 4 PC: 0x0: [660FAE30]
+ICLASS:     CLWB
+CATEGORY:   CLWB
+EXTENSION:  CLWB
+IFORM:      CLWB_MEMmprefetch
+ISA_SET:    CLWB
+ATTRIBUTES: PREFETCH 
+SHORT:      clwb ptr [eax]

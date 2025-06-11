@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q -64 jz +0x10000000
+ BUILDDIR/xed-enc-asmparse -q -64 jz +0x10000000

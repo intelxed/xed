@@ -1,1 +1,1 @@
- BUILDDIR/xed -de f30f5100
+ BUILDDIR/xed -e sqrtss xmm0 mem4:eax

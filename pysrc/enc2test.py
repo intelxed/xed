@@ -22,6 +22,7 @@ import sys
 import collections
 import codegen
 from enc2common import *
+from read_xed_db import Restriction
 
 def _make_test_function_object(env, enc_fn):
     encoder_fn = enc_fn.get_function_name()
@@ -207,14 +208,12 @@ def get_bump_unified(env,regkind,evex):
     return testreg
 
 def supports_extended_gpr(env, ii):
-    # For now only add EGPR for EVEX instructions
-    if ii.space == 'evex' and env.mode == 64:
-        return True
-    """ 
-    elif ii.space == 'legacy':
-        if ii.map in [0, 1]:
+    if env.mode == 64:
+        if ii.space == 'evex':
             return True
-    """
+        elif ii.space == 'legacy':
+            if ii.map in [0, 1] and ii.rex2_restriction != Restriction.PROHIBITED:
+                return True
     return False
 
 def no_rsp_reg(ii):

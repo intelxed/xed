@@ -15,9 +15,9 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-ENC AVX512X          ; BUILDDIR/xed-ex3 -64 vaddps ymm3 k1 ymm1 ymm2
+ENC AVX512X          ; BUILDDIR/xed-enc -64 vaddps ymm3 k1 ymm1 ymm2
 DEC AVX512X          ; BUILDDIR/xed -64 -d 62F1742958DA
-ENC AVX512X          ; BUILDDIR/xed-ex3 -64 vaddps xmm3 k1 xmm1 xmm2
+ENC AVX512X          ; BUILDDIR/xed-enc -64 vaddps xmm3 k1 xmm1 xmm2
 DEC AVX512X          ; BUILDDIR/xed -64 -d 62F1740958DA
 DEC ENC AVX512X      ; BUILDDIR/xed -64 -de 62 e1 ad 0f 58 64 d9 08
 DEC ENC AVX512X      ; BUILDDIR/xed -64 -de 62 f1 7e 78 2d f0
@@ -38,10 +38,11 @@ DEC AVX512X          ; BUILDDIR/xed     -d C4E17B92FB
 DEC AVX512X          ; BUILDDIR/xed -64 -d 6762E17488551425E00F5305
 DEC AVX512X          ; BUILDDIR/xed -64 -d 62 C1 DF 68 58 E5
 DEC AVX512X          ; BUILDDIR/xed -d f3 67 2e f0 f3 f3 65 67 62 f1 5d 8e d0 8e e7
-DEC AVX10            ; BUILDDIR/xed-ex1 -64 -v 62F5742858C2
+DEC AVX10            ; BUILDDIR/xed-dec -64 -v 62F5742858C2
 DEC ENC AVX512X      ; BUILDDIR/xed -de 62 f1 7e 08 2c 55 04
-DEC ENC AVX512X      ; BUILDDIR/xed -32 -de 62 f5 7e 08 79 c0
+DEC ENC AVX512X SPR  ; BUILDDIR/xed -32 -de 62 f5 7e 08 79 c0
 DEC AVX512X          ; BUILDDIR/xed -set NO_VEX 1 -d C4E1FB93D8
 DEC AVX512X          ; BUILDDIR/xed -set NO_EVEX 1 -d  62 F2 7D 48 13 C0
 DEC AVX512X          ; BUILDDIR/xed -64 -d 26 26 26 26 26 26 26 26 26 26 26 26 26 62 00
 ENC AVX512X          ; BUILDDIR/xed -64 -set ROUNDC 1 -e VADDPS zmm1 k2 zmm2 zmm3
+DEC AVX512X          ; BUILDDIR/xed -64 -v 4 -d 62F1742958DA

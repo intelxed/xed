@@ -242,9 +242,6 @@ static XED_INLINE xed_uint_t get_evexz(xed_enc2_req_t* r) {
     return r->s.evexz;
 }
 
-
-
-
 static XED_INLINE void set_evexaaa(xed_enc2_req_t* r, xed_uint_t v) {
     r->s.evexaaa = v;
 }
@@ -252,9 +249,14 @@ static XED_INLINE xed_uint_t get_evexaaa(xed_enc2_req_t* r) {
     return r->s.evexaaa;
 }
 
+/// Used for special registers where SPL, BPL, SIL, DIL need REX no matter what
+static XED_INLINE void set_need_rex(xed_enc2_req_t* r) {
+    r->s.need_rex = 1;
+}
+static XED_INLINE xed_uint_t get_need_rex(xed_enc2_req_t* r) {
+    return r->s.need_rex;
+}
 
-
-///
 
 
 
@@ -318,18 +320,61 @@ static XED_INLINE void emit_sib(xed_enc2_req_t* r) {
     xed_uint8_t v = (get_sibscale(r)<<6) | (get_sibindex(r)<<3) | get_sibbase(r);
     emit(r,v);
 }
+
+/* emits the REX prefix 
+   called directly when REX is refining or guaranteed by instruction pattern and REX2 isn't allowed */
 static XED_INLINE void emit_rex(xed_enc2_req_t* r) {
     xed_uint8_t v = 0x40 | (get_rexw(r)<<3) | (get_rexr(r)<<2)| (get_rexx(r)<<1) | get_rexb(r);
     emit(r,v);
 }
-static XED_INLINE void set_need_rex(xed_enc2_req_t* r) {
-    r->s.need_rex = 1;
+
+/* emits the REX2 prefix 
+called directly when REX2 is refining */
+static XED_INLINE void emit_rex2(xed_enc2_req_t* r) {
+    xed_uint8_t v;
+
+    emit(r,0xd5);
+
+    v = (get_map(r) << 7) | (get_rexr4(r) << 6) | (get_rexx4(r) << 5) | 
+         (get_rexb4(r) << 4) | (get_rexw(r) << 3) | (get_rexr(r) << 2) |
+         (get_rexx(r) << 1) | (get_rexb(r));
+
+    emit(r,v);
 }
+
+/* emits the REX prefix 
+   called when REX is optional (deduced from operands e.g. EGPRs) and REX2 isn't allowed */
 static XED_INLINE void emit_rex_if_needed(xed_enc2_req_t* r) {
-    if (r->s.rexw || r->s.rexr || r->s.rexb || r->s.rexx || r->s.need_rex)
+    if (get_rexw(r) || get_rexr(r) || get_rexx(r) || get_rexb(r) || get_need_rex(r))
         emit_rex(r);
 }
 
+/* emits either the REX prefix or the REX2 prefix 
+   called when the instruction is guaranteed a REX prefix */
+static XED_INLINE void emit_rex_rex2(xed_enc2_req_t* r) {
+    if ((get_rexr4(r) || get_rexx4(r) || get_rexb4(r)) && get_map(r) <= 1)
+        emit_rex2(r);
+    else
+        emit_rex(r);
+}
+
+/* emits either the REX prefix or the REX2 prefix 
+   called when REX{,2} is optional (deduced from operands e.g. EGPRs) */
+static XED_INLINE void emit_rex_rex2_if_needed(xed_enc2_req_t* r) {
+    if ((get_rexr4(r) || get_rexx4(r) || get_rexb4(r)) && get_map(r) <= 1)
+        emit_rex2(r);
+
+    else if (get_rexw(r) || get_rexr(r) || get_rexx(r) || get_rexb(r) || get_need_rex(r))
+        emit_rex(r);
+}
+
+/* MAP{0,1} legacy instructions encode the MAP within the REX2 prefix
+   For MAP1 instructions avoid emitting the escape byte */
+static XED_INLINE void emit_escape_m1_if_needed(xed_enc2_req_t* r) {
+    if (get_rexr4(r) || get_rexx4(r) || get_rexb4(r))
+        return;
+    emit(r,0x0F);
+}
 
 static XED_INLINE void emit_vex_c5(xed_enc2_req_t* r) {
     xed_uint8_t inverted_v = 0xF8; // REXR and V3...V0 are inverted (MS 5 bits; 11111000)
@@ -394,18 +439,6 @@ static XED_INLINE void emit_evex_apx_scc(xed_enc2_req_t* r) {
 
     v3 = ( (get_nd(r) << 4) | get_scc(r) );
     emit(r,v3);
-}
-
-static XED_INLINE void emit_rex2(xed_enc2_req_t* r) {
-    xed_uint8_t v;
-
-    emit(r,0xd5);
-
-    v = (get_map(r) << 7) | (get_rexr4(r) << 6) | (get_rexx4(r) << 5) | 
-         (get_rexb4(r) << 4) | (get_rexw(r) << 3) | (get_rexr(r) << 2) |
-         (get_rexx(r) << 1) | (get_rexb(r));
-
-    emit(r,v);
 }
 
 //////

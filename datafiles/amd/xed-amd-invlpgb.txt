@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ EXTENSION : AMD_INVLPGB
 ATTRIBUTES: AMDONLY
 COMMENT   : Is this 64b mode only?
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b111] RM[0b110] no_refining_prefix eamode32
-OPERANDS  : REG0=XED_REG_EAX:r:IMPL \
-            REG1=XED_REG_EDX:r:IMPL \
-            REG2=XED_REG_ECX:r:IMPL 
+OPERANDS  : REG0=XED_REG_EAX:r:SUPP \
+            REG1=XED_REG_EDX:r:SUPP \
+            REG2=XED_REG_ECX:r:SUPP 
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b111] RM[0b110] no_refining_prefix eamode64
-OPERANDS  : REG0=XED_REG_RAX:r:IMPL \
-            REG1=XED_REG_EDX:r:IMPL \
-            REG2=XED_REG_ECX:r:IMPL 
+OPERANDS  : REG0=XED_REG_RAX:r:SUPP \
+            REG1=XED_REG_EDX:r:SUPP \
+            REG2=XED_REG_ECX:r:SUPP 
 }
 {
 ICLASS    : TLBSYNC

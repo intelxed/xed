@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q mov ebx, dr1
+ BUILDDIR/xed-enc-asmparse -q mov ebx, dr1

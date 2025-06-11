@@ -47,8 +47,6 @@ DIAMOND_RAPIDS:              \
    AMX_TF32                  \
    AMX_AVX512                \
    ########### AVX10.2 ###########
-   AVX10_2_RC_256            \  # Embedded-rounding-control YMM extension
-   AVX10_2_RC_SCALAR         \  # Embedded-rounding-control scalar extension
    AVX512_FP8_CONVERT_128    \
    AVX512_FP8_CONVERT_256    \
    AVX512_FP8_CONVERT_512    \

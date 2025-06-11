@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -118,6 +118,9 @@ df64                   DF64=1
 
 # If such macro exists in a pattern, the encoder skips the instruction variant
 ENCDELETE              ENC_DELETE=1
+
+# Force memory SIB encoding
+SIB                    NEED_SIB=1
 
 # default choice for encoder when there are multiple choices for a
 # nonterminal. The ISA is not uniquely determined for encoding so we

@@ -7,7 +7,7 @@ Intel&reg; XED decoder and encoder fully support Intel&reg; APX.
 for a couple of legacy instructions.
 
 # Useful APIs
-Numerous examples and vivid explanations regarding Intel&reg; APX features can be found in the xed-ex1 example tool.
+Numerous examples and vivid explanations regarding Intel&reg; APX features can be found in the xed-dec example tool.
 
 Encode request for promoted No-Flags instruction should be built with the `NF` operand:
 

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1195,7 +1195,7 @@ EXCEPTIONS: avx-type-6
 CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
-ATTRIBUTES : maskop NONTEMPORAL
+ATTRIBUTES : maskop
 # load  forms
 PATTERN : VV1 0x2C V66 VL128 V0F38 norexw_prefix  MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : REG0=XMM_R():w:dq:f32   REG1=XMM_N():r:dq MEM0:r:dq:f32

@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 -32 pop    edx
+ BUILDDIR/xed-enc -32 pop    edx

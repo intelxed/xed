@@ -29,6 +29,12 @@ import opnds
 import cpuid_rdr
 import map_info_rdr
 
+from enum import Enum
+
+class Restriction(Enum):
+    OPTIONAL = 0
+    REQUIRED = 1
+    PROHIBITED = 2
 
 class inst_t(object):
     def __init__(self):
@@ -739,9 +745,12 @@ class xed_reader_t(object):
                 v.is_apx_scc = True
                 v.scc_val: int = get_scc_value(v)
 
-            v.rex2_required: bool = False
-            if 'REX2=1' in v.pattern:
-                v.rex2_required = True
+            v.rex2_restriction = Restriction.OPTIONAL
+            if 'NOREX2=1' in v.pattern:
+                v.rex2_restriction = Restriction.PROHIBITED
+            elif 'REX2=1' in v.pattern:
+                v.rex2_restriction = Restriction.REQUIRED
+
 
             v.default_64b = False
             if 'DF64()' in v.pattern or 'CR_WIDTH()' in v.pattern:

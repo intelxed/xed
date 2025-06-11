@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,20 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+This script generates a list of instructions for a specified chip and optionally
+compares it with another chip to find differences.
+
+Functionality:
+- Reads the XED database and chip database.
+- Generates a list of all instructions and undocumented instructions for a specified chip.
+- If a second chip is specified, it compares the instruction sets of the two chips and prints the differences.
+- Prints detailed information about each instruction, including its class, operands, memory operations, ISA set, and more.
+
+Output:
+- Prints a detailed list of instructions for the specified chip.
+- If comparing two chips, prints instructions that are present in one chip but not the other, and instructions that are common to both chips.
+"""
 from __future__ import print_function
 import sys
 import read_xed_db

@@ -1,4 +1,10 @@
-Request: ADD MODE:2, REG0:EAX, REG1:EBX, SMODE:2
-OPERAND ORDER: REG0 REG1 
-Encodable! 01D8
-.byte 0x01,0xd8
+6690
+ICLASS:     NOP
+CATEGORY:   NOP
+EXTENSION:  BASE
+IFORM:      NOP_90
+ISA_SET:    I86
+ATTRIBUTES: NOP 
+SHORT:      data16 nop
+Encodable! 6690
+Identical re-encoding

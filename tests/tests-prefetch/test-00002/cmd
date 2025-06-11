@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex1 -chip GRANITE_RAPIDS  -64  0f1838
+ BUILDDIR/xed-dec -chip GRANITE_RAPIDS  -64  0f1838

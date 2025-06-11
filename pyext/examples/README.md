@@ -33,8 +33,10 @@ Currently, the examples include minimal Python bindings for the XED C APIs.
 
 The Python examples provided allow you to specify the location of the XED shared library using the `--xed-lib` option. If this option is not used, the default location for the shared library is assumed to be `obj/`.
 
+For the `cffi` script, you have to specify any of the --decode or --encode knobs (or both) to run their respective examples.
+
 ```bash
-python pyext/examples/xedpy_ex_cffi.py --xed-lib /path/to/libxed.so
+python pyext/examples/xedpy_ex_cffi.py --xed-lib /path/to/libxed.so --decode --encode
 ```
 
 ### Example Python Scripts:

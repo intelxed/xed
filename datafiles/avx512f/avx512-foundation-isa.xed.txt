@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -10518,7 +10518,7 @@ COMMENT:     Strange instruction that uses 32b of each 64b input element
 ATTRIBUTES:  MASKOP_EVEX
 PATTERN:    EVV 0x28 V66 V0F38 MOD[0b11] MOD=3 BCRC=0 UBIT=1 REG[rrr] RM[nnn]  VL512  W1   
 OPERANDS:    REG0=ZMM_R3():w:zi64 REG1=MASK1():r:mskw:TXT=ZEROSTR REG2=ZMM_N3():r:zi64 REG3=ZMM_B3():r:zi64
-IFORM:       VPMULDQ_ZMMi64_MASKmskw_ZMMi32_ZMMi32_AVX512
+IFORM:       VPMULDQ_ZMMi64_MASKmskw_ZMMi64_ZMMi64_AVX512
 }
 
 {
@@ -10533,7 +10533,7 @@ COMMENT:     Strange instruction that uses 32b of each 64b input element
 ATTRIBUTES:  MEMORY_FAULT_SUPPRESSION DOUBLE_WIDE_MEMOP DISP8_FULL BROADCAST_ENABLED MASKOP_EVEX 
 PATTERN:    EVV 0x28 V66 V0F38 MOD[mm] MOD!=3 UBIT=1 REG[rrr] RM[nnn]  MODRM()  VL512  W1    ESIZE_64_BITS() NELEM_FULL()
 OPERANDS:    REG0=ZMM_R3():w:zi64 REG1=MASK1():r:mskw:TXT=ZEROSTR REG2=ZMM_N3():r:zi64 MEM0:r:vv:i64:TXT=BCASTSTR
-IFORM:       VPMULDQ_ZMMi64_MASKmskw_ZMMi32_MEMi32_AVX512
+IFORM:       VPMULDQ_ZMMi64_MASKmskw_ZMMi64_MEMi64_AVX512
 }
 
 
@@ -10580,7 +10580,7 @@ COMMENT:     Strange instruction that uses 32b of each 64b input element
 ATTRIBUTES:  MASKOP_EVEX 
 PATTERN:    EVV 0xF4 V66 V0F MOD[0b11] MOD=3 BCRC=0 UBIT=1 REG[rrr] RM[nnn]  VL512  W1   
 OPERANDS:    REG0=ZMM_R3():w:zu64 REG1=MASK1():r:mskw:TXT=ZEROSTR REG2=ZMM_N3():r:zu64 REG3=ZMM_B3():r:zu64
-IFORM:       VPMULUDQ_ZMMu64_MASKmskw_ZMMu32_ZMMu32_AVX512
+IFORM:       VPMULUDQ_ZMMu64_MASKmskw_ZMMu64_ZMMu64_AVX512
 }
 
 {
@@ -10595,7 +10595,7 @@ COMMENT:     Strange instruction that uses 32b of each 64b input element
 ATTRIBUTES:  MEMORY_FAULT_SUPPRESSION DOUBLE_WIDE_MEMOP DISP8_FULL BROADCAST_ENABLED MASKOP_EVEX 
 PATTERN:    EVV 0xF4 V66 V0F MOD[mm] MOD!=3 UBIT=1 REG[rrr] RM[nnn]  MODRM()  VL512  W1    ESIZE_64_BITS() NELEM_FULL()
 OPERANDS:    REG0=ZMM_R3():w:zu64 REG1=MASK1():r:mskw:TXT=ZEROSTR REG2=ZMM_N3():r:zu64 MEM0:r:vv:u64:TXT=BCASTSTR
-IFORM:       VPMULUDQ_ZMMu64_MASKmskw_ZMMu32_MEMu32_AVX512
+IFORM:       VPMULUDQ_ZMMu64_MASKmskw_ZMMu64_MEMu64_AVX512
 }
 
 

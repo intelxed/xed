@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q fdiv st(0), st(1)
+ BUILDDIR/xed-enc-asmparse -q fdiv st(0), st(1)

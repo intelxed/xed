@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -1364,6 +1364,7 @@ void late_evex_scanner(xed_decoded_inst_t *d)
 #endif // XED_APX
     (void) d; // Pacify compiler
 }
+#endif // defined(XED_SUPPORTS_AVX512)
 
 #if defined(XED_APX)
 // process the REX2 prefix if exists.
@@ -1554,7 +1555,6 @@ static void imm_scanner(xed_decoded_inst_t* d)
   /* uimm1 is set earlier */
 }
 
-#endif // defined(XED_SUPPORTS_AVX512)
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1636,9 +1636,11 @@ xed_instruction_length_decode(xed_decoded_inst_t *ild)
     sib_scanner(ild);
     disp_scanner(ild);
     imm_scanner(ild);
+#if defined(XED_SUPPORTS_AVX512)
     if (xed3_operand_get_vexvalid(ild) == 2) { // EVEX
         late_evex_scanner(ild);
     }
+#endif
 }
 
 #include "xed-chip-modes.h"

@@ -1,1 +1,1 @@
- BUILDDIR/xed -chip-check IVYBRIDGE -d f30fbc00
+ BUILDDIR/xed -chip-check HASWELL -d 0fbc00

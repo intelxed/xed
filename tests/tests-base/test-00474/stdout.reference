@@ -1,9 +1,9 @@
-Setting chip to HASWELL
+Setting chip to IVYBRIDGE
 F30FBC00
-ICLASS:     TZCNT
-CATEGORY:   BMI1
-EXTENSION:  BMI1
-IFORM:      TZCNT_GPRv_MEMv
-ISA_SET:    BMI1
+ICLASS:     BSF
+CATEGORY:   BITBYTE
+EXTENSION:  BASE
+IFORM:      BSF_GPRv_MEMv
+ISA_SET:    I386
 ATTRIBUTES: SCALABLE 
-SHORT:      tzcnt eax, dword ptr [eax]
+SHORT:      bsf eax, dword ptr [eax]

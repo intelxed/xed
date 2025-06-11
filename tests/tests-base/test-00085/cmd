@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 cmpxchg8b mem8:esi
+ BUILDDIR/xed-enc cmpxchg8b mem8:esi

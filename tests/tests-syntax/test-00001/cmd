@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q jmp eax
+ BUILDDIR/xed-enc-asmparse -q jmp eax

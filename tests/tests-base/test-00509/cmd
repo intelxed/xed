@@ -1,1 +1,1 @@
- BUILDDIR/xed -64 -e rdfsbase/64 rax
+ BUILDDIR/xed -64 -e rdfsbase eax

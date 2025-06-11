@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 mov eax MEM4:bx,-,-,ff
+ BUILDDIR/xed-enc mov eax MEM4:bx,-,-,ff

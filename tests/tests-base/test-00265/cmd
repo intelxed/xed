@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex1 -chip PENRYN_E 0f 01 d0
+ BUILDDIR/xed-dec -chip PENRYN_E 0f 01 d0

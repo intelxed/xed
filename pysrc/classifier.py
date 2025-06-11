@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ def _emit_apx_classifier(fe, isa_sets):
     # adds special checks for APX instructions, as well as the default switch check
     fo = codegen.function_object_t('xed_classify_apx') 
     fo.add_arg('const xed_decoded_inst_t* d')
+    fo.add_code('#if defined(XED_SUPPORTS_AVX512)')
     fo.add_code_eol('    const xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(d)')
     
     fo.add_comment('REX2 Prefix is detected')
@@ -56,9 +57,10 @@ def _emit_apx_classifier(fe, isa_sets):
     fo.add_comment('REXX4 = ~EVEX.X4')
     # check XED-ILD for more info
     fo.add_code_eol('    if (xed3_operand_get_rexx4(d) && xed3_operand_get_ubit(d)) return 1')
-
     _emit_isa_switch_cases(fo, isa_sets)
-
+    fo.add_code('#endif')
+    fo.add_code_eol('(void)d')  # pacify compiler
+    fo.add_code_eol('return 0') # fallback safety
     fo.emit_file_emitter(fe)
 
 

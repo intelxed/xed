@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 movsb SEG1:DS
+ BUILDDIR/xed-enc movsb SEG1:DS

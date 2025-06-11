@@ -1,1 +1,1 @@
- BUILDDIR/xed -64 -e JRCXZ RELBR:1E
+ BUILDDIR/xed -64 -de e31e

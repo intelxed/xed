@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 -64 lea r8d AGEN:r8d
+ BUILDDIR/xed-enc -64 lea r8d AGEN:r8d

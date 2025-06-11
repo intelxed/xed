@@ -1,9 +1,9 @@
-Setting chip to HASWELL
-0FBC00
-ICLASS:     BSF
-CATEGORY:   BITBYTE
+Setting chip to QUARK
+F2E100
+ICLASS:     LOOPE
+CATEGORY:   COND_BR
 EXTENSION:  BASE
-IFORM:      BSF_GPRv_MEMv
-ISA_SET:    I386
-ATTRIBUTES: SCALABLE 
-SHORT:      bsf eax, dword ptr [eax]
+IFORM:      LOOPE_RELBRb
+ISA_SET:    I86
+ATTRIBUTES: 
+SHORT:      loope 0x3

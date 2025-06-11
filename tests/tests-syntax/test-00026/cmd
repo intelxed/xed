@@ -1,1 +1,1 @@
- BUILDDIR/xed-asmparse-main -q call far 0x1234:0x10dedead
+ BUILDDIR/xed-enc-asmparse -q call far 0x1234:0x10dedead

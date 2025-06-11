@@ -41,6 +41,7 @@ from enc2common import *
 genutil.add_mbuild_to_path()
 import mbuild
 
+from read_xed_db import Restriction
 
 def get_fname(depth=1): # default is current caller
     #return sys._getframe(depth).f_code.co_name
@@ -824,7 +825,11 @@ def emit_67_prefix(fo):
         
 def emit_required_legacy_map_escapes(ii,fo):
     if ii.map == 1:
-        fo.add_code_eol('emit(r,0x0F)', 'escape map 1')
+        if ii.rex2_restriction == Restriction.PROHIBITED:
+            fo.add_code_eol('emit(r,0x0F)', 'escape map 1')
+        elif ii.rex2_restriction == Restriction.OPTIONAL:
+            # 0F escape byte, shouldn't be emitted when REX2 is present
+            fo.add_code_eol('emit_escape_m1_if_needed(r)')
     elif ii.map == 2:
         fo.add_code_eol('emit(r,0x0F)', 'escape map 2')
         fo.add_code_eol('emit(r,0x38)', 'escape map 2')
@@ -1277,11 +1282,8 @@ def create_legacy_one_scalable_gpr(env,ii,osz_values,oc2):
                 #dump_fields(ii)
                 #die("SHOULD NOT HAVE A VALUE FOR  PARTIAL OPCODES HERE {} / {}".format(ii.iclass, ii.iform))
 
-        if ii.rex2_required:
-            emit_rex2(env, fo, ii) # required REX2 prefix, no map escapes
-        else:
-            emit_rex(env, fo, rex_forced)
-            emit_required_legacy_map_escapes(ii,fo)
+        emit_rex_or_rex2(env, fo, ii, rex_forced)
+        emit_required_legacy_map_escapes(ii,fo)
                 
         if ii.partial_opcode:
             emit_partial_opcode_variable_srm(ii,fo)
@@ -1357,12 +1359,8 @@ def create_legacy_one_gpr_fixed(env,ii,width_bits):
         fo.add_code_eol('set_rexw(r)')
 
     emit_required_legacy_prefixes(ii,fo)
-    if ii.rex2_required:
-        emit_rex2(env, fo, ii) # required REX2 prefix, no map escapes
-    else:
-        if env.mode == 64:
-            fo.add_code_eol('emit_rex_if_needed(r)')
-        emit_required_legacy_map_escapes(ii,fo)
+    emit_rex_or_rex2(env, fo, ii)
+    emit_required_legacy_map_escapes(ii,fo)
 
     if ii.partial_opcode:
         emit_partial_opcode_variable_srm(ii, fo) # partial opcode with SRM value
@@ -1453,12 +1451,8 @@ def create_legacy_absbr(env, ii):
         
         modrm_required = create_modrm_byte(ii,fo)
         emit_required_legacy_prefixes(ii,fo)
-        if ii.rex2_required:
-            emit_rex2(env, fo, ii) # required REX2 prefix, no map escapes
-        else:
-            if env.mode == 64:
-                fo.add_code_eol('emit_rex_if_needed(r)')
-            emit_required_legacy_map_escapes(ii,fo)
+        emit_rex_or_rex2(env, fo, ii) 
+        emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         if modrm_required:
             emit_modrm(fo)
@@ -1756,7 +1750,7 @@ def create_legacy_two_gpr_one_scalable_one_fixed(env,ii):
             op1_bits = opsz_to_bits[opsz_codes[1]]
         fo.add_code_eol('enc_modrm_{}_gpr{}(r,{})'.format(f2,op1_bits,var_reg1))
             
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
@@ -1873,7 +1867,7 @@ def create_legacy_two_scalable_regs(env, ii, osz_list):
                     fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
                     
         
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             die("NOT HANDLING PARTIAL OPCODES YET: {} / {}".format(ii.iclass, ii.iform))
@@ -1907,8 +1901,7 @@ def create_legacy_two_gpr8_regs(env, ii):
         f1, f2 = 'rm','reg'
     fo.add_code_eol('enc_modrm_{}_gpr8(r,{})'.format(f1,var_reg0))
     fo.add_code_eol('enc_modrm_{}_gpr8(r,{})'.format(f2,var_reg1))
-    if env.mode == 64:
-        fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_rex_or_rex2(env,fo,ii)
     emit_required_legacy_map_escapes(ii,fo)
 
     if ii.partial_opcode:
@@ -1974,19 +1967,41 @@ def cond_add_imm_args(ii,fo):
         fo.add_arg(arg_imm8_2,'int8')
     
 
-def emit_rex(env, fo, rex_forced):
+def emit_rex_or_rex2(env, fo, ii, rex_forced=False):
+    """
+    The table below summarizes the function calls to the many REX/REX2 emitters based on instruction prefix restrictions
+   ______________________________________________________________________________
+  | REX/REX2   |   PROHIBITED        |     REQUIRED    |     OPTIONAL            |
+  |____________|_____________________|_________________|_________________________|
+  | PROHIBITED |      -              |        -        |        -                |
+  |____________|_____________________|_________________|_________________________|
+  | REQUIRED   |  emit_rex()         |  emit_rex2()    | emit_rex_rex2()         |
+  |____________|_____________________|_________________|_________________________|
+  | OPTIONAL   | emit_rex_if_needed()|  emit_rex2()    |emit_rex_rex2_if_needed()|
+  |____________|_____________________|_________________|_________________________|
+    """
     if env.mode == 64:
-        if rex_forced:
-            fo.add_code_eol('emit_rex(r)')
+        if ii.rex2_restriction == Restriction.REQUIRED:
+            # REX2 is required, MAP{0,1} are emitted within the prefix so set the map bit correctly
+            fo.add_code_eol(f'set_map(r, {ii.map})')
+            fo.add_code_eol('emit_rex2(r)', str(ii.rex2_restriction))
+        elif ii.rex2_restriction == Restriction.PROHIBITED:
+            if rex_forced:
+                # If REX prefix is required, directly emit the REX prefix since REX2 is prohibited
+                fo.add_code_eol(f'emit_rex(r)')
+            else:
+                # Otherwise, determine if REX is needed depending on instruction operands during runtime
+                fo.add_code_eol(f'emit_rex_if_needed(r)')
         else:
-            fo.add_code_eol('emit_rex_if_needed(r)')
-
-def emit_rex2(env, fo, ii):
-    if env.mode == 64:
-        if ii.rex2_required:
-            fo.add_code_eol('emit_rex2(r)')
-        else:
-            die('REX2 is not supported for instructions with EGPRs')
+            if ii.map in [0,1]:
+                # MAP{0,1} are emitted within the REX2 prefix so set the map bit correctly
+                fo.add_code_eol(f'set_map(r, {ii.map})')
+            if rex_forced:
+                # If any REX is a must, check if REX2 should be emitted, otherwise, emit REX
+                fo.add_code_eol(f'emit_rex_rex2(r)')
+            else:
+                # If there is no restriction on REX/REX2, determine during runtime and emit one of them accordingly
+                fo.add_code_eol(f'emit_rex_rex2_if_needed(r)')
 
 def get_opnd_types_short(ii):
     types= []
@@ -2173,7 +2188,7 @@ def create_legacy_two_fixed_regs_opti8(env,ii):
             break
         reg_type = get_reg_type_fixed(op)
         fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(locations[i], reg_type, regs[i]))
-    emit_rex(env,fo,rexw_forced)
+    emit_rex_or_rex2(env,fo,ii,rexw_forced)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -2250,8 +2265,7 @@ def create_legacy_one_xmm_reg_imm8(env,ii):
         if ii.rm_required != 'unspecified':
             fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
 
-    if env.mode == 64:
-        fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_rex_or_rex2(env,fo,ii)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -2460,7 +2474,7 @@ def create_legacy_gpr_imm8(env,ii,width_list):
                 if ii.reg_required != 'unspecified':
                     fo.add_code_eol('set_reg(r,{})'.format(ii.reg_required))
             
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         if ii.partial_opcode:
             emit_partial_opcode_variable_srm(ii,fo)
@@ -2509,7 +2523,7 @@ def create_legacy_gprv_immz(env,ii):
             if ii.rm_required != 'unspecified':
                 fo.add_code_eol('set_rm(r,{})'.format(ii.rm_required))
 
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         emit_modrm(fo)
@@ -2551,7 +2565,7 @@ def create_legacy_orax_immz(env,ii):
             continue
         rexw_forced = cond_emit_rexw(env,ii,fo,osz)
 
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         emit_immz(fo,osz)
@@ -2602,7 +2616,7 @@ def create_legacy_gprv_immv(env,ii,imm=False):
         else:
             die("NOT REACHED")
 
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_partial_opcode_variable_srm(ii,fo)
         if imm:
@@ -3121,14 +3135,13 @@ def finish_memop(env, ii, fo, dispsz, immw, rexw_forced=False, space='legacy'):
     global var_disp8, var_disp16, var_disp32
 
     if space == 'legacy':
-        emit_rex(env,fo,rexw_forced)
+        emit_rex_or_rex2(env,fo,ii,rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
     elif space =='evex':
         if ii.is_apx_scc:
             fo.add_code_eol('emit_evex_apx_scc(r)')
         else:
             fo.add_code_eol('emit_evex(r)')
-
         
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -3258,7 +3271,7 @@ def create_legacy_mov_without_modrm(env,ii):
             emit_67_prefix(fo)
 
         rexw_forced = emit_legacy_osz(env,ii,fo,osz)
-        emit_rex(env, fo, rexw_forced)
+        emit_rex_or_rex2(env, fo, ii, rexw_forced)
 
         emit_opcode(ii,fo)
         emit_disp(fo,disp_width)
@@ -3306,10 +3319,7 @@ def create_legacy_gprv_seg(env,ii,op_info):
             fo.add_code_eol('set_rexw(r)')
         fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format('rm',reg0,reg0))
         fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format('reg',op_info[1],reg1))
-        if osz == 64:
-            fo.add_code_eol('emit_rex(r)')
-        elif env.mode == 64:
-            fo.add_code_eol('emit_rex_if_needed(r)')
+        emit_rex_or_rex2(env,fo,ii,osz==64)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         emit_modrm(fo)
@@ -3398,8 +3408,7 @@ def create_mov_seg(env,ii):
     fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f2, op_info[1], op_info[1]))
     
     emit_required_legacy_prefixes(ii,fo)
-    if env.mode == 64:
-        fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_rex_or_rex2(env,fo,ii)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -3434,8 +3443,7 @@ def create_mov_cr_dr(env,ii):
     fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(f2, op_info[1], op_info[1]))
     
     emit_required_legacy_prefixes(ii,fo)
-    if env.mode == 64:
-        fo.add_code_eol('emit_rex_if_needed(r)')
+    emit_rex_or_rex2(env,fo,ii)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -3611,7 +3619,7 @@ def create_legacy_crc32_reg(env,ii):
             fo.add_code_eol('enc_modrm_{}_{}(r,{})'.format(modrm_order[i], reg, arg))
 
         emit_required_legacy_prefixes(ii,fo)
-        emit_rex(env, fo, rexw_forced)
+        emit_rex_or_rex2(env, fo, ii, rexw_forced)
         emit_required_legacy_map_escapes(ii,fo)
         emit_opcode(ii,fo)
         emit_modrm(fo)
@@ -3735,7 +3743,7 @@ def create_legacy_umonitor(env,ii):
             fo.add_code_eol('set_mod(r,{})'.format(ii.mod_required))
 
     emit_required_legacy_prefixes(ii,fo)
-    emit_rex(env,fo,rex_forced=False)
+    emit_rex_or_rex2(env,fo,ii,rex_forced=False)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)
@@ -3793,7 +3801,7 @@ def create_legacy_ArAX_implicit(env,ii):
             fo.add_code_eol('set_mod(r,{})'.format(ii.mod_required))
 
     emit_required_legacy_prefixes(ii,fo)
-    #emit_rex(env,fo,rex_forced=False)
+    #emit_rex_or_rex2(env,fo,rex_forced=False)
     emit_required_legacy_map_escapes(ii,fo)
     emit_opcode(ii,fo)
     emit_modrm(fo)

@@ -1,8 +1,8 @@
-0FBC00
-ICLASS:     BSF
-CATEGORY:   BITBYTE
-EXTENSION:  BASE
-IFORM:      BSF_GPRv_MEMv
-ISA_SET:    I386
+F30FBC00
+ICLASS:     TZCNT
+CATEGORY:   BMI1
+EXTENSION:  BMI1
+IFORM:      TZCNT_GPRv_MEMv
+ISA_SET:    BMI1
 ATTRIBUTES: SCALABLE 
-SHORT:      bsf eax, dword ptr [eax]
+SHORT:      tzcnt eax, dword ptr [eax]

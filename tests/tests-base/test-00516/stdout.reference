@@ -1,10 +1,9 @@
-666200
-ICLASS:     BOUND
-CATEGORY:   INTERRUPT
-EXTENSION:  BASE
-IFORM:      BOUND_GPR16_MEMa16
-ISA_SET:    I186
-ATTRIBUTES: EXCEPTION_BR
-SHORT:      bound ax, dword ptr [eax]
-Encodable! 666200
-Identical re-encoding
+Setting chip to SKYLAKE_SERVER
+660FAE30
+ICLASS:     CLWB
+CATEGORY:   CLWB
+EXTENSION:  CLWB
+IFORM:      CLWB_MEMmprefetch
+ISA_SET:    CLWB
+ATTRIBUTES: PREFETCH 
+SHORT:      clwb ptr [eax]

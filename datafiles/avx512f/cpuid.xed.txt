@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,9 +15,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-  XED_ISA_SET_AVX512F_128:    avx512f.7.0.ebx.16  avx512vl.7.0.ebx.31
   XED_ISA_SET_AVX512F_128N:   avx512f.7.0.ebx.16
-  XED_ISA_SET_AVX512F_256:    avx512f.7.0.ebx.16  avx512vl.7.0.ebx.31
   XED_ISA_SET_AVX512F_512:    avx512f.7.0.ebx.16
   XED_ISA_SET_AVX512F_KOPW:   avx512f.7.0.ebx.16
   XED_ISA_SET_AVX512F_SCALAR: avx512f.7.0.ebx.16

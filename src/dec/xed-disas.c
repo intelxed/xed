@@ -162,12 +162,10 @@ xed_decoded_inst_dump(const xed_decoded_inst_t* p, char* buf, int buflen)
     blen = xed_strncat(buf,"\n",blen);
     noperands = xed_inst_noperands(xi);
     for( i=0;i<noperands;i++) {
-        const xed_operand_t* op;
         t = buf+xed_strlen(buf);
-        op = xed_inst_operand(xi,i);
         blen = xed_itoa(t,i,blen);
         blen = xed_strncat(buf,"\t\t",blen);
-        xed_operand_print(op,buf+xed_strlen(buf),blen);
+        xed_operand_print(p,i,buf+xed_strlen(buf),blen);
         blen = buffer_remains(buflen,buf);
         blen = xed_strncat(buf,"\n",blen);
     }

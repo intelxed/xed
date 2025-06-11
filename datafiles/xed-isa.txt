@@ -9174,6 +9174,7 @@ OPERANDS  : REG0=XMM_R():w:dq REG1=XMM_B():r:q
 
 {
 ICLASS    : MOV_CR
+UNAME     : MOV_CR
 DISASM    : mov
 CPL       : 0
 CATEGORY  : DATAXFER
@@ -9190,6 +9191,7 @@ OPERANDS  : REG0=CR_R():w REG1=GPR64_B():r
 
 {
 ICLASS    : MOV_CR
+UNAME     : MOV_CR
 DISASM    : mov
 CPL       : 0
 CATEGORY  : DATAXFER
@@ -10496,15 +10498,15 @@ ISA_SET   : I386
 PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() not64
 OPERANDS  : REG0=GPRv_R():w MEM0:r:w
 IFORM     : MOVZX_GPRv_MEMw
-PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 no66_prefix
-OPERANDS  : REG0=GPRy_R():w MEM0:r:w
-IFORM     : MOVZX_GPRy_MEMw
-PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix norexw_prefix
-OPERANDS  : REG0=GPR16_R():w MEM0:r:w
-IFORM     : MOVZX_GPR16_MEMw
-PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix rexw_prefix
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 rexw_prefix
 OPERANDS  : REG0=GPR64_R():w MEM0:r:w
 IFORM     : MOVZX_GPR64_MEMw
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 norexw_prefix 66_prefix
+OPERANDS  : REG0=GPR16_R():w MEM0:r:w
+IFORM     : MOVZX_GPR16_MEMw
+PATTERN   : 0x0F 0xB7 MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 norexw_prefix no66_prefix
+OPERANDS  : REG0=GPR32_R():w MEM0:r:w
+IFORM     : MOVZX_GPR32_MEMw
 }
 {
 ICLASS    : MOVZX
@@ -13328,15 +13330,15 @@ ISA_SET   : I386
 PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() not64
 OPERANDS  : REG0=GPRv_R():w MEM0:r:w
 IFORM     : MOVSX_GPRv_MEMw
-PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 no66_prefix
-OPERANDS  : REG0=GPRy_R():w MEM0:r:w
-IFORM     : MOVSX_GPRy_MEMw
-PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix norexw_prefix
-OPERANDS  : REG0=GPR16_R():w MEM0:r:w
-IFORM     : MOVSX_GPR16_MEMw
-PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 66_prefix rexw_prefix
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 rexw_prefix
 OPERANDS  : REG0=GPR64_R():w MEM0:r:w
 IFORM     : MOVSX_GPR64_MEMw
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 norexw_prefix 66_prefix
+OPERANDS  : REG0=GPR16_R():w MEM0:r:w
+IFORM     : MOVSX_GPR16_MEMw
+PATTERN   : 0x0F 0xBF MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() mode64 norexw_prefix no66_prefix
+OPERANDS  : REG0=GPR32_R():w MEM0:r:w
+IFORM     : MOVSX_GPR32_MEMw
 }
 {
 ICLASS    : MOVSX

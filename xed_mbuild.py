@@ -618,8 +618,6 @@ def mkenv():
                                  default_isa='',
                                  avx=True,
                                  avx512=True,
-                                 ivb=True,
-                                 hsw=True,
                                  mpx=True,
                                  cet=True,
                                  skl=True,
@@ -643,7 +641,6 @@ def mkenv():
                                  knl=True,
                                  knm=True,
                                  lakefield=True,
-                                 bdw=True,
                                  dbghelp=False,
                                  install_dir=None,
                                  prefix_dir='',
@@ -794,22 +791,11 @@ def xed_args(env):
                           dest="default_isa",
                           help="Override the default ISA files.cfg file")
 
-    env.parser.add_option("--no-avx",
-                          action="store_false",
-                          dest="avx", 
-                          help="Do not include AVX (nor down-stream unrelated technologies).")
     env.parser.add_option("--no-avx512",
                           action="store_false",
                           dest="avx512", 
                           help="Do not include AVX512 (nor down-stream unrelated technologies).")
-    env.parser.add_option("--no-ivb",
-                          action="store_false", 
-                          dest="ivb", 
-                          help="Do not include IVB.")
-    env.parser.add_option("--no-hsw",
-                          action="store_false", 
-                          dest="hsw", 
-                          help="Do not include HSW.")
+
     env.parser.add_option("--no-mpx",
                           action="store_false", 
                           dest="mpx", 
@@ -1273,7 +1259,7 @@ def _parse_extf_files_new(env, gc):
             line = comment_pattern.sub('',line)
             if len(line) > 0:
                 wrds = line.split(':')
-                cmd = wrds[0]
+                cmd = wrds[0].strip()
                 if cmd == 'clear':
                     ptype = _get_check(wrds,1)
                     gc.clear_files(ptype)
@@ -1367,25 +1353,30 @@ def _test_chip(env, names_list):
     return False
         
 def _configure_libxed_extensions(env):
+
+    def _add_normal_ext(tenv,x , y='files.cfg'):
+        e =  tenv.src_dir_join(mbuild.join('datafiles', x, y))
+        if e not in tenv['extf']:
+            tenv['extf'].append( e )
+
+    env.add_define('XED_AVX')
+    env.add_define('XED_SUPPORTS_LZCNT_TZCNT')
+
     if env['amd_enabled']:
         env.add_define('XED_AMD_ENABLED')
     if env['via_enabled']:
         env.add_define('XED_VIA_ENABLED')
-    if env['avx']:
-        env.add_define('XED_AVX')
 
-    if _test_chip(env, ['knl','knm', 'skx', 'clx', 'cpx', 'cnl', 'icl', 'tgl', 'spr', 'gnr', 'dmr']):
+    if _test_chip(env, ['knl', 'skx']):
         env.add_define('XED_SUPPORTS_AVX512')
     if env['mpx']:
         env.add_define('XED_MPX')
     if env['cet']:
         env.add_define('XED_CET')
-    if env['future']:
+    if env['dmr']:
         env.add_define('XED_APX')
     #SHA on GLM & CNL, support by default
     env.add_define('XED_SUPPORTS_SHA')
-    if env['icl']:
-        env.add_define('XED_SUPPORTS_WBNOINVD')
 
     if env['decoder']:
         env.add_define('XED_DECODER')
@@ -1404,11 +1395,6 @@ def _configure_libxed_extensions(env):
         # are needed for >= SSE-class machines.
         newstuff.append( env.src_dir_join(mbuild.join('datafiles',
                                                       'files-xregs.cfg')))
-        if not env['avx']:
-           # this has the xmm reg and nesting for sse-class machines.
-           # not useful/appropriate for AVX1/2 or AVX512-class machines.
-           newstuff.append( env.src_dir_join(mbuild.join('datafiles',
-                                                         'files-xmm.cfg')))
     else:
         newstuff.append( env['default_isa'] )
         
@@ -1420,15 +1406,10 @@ def _configure_libxed_extensions(env):
     if env['amd_enabled']:
         newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
                                                       'files-amd.cfg')))
-        if env['avx']:
-            newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
-                                                         'amdxop',
-                                                         'files.cfg')))
-
-    def _add_normal_ext(tenv,x , y='files.cfg'):
-        e =  tenv.src_dir_join(mbuild.join('datafiles', x, y))
-        if e not in tenv['extf']:
-            tenv['extf'].append( e )
+        newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
+                                                        'amdxop',
+                                                        'files.cfg')))
+        _add_normal_ext(env,'wbnoinvd')
 
     if env['mpx']: # MPX first on GLM or SKL
         _add_normal_ext(env,'mpx')
@@ -1458,169 +1439,171 @@ def _configure_libxed_extensions(env):
     _add_normal_ext(env,'movdir')
     _add_normal_ext(env,'waitpkg')
     _add_normal_ext(env,'cldemote')
+    # AVX
+    _add_normal_ext(env,'avx')
+    _add_normal_ext(env,'xsaveopt')
+    # IVB
+    _add_normal_ext(env,'fsgsbase')
+    _add_normal_ext(env,'rdrand')
+    _add_normal_ext(env,'ivbavx')
+    # HSW
+    _add_normal_ext(env,'hswavx')
+    _add_normal_ext(env,'hswbmi') # AMD XOP requires the reg NT defns
+    _add_normal_ext(env,'hsw')
+    # BDW
+    _add_normal_ext(env,'bdw')
+    _add_normal_ext(env,'smap')
+    _add_normal_ext(env,'rdseed')
 
-        
     if env['lakefield']:
         _add_normal_ext(env,'lakefield')
-        
-    if env['avx']:
-        _add_normal_ext(env,'avx')
-        _add_normal_ext(env,'xsaveopt')
-        if env['ivb']:
-            _add_normal_ext(env,'fsgsbase')
-            _add_normal_ext(env,'rdrand')
-            _add_normal_ext(env,'ivbavx')
-        if env['hsw']:
-            env.add_define('XED_SUPPORTS_LZCNT_TZCNT')
-            _add_normal_ext(env,'hswavx')
-            _add_normal_ext(env,'hswbmi') # AMD XOP requires the reg NT defns
-            _add_normal_ext(env,'hsw')
-        if env['bdw']:
-            _add_normal_ext(env,'bdw')
-            _add_normal_ext(env,'smap')
-            _add_normal_ext(env,'rdseed')
-        if env['skl'] or env['skx']: # FIXME: requires MPX and BDW
-            _add_normal_ext(env,'skl')
-            _add_normal_ext(env,'sgx')
-            _add_normal_ext(env,'xsaves')
-            _add_normal_ext(env,'xsavec')
-            _add_normal_ext(env,'clflushopt')
-        if env['skx']:
-            _add_normal_ext(env,'skx')
-            _add_normal_ext(env,'pku')
-            _add_normal_ext(env,'clwb')
-        if env['clx']:
-            _add_normal_ext(env,'clx')
-            _add_normal_ext(env,'vnni')
-        if env['cpx']:
-            _add_normal_ext(env,'cpx')
-            _add_normal_ext(env,'avx512-bf16')
-        if env['knl']:
-            _add_normal_ext(env,'knl')
-        if env['knm']:
-            _add_normal_ext(env,'knm')
-            _add_normal_ext(env,'4fmaps-512')
-            _add_normal_ext(env,'4vnniw-512')
-            _add_normal_ext(env,'vpopcntdq-512')
-            
-        if env['skx'] or env['knl'] or env['knm']:
-            _add_normal_ext(env,'avx512f')
-            _add_normal_ext(env,'avx512cd')
-        if env['skx']:
-            _add_normal_ext(env,'avx512-skx')
-        if env['cnl']:
-            _add_normal_ext(env,'cnl')
-            _add_normal_ext(env,'sha')
-            _add_normal_ext(env,'avx512ifma')
-            _add_normal_ext(env,'avx512vbmi')
-        if env['icl']:
-            _add_normal_ext(env,'icl')
-            _add_normal_ext(env,'wbnoinvd') # icl server
-            _add_normal_ext(env,'sgx-enclv') # icl server           
-            _add_normal_ext(env,'pconfig') # icl server 
-            _add_normal_ext(env,'rdpid')   
-            _add_normal_ext(env,'bitalg')            
-            _add_normal_ext(env,'vbmi2')
-            _add_normal_ext(env,'vnni')
-            _add_normal_ext(env,'gfni-vaes-vpcl', 'files-sse.cfg')
-            _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
-            _add_normal_ext(env,'vpopcntdq-512')
-            _add_normal_ext(env,'vpopcntdq-vl')
-        if env['tgl']:
-            _add_normal_ext(env,'tgl')
-            _add_normal_ext(env,'cet')
-            _add_normal_ext(env,'movdir')
-            _add_normal_ext(env,'vp2intersect')
-            _add_normal_ext(env,'keylocker')
-        if env['adl']:
-            _add_normal_ext(env,'adl')
-            _add_normal_ext(env,'hreset')
-            _add_normal_ext(env,'avx-vnni')
-            _add_normal_ext(env,'keylocker')
-            _add_normal_ext(env,'cldemote')
-        if env['spr']:
-            _add_normal_ext(env,'spr')
-            _add_normal_ext(env,'hreset')
-            _add_normal_ext(env,'cldemote')
-            _add_normal_ext(env,'avx-vnni')
-            _add_normal_ext(env,'amx-spr')
-            _add_normal_ext(env,'waitpkg')
-            _add_normal_ext(env,'avx512-bf16')
-            _add_normal_ext(env,'enqcmd')
-            _add_normal_ext(env,'tsx-ldtrk')
-            _add_normal_ext(env,'serialize')
-            _add_normal_ext(env,'avx512-fp16')
-            _add_normal_ext(env,'evex-map5-6')
-        if env['emr']:
-            _add_normal_ext(env,'emr')
-            _add_normal_ext(env,'tdx')
-        if env['gnr']:
-            _add_normal_ext(env,'gnr')
-            _add_normal_ext(env,'amx-fp16')
-            _add_normal_ext(env,'amx-complex')
-            _add_normal_ext(env,'iprefetch')
-        if env['dmr']:
-            _add_normal_ext(env,'dmr')
-            _add_normal_ext(env,'vex-map5')
-            _add_normal_ext(env,'vex-map7')
-            _add_normal_ext(env,'apx-f') # No promoted rao-int
-            _add_normal_ext(env,'amx-dmr')
-            _add_normal_ext(env,'avx10-2')
-            _add_normal_ext(env,'movrs')
-            _add_normal_ext(env,'sm4-evex')
-            _add_normal_ext(env,'avx-ifma')
-            _add_normal_ext(env,'avx-ne-convert')
-            _add_normal_ext(env,'avx-vnni-int8')
-            _add_normal_ext(env,'cmpccxadd')
-            _add_normal_ext(env,'avx-vnni-int16')
-            _add_normal_ext(env,'sha512')
-            _add_normal_ext(env,'sm3')
-            _add_normal_ext(env,'sm4')
-            _add_normal_ext(env,'uintr')
-        if env['srf']:
-            _add_normal_ext(env,'srf')  
-            _add_normal_ext(env,'avx-ifma')
-            _add_normal_ext(env,'avx-ne-convert')
-            _add_normal_ext(env,'avx-vnni-int8')
-            _add_normal_ext(env,'cmpccxadd')
-            _add_normal_ext(env,'msrlist')
-            _add_normal_ext(env,'vex-map7')
-            _add_normal_ext(env,'wrmsrns')
-            _add_normal_ext(env,'uintr')
-            _add_normal_ext(env,'enqcmd')
-        if env['cwf']:
-            _add_normal_ext(env,'cwf')
-            _add_normal_ext(env,'user-msr')
-            _add_normal_ext(env,'iprefetch')
-            _add_normal_ext(env,'avx-vnni-int16')
-            _add_normal_ext(env,'sha512')
-            _add_normal_ext(env,'sm3')
-            _add_normal_ext(env,'sm4')
-            _add_normal_ext(env,'msr-imm')
-        if env['arl']:
-            _add_normal_ext(env,'arrow-lake')
-            _add_normal_ext(env, 'uintr')
-            _add_normal_ext(env,'avx-ifma')
-            _add_normal_ext(env,'avx-ne-convert')
-            _add_normal_ext(env,'avx-vnni-int8')
-            _add_normal_ext(env,'cmpccxadd')
-            _add_normal_ext(env,'avx-vnni-int16')
-            _add_normal_ext(env,'sha512')
-            _add_normal_ext(env,'sm3')
-            _add_normal_ext(env,'sm4')
-        if env['lnl']:
-            _add_normal_ext(env,'lunar-lake')
-        if env['ptl']:
-            _add_normal_ext(env,'ptl')
-            _add_normal_ext(env,'iprefetch')
-            _add_normal_ext(env,'msrlist')
-            _add_normal_ext(env,'wrmsrns')
-            _add_normal_ext(env,'fred')
-        if env['future']:
-            _add_normal_ext(env,'future')
-            _add_normal_ext(env,'pbndkb')
-            _add_normal_ext(env,'rao-int')
-            _add_normal_ext(env,'apx-f', 'apx-f-future-ext.cfg')
+
+    if env['skl'] or env['skx']: # FIXME: requires MPX and BDW
+        _add_normal_ext(env,'skl')
+        _add_normal_ext(env,'sgx')
+        _add_normal_ext(env,'xsaves')
+        _add_normal_ext(env,'xsavec')
+        _add_normal_ext(env,'clflushopt')
+    if env['skx']:
+        _add_normal_ext(env,'skx')
+        _add_normal_ext(env,'pku')
+        _add_normal_ext(env,'clwb')
+        _add_normal_ext(env,'avx512f')
+        _add_normal_ext(env,'avx512cd')
+        _add_normal_ext(env,'avx-common-types') # no ISA, just defines
+        _add_normal_ext(env,'avx512-skx')
+    if env['clx']:
+        _add_normal_ext(env,'clx')
+        _add_normal_ext(env,'vnni')
+    if env['cpx']:
+        _add_normal_ext(env,'cpx')
+        _add_normal_ext(env,'avx512-bf16')
+    if env['knl']:
+        _add_normal_ext(env,'knl')
+        _add_normal_ext(env,'avx512f')
+        _add_normal_ext(env,'avx512cd')
+    if env['knm']:
+        _add_normal_ext(env,'knm')
+        _add_normal_ext(env,'4fmaps-512')
+        _add_normal_ext(env,'4vnniw-512')
+        _add_normal_ext(env,'vpopcntdq-512')
+    if env['cnl']:
+        _add_normal_ext(env,'cnl')
+        _add_normal_ext(env,'sha')
+        _add_normal_ext(env,'avx512ifma')
+        _add_normal_ext(env,'avx512vbmi')
+    if env['icl']:
+        _add_normal_ext(env,'icl')
+        _add_normal_ext(env,'wbnoinvd') # icl server
+        _add_normal_ext(env,'sgx-enclv') # icl server           
+        _add_normal_ext(env,'pconfig') # icl server 
+        _add_normal_ext(env,'rdpid')   
+        _add_normal_ext(env,'bitalg')            
+        _add_normal_ext(env,'vbmi2')
+        _add_normal_ext(env,'vnni')
+        _add_normal_ext(env,'gfni-vaes-vpcl', 'files-sse.cfg')
+        _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
+        _add_normal_ext(env,'vpopcntdq-512')
+        _add_normal_ext(env,'vpopcntdq-vl')
+    if env['tgl']:
+        _add_normal_ext(env,'tgl')
+        _add_normal_ext(env,'cet')
+        _add_normal_ext(env,'movdir')
+        _add_normal_ext(env,'vp2intersect')
+        _add_normal_ext(env,'keylocker')
+    if env['adl']:
+        _add_normal_ext(env,'adl')
+        _add_normal_ext(env,'hreset')
+        _add_normal_ext(env,'avx-vnni')
+        _add_normal_ext(env,'keylocker')
+        _add_normal_ext(env,'cldemote')
+        _add_normal_ext(env,'wbnoinvd')
+    if env['spr']:
+        _add_normal_ext(env,'spr')
+        _add_normal_ext(env,'hreset')
+        _add_normal_ext(env,'cldemote')
+        _add_normal_ext(env,'avx-vnni')
+        _add_normal_ext(env,'amx-spr')
+        _add_normal_ext(env,'waitpkg')
+        _add_normal_ext(env,'avx512-bf16')
+        _add_normal_ext(env,'enqcmd')
+        _add_normal_ext(env,'tsx-ldtrk')
+        _add_normal_ext(env,'serialize')
+        _add_normal_ext(env,'avx512-fp16')
+        _add_normal_ext(env,'evex-map5-6')
+    if env['emr']:
+        _add_normal_ext(env,'emr')
+        _add_normal_ext(env,'tdx')
+    if env['gnr']:
+        _add_normal_ext(env,'gnr')
+        _add_normal_ext(env,'amx-fp16')
+        _add_normal_ext(env,'amx-complex')
+        _add_normal_ext(env,'iprefetch')
+    if env['dmr']:
+        _add_normal_ext(env,'dmr')
+        _add_normal_ext(env,'vex-map5')
+        _add_normal_ext(env,'vex-map7')
+        _add_normal_ext(env,'apx-f') # No promoted rao-int
+        _add_normal_ext(env,'amx-dmr')
+        _add_normal_ext(env,'avx10-2')
+        _add_normal_ext(env,'movrs')
+        _add_normal_ext(env,'sm4-evex')
+        _add_normal_ext(env,'avx-ifma')
+        _add_normal_ext(env,'avx-ne-convert')
+        _add_normal_ext(env,'avx-vnni-int8')
+        _add_normal_ext(env,'cmpccxadd')
+        _add_normal_ext(env,'avx-vnni-int16')
+        _add_normal_ext(env,'sha512')
+        _add_normal_ext(env,'sm3')
+        _add_normal_ext(env,'sm4')
+        _add_normal_ext(env,'uintr')
+    if env['srf']:
+        _add_normal_ext(env,'srf')  
+        _add_normal_ext(env,'avx-ifma')
+        _add_normal_ext(env,'avx-common-types') # no ISA, just defines
+        _add_normal_ext(env,'avx-ne-convert')
+        _add_normal_ext(env,'avx-vnni-int8')
+        _add_normal_ext(env,'cmpccxadd')
+        _add_normal_ext(env,'msrlist')
+        _add_normal_ext(env,'vex-map7')
+        _add_normal_ext(env,'wrmsrns')
+        _add_normal_ext(env,'uintr')
+        _add_normal_ext(env,'enqcmd')
+        _add_normal_ext(env,'wbnoinvd')
+    if env['cwf']:
+        _add_normal_ext(env,'cwf')
+        _add_normal_ext(env,'user-msr')
+        _add_normal_ext(env,'iprefetch')
+        _add_normal_ext(env,'avx-vnni-int16')
+        _add_normal_ext(env,'sha512')
+        _add_normal_ext(env,'sm3')
+        _add_normal_ext(env,'sm4')
+        _add_normal_ext(env,'msr-imm')
+    if env['arl']:
+        _add_normal_ext(env,'arrow-lake')
+        _add_normal_ext(env, 'uintr')
+        _add_normal_ext(env,'avx-ifma')
+        _add_normal_ext(env,'avx-common-types') # no ISA, just defines
+        _add_normal_ext(env,'avx-ne-convert')
+        _add_normal_ext(env,'avx-vnni-int8')
+        _add_normal_ext(env,'cmpccxadd')
+        _add_normal_ext(env,'avx-vnni-int16')
+        _add_normal_ext(env,'sha512')
+        _add_normal_ext(env,'sm3')
+        _add_normal_ext(env,'sm4')
+    if env['lnl']:
+        _add_normal_ext(env,'lunar-lake')
+    if env['ptl']:
+        _add_normal_ext(env,'ptl')
+        _add_normal_ext(env,'iprefetch')
+        _add_normal_ext(env,'msrlist')
+        _add_normal_ext(env,'wrmsrns')
+        _add_normal_ext(env,'fred')
+    if env['future']:
+        _add_normal_ext(env,'future')
+        _add_normal_ext(env,'pbndkb')
+        _add_normal_ext(env,'rao-int')
+        _add_normal_ext(env,'apx-f', 'apx-f-future-ext.cfg')
             
 
     env['extf'] = newstuff + env['extf']
@@ -2114,14 +2097,20 @@ def _test_perf(env):
         # mbuild hash state and causes rebuilds.
         xbc.cdie( "perf test failed") 
 
-def _get_xed_min_size(env):
+def _get_xed_dec_min_size(env):
+    """
+    Determine the size of the 'xed-dec-min' executable and analyze the ELF sections of the executable if available
+    Please note that the displayed file size is that of the stripped binary (removed redundant lines)
+    Only some sections of the ELF file are analyzed (global variables, read-only data and executable code)
+    Symbol tables, init section and debugging information sections are not calculated, for instance
+    """
     if not env.on_linux():
-        return
+        return # dealing with ELF files which are specific to Unix-like os
     wkit = env['wkit']
     xed_min = None    
-    #check if we have xed-min test
+    #check if we have xed-dec-min test
     for exe in mbuild.glob(wkit.bin, '*'):
-        if 'xed-min' in exe:
+        if 'xed-dec-min' in exe:
             xed_min = exe
     if not xed_min:
         return 
@@ -2131,7 +2120,7 @@ def _get_xed_min_size(env):
     #get the size in MB
     size_bytes = os.path.getsize(xed_min)
     size_meg = size_bytes / (1024*1024.0) 
-    mbuild.msgb("XED-MIN SIZE", "%d = %.2fMB" % (size_bytes,size_meg))
+    mbuild.msgb("XED-DEC-MIN SIZE", "%d = %.2fMB" % (size_bytes,size_meg))
 
     import elf_sizes
     d = elf_sizes.work(xed_min,die_on_errors=False)
@@ -2151,7 +2140,7 @@ def _copy_examples_to_bin(env,xkit):
                                     mbuild.join( xkit.bin, os.path.basename(f)))
     
 def _test_examples(env):
-    _get_xed_min_size(env)
+    _get_xed_dec_min_size(env)
     _test_perf(env)
 
 
@@ -2703,7 +2692,7 @@ def _run_canned_tests(env,osenv):
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
     dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx', 'tests-prefetch',
-            'tests-apx', 'tests-avx10-256rc']
+            'tests-apx']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2715,26 +2704,27 @@ def _run_canned_tests(env,osenv):
         cmd += f" --tests {aq(d)}"
 
     # add test restriction/subetting codes
-    codes = []
+    codes = ['AVX', 'HSW']
     if env['encoder']:
         codes.append('ENC')
     if env['decoder']:
         codes.append('DEC')
-    if env['avx']:
-        codes.append('AVX')
     if env['skx']:
         codes.append('AVX512X')
+    if env['cnl']:
+        codes.append('CNL')
+    if env['icl']:
+        codes.append('ICL')
     if env['spr']:
         codes.append('AMX')
+        codes.append('SPR')
     if env['gnr']:
         codes.append('IPREFETCH') # ICACHE PREFETCH
         codes.append('AVX10')
         codes.append('AMX_GNR')
-    if env['knm'] or env['knl']:
+    if env['knl']:
         codes.append('AVX512PF')
-    if env['hsw']: 
-        codes.append('HSW')
-    if env['amd_enabled'] and env['avx']:
+    if env['amd_enabled']:
         codes.append('XOP')
     if env['via_enabled']:
         codes.append('VIA')
@@ -2786,60 +2776,16 @@ def run_tests(env):
     return 0 # success
 
 def verify_args(env):
-    if not env['avx']:
-        mbuild.warn("No AVX -> Disabling SNB, IVB, HSW, BDW, SKL, SKX, CLX, CPX, CNL, ICL, "
-                    "TGL, ADL, SPR, KNL, KNM, GNR, SRF, ARL, LNL, CWF, PTL, EMR, Future\n\n\n")
-        env['ivb'] = False
-        env['hsw'] = False
-        env['bdw'] = False
-        env['skl'] = False
-        env['skx'] = False
-        env['clx'] = False
-        env['cpx'] = False
-        env['tgl'] = False
-        env['adl'] = False
-        env['spr'] = False
-        env['cnl'] = False
-        env['icl'] = False
-        env['knl'] = False
-        env['knm'] = False
-        env['gnr'] = False
-        env['srf'] = False
-        env['arl'] = False
-        env['lnl'] = False
-        env['cwf'] = False
-        env['ptl'] = False
-        env['emr'] = False
-        env['dmr'] = False
-        env['future'] = False
-
-    # default is enabled. oldest disable disables upstream (younger, newer) stuff.
-    if not env['knl']:
-        env['knm'] = False
-        
-    if not env['avx']:
-        env['avx512'] = False
         
     if not env['avx512']:
         env['skx'] = False
-        env['clx'] = False
-        env['cpx'] = False
-        env['cnl'] = False
-        env['icl'] = False
-        env['tgl'] = False
-        env['spr'] = False
         env['knl'] = False
-        env['knm'] = False
-        env['gnr'] = False
-        env['future'] = False
+        env['adl'] = False
+        env['srf'] = False
 
     # turn off downstream (later) stuff logically
-    if not env['ivb']:
-        env['hsw'] = False
-    if not env['hsw']:
-        env['bdw'] = False
-    if not env['bdw']:
-        env['skl'] = False
+    if not env['knl']:
+        env['knm'] = False
     if not env['skl']:
         env['skx'] = False
     if not env['skx']:

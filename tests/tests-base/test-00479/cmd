@@ -1,1 +1,1 @@
- BUILDDIR/xed -chip-check QUARK -d F3E100
+ BUILDDIR/xed -chip-check PENTIUM -d F2E100

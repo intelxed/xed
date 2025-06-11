@@ -1,1 +1,0 @@
- BUILDDIR/xed -64 -set ROUNDC 1 -e VFCMADDCPH ymm1 k2 ymm3 ymm4

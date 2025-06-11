@@ -1,1 +1,1 @@
- BUILDDIR/xed -64 -e ADD EAX EBX
+ BUILDDIR/xed -de 6690

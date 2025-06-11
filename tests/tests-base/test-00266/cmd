@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex1 -chip NEHALEM 0f 01 d0
+ BUILDDIR/xed-dec -chip NEHALEM 0f 01 d0

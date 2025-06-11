@@ -26,14 +26,14 @@ END_LEGAL */
 #include "xed/xed-immdis.h"
 #include "xed-examples-util.h"
 #if defined(XED_ENCODER)
-# include "xed-enc-lang.h"
+# include "xed-util-enc-lang.h"
 #endif
-#include "xed-disas-elf.h"
-#include "xed-disas-macho.h"
-#include "xed-disas-raw.h"
-#include "xed-disas-hex.h"
-#include "xed-disas-pecoff.h"
-#include "xed-disas-filter.h"
+#include "xed-util-disas-elf.h"
+#include "xed-util-disas-macho.h"
+#include "xed-util-disas-raw.h"
+#include "xed-util-disas-hex.h"
+#include "xed-util-disas-pecoff.h"
+#include "xed-util-disas-filter.h"
 #include "xed-symbol-table.h"
 #include "xed-nm-symtab.h"
 

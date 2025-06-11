@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 vxorpd ymm0 ymm0 ymm0
+ BUILDDIR/xed-enc vxorpd ymm0 ymm0 ymm0

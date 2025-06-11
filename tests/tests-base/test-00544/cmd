@@ -1,1 +1,1 @@
- BUILDDIR/xed -64 -e ADD RAX RBX
+ BUILDDIR/xed -64 -e ADD EAX EBX

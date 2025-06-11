@@ -1,10 +1,10 @@
-6690
+0F1F00
 ICLASS:     NOP
-CATEGORY:   NOP
+CATEGORY:   WIDENOP
 EXTENSION:  BASE
-IFORM:      NOP_90
-ISA_SET:    I86
-ATTRIBUTES: NOP 
-SHORT:      data16 nop
-Encodable! 6690
+IFORM:      NOP_MEMv_0F1F
+ISA_SET:    FAT_NOP
+ATTRIBUTES: NOP SCALABLE 
+SHORT:      nop dword ptr [eax]
+Encodable! 0F1F00
 Identical re-encoding

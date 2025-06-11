@@ -1,1 +1,1 @@
- BUILDDIR/xed -64 -e PUSH RBP
+ BUILDDIR/xed -64 -e PUSH EBP

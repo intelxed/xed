@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 #END_LEGAL
 
 XED_ISA_SET_MOVRS: movrs.7.1.eax[31]
-XED_ISA_SET_AVX10_MOVRS_128  : movrs.7.1.eax[31] avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_128vl.24.0.ebx[16]
-XED_ISA_SET_AVX10_MOVRS_256  : movrs.7.1.eax[31] avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_256vl.24.0.ebx[17]
-XED_ISA_SET_AVX10_MOVRS_512  : movrs.7.1.eax[31] avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 avx10_512vl.24.0.ebx[18]
+XED_ISA_SET_AVX10_MOVRS_128  : movrs.7.1.eax[31] avx10_enabled.7.1.edx[19]
+XED_ISA_SET_AVX10_MOVRS_256  : movrs.7.1.eax[31] avx10_enabled.7.1.edx[19]
+XED_ISA_SET_AVX10_MOVRS_512  : movrs.7.1.eax[31] avx10_enabled.7.1.edx[19]
 

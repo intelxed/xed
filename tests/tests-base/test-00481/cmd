@@ -1,1 +1,1 @@
- BUILDDIR/xed -chip-check PENTIUM -d E100
+ BUILDDIR/xed -chip-check PENTIUM -d F3E100

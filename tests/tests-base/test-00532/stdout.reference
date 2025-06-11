@@ -1,24 +1,27 @@
-Attempting to decode: 0f a8 
-iclass PUSH	category PUSH	ISA-extension BASE	ISA-set I86
-instruction-length 2
+Attempting to decode: 0f 38 00 ff 
+iclass PSHUFB	category MMX	ISA-extension SSSE3	ISA-set SSSE3MMX
+instruction-length 4
 operand-width 32
 effective-operand-width 32
 effective-address-width 32
 stack-address-width 32
-iform-enum-name PUSH_GS
-iform-enum-name-dispatch (zero based) 6
-iclass-max-iform-dispatch 11
-Nominal opcode position 1
-Nominal opcode 0xa8
+iform-enum-name PSHUFB_MMXq_MMXq
+iform-enum-name-dispatch (zero based) 1
+iclass-max-iform-dispatch 4
+Nominal opcode position 2
+Nominal opcode 0x00
 Operands
 #   TYPE               DETAILS        VIS  RW       OC2 BITS BYTES NELEM ELEMSZ   ELEMTYPE   REGCLASS
 #   ====               =======        ===  ==       === ==== ===== ===== ======   ========   ========
-0   REG0               REG0=GS   IMPLICIT   R         W   16     2     1     16        INT         SR
-1   REG1        REG1=STACKPUSH SUPPRESSED  RW       SPW   32     4     1     32        INT     PSEUDO
-2   MEM0           (see below) SUPPRESSED   W       SPW   32     4     1     32        INT    INVALID
-3  BASE0             BASE0=ESP SUPPRESSED  RW       SSZ   32     4     1     32        INT        GPR
+0   REG0              REG0=MM7   EXPLICIT  RW         Q   64     8     1     64        INT        MMX
+1   REG1              REG1=MM7   EXPLICIT   R         Q   64     8     1     64        INT        MMX
 Memory Operands
-  0 written SEG= SS BASE= ESP/GPR  ASZ0=32
-  MemopBytes = 4
-ATTRIBUTES: FIXED_BASE0 SCALABLE STACKPUSH0 
-ISA SET: [I86]
+  MemopBytes = 0
+ATTRIBUTES: NOTSX 
+EXCEPTION TYPE: MMX_MEM
+ISA SET: [SSSE3MMX]
+0	CPUID GROUP NAME: [SSSE3MMX]
+	0	CPUID RECORD NAME: [SSSE3]
+		{Leaf 0x00000001, subleaf 0x00000000, ECX[9:9]} = 1
+	1	CPUID RECORD NAME: [MMX]
+		{Leaf 0x00000001, subleaf 0x00000000, EDX[23:23]} = 1

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -174,11 +174,12 @@ static XED_INLINE xed_uint32_t xed_operand_imm(const xed_operand_t* p) {
 
 /// @ingroup DEC
 /// Print the operand p into the buffer buf, of length buflen.
-/// @param p  an operand template,  #xed_operand_t.
+/// @param xedd the decoded instruction
+/// @param i index of operand to print
 /// @param buf buffer that gets filled in
 /// @param buflen maximum buffer length
 XED_DLL_EXPORT void
-xed_operand_print(const xed_operand_t* p, char* buf, int buflen);
+xed_operand_print(const struct xed_decoded_inst_s* xedd, unsigned int i, char* buf, int buflen);
 //@}
 
 /// @name xed_inst_t Template Operand Enum Name Classification

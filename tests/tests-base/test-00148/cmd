@@ -1,1 +1,1 @@
- BUILDDIR/xed-ex3 lea eax AGEN:eax,ebx,8
+ BUILDDIR/xed-enc lea eax AGEN:eax,ebx,8

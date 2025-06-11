@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 #  
 #END_LEGAL
 
-# Tests libxed-ild library using the xed-ex-ild example tool
+# Tests libxed-ild library using the xed-dec-ild example tool
 
-DEC                  ; BUILDDIR/xed-ex-ild ff 00 ff
-DEC  AVX512X         ; BUILDDIR/xed-ex-ild 62 f1 fd 48 fb 4c 24
-DEC  AVX512X         ; BUILDDIR/xed-ex-ild 62 f1 fd 48 fb 4c 24 7a
-DEC  AVX512X         ; BUILDDIR/xed-ex-ild 62 61 cd 00 16 04 fb
+DEC                  ; BUILDDIR/xed-dec-ild ff 00 ff
+DEC  AVX512X         ; BUILDDIR/xed-dec-ild 62 f1 fd 48 fb 4c 24
+DEC  AVX512X         ; BUILDDIR/xed-dec-ild 62 f1 fd 48 fb 4c 24 7a
+DEC  AVX512X         ; BUILDDIR/xed-dec-ild 62 61 cd 00 16 04 fb

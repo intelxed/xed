@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -228,8 +228,6 @@ class group_record_t:
             loaded = rec.load_from_str(rec_str)
             if not loaded:
                 continue  # Do not append an empty record (Usually "n/a" records)
-            if (self.kind != group_kind_t.AVX10) and ('AVX10' in rec.fname):
-                die(f'Found illegal AVX10 CPUID record ({rec.emit()}) in {self.get_kind_name} group')
             self.records.append(rec)
         return self.records_len()
     
