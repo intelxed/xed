@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Bit scatter code generation.
 
+This module generates optimized C code for scattering bits from one value
+into specific bit positions of another value. Used in encoder generation to
+efficiently pack instruction fields into byte sequences.
+"""
 # scatter bits from b in to a, one bit at a time. Emit C code to do it.
 
 # optimizations:

@@ -1,25 +1,25 @@
-XDIS 0: APX       APXEVEX    APX_F      62F4840485D8             ctestz {dfv=} rax, rbx
-XDIS 6: APX       APXEVEX    APX_F      62F48C0485D8             ctestz {dfv=cf} rax, rbx
-XDIS c: APX       APXEVEX    APX_F      62F4940485D8             ctestz {dfv=zf} rax, rbx
-XDIS 12: APX       APXEVEX    APX_F      62F49C0485D8             ctestz {dfv=zf,cf} rax, rbx
-XDIS 18: APX       APXEVEX    APX_F      62F4A40485D8             ctestz {dfv=sf} rax, rbx
-XDIS 1e: APX       APXEVEX    APX_F      62F4AC0485D8             ctestz {dfv=sf,cf} rax, rbx
-XDIS 24: APX       APXEVEX    APX_F      62F4B40485D8             ctestz {dfv=sf,zf} rax, rbx
-XDIS 2a: APX       APXEVEX    APX_F      62F4BC0485D8             ctestz {dfv=sf,zf,cf} rax, rbx
-XDIS 30: APX       APXEVEX    APX_F      62F4C40485D8             ctestz {dfv=of} rax, rbx
-XDIS 36: APX       APXEVEX    APX_F      62F4CC0485D8             ctestz {dfv=of,cf} rax, rbx
-XDIS 3c: APX       APXEVEX    APX_F      62F4D40485D8             ctestz {dfv=of,zf} rax, rbx
-XDIS 42: APX       APXEVEX    APX_F      62F4DC0485D8             ctestz {dfv=of,zf,cf} rax, rbx
-XDIS 48: APX       APXEVEX    APX_F      62F4E40485D8             ctestz {dfv=of,sf} rax, rbx
-XDIS 4e: APX       APXEVEX    APX_F      62F4EC0485D8             ctestz {dfv=of,sf,cf} rax, rbx
-XDIS 54: APX       APXEVEX    APX_F      62F4F40485D8             ctestz {dfv=of,sf,zf} rax, rbx
-XDIS 5a: APX       APXEVEX    APX_F      62F4FC0485D8             ctestz {dfv=of,sf,zf,cf} rax, rbx
+XDIS 0: APX       APXEVEX    APX_F_N3   62F4840485D8             ctestz {dfv=} rax, rbx
+XDIS 6: APX       APXEVEX    APX_F_N3   62F48C0485D8             ctestz {dfv=cf} rax, rbx
+XDIS c: APX       APXEVEX    APX_F_N3   62F4940485D8             ctestz {dfv=zf} rax, rbx
+XDIS 12: APX       APXEVEX    APX_F_N3   62F49C0485D8             ctestz {dfv=zf,cf} rax, rbx
+XDIS 18: APX       APXEVEX    APX_F_N3   62F4A40485D8             ctestz {dfv=sf} rax, rbx
+XDIS 1e: APX       APXEVEX    APX_F_N3   62F4AC0485D8             ctestz {dfv=sf,cf} rax, rbx
+XDIS 24: APX       APXEVEX    APX_F_N3   62F4B40485D8             ctestz {dfv=sf,zf} rax, rbx
+XDIS 2a: APX       APXEVEX    APX_F_N3   62F4BC0485D8             ctestz {dfv=sf,zf,cf} rax, rbx
+XDIS 30: APX       APXEVEX    APX_F_N3   62F4C40485D8             ctestz {dfv=of} rax, rbx
+XDIS 36: APX       APXEVEX    APX_F_N3   62F4CC0485D8             ctestz {dfv=of,cf} rax, rbx
+XDIS 3c: APX       APXEVEX    APX_F_N3   62F4D40485D8             ctestz {dfv=of,zf} rax, rbx
+XDIS 42: APX       APXEVEX    APX_F_N3   62F4DC0485D8             ctestz {dfv=of,zf,cf} rax, rbx
+XDIS 48: APX       APXEVEX    APX_F_N3   62F4E40485D8             ctestz {dfv=of,sf} rax, rbx
+XDIS 4e: APX       APXEVEX    APX_F_N3   62F4EC0485D8             ctestz {dfv=of,sf,cf} rax, rbx
+XDIS 54: APX       APXEVEX    APX_F_N3   62F4F40485D8             ctestz {dfv=of,sf,zf} rax, rbx
+XDIS 5a: APX       APXEVEX    APX_F_N3   62F4FC0485D8             ctestz {dfv=of,sf,zf,cf} rax, rbx
 # end of text section.
 # Errors: 0
 #XED3 DECODE STATS
-#Total DECODE cycles:        94814
+#Total DECODE cycles:        242622
 #Total instructions DECODE: 16
-#Total tail DECODE cycles:        94814
+#Total tail DECODE cycles:        242622
 #Total tail instructions DECODE: 16
-#Total cycles/instruction DECODE: 5925.88
-#Total tail cycles/instruction DECODE: 5925.88
+#Total cycles/instruction DECODE: 15163.88
+#Total tail cycles/instruction DECODE: 15163.88

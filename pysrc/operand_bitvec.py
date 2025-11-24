@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,9 +17,12 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
 """
-Build a bit vector based on the operand names
+Operand bit vector builder.
+
+This module builds bit vector representations of operand names for efficient
+operand presence checking. Creates C typedef structures and accessor macros
+for testing operand presence in instructions.
 """
 ################################################################################
 import genutil

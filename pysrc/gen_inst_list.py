@@ -18,8 +18,19 @@
 #  
 #END_LEGAL
 """
+Instruction list generator for XED chips with comparison support.
+
 This script generates a list of instructions for a specified chip and optionally
 compares it with another chip to find differences.
+
+Usage: python gen_inst_list.py [--chip <chip_name>] [--otherchip <chip_name>] <path_to_obj/dgen>
+
+Examples:   
+    # List instructions for a specific chip
+    python gen_inst_list.py --chip <chip_name> ../obj/dgen
+    
+    # Compare two chips
+    python gen_inst_list.py --chip <chip_name> --otherchip <other_chip_name> ../obj/dgen
 
 Functionality:
 - Reads the XED database and chip database.

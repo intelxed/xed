@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Chip model database reader and ISA-set to chip mapping.
+
+This module reads chip definition files and builds mappings between chip models
+and their supported ISA-sets. It handles chip inheritance, extension filtering,
+and generates enumerations for chip features. Used to determine which
+instructions are available on specific processor models.
+"""
 from __future__ import print_function
 import sys
 import os

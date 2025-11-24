@@ -1,14 +1,14 @@
 Setting chip to FUTURE
 Attempting to decode: 62 d2 fc 00 f3 d9 
-iclass BLSI	category BMI1	ISA-extension APXEVEX	ISA-set APX_F_BMI1
+iclass BLSI	category BMI1	ISA-extension BMI1	ISA-set APX_F_BMI1
 instruction-length 6
 operand-width 64
 effective-operand-width 64
 effective-address-width 64
 stack-address-width 64
 iform-enum-name BLSI_GPR64i64_GPR64i64_APX
-iform-enum-name-dispatch (zero based) 4
-iclass-max-iform-dispatch 8
+iform-enum-name-dispatch (zero based) 6
+iclass-max-iform-dispatch 12
 Nominal opcode position 4
 Nominal opcode 0xf3
 Operands
@@ -26,7 +26,7 @@ FLAGS:
   undefined:                         af pf  mask=0x14
 ATTRIBUTES: 
 EXCEPTION TYPE: APX_EVEX_BMI
-[APX] Uses-EGPR 
+[APX Encoding] APX-Foundation Instruction Uses-EGPR 
 ISA SET: [APX_F_BMI1]
 0	CPUID GROUP NAME: [APX_F_BMI1]
 	0	CPUID RECORD NAME: [APX_F]

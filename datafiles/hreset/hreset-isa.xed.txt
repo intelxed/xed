@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ CPL:         0
 CATEGORY:    HRESET
 EXTENSION:   HRESET
 ISA_SET:     HRESET
+ATTRIBUTES:  RING0
 REAL_OPCODE: Y
 PATTERN:    0x0F 0x3A 0xF0 MOD[0b11] MOD=3  REG[0b000] RM[0b000]  f3_refining_prefix     UIMM8() 
 OPERANDS:    IMM0:r:b REG0=XED_REG_EAX:r:SUPP:d:u32

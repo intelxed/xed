@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Instruction Length Decoder (ILD) generator.
+
+This module generates the fast instruction length decoder for XED. The ILD
+computes instruction lengths without full decoding, which is critical for
+performance. It generates lookup tables and functions for determining operand
+sizes, displacement widths, immediate widths, and overall instruction length.
+"""
 import re
 import copy
 import os

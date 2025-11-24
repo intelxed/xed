@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+FKS (Fredman-Komlos-Szemeredi) hash function implementation.
 
+This module implements the FKS universal hash family based on the 1984 paper.
+Uses the hash function family h(x) = (kx mod p) mod s for perfect hashing.
+Used by the decoder and ILD generators to create efficient lookup tables.
+"""
 import tup2int
 import xedhash
-#paper of Fredman Komlos and Szemeredi (1984) :
 #following hash function family is universal:
 # x -> (kx mod p) mod s
 # s ~ n^2

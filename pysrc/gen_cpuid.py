@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,8 +17,19 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+CPUID feature list generator.
+
+This utility script generates a list of CPUID features for each instruction
+from the XED database. Shows which CPUID feature bits are required to execute
+each instruction, organized by instruction class, encoding space, and vector length.
+
+Usage: python gen_cpuid.py <path_to_obj/dgen>
+Example: python gen_cpuid.py ../obj/dgen
+"""
 from __future__ import print_function
 
+from collections import defaultdict
 import sys
 import gen_setup
 
@@ -36,16 +47,22 @@ def work(args):  # main function
     xeddb = gen_setup.read_db(args)
 
     xeddb.recs.sort(key=lambda x:x.iclass)
+    records = defaultdict(list)
     for r in xeddb.recs:
         if not r.cpuid_groups:
             continue
-        cpuids: set[str] = set()
+        cpuid_str = ""
         for grp in r.cpuid_groups:
-            cpuids.update([str(rec) for rec in grp.get_records()])
+            cpuid_str += repr(grp) + " "
+        rec_key = (r.iclass, r.space, r.vl)
+        if rec_key in records and cpuid_str in records[rec_key]:
+            continue
+        records[rec_key].append(cpuid_str)
+        # print
         if r.space in ['vex','evex']:
-            print("{}: {}/{}: {}".format(r.iclass, r.space, r.vl, ", ".join(cpuids)))
+            print("{}: {}/{}: {}".format(r.iclass, r.space, r.vl, cpuid_str))
         else:
-            print("{}: {}: {}".format(r.iclass, r.space, ", ".join(cpuids)))
+            print("{}: {}: {}".format(r.iclass, r.space, cpuid_str))
 
 
 if __name__ == "__main__":

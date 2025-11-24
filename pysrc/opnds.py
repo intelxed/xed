@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Operand information and representation.
 
+This module defines classes for representing instruction operands including
+registers, immediates, memory references, and nonterminal lookups. The
+operand_info_t class captures fields and lookup functions required for
+encoding and decoding instruction operands.
+"""
 import re
 from typing import Optional
 

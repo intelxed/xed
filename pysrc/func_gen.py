@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Function generator for constraint-based lookups.
 
+This module generates lookup functions with constraint checking for both
+encoder and decoder. Creates functions that handle conditional bindings and
+return appropriate values based on constraint satisfaction.
+"""
 
 import codegen
 import ild_phash

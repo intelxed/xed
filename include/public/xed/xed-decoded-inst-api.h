@@ -291,19 +291,6 @@ xed_decoded_inst_get_length(const xed_decoded_inst_t* p) {
 
 //@}
 
-
-/// @name xed_decoded_inst_t get Byte 
-//@{
-/// @ingroup DEC
-/// Read itext byte.
-static XED_INLINE xed_uint8_t
-xed_decoded_inst_get_byte(const xed_decoded_inst_t* p, xed_uint_t byte_index)
-{
-    /// Read a whole byte from the normal input bytes.
-    xed_uint8_t out = p->_byte_array._dec[byte_index];
-    return out;
-}
-
 //@}
 
 /// @name Modes
@@ -699,11 +686,6 @@ xed_decoded_inst_set_user_data(xed_decoded_inst_t* p,
 /// @name xed_decoded_inst_t Classifiers
 //@{
 /// @ingroup DEC
-/// @brief True for APX instructions.
-/// includes instructions with EGPRs, REX2 and encodings that are treated as illegal on non-APX systems
-XED_DLL_EXPORT xed_bool_t
-xed_classify_apx(const xed_decoded_inst_t* d);
-/// @ingroup DEC
 /// True for AMX instructions
 XED_DLL_EXPORT xed_bool_t
 xed_classify_amx(const xed_decoded_inst_t* d);
@@ -723,6 +705,16 @@ xed_classify_avx(const xed_decoded_inst_t* d);
 /// True for SSE/SSE2/etc. SIMD operations.  Includes AES and PCLMULQDQ
 XED_DLL_EXPORT xed_bool_t
 xed_classify_sse(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// @brief True for APX foundation instructions.
+/// Includes the first set of instructions introduced as part of APX-F
+XED_DLL_EXPORT xed_bool_t
+xed_classify_apx_foundation(const xed_decoded_inst_t* d);
+/// @ingroup DEC
+/// @brief True for APX instructions.
+/// Includes instructions with EGPRs, REX2 and encodings that are treated as illegal on non-APX systems
+XED_DLL_EXPORT xed_bool_t 
+xed_classify_apx(const xed_decoded_inst_t* d);
 //@}
 #endif
 

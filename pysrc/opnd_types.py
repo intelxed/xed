@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Operand type definitions and reader.
 
+This module defines operand types (data types, element widths) for XED
+instructions and provides functions to read operand type definitions from
+the XED datafiles. Used to generate operand type enumerations.
+"""
 import re
 from verbosity import *
 import enum_txt_writer

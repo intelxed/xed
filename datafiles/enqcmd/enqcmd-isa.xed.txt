@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ CPL:         0
 CATEGORY:    ENQCMD
 EXTENSION:   ENQCMD
 ISA_SET:     ENQCMD
+ATTRIBUTES:  RING0
 REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-0 pf-0 of-0 sf-0 af-0  ]
 PATTERN:    0x0F 0x38 0xF8 MOD[mm] MOD!=3 REG[rrr] RM[nnn]  MODRM()  f3_refining_prefix     

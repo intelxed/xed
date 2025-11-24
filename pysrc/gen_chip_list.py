@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,16 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Chip instruction statistics generator.
+
+This utility script generates statistics about instructions supported by
+specific chip models. Shows instruction counts by ISA-set and categorizes
+instructions by type (scalar, MMX, SSE, AVX, etc.).
+
+Usage: python gen_chip_list.py <path_to_obj/dgen>
+Example: python gen_chip_list.py ../obj/dgen
+"""
 from __future__ import print_function
 import sys
 import collections

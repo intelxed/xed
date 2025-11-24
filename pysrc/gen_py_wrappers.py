@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,7 +16,15 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Python wrapper function generator for XED API.
 
+This utility generates Python-friendly wrapper functions for XED's C API.
+Creates functions with the _py suffix that provide more convenient interfaces
+for Python bindings (ctypes or similar).
+
+Usage: python gen_py_wrappers.py --xeddir <xed_source_dir> --gendir <output_dir>
+"""
 # Type hints imports
 from __future__ import annotations  # Enables deferred type hints
 from typing import TYPE_CHECKING, Optional, TextIO

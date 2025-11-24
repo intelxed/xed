@@ -2,7 +2,7 @@
 # Generic utilities
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,12 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Utility functions and constants for ILD generation.
 
+This module provides common utilities, type definitions, and naming conventions
+used across the ILD generator modules.
+"""
 import genutil
 
 # ild and  operand_storage

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Code generation for action sequences in hash table lookups.
 
+This module generates C code for executing actions after successful hash table
+lookups during instruction decoding. It handles conditional field bindings,
+function calls, and return values. The generated code initializes hash tables
+with action data and executes the appropriate actions based on lookup results.
+"""
 import actions
 
 class actions_codegen_t(object):

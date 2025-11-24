@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ CATEGORY:    WRMSRNS
 EXTENSION:   WRMSRNS
 ISA_SET:     WRMSRNS
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b110] no_refining_prefix
 OPERANDS:    REG0=XED_REG_EAX:r:SUPP:d:u32 REG1=XED_REG_EDX:r:SUPP:d:u32 REG2=XED_REG_ECX:r:SUPP:d:u32 REG3=XED_REG_MSRS:w:SUPP
 IFORM:       WRMSRNS

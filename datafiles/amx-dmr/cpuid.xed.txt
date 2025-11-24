@@ -17,16 +17,9 @@
 #END_LEGAL
 
 XED_ISA_SET_AMX_FP8             : amx_fp8.1e.1.eax.4
-XED_ISA_SET_AMX_TRANSPOSE       : amx_transpose.1e.1.eax.5
 XED_ISA_SET_AMX_TF32            : amx_tf32.1e.1.eax.6
 XED_ISA_SET_AMX_AVX512          : amx_avx512.1e.1.eax.7
 XED_ISA_SET_AMX_MOVRS           : amx_movrs.1e.1.eax.8
-
-XED_ISA_SET_AMX_TRANSPOSE_MOVRS : amx_transpose.1e.1.eax.5 amx_movrs.1e.1.eax.8
-XED_ISA_SET_AMX_TRANSPOSE_COMPLEX : amx_transpose.1e.1.eax.5 amx_complex_mirrored.1e.1.eax.2
-XED_ISA_SET_AMX_TRANSPOSE_BF16 : amx_transpose.1e.1.eax.5 amx_bf16_mirrored.1e.1.eax.1
-XED_ISA_SET_AMX_TRANSPOSE_FP16 : amx_transpose.1e.1.eax.5 amx_fp16_mirrored.1e.1.eax.3
-XED_ISA_SET_AMX_TRANSPOSE_TF32 : amx_transpose.1e.1.eax.5 amx_tf32.1e.1.eax.6
 
 # Starting with AVX10, feature bits for state-features have moved to their own leaf. 
 # This change provides a single location for developers to find feature bits, simplifying 

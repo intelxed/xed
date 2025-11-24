@@ -17,7 +17,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+XED instruction database reader.
 
+This module reads and parses the XED instruction database files (datafiles
+directory) containing instruction encodings, operands, attributes, and other
+metadata. It builds the in-memory representation of all x86 instructions that
+XED can encode and decode. This is the primary input to the XED generator.
+"""
 import sys
 import re
 import collections
@@ -745,12 +752,16 @@ class xed_reader_t(object):
                 v.is_apx_scc = True
                 v.scc_val: int = get_scc_value(v)
 
-            v.rex2_restriction = Restriction.OPTIONAL
-            if 'NOREX2=1' in v.pattern:
-                v.rex2_restriction = Restriction.PROHIBITED
-            elif 'REX2=1' in v.pattern:
-                v.rex2_restriction = Restriction.REQUIRED
+            is_allowed_rex2 = (v.space == 'legacy' and v.map in [0,1] and v.mode_restriction in ['unspecified', 2])
 
+            v.rex2_restriction = Restriction.PROHIBITED
+            if is_allowed_rex2:  # reject REX2 for non-legacy MAP{0,1} and non-mode 64
+                if 'NOREX2=1' in v.pattern:
+                    v.rex2_restriction = Restriction.PROHIBITED
+                elif 'REX2=1' in v.pattern:
+                    v.rex2_restriction = Restriction.REQUIRED
+                else:
+                    v.rex2_restriction = Restriction.OPTIONAL
 
             v.default_64b = False
             if 'DF64()' in v.pattern or 'CR_WIDTH()' in v.pattern:

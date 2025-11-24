@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Instruction emission code generator for encoder.
+
+This module generates C functions that emit encoded instruction bytes.
+Creates pattern-specific encoding functions that pack instruction fields into
+byte sequences according to the x86 encoding format.
+"""
 from __future__ import print_function
 import os
 import collections
@@ -279,8 +286,8 @@ class ins_group_t(object):
 
     
 class instruction_codegen_t(object):
-    def __init__(self,iform_list,iarray,logs_dir, amd_enabled=True):
-        self.amd_enabled = amd_enabled
+    def __init__(self,iform_list,iarray,logs_dir, amd=True):
+        self.amd = amd
         self.iform_list = iform_list
         self.iarray = iarray # dictionary by iclass of [ iform_t ]
         self.logs_dir = logs_dir #directory for the log file
@@ -594,7 +601,7 @@ class instruction_codegen_t(object):
             if not second.naked_bits():
                 genutil.die("expecting map/nominal opcode after 0x0F byte")
             
-            if self.amd_enabled and second.int_value == 0x0F: #3DNow
+            if self.amd and second.int_value == 0x0F: #3DNow
                 # the nominal opcode in 3DNow is in the last action.
                 # FIXME: it is best to not reference directly the last action
                 #        but rather add a meaningful field name to the action 

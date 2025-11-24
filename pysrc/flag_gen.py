@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+CPU flags effect table generator.
 
+This module generates tables describing how instructions affect CPU flags
+(CF, ZF, SF, OF, PF, AF, etc.). Creates flag read/write/undefined information
+for each instruction used by the decoder and analysis tools.
+"""
 # FIXME: could cut table sizes by rusing identical entries in the
 # simple flags table. 2007-05-02
 from __future__ import print_function

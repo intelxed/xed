@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,16 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Instruction database field dumper.
 
+This utility script reads the XED database and dumps all fields for each
+instruction definition. Useful for exploring the instruction database and
+understanding what metadata is available for each instruction.
+
+Usage: python gen_dump.py <path_to_obj/dgen>
+Example: python gen_dump.py ../obj/dgen
+"""
 # for each instruction, dump all the fields provided by the reader.
 
 from __future__ import print_function

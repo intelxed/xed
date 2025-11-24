@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Regular expression patterns for parsing XED datafiles.
+
+This module defines compiled regular expressions used throughout XED to parse
+instruction definitions, nonterminals, macros, operands, and other elements
+from the XED metadata files. Provides common patterns for the XED grammar.
+"""
 import re
 
 macro_def_pattern = \

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ ICLASS    : INVLPGA
 CPL       : 0
 CATEGORY  : SYSTEM
 EXTENSION : SVM
-ATTRIBUTES: PROTECTED_MODE AMDONLY
+ATTRIBUTES: RING0 PROTECTED_MODE AMDONLY
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b011] RM[0b111] 
 OPERANDS  : REG0=ArAX():r:IMPL REG1=XED_REG_ECX:r:IMPL
 }

@@ -1058,8 +1058,7 @@ xed_decoded_inst_is_apx_zu(const xed_decoded_inst_t* p)
     - Subgroup of promoted SETcc instructions */
     
 #if defined(XED_APX)
-    if (xed_decoded_inst_get_extension(p) == XED_EXTENSION_APXEVEX) {
-        // APX EVEX instructions
+    if (xed_classify_apx_foundation(p)) {
         return xed3_operand_get_nd(p);
     }
 #endif

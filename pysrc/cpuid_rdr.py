@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+CPUID record parser and data structures.
+
+This module provides classes for parsing and representing CPUID feature records.
+CPUID records specify processor feature detection through leaf/subleaf/register/bit
+patterns. Used to associate instructions with their required CPUID features.
+"""
 from enum import Enum
 import genutil
 from genutil import die
@@ -228,6 +235,8 @@ class group_record_t:
             loaded = rec.load_from_str(rec_str)
             if not loaded:
                 continue  # Do not append an empty record (Usually "n/a" records)
+            if (self.kind != group_kind_t.AVX10) and ('AVX10_ENABLED' in rec.fname):
+                die(f'Found illegal AVX10 CPUID record ({rec.emit()}) in {self.get_kind_name()} group')
             self.records.append(rec)
         return self.records_len()
     

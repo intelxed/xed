@@ -124,3 +124,5 @@ APX ENC     ; BUILDDIR/xed -64 -e vaddpd ymm20 k4 ymm21 mem64:r29,r14,8,-
 
 # DFV disassembly syntax test
 APX DEC     ; BUILDDIR/xed -64 -isa-set -ih TESTDIR/../dfv-disas-var.txt
+# DFV encode test
+APX ENC     ; BUILDDIR/xed -64 -set DFV 14 -e ccmpb r16b r17b

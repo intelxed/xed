@@ -3,7 +3,7 @@
 # Enumeration support
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Meta-enumeration reader and generator.
 
+This module reads pre-defined enumeration files and generates corresponding
+C enumerations by calling the enumer.py module. Provides a higher-level
+interface for creating enumerations from text file definitions.
+"""
 import sys
 import re
 import enumer

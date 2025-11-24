@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -285,12 +285,12 @@ xed_operand_values_branch_taken_hint(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS
 /// Returns  true if instruction has ignored 0x2E prefix
-xed_bool_t
+XED_DLL_EXPORT xed_bool_t
 xed_operand_values_ignored_branch_not_taken_hint(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS
 /// Returns  true if instruction has ignored 0x3E prefix
-xed_bool_t
+XED_DLL_EXPORT xed_bool_t
 xed_operand_values_ignored_branch_taken_hint(const xed_operand_values_t* p);
 
 /// @ingroup OPERANDS

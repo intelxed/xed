@@ -3,7 +3,7 @@
 # Code generation support: emitting files, emitting functions, etc.
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Code generation infrastructure for XED.
 
+This module provides classes and utilities for generating C/C++ source and
+header files. It handles file output, function emission, code formatting,
+intellectual property headers, and various code generation primitives used
+throughout the XED build process.
+"""
 import sys
 import os
 import re

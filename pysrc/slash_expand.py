@@ -3,7 +3,7 @@
 # Code generation support: emitting files, emitting functions, etc.
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Slash notation expander for XED patterns.
 
+This module expands compact slash notation (e.g., "r/3" to "rrr") used in
+XED datafiles. Provides a shorthand for specifying repeated characters in
+instruction patterns and field definitions.
+"""
 
 import re
 import genutil

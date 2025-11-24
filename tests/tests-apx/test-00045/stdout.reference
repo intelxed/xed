@@ -1,13 +1,13 @@
 Attempting to decode: 62 54 fc 0c f4 c0 
-iclass TZCNT	category BMI1	ISA-extension APXEVEX	ISA-set APX_F_BMI1
+iclass TZCNT	category BMI1	ISA-extension BMI1	ISA-set APX_F_BMI1_N3
 instruction-length 6
 operand-width 64
 effective-operand-width 64
 effective-address-width 64
 stack-address-width 64
-iform-enum-name TZCNT_GPRv_GPRv_APX
-iform-enum-name-dispatch (zero based) 1
-iclass-max-iform-dispatch 4
+iform-enum-name TZCNT_GPRv_GPRv_APX_N3
+iform-enum-name-dispatch (zero based) 2
+iclass-max-iform-dispatch 6
 Nominal opcode position 4
 Nominal opcode 0xf4
 Operands
@@ -19,12 +19,14 @@ Memory Operands
   MemopBytes = 0
 ATTRIBUTES: APX_NF SCALABLE 
 EXCEPTION TYPE: APX_EVEX_INT
-[APX] No-Flags 
-ISA SET: [APX_F_BMI1]
-0	CPUID GROUP NAME: [APX_F_BMI1]
+[APX Encoding] APX-Foundation Instruction No-Flags 
+ISA SET: [APX_F_BMI1_N3]
+0	CPUID GROUP NAME: [APX_F_BMI1_N3]
 	0	CPUID RECORD NAME: [APX_F]
 		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1
-	1	CPUID RECORD NAME: [BMI1]
+	1	CPUID RECORD NAME: [APX_F_NCI_NDD_NF]
+		{Leaf 0x00000029, subleaf 0x00000000, EBX[0:0]} = 1
+	2	CPUID RECORD NAME: [BMI1]
 		{Leaf 0x00000007, subleaf 0x00000000, EBX[3:3]} = 1
 [Encoding Bits]
 ====================== EVEX payload #0 ======================

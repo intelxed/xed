@@ -320,9 +320,9 @@ DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2E9910408
 DEC ENC AVX          ; BUILDDIR/xed -64 -de  C4E2ED910408
 DEC XOP              ; BUILDDIR/xed-dec-ild 8f e9 78 81 ca
 DEC                  ; BUILDDIR/xed-dec -64 f2  48AF
-DEC                  ; BUILDDIR/xed -64 -d  0f1aff
-DEC                  ; BUILDDIR/xed -64 -d  0f1bff
-DEC                  ; BUILDDIR/xed -64 -d  f30f1bff
+DEC MPX              ; BUILDDIR/xed -64 -d  0f1aff
+DEC MPX              ; BUILDDIR/xed -64 -d  0f1bff
+DEC MPX              ; BUILDDIR/xed -64 -d  f30f1bff
 DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 bd 79 f2 45
 DEC AVX AMD          ; BUILDDIR/xed -64 -d c4 c3 bd 79 f2 45
 DEC AVX AMD          ; BUILDDIR/xed -32 -d c4 c3 b9 79 f2 45

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ EXTENSION:   FRED
 ISA_SET:     FRED
 REAL_OPCODE: Y
 FLAGS:       MUST [  id-pop vip-pop vif-pop ac-pop vm-pop vm-pop rf-pop nt-pop nt-pop iopl-pop iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop  ]
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b001] RM[0b010] f2_refining_prefix mode64 DF64()
 OPERANDS:    REG0=XED_REG_STACKPOP:rw:SUPP:spw5 REG1=XED_REG_RIP:w:SUPP REG2=XED_REG_RSP:w:SUPP:q:u64
 IFORM:       ERETS
@@ -50,7 +50,7 @@ EXTENSION:   FRED
 ISA_SET:     FRED
 REAL_OPCODE: Y
 FLAGS:       MUST [  id-pop vip-pop vif-pop ac-pop vm-pop vm-pop rf-pop nt-pop nt-pop iopl-pop iopl-pop of-pop df-pop if-pop tf-pop sf-pop zf-pop af-pop pf-pop cf-pop  ]
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b001] RM[0b010] f3_refining_prefix mode64 DF64()
 OPERANDS:    REG0=XED_REG_STACKPOP:rw:SUPP:spw5 REG1=XED_REG_CS:w:SUPP:u16 REG2=XED_REG_SS:w:SUPP:u16 REG3=XED_REG_RIP:w:SUPP REG4=XED_REG_RSP:w:SUPP:q:u64 REG5=XED_REG_GSBASE:w:SUPP:u64 REG6=XED_REG_IA32_KERNEL_GS_BASE:w:SUPP:u64
 IFORM:       ERETU
@@ -65,7 +65,7 @@ CATEGORY:    LKGS
 EXTENSION:   LKGS
 ISA_SET:     LKGS
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     0x0F 0x00 MOD[0b11] MOD=3 REG[0b110] RM[nnn] f2_refining_prefix mode64
 OPERANDS:    REG0=GPR16_B():r:w:u16 REG1=XED_REG_IA32_KERNEL_GS_BASE:w:SUPP:u64
 IFORM:       LKGS_GPR16u16
@@ -78,7 +78,7 @@ CATEGORY:    LKGS
 EXTENSION:   LKGS
 ISA_SET:     LKGS
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     0x0F 0x00 MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() f2_refining_prefix mode64
 OPERANDS:    MEM0:r:wrd:u16 REG0=XED_REG_IA32_KERNEL_GS_BASE:w:SUPP:u64
 IFORM:       LKGS_MEMu16

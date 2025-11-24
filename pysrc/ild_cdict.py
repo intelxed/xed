@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD constraint dictionary and conflict resolution.
+
+This module handles constraint-based lookup table generation for ILD. It
+resolves conflicts when multiple patterns share the same key, organizes
+patterns by constraints, and generates layered lookup functions for the
+instruction length decoder.
+"""
 from enum import Enum, auto
 import math
 import copy
@@ -208,24 +216,25 @@ _vd_token_7_ones   = f'{_vd_token}210_7'
 _vd_token_1f_ones = f'{_vd_token}_1F'
 
 def _has_VEXDEST210_equals_7_restriction(cnames, ptrn_list):
-    """Return true if some pattern in the list of input pattern_t's has a
-       VVVV=1111 restriction. If that occurs, we can replace all
-       VEXDEST210 restricions since there are no other kinds of VVVV
-       restrictions.    """
+    """Return true if all patterns (in the list of input pattern_t's ptrn_list)
+       with a VEXDEST restriction have a VEXDEST210=7 constraint. If that occurs, 
+       we can replace all VEXDEST210 restricions since there are no other kinds of 
+       VVVV restrictions.    """
     if _vd_token210 not in cnames:
         return False
     
     for ptrn in ptrn_list:
         if _vd_token_7_ones in ptrn.constraints:
             genutil.die("XXX VEXDEST210_7 already exists in the patterns.")
-            
+    
     for ptrn in ptrn_list:
         if _vd_token210 in ptrn.constraints:
             cvals = ptrn.constraints[_vd_token210]
-            if len(cvals) == 1 and 7 in cvals:
-                return True
-
-    return False
+            if len(cvals) == 1 and 7 not in cvals:
+                return False
+    # _vd_token210=7 is the only _vd_token210 restriction in ptrn_list.
+	# Execute the VEXDEST210_7 optimization:
+    return True
 
 def _replace_VEXDEST210_with_VD2107(cnames, ptrn_list):
     ''' Replace VEXDEST210 with all-ones optimized constraint '''
@@ -532,7 +541,7 @@ def _get_united_cdict(ptrn_list : list, state_space : dict[str, dict[int,bool]],
 
     if _has_VEXDEST210_equals_7_restriction(cnames, ptrns): 
         vd7_repl += 1
-        _replace_VEXDEST210_with_VD2107(cnames, ptrns)            
+        _replace_VEXDEST210_with_VD2107(cnames, ptrns)         
         if _has_VEXDEST_equals_1F_restriction(cnames, ptrns, all_ops_widths):
             vd7_repl -= 1
             vd1f_repl += 1

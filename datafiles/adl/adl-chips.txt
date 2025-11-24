@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ ALDER_LAKE:             \
      ALL_OF(SNOW_RIDGE) \
      NOT(SGX_ENCLV)     \
      NOT(MPX)           \
+     NOT(CLDEMOTE)      \
      KEYLOCKER          \
      KEYLOCKER_WIDE     \
      CET                \
@@ -44,8 +45,7 @@ ALDER_LAKE:             \
      ADOX_ADCX          \
      LZCNT              \
      WBNOINVD           \
-     HRESET             \
-     CLDEMOTE
+     HRESET             
 
 
 

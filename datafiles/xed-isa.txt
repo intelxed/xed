@@ -4083,7 +4083,7 @@ CPL       : 0
 CATEGORY  : SYSTEM
 EXTENSION : BASE
 ISA_SET   : I286REAL
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 COMMENT   : 66 is OSZ; F2/F3 ignored
 
 PATTERN   : 0x0F 0x01 MOD[mm] MOD!=3 REG[0b010]  RM[nnn] mode64 FORCE64() MODRM() 
@@ -4254,7 +4254,7 @@ ICLASS    : VMCLEAR
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b110] RM[nnn] osz_refining_prefix REFINING66() MODRM()
 OPERANDS  : MEM0:r:q
@@ -4264,7 +4264,7 @@ ICLASS    : VMPTRLD
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b110] RM[nnn] no_refining_prefix  MODRM()
@@ -4275,7 +4275,7 @@ ICLASS    : VMPTRST
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b111] RM[nnn] no_refining_prefix MODRM()
@@ -4288,7 +4288,7 @@ ICLASS    : VMXON
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: PROTECTED_MODE NOTSX
+ATTRIBUTES: RING0 PROTECTED_MODE NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 
 PATTERN   : 0x0F 0xC7  MOD[mm] MOD!=3 REG[0b110] RM[nnn] f3_refining_prefix IGNORE66() MODRM()
@@ -4881,7 +4881,7 @@ ICLASS    : VMCALL
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 COMMENT   : on some execution paths loads all flags from VMCS. Always writes CF/PF/AF/ZF/SF/OF.
 FLAGS     : MAY [ id-mod vip-mod vif-mod ac-mod vm-tst rf-mod nt-mod iopl-tst iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b001] no_refining_prefix
@@ -4892,7 +4892,7 @@ ICLASS    : VMLAUNCH
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 COMMENT   : on some execution paths loads all flags from VMCS. Always writes CF/PF/AF/ZF/SF/OF.
 FLAGS     : MAY [ id-mod vip-mod vif-mod ac-mod vm-tst rf-mod nt-mod iopl-tst iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b010] no_refining_prefix
@@ -4903,7 +4903,7 @@ ICLASS    : VMRESUME
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 COMMENT   : on some execution paths loads all flags from VMCS. Always writes CF/PF/AF/ZF/SF/OF.
 FLAGS     : MAY [ id-mod vip-mod vif-mod ac-mod vm-tst rf-mod nt-mod iopl-tst iopl-mod of-mod df-mod if-mod tf-mod sf-mod zf-mod af-mod pf-mod cf-mod ]
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b011] no_refining_prefix
@@ -4914,7 +4914,7 @@ ICLASS    : VMXOFF
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
-ATTRIBUTES: NOTSX
+ATTRIBUTES: RING0 NOTSX
 FLAGS     : MUST [ cf-mod zf-mod sf-mod of-mod af-mod pf-mod ]
 
 PATTERN   : 0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b100] no_refining_prefix
@@ -8516,6 +8516,17 @@ FLAGS     : MUST [ cf-tst ]
 PATTERN   : 0xD6 not64
 OPERANDS  : REG0=XED_REG_AL:w:SUPP
 COMMENT   : was undocumented, but added to SDM v3 under "undefined opcodes" in 2017
+}
+{
+ICLASS    : UDB
+CPL       : 3
+CATEGORY  : MISC
+EXTENSION : BASE
+ISA_SET   : I86
+ATTRIBUTES: NOTSX
+PATTERN   : 0xD6 mode64
+OPERANDS  :
+COMMENT   : Undefined Instruction
 }
 {
 ICLASS    : XLAT
@@ -12696,6 +12707,7 @@ ICLASS    : VMREAD
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
+ATTRIBUTES: RING0
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 
 PATTERN   : 0x0F 0x78 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64   MODRM() CR_WIDTH()
@@ -12715,6 +12727,7 @@ ICLASS    : VMWRITE
 CPL       : 0
 CATEGORY  : VTX
 EXTENSION : VTX
+ATTRIBUTES: RING0
 FLAGS     : MUST [ cf-mod zf-mod sf-0 of-0 af-0 pf-0 ]
 
 PATTERN   : 0x0F 0x79 no_refining_prefix MOD[mm] MOD!=3 REG[rrr] RM[nnn] mode64  MODRM() CR_WIDTH()

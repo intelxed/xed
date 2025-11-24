@@ -8,7 +8,7 @@ effective-address-width 64
 stack-address-width 64
 iform-enum-name VADDPD_XMMf64_MASKmskw_XMMf64_MEMf64_AVX512
 iform-enum-name-dispatch (zero based) 2
-iclass-max-iform-dispatch 11
+iclass-max-iform-dispatch 10
 Nominal opcode position 4
 Nominal opcode 0x58
 Operands
@@ -25,7 +25,7 @@ ATTRIBUTES: BROADCAST_ENABLED DISP8_FULL MASKOP_EVEX MEMORY_FAULT_SUPPRESSION MX
 66-OSZ PREFIX
 MANDATORY 66 PREFIX
 EXCEPTION TYPE: AVX512_E2
-[APX] Uses-EGPR 
+[APX Encoding] Uses-EGPR 
 AVX512
 Vector length: 128
 AVX512 vector elements: 2

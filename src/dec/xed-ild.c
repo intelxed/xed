@@ -35,6 +35,14 @@ END_LEGAL */
 
 static void set_has_modrm(xed_decoded_inst_t* d);
 
+static XED_INLINE xed_uint8_t
+decoded_inst_get_byte(const xed_decoded_inst_t* p, xed_uint_t byte_index)
+{
+    /// Read a whole byte from the normal input bytes.
+    xed_uint8_t out = p->_byte_array._dec[byte_index];
+    return out; 
+}
+
 static XED_INLINE void too_short(xed_decoded_inst_t* d)
 {
     xed3_operand_set_out_of_bytes(d, 1);
@@ -148,7 +156,7 @@ static void prefix_scanner(xed_decoded_inst_t* d)
 
     while(length < max_bytes)
     {
-        xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+        xed_uint8_t b = decoded_inst_get_byte(d, length);
         
         // fast check to see if something might be a prefix
         // includes REX prefixes in 32b mode
@@ -386,7 +394,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
     xed_avx_c4_payload1_t c4byte1;    
     if (length+1 < max_bytes)   {
         length++;
-        c4byte1.u32 = xed_decoded_inst_get_byte(d, length);
+        c4byte1.u32 = decoded_inst_get_byte(d, length);
         // in 16/32b modes, the MODRM.MOD field MUST be 0b11
         if (!mode_64b(d) && c4byte1.coarse.rx_inv != 3) {
             // this is not a vex prefix, go to next scanner
@@ -408,7 +416,7 @@ static void vex_c4_scanner(xed_decoded_inst_t* d)
       xed_avx_c4_payload2_t c4byte2;
       xed_uint_t eff_map;
 
-      c4byte2.u32 = xed_decoded_inst_get_byte(d, length+1);
+      c4byte2.u32 = decoded_inst_get_byte(d, length+1);
       length += 2;
       xed_decoded_inst_set_length(d, length); // now point at opcode
 
@@ -456,7 +464,7 @@ static void vex_c5_scanner(xed_decoded_inst_t* d)
     xed_avx_c5_payload_t c5byte1;
     if (length + 1 < max_bytes)   {
         length++;
-        c5byte1.u32 = xed_decoded_inst_get_byte(d, length);
+        c5byte1.u32 = decoded_inst_get_byte(d, length);
         // in 16/32b modes, the MODRM.MOD field MUST be 0b11
         if (!mode_64b(d) && c5byte1.coarse.rv3_inv != 3) {
             // this is not a vex prefix, go to next scanner
@@ -520,7 +528,7 @@ static void xop_scanner(xed_decoded_inst_t* d)
     unsigned char length = xed_decoded_inst_get_length(d);
     
     if (length + 1 < max_bytes)   {
-        xed_uint8_t n = xed_decoded_inst_get_byte(d, length+1);
+        xed_uint8_t n = decoded_inst_get_byte(d, length+1);
         /* in all modes, the MODRM.REG field MUST NOT be 0b000.
            mm-rrr-nnn -> mmrr_rnnn
          */
@@ -549,8 +557,8 @@ static void xop_scanner(xed_decoded_inst_t* d)
       xed_avx_c4_payload1_t xop_byte1;
       xed_avx_c4_payload2_t xop_byte2;
       xed_uint8_t map;
-      xop_byte1.u32 = xed_decoded_inst_get_byte(d, length);
-      xop_byte2.u32 = xed_decoded_inst_get_byte(d, length + 1);
+      xop_byte1.u32 = decoded_inst_get_byte(d, length);
+      xop_byte2.u32 = decoded_inst_get_byte(d, length + 1);
       length += 2; /* eat the 8f xop 2B payload */
       xed_decoded_inst_set_length(d, length);
       
@@ -635,7 +643,7 @@ static void vex_scanner(xed_decoded_inst_t* d)
     
     // assumption: length < max_bytes (checked in prefix_scanner)
     xed_assert(length < xed3_operand_get_max_bytes(d));
-    b = xed_decoded_inst_get_byte(d, length);
+    b = decoded_inst_get_byte(d, length);
 
     if (b == 0xC5) {
         if (!xed3_operand_get_out_of_bytes(d)) 
@@ -660,7 +668,7 @@ static void vex_scanner(xed_decoded_inst_t* d)
 static void get_next_as_opcode(xed_decoded_inst_t* d) {
     unsigned char length = xed_decoded_inst_get_length(d);
     if (length < xed3_operand_get_max_bytes(d)) {     
-        xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+        xed_uint8_t b = decoded_inst_get_byte(d, length);
         xed3_operand_set_nominal_opcode(d, b);
         xed3_operand_set_pos_nominal_opcode(d, length);
         xed_decoded_inst_inc_length(d);
@@ -781,7 +789,7 @@ void xed_modrm_scanner(xed_decoded_inst_t* d)
             xed_uint8_t mod;
             xed_uint8_t rm;
 
-            b = xed_decoded_inst_get_byte(d, length);
+            b = decoded_inst_get_byte(d, length);
             xed3_operand_set_modrm_byte(d, b);
             xed3_operand_set_pos_modrm(d, length);
             xed_decoded_inst_inc_length(d); /* eat modrm */
@@ -843,7 +851,7 @@ static void sib_scanner(xed_decoded_inst_t* d)
       unsigned char length = xed_decoded_inst_get_length(d);
       if (length < xed3_operand_get_max_bytes(d)) {
           xed_uint8_t b;
-          b = xed_decoded_inst_get_byte(d, length); 
+          b = decoded_inst_get_byte(d, length); 
 
           xed3_operand_set_pos_sib(d, length);
           xed3_operand_set_sibscale(d, xed_sib_scale(b));
@@ -865,13 +873,6 @@ static void sib_scanner(xed_decoded_inst_t* d)
   }
 }
 
-/*probably this table should be generated. Leaving it here for now.
-  Maybe in one of the following commits it will be moved to auto generated
-  code.*/
-const xed_ild_l1_func_t* disp_bits_2d[2] = {
-    disp_width_map_legacy_map0,
-    disp_width_map_legacy_map1
-};
 
 static void disp_scanner(xed_decoded_inst_t* d)
 {
@@ -884,8 +885,17 @@ static void disp_scanner(xed_decoded_inst_t* d)
     if (yes_no_var == 2) {
         xed_ild_map_enum_t map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
         xed_uint8_t opcode     = xed3_operand_get_nominal_opcode(d);
-        xed_ild_l1_func_t fptr = disp_bits_2d[map][opcode];
-        xed_assert(fptr); // fptr is always valid by design
+        xed_uint_t               vv = xed3_operand_get_vexvalid(d);
+
+        xed_assert(map < XED_MAP_ROW_LIMIT);
+        xed_assert(vv < XED_VEXVALID_LIMIT);
+
+        xed_ild_l1_func_t const* fptr_tbl = xed_ild_disp_width_table[vv][map];
+        xed_ild_l1_func_t      fptr = 0;
+        xed_assert(fptr_tbl); // fptr_tbl guaranteed to be valid by construction
+
+        fptr = fptr_tbl[opcode];
+        xed_assert(fptr); // fptr guaranteed to be valid by construction
         (*fptr)(d);
     }
     /*All other maps should have been set earlier*/
@@ -962,12 +972,6 @@ static void set_has_modrm(xed_decoded_inst_t* d) {
 }
 
 
-
-const xed_ild_l1_func_t* imm_bits_2d[2] = { //FIXME: genericize
-    imm_width_map_legacy_map0,
-    imm_width_map_legacy_map1
-};
-
 static void set_imm_bytes(xed_decoded_inst_t* d) {
     xed_uint8_t imm_bits = xed3_operand_get_imm_width(d);
     if (!imm_bits) {
@@ -978,9 +982,14 @@ static void set_imm_bytes(xed_decoded_inst_t* d) {
             xed_uint_t               vv = xed3_operand_get_vexvalid(d);
             xed_ild_map_enum_t      map = (xed_ild_map_enum_t)xed3_operand_get_map(d);
             xed_uint8_t          opcode = xed3_operand_get_nominal_opcode(d);
+
+            xed_assert(map < XED_MAP_ROW_LIMIT);
+            xed_assert(vv < XED_VEXVALID_LIMIT);
+
             xed_ild_l1_func_t const* fptr_tbl = xed_ild_imm_width_table[vv][map];
             xed_ild_l1_func_t      fptr = 0;
             xed_assert(fptr_tbl); // fptr_tbl guaranteed to be valid by construction
+
             fptr = fptr_tbl[opcode];
             xed_assert(fptr); // fptr guaranteed to be valid by construction
             (*fptr)(d);
@@ -1016,7 +1025,7 @@ static void evex_vex_opcode_scanner(xed_decoded_inst_t* d)
     /* no need to check max_bytes here, it was checked in previous
     scanner */
     unsigned char length = xed_decoded_inst_get_length(d);
-    xed_uint8_t b = xed_decoded_inst_get_byte(d, length);
+    xed_uint8_t b = decoded_inst_get_byte(d, length);
 
     xed3_operand_set_nominal_opcode(d, b);
     xed3_operand_set_pos_nominal_opcode(d, length);
@@ -1046,7 +1055,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
     
     // assumption: length < max_bytes (checked in prefix_scanner)
     xed_assert(length < xed3_operand_get_max_bytes(d));
-    b = xed_decoded_inst_get_byte(d, length);
+    b = decoded_inst_get_byte(d, length);
 
 
     // matching maps vs having a summary of which opcodes are definately map0.
@@ -1070,7 +1079,7 @@ static void opcode_scanner(xed_decoded_inst_t* d)
         return;
     }
 
-    b = xed_decoded_inst_get_byte(d, length); // get next byte
+    b = decoded_inst_get_byte(d, length); // get next byte
 
     //FIXME: could split into two loops and have the map1-like loop first..
 
@@ -1220,7 +1229,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
 
     // assumption: length < max_bytes (checked in prefix_scanner)
     xed_assert(length < xed3_operand_get_max_bytes(d));
-    b = xed_decoded_inst_get_byte(d, length);
+    b = decoded_inst_get_byte(d, length);
     
     if (b == 0x62)
     {
@@ -1229,7 +1238,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
         xed_uint_t eff_map;
         // check that it is not a BOUND instruction
         if (length + 1 < max_bytes) {
-            evex1.u8 = xed_decoded_inst_get_byte(d, length+1);
+            evex1.u8 = decoded_inst_get_byte(d, length+1);
             if (!mode_64b(d) && evex1.coarse.rx_inv != 3) {
                 /*this is a BOUND instruction */
                 return;
@@ -1258,7 +1267,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
         if (length + 4 < max_bytes) {
             xed_evex_payload2_t evex2;
 
-            evex2.u8 = xed_decoded_inst_get_byte(d, length+2);
+            evex2.u8 = decoded_inst_get_byte(d, length+2);
 
             // above check guarantees that r and x are 1 in 16/32b mode.
             if (mode_64b(d)) {
@@ -1289,7 +1298,7 @@ static void evex_scanner(xed_decoded_inst_t* d)
             if (!xed3_operand_get_error(d))
             {
                 xed_evex_payload3_t evex3;
-                evex3.u8 = xed_decoded_inst_get_byte(d, length+3);
+                evex3.u8 = decoded_inst_get_byte(d, length+3);
 
                 xed3_operand_set_zeroing(d, evex3.s.z);
                 
@@ -1378,7 +1387,7 @@ static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
     
     // assumption: length < max_bytes (checked in prefix_scanner)
     xed_assert(length < xed3_operand_get_max_bytes(d));
-    b = xed_decoded_inst_get_byte(d, length);
+    b = decoded_inst_get_byte(d, length);
 
     /* REX2 Prefix */
     if (b == 0xD5)
@@ -1401,7 +1410,7 @@ static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
             static const xed_ild_map_enum_t rex2_bit_to_map[] = {
                 XED_ILD_LEGACY_MAP0, XED_ILD_LEGACY_MAP1};
             xed_uint8_t map_bit = 0;
-            xed_uint8_t rex2 = xed_decoded_inst_get_byte(d, length + 1);
+            xed_uint8_t rex2 = decoded_inst_get_byte(d, length + 1);
             xed3_operand_set_rex2(d, 1);
 
             map_bit = (rex2>>7) & 1;
@@ -1428,7 +1437,7 @@ static XED_INLINE void rex2_scanner(xed_decoded_inst_t *d)
 
             /* REX2 Opcode scanner */
             length += 2;
-            b = xed_decoded_inst_get_byte(d, length);
+            b = decoded_inst_get_byte(d, length);
             xed3_operand_set_nominal_opcode(d, b);
             xed3_operand_set_pos_nominal_opcode(d, length);
             xed3_operand_set_srm(d, xed_modrm_rm(b));
@@ -1464,7 +1473,7 @@ static void imm_scanner(xed_decoded_inst_t* d)
           xed3_operand_set_pos_nominal_opcode(d, length);
 
           xed3_operand_set_nominal_opcode(d, 
-                                          xed_decoded_inst_get_byte(d, length));
+                                          decoded_inst_get_byte(d, length));
           /*count the pseudo immediate byte, which is opcode*/
           xed_decoded_inst_inc_length(d); 
           /*imm_bytes == imm_bytes1 == 0 for amd3dnow */

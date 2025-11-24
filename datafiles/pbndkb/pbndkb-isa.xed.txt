@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ CATEGORY:    PBNDKB
 EXTENSION:   PBNDKB
 ISA_SET:     PBNDKB
 REAL_OPCODE: Y
+ATTRIBUTES:  RING0 
 PATTERN:     0x0F 0x01 MOD[0b11] MOD=3 REG[0b000] RM[0b111] no_refining_prefix mode64
 OPERANDS:    REG0=XED_REG_RAX:w:SUPP:q:u64 REG1=XED_REG_RBX:r:SUPP:q:u64 REG2=XED_REG_RCX:r:SUPP:q:u64
 IFORM:       PBNDKB

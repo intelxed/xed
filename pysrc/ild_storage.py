@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD storage data structures.
+
+This module provides storage classes for organizing instruction patterns by
+opcode map and opcode during ILD generation. Used to build lookup tables
+indexed by map and opcode values.
+"""
 import collections
 
 import ild_info

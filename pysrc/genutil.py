@@ -2,7 +2,7 @@
 # Generic utilities
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Generic utilities for XED generators.
+
+This module provides common utility functions used throughout the XED build
+system including file operations, string manipulation, error handling, list
+operations, bit manipulation, and platform-specific helpers.
+"""
 import sys
 import os
 import math

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Multiplicative hash function implementation.
+
+This module implements multiplicative hashing based on Knuth's algorithm
+using the golden ratio. Provides fast hash computation with good distribution
+properties for general-purpose hashing needs in XED.
+"""
 from __future__ import print_function
 import sys
 import math

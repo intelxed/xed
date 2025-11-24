@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Enumeration generation infrastructure.
+
+This module provides classes for defining and generating C enumerations with
+associated string tables and parsing functions. Used throughout XED to create
+type-safe enumerations for instruction classes, registers, operand types, etc.
+"""
 from __future__ import print_function
 import os
 import sys

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD perfect hashing for lookup table generation.
+
+This module implements perfect hash function generation for ILD lookup tables.
+Creates minimal perfect hash functions to map instruction patterns to their
+properties, optimizing ILD table size and lookup performance.
+"""
 import math
 import collections
 

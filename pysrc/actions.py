@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Action representation and manipulation for XED instruction encoding/decoding.
+
+This module provides classes and functions for representing and manipulating
+actions (field bindings, function calls, returns) used in the XED encoder and
+decoder generators. Actions describe how to set fields, call functions, and
+control flow during instruction encoding and decoding.
+"""
 from enum import Enum, auto
 from typing import Optional
 

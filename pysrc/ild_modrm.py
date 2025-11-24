@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD ModRM byte presence detection generator.
 
+This module generates lookup functions to determine whether an instruction
+has a ModRM byte during instruction length decoding. ModRM presence affects
+instruction length and must be determined before computing displacement widths.
+"""
 import ild_info
 import ild_codegen
 import ildutil

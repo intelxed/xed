@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ EXTENSION:   TDX
 ISA_SET:     TDX
 REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-0  of-0  sf-0  af-0  ]
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0
 PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b111] mode64 osz_refining_prefix REFINING66()
 OPERANDS:    REG0=XED_REG_RAX:rw:SUPP:q:u64
 IFORM:       SEAMCALL
@@ -50,7 +50,7 @@ EXTENSION:   TDX
 ISA_SET:     TDX
 REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-0  of-0  sf-0  af-0  ]
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0
 PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b110] mode64 osz_refining_prefix REFINING66()
 OPERANDS:    REG0=XED_REG_RAX:rw:SUPP:q:u64
 IFORM:       SEAMOPS
@@ -66,7 +66,7 @@ EXTENSION:   TDX
 ISA_SET:     TDX
 REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod  cf-mod  pf-0  of-0  sf-0  af-0  ]
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0
 PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b101] mode64 osz_refining_prefix REFINING66()
 OPERANDS:    
 IFORM:       SEAMRET
@@ -81,7 +81,7 @@ CATEGORY:    LEGACY
 EXTENSION:   TDX
 ISA_SET:     TDX
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0
 PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b100] mode64 osz_refining_prefix REFINING66()
 OPERANDS:    REG0=XED_REG_RCX:r:SUPP:q:u64
 IFORM:       TDCALL
@@ -96,7 +96,7 @@ CATEGORY:    LEGACY
 EXTENSION:   TDX
 ISA_SET:     TDX
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0
 PATTERN:    0x0F 0x01 MOD[0b11] MOD=3  REG[0b001] RM[0b100] not64 osz_refining_prefix REFINING66()
 OPERANDS:    REG0=XED_REG_ECX:r:SUPP:d:u32
 IFORM:       TDCALL

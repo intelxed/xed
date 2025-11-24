@@ -18,7 +18,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Encoder format file reader.
 
+This module reads and parses XED encoder format files that define instruction
+encoding patterns. Processes nonterminals, sequencers, rules, conditions, and
+actions. Builds the data structures used by the encoder generator to create
+encoding functions.
+"""
 # There are dictionaries of nonterminals and sequencers. The
 # sequencers are ordered lists of nonterminals. The nonterminals
 # consist of rule_t's. Each rule has conditions and actions.  An
@@ -1603,8 +1610,8 @@ class encoder_configuration_t(object):
     #
     #    and finally, some operands get dropped entirely.
     
-    def __init__(self, encoder_input_files, chip='ALL', amd_enabled=True):
-        self.amd_enabled = amd_enabled
+    def __init__(self, encoder_input_files, chip='ALL', amd=True):
+        self.amd = amd
         self.files = encoder_input_files
         self.gendir = self.files.gendir
         self.xeddir = self.files.xeddir
@@ -2180,9 +2187,9 @@ class encoder_configuration_t(object):
             # NF=1 should not be an encoder input if it represents other properties (see {,CF}CMOV)
             elif p == 'NF=1' and attribute_str and 'APX_NF' not in attribute_str:
                 do_encoder_input_check = False
-            elif 'NF' in p and 'EVAPX()' not in pattern_str:
-                # Non-standard APX instructions (e.g., APX_SCC) use NF for pattern 
-                # optimization. In such cases, NF should not be provided as an encoder input.
+            elif 'NF' in p and 'EVAPX_SCC' in pattern_str:
+                # APX/SCC instructions defined with an NF pattern restriction for 
+                # optimization purpose. In such cases, NF should not be provided as an encoder input.
                 do_encoder_input_check = False
 
             if do_encoder_input_check:
@@ -2757,7 +2764,7 @@ class encoder_configuration_t(object):
         ins_code_gen = ins_emit.instruction_codegen_t(self.all_iforms, 
                                                       self.iarray,
                                                       self.gendir,
-                                                      self.amd_enabled)
+                                                      self.amd)
         ins_code_gen.work()
         
         # copy stuff back to this class's members vars
@@ -3270,7 +3277,7 @@ def setup_arg_parser():
                           default='',
                           help='map descriptions input file')
     arg_parser.add_option('--no-amd',
-                      action='store_false', dest='amd_enabled', default=True,
+                      action='store_false', dest='amd', default=True,
                       help='Omit AMD instructions')
     arg_parser.add_option('--verbosity', '-v',
                       action='append', dest='verbosity', default=[],
@@ -3297,7 +3304,7 @@ if __name__ == '__main__':
     (options, args) = setup_arg_parser()
     set_verbosity_options(options.verbosity)
     enc_inputs = encoder_input_files_t(options)
-    enc = encoder_configuration_t(enc_inputs, options.chip, options.amd_enabled)
+    enc = encoder_configuration_t(enc_inputs, options.chip, options.amd)
     enc.run()
     enc.look_for_encoder_inputs()      # exploratory stuff
     enc.emit_encode_defines()  # final stuff after all tables are sized

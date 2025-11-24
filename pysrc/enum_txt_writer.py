@@ -3,7 +3,7 @@
 # Enumeration support
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -18,7 +18,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Enumeration text file writer and builder.
 
+This module provides classes for building enumeration definitions and writing
+them to text files for offline generation. Can also directly emit enumerations
+by calling the enumer.py module. Used to generate various XED enumeration types.
+"""
 import codegen
 import enumer
 import genutil

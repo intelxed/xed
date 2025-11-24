@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Dynamic decoder table generation.
 
+This module generates dynamic lookup tables for decoding nonterminals and
+operands that require runtime computation. Handles OSZ/ASZ nonterminals,
+pattern nonterminals, and register lookup functions (NTLUFs) used during
+instruction decoding.
+"""
 # dynamic decode for:
 #   (a) part 1 (for OSZ/ASZ NTs),
 #   (b) part 2 (for NTs within in instr patterns), and

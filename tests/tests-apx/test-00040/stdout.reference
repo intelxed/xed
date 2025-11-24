@@ -23,7 +23,7 @@ ATTRIBUTES:
 MANDATORY 66 PREFIX
 REX2 PREFIX
 EXCEPTION TYPE: SSE_TYPE_5
-[APX] 
+[APX Encoding] 
 SSE
 Vector length: 128
 Number of legacy prefixes: 1 

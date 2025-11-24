@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,15 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Main decoder generator for XED.
 
+This is the core decoder generator that produces C code for decoding x86
+instructions from bytes. It processes instruction patterns, builds decode
+tables, generates hash-based lookup functions, and creates the decode graph.
+This module contains the primary data structures and algorithms for XED's
+decode generation.
+"""
 
 ############################################################################
 ## this is the main generator and the decoder generator.

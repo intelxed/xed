@@ -39,11 +39,28 @@ def _fatal(m):
     sys.stderr.write("\n\nXED ERROR: %s\n\n" % (m) )
     sys.exit(1)
 
+def _find_dir(d):
+    dir = os.getcwd()
+    last = ''
+    while dir != last:
+        target_dir = os.path.join(dir,d)
+        if os.path.exists(target_dir):
+            return target_dir
+        last = dir
+        (dir,tail) = os.path.split(dir)
+    return None
+
 try:
     import mbuild
 except:
-    _fatal("xed_mbuild.py could not find/import mbuild."  +
+    mbuild_path = _find_dir('mbuild')
+    if mbuild_path:
+        sys.path.append(str(mbuild_path))
+        import mbuild
+    else:
+        _fatal("xed_mbuild.py could not find/import mbuild."  +
            " Should be a sibling of the xed directory.")
+
 import xed_build_common as xbc
 try:
    import xed_build_common as xbc
@@ -51,6 +68,8 @@ except:
    _fatal("xed_mbuild.py could not import xed_build_common.py")
 
 from pysrc import genutil
+from pysrc.xed_chips_to_layers import get_chip_to_layer_dict, get_chips_and_techs
+
 
 ## END OF IMPORTS SETUP
 ############################################################################
@@ -81,7 +100,7 @@ def check_mbuild_file(mbuild_file, sig_file):
     
 class generator_inputs_t(object):
     def __init__(self, build_dir, 
-                 amd_enabled=True,
+                 amd=True,
                  limit_strings=False,
                  encoder_chip='ALL'):
         self.fields = ['dec-spine',
@@ -121,7 +140,7 @@ class generator_inputs_t(object):
         self.intermediate_dir = None
         self.set_intermediate_dir(build_dir)
         self.use_intermediate_files()
-        self.amd_enabled = amd_enabled
+        self.amd = amd
         self.limit_strings = limit_strings
 
     def add_file(self, file_type, file_name, priority=1):
@@ -253,7 +272,7 @@ class generator_inputs_t(object):
         s.append('--chip-models ' + aq(self.file_name['chip-models']))
         s.append('--chip ' + aq(self.encoder_chip))
 
-        if not env['amd_enabled']:
+        if not env['amd']:
             s.append('--no-amd')
         if extra_args:
             s.append( extra_args)
@@ -616,40 +635,13 @@ def mkenv():
                                  xedext_dir='%(xed_dir)s/../xedext',
                                  tests_ext=[],
                                  default_isa='',
-                                 avx=True,
-                                 avx512=True,
-                                 mpx=True,
-                                 cet=True,
-                                 skl=True,
-                                 skx=True,
-                                 clx=True,
-                                 cpx=True,
-                                 cnl=True,
-                                 icl=True,
-                                 tgl=True,
-                                 adl=True,
-                                 spr=True,
-                                 srf=True,  # sierra forest
-                                 gnr=True,  # granite rapids
-                                 dmr=True,  # Diamond rapids
-                                 arl=True,  # arrow lake
-                                 lnl=True,  # lunar lake
-                                 cwf=True,  # clearwater forest
-                                 ptl=True,  # panther lake
-                                 emr=True,  # emerald rapids
-                                 future=True,
-                                 knl=True,
-                                 knm=True,
-                                 lakefield=True,
                                  dbghelp=False,
                                  install_dir=None,
                                  prefix_dir='',
                                  prefix_lib_dir='lib',
                                  kit_kind='base',
                                  win=False,
-                                 amd_enabled=True,
                                  encoder_chip='ALL',
-                                 via_enabled=True,
                                  encoder=True,
                                  decoder=True,
                                  dev=False,
@@ -680,9 +672,16 @@ def mkenv():
                                  enc2_test_checked=False,
                                  enc2_operands_checked=False,
                                  py_export=False,
+                                 xedpy=False,
                                  first_lib=None,
                                  last_lib=None,
                                  setup_hooks=False)
+
+    # Enable all chip/tech options to activate every layer package by default
+    builds = get_chips_and_techs()
+    
+    for build in builds:
+        standard_defaults[build] = True
 
     env['xed_defaults'] = standard_defaults
     env.set_defaults(env['xed_defaults'])
@@ -791,111 +790,14 @@ def xed_args(env):
                           dest="default_isa",
                           help="Override the default ISA files.cfg file")
 
-    env.parser.add_option("--no-avx512",
-                          action="store_false",
-                          dest="avx512", 
-                          help="Do not include AVX512 (nor down-stream unrelated technologies).")
+    builds = get_chips_and_techs()
 
-    env.parser.add_option("--no-mpx",
-                          action="store_false", 
-                          dest="mpx", 
-                          help="Do not include MPX.")
-    env.parser.add_option("--no-cet",
-                          action="store_false", 
-                          dest="cet", 
-                          help="Do not include CET.")
-    env.parser.add_option("--no-knl",
-                          action="store_false", 
-                          dest="knl", 
-                          help="Do no include KNL AVX512{PF,ER}.")
-    env.parser.add_option("--no-knm",
-                          action="store_false", 
-                          dest="knm", 
-                          help="Do not include KNM.")
-    env.parser.add_option("--no-skl",
-                          action="store_false", 
-                          dest="skl", 
-                          help="Do not include SKL (Skylake Client).")
-    env.parser.add_option("--no-skx",
-                          action="store_false", 
-                          dest="skx", 
-                          help="Do not include SKX (Skylake Server).")
-    env.parser.add_option("--no-clx",
-                          action="store_false", 
-                          dest="clx", 
-                          help="Do not include CLX (Cascade Lake Server).")
-    env.parser.add_option("--no-cpx",
-                          action="store_false", 
-                          dest="cpx", 
-                          help="Do not include CPX (Cooper Lake Server).")
-    env.parser.add_option("--no-cnl",
-                          action="store_false", 
-                          dest="cnl", 
-                          help="Do not include CNL.")
-    env.parser.add_option("--no-icl",
-                          action="store_false", 
-                          dest="icl", 
-                          help="Do not include ICL.")
-    env.parser.add_option("--no-tgl",
-                          action="store_false", 
-                          dest="tgl", 
-                          help="Do not include TGL.")
-    env.parser.add_option("--no-adl",
-                          action="store_false", 
-                          dest="adl", 
-                          help="Do not include ADL.")
-    env.parser.add_option("--no-spr",
-                          action="store_false", 
-                          dest="spr", 
-                          help="Do not include SPR.")
-    env.parser.add_option("--no-future",
-                          action="store_false", 
-                          dest="future", 
-                          help="Do not include future NI.")
-    env.parser.add_option("--no-amd",
-                          action="store_false",
-                          dest="amd_enabled",
-                          help="Disable AMD public instructions")
-    env.parser.add_option("--no-via",
-                          action="store_false",
-                          dest="via_enabled",
-                          help="Disable VIA public instructions")                  
-    env.parser.add_option("--no-lakefield",
-                          action="store_false",
-                          dest="lakefield",
-                          help="Disable lakefield public instructions")
-    env.parser.add_option("--no-gnr",
-                          action="store_false",
-                          dest="gnr",
-                          help="Disable Granite Rapids public instructions")
-    env.parser.add_option("--no-dmr",
-                          action="store_false",
-                          dest="dmr",
-                          help="Disable Diamond Rapids public instructions")
-    env.parser.add_option("--no-srf",
-                          action="store_false",
-                          dest="srf",
-                          help="Disable Sierra Forest public instructions")
-    env.parser.add_option("--no-cwf",
-                          action="store_false",
-                          dest="cwf",
-                          help="Disable Clearwater Forest public instructions")
-    env.parser.add_option("--no-ptl",
-                          action="store_false",
-                          dest="ptl",
-                          help="Disable Panther Lake public instructions")
-    env.parser.add_option("--no-emr",
-                          action="store_false",
-                          dest="emr",
-                          help="Disable Emerald Rapids public instructions")
-    env.parser.add_option("--no-arl",
-                          action="store_false",
-                          dest="arl",
-                          help="Disable Arrow Lake public instructions")
-    env.parser.add_option("--no-lnl",
-                          action="store_false",
-                          dest="lnl",
-                          help="Disable Lunar Lake public instructions")
+    for build in builds:
+        env.parser.add_option(f'--no-{build}',
+                              action='store_false',
+                              dest=build,
+                              help=f'Do not include {build}')
+
     env.parser.add_option("--dbghelp", 
                           action="store_true", 
                           dest="dbghelp",
@@ -1028,6 +930,11 @@ def xed_args(env):
                           action="store_true",
                           dest="py_export",
                           help="Export XED APIs with a '_py' suffixed func name")
+    env.parser.add_option("--xedpy", 
+                          action="store_true",
+                          dest="xedpy",
+                          help="Build and include XedPy, the high-level Python wrapper for XED. " + 
+                               "This enables shared library and Python API export, and installs Python examples.")
     env.parser.add_option("--setup-hooks", 
                           action="store_true",
                           dest="setup_hooks",
@@ -1070,6 +977,10 @@ def init(env):
     xbc.init(env)
     
     env.add_define('XED_VERSION="%(xed_version)s"')
+    if env['xedpy']:
+        env['shared'] = True
+        env['py_export'] = True
+    
     if env['shared']:
         env.add_define('XED_DLL')
 
@@ -1240,7 +1151,7 @@ def _parse_extf_files_new(env, gc):
     # Generator configuration files to remove (key is ptype)
     gc_files_to_remove = collections.defaultdict(list)
 
-    dup_check = {}
+    dup_check = set()
     for ext_file in env['extf']:
         mbuild.vmsgb(1, "EXTF PROCESSING", ext_file)
         if not os.path.exists(ext_file):
@@ -1249,10 +1160,12 @@ def _parse_extf_files_new(env, gc):
         if os.path.isdir(ext_file):
             xbc.cdie("Please specify a file, not a directory " + 
                        "for --extf option: %s" % ext_file)
+        # Track file paths by their absolute path to prevent duplicate processing
+        ext_file = os.path.abspath(ext_file)
         if ext_file in dup_check:
             mbuild.warn("Ignoring duplicate extf file in list %s" % ext_file)
             continue
-        dup_check[ext_file]=True
+        dup_check.add(ext_file)
         edir = os.path.dirname(ext_file)
         for line in  open(ext_file,'r').readlines():
             line = line.strip()
@@ -1351,20 +1264,36 @@ def _test_chip(env, names_list):
         if env[nm]:
             return True
     return False
-        
+
 def _configure_libxed_extensions(env):
 
-    def _add_normal_ext(tenv,x , y='files.cfg'):
-        e =  tenv.src_dir_join(mbuild.join('datafiles', x, y))
+    def _add_normal_ext(tenv, path: str):
+        """
+        Add a datafiles/*.cfg path to the extension-file list (tenv['extf']).
+
+        If the last element in path ends with '.cfg', it is treated as
+        the full filename. Otherwise, 'files.cfg' is appended automatically.
+
+        Parameters:
+            tenv: target environment dictionary
+            path: string path components under 'datafiles' (variable depth)
+        """
+        path = path.strip()
+        
+        e = tenv.src_dir_join(mbuild.join('datafiles', path))
+        if not path.endswith('.cfg'):
+            # If not explicitly set, add the default .cfg file name
+            e = mbuild.join(e, 'files.cfg')
+
         if e not in tenv['extf']:
             tenv['extf'].append( e )
 
     env.add_define('XED_AVX')
     env.add_define('XED_SUPPORTS_LZCNT_TZCNT')
 
-    if env['amd_enabled']:
+    if env['amd']:
         env.add_define('XED_AMD_ENABLED')
-    if env['via_enabled']:
+    if env['via']:
         env.add_define('XED_VIA_ENABLED')
 
     if _test_chip(env, ['knl', 'skx']):
@@ -1397,24 +1326,6 @@ def _configure_libxed_extensions(env):
                                                       'files-xregs.cfg')))
     else:
         newstuff.append( env['default_isa'] )
-        
-    if env['via_enabled']:
-        newstuff.append( env.src_dir_join(mbuild.join('datafiles', 'via',
-                                                      'files-via-padlock.cfg')))
-
-    # add AMD stuff under knob control
-    if env['amd_enabled']:
-        newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
-                                                      'files-amd.cfg')))
-        newstuff.append( env.src_dir_join(mbuild.join('datafiles','amd',
-                                                        'amdxop',
-                                                        'files.cfg')))
-        _add_normal_ext(env,'wbnoinvd')
-
-    if env['mpx']: # MPX first on GLM or SKL
-        _add_normal_ext(env,'mpx')
-    if env['cet']:
-        _add_normal_ext(env,'cet')
 
     # Silvermont & Ivybridge
     _add_normal_ext(env,'rdrand') 
@@ -1455,157 +1366,13 @@ def _configure_libxed_extensions(env):
     _add_normal_ext(env,'smap')
     _add_normal_ext(env,'rdseed')
 
-    if env['lakefield']:
-        _add_normal_ext(env,'lakefield')
+    chips = get_chip_to_layer_dict()
 
-    if env['skl'] or env['skx']: # FIXME: requires MPX and BDW
-        _add_normal_ext(env,'skl')
-        _add_normal_ext(env,'sgx')
-        _add_normal_ext(env,'xsaves')
-        _add_normal_ext(env,'xsavec')
-        _add_normal_ext(env,'clflushopt')
-    if env['skx']:
-        _add_normal_ext(env,'skx')
-        _add_normal_ext(env,'pku')
-        _add_normal_ext(env,'clwb')
-        _add_normal_ext(env,'avx512f')
-        _add_normal_ext(env,'avx512cd')
-        _add_normal_ext(env,'avx-common-types') # no ISA, just defines
-        _add_normal_ext(env,'avx512-skx')
-    if env['clx']:
-        _add_normal_ext(env,'clx')
-        _add_normal_ext(env,'vnni')
-    if env['cpx']:
-        _add_normal_ext(env,'cpx')
-        _add_normal_ext(env,'avx512-bf16')
-    if env['knl']:
-        _add_normal_ext(env,'knl')
-        _add_normal_ext(env,'avx512f')
-        _add_normal_ext(env,'avx512cd')
-    if env['knm']:
-        _add_normal_ext(env,'knm')
-        _add_normal_ext(env,'4fmaps-512')
-        _add_normal_ext(env,'4vnniw-512')
-        _add_normal_ext(env,'vpopcntdq-512')
-    if env['cnl']:
-        _add_normal_ext(env,'cnl')
-        _add_normal_ext(env,'sha')
-        _add_normal_ext(env,'avx512ifma')
-        _add_normal_ext(env,'avx512vbmi')
-    if env['icl']:
-        _add_normal_ext(env,'icl')
-        _add_normal_ext(env,'wbnoinvd') # icl server
-        _add_normal_ext(env,'sgx-enclv') # icl server           
-        _add_normal_ext(env,'pconfig') # icl server 
-        _add_normal_ext(env,'rdpid')   
-        _add_normal_ext(env,'bitalg')            
-        _add_normal_ext(env,'vbmi2')
-        _add_normal_ext(env,'vnni')
-        _add_normal_ext(env,'gfni-vaes-vpcl', 'files-sse.cfg')
-        _add_normal_ext(env,'gfni-vaes-vpcl', 'files-avx-avx512.cfg')
-        _add_normal_ext(env,'vpopcntdq-512')
-        _add_normal_ext(env,'vpopcntdq-vl')
-    if env['tgl']:
-        _add_normal_ext(env,'tgl')
-        _add_normal_ext(env,'cet')
-        _add_normal_ext(env,'movdir')
-        _add_normal_ext(env,'vp2intersect')
-        _add_normal_ext(env,'keylocker')
-    if env['adl']:
-        _add_normal_ext(env,'adl')
-        _add_normal_ext(env,'hreset')
-        _add_normal_ext(env,'avx-vnni')
-        _add_normal_ext(env,'keylocker')
-        _add_normal_ext(env,'cldemote')
-        _add_normal_ext(env,'wbnoinvd')
-    if env['spr']:
-        _add_normal_ext(env,'spr')
-        _add_normal_ext(env,'hreset')
-        _add_normal_ext(env,'cldemote')
-        _add_normal_ext(env,'avx-vnni')
-        _add_normal_ext(env,'amx-spr')
-        _add_normal_ext(env,'waitpkg')
-        _add_normal_ext(env,'avx512-bf16')
-        _add_normal_ext(env,'enqcmd')
-        _add_normal_ext(env,'tsx-ldtrk')
-        _add_normal_ext(env,'serialize')
-        _add_normal_ext(env,'avx512-fp16')
-        _add_normal_ext(env,'evex-map5-6')
-    if env['emr']:
-        _add_normal_ext(env,'emr')
-        _add_normal_ext(env,'tdx')
-    if env['gnr']:
-        _add_normal_ext(env,'gnr')
-        _add_normal_ext(env,'amx-fp16')
-        _add_normal_ext(env,'amx-complex')
-        _add_normal_ext(env,'iprefetch')
-    if env['dmr']:
-        _add_normal_ext(env,'dmr')
-        _add_normal_ext(env,'vex-map5')
-        _add_normal_ext(env,'vex-map7')
-        _add_normal_ext(env,'apx-f') # No promoted rao-int
-        _add_normal_ext(env,'amx-dmr')
-        _add_normal_ext(env,'avx10-2')
-        _add_normal_ext(env,'movrs')
-        _add_normal_ext(env,'sm4-evex')
-        _add_normal_ext(env,'avx-ifma')
-        _add_normal_ext(env,'avx-ne-convert')
-        _add_normal_ext(env,'avx-vnni-int8')
-        _add_normal_ext(env,'cmpccxadd')
-        _add_normal_ext(env,'avx-vnni-int16')
-        _add_normal_ext(env,'sha512')
-        _add_normal_ext(env,'sm3')
-        _add_normal_ext(env,'sm4')
-        _add_normal_ext(env,'uintr')
-    if env['srf']:
-        _add_normal_ext(env,'srf')  
-        _add_normal_ext(env,'avx-ifma')
-        _add_normal_ext(env,'avx-common-types') # no ISA, just defines
-        _add_normal_ext(env,'avx-ne-convert')
-        _add_normal_ext(env,'avx-vnni-int8')
-        _add_normal_ext(env,'cmpccxadd')
-        _add_normal_ext(env,'msrlist')
-        _add_normal_ext(env,'vex-map7')
-        _add_normal_ext(env,'wrmsrns')
-        _add_normal_ext(env,'uintr')
-        _add_normal_ext(env,'enqcmd')
-        _add_normal_ext(env,'wbnoinvd')
-    if env['cwf']:
-        _add_normal_ext(env,'cwf')
-        _add_normal_ext(env,'user-msr')
-        _add_normal_ext(env,'iprefetch')
-        _add_normal_ext(env,'avx-vnni-int16')
-        _add_normal_ext(env,'sha512')
-        _add_normal_ext(env,'sm3')
-        _add_normal_ext(env,'sm4')
-        _add_normal_ext(env,'msr-imm')
-    if env['arl']:
-        _add_normal_ext(env,'arrow-lake')
-        _add_normal_ext(env, 'uintr')
-        _add_normal_ext(env,'avx-ifma')
-        _add_normal_ext(env,'avx-common-types') # no ISA, just defines
-        _add_normal_ext(env,'avx-ne-convert')
-        _add_normal_ext(env,'avx-vnni-int8')
-        _add_normal_ext(env,'cmpccxadd')
-        _add_normal_ext(env,'avx-vnni-int16')
-        _add_normal_ext(env,'sha512')
-        _add_normal_ext(env,'sm3')
-        _add_normal_ext(env,'sm4')
-    if env['lnl']:
-        _add_normal_ext(env,'lunar-lake')
-    if env['ptl']:
-        _add_normal_ext(env,'ptl')
-        _add_normal_ext(env,'iprefetch')
-        _add_normal_ext(env,'msrlist')
-        _add_normal_ext(env,'wrmsrns')
-        _add_normal_ext(env,'fred')
-    if env['future']:
-        _add_normal_ext(env,'future')
-        _add_normal_ext(env,'pbndkb')
-        _add_normal_ext(env,'rao-int')
-        _add_normal_ext(env,'apx-f', 'apx-f-future-ext.cfg')
-            
-
+    for chip, layers in chips.items():
+        if env[chip]:
+            for layer in layers:
+                _add_normal_ext(env, layer)
+ 
     env['extf'] = newstuff + env['extf']
 
 def _get_src(env,subdir):
@@ -1784,7 +1551,7 @@ def build_libxed(env,work_queue):
     
     # create object that will assemble our command line.
     gc = generator_inputs_t(env['build_dir'], 
-                            env['amd_enabled'],
+                            env['amd'],
                             env['limit_strings'],
                             env['encoder_chip'])
 
@@ -2397,7 +2164,10 @@ def _prep_kit_dirs(env):
                         pr('examples'),
                         pr('bin'),
                         pr('doc'),
-                        pr('misc') ]
+                        pr('misc')]
+    if env['xedpy']:
+        env['kit_dirs'].append(pr('xedpy'))
+        env['kit_dirs'].append(('xedpy_examples', mbuild.join('xedpy','examples')))
     
 def _make_kit_dirs(env,some_kit):
     for key,pth in env['kit_dirs']:
@@ -2493,7 +2263,21 @@ def create_working_kit_structure(env, work_queue):
             tgt = mbuild.join(wkit.examples,base)
             if 'LICENSE' not in tgt and not 'rc-template' in tgt:
                 apply_legal_header2(tgt, legal_header)
-                
+    
+    # Copy XedPy examples (Python high-level wrapper)
+    if env['xedpy']:
+        tgt = mbuild.join(wkit.xedpy,'examples')
+        mbuild.cmkdir(tgt)
+        for file in mbuild.glob(env['src_dir'],'pyext','xedpy','*'):
+            if os.path.isdir(file):
+                continue
+            if file.endswith('.py'):
+                mbuild.copy_file(file, tgt)
+                apply_legal_header2(mbuild.join(tgt, os.path.basename(file)),
+                                    legal_header)
+            elif file.endswith('.md'):
+                mbuild.copy_file(file, wkit.xedpy)
+
     _copy_nongenerated_headers(env,wkit.include_xed)
     _copy_generated_headers(env, wkit.include_xed)
     _apply_legal_header_to_headers(env, wkit.include_xed)
@@ -2564,7 +2348,7 @@ def get_git_version(env):
     NO_VERSION = '000'
     if "XED_VERSION" in os.environ:
         # Usual user should NOT use it
-        return f"v{os.environ['XED_VERSION'].strip()}"
+        return f"{os.environ['XED_VERSION'].strip()}"
     # are we in a GIT repo?
     if os.path.exists(mbuild.join(env['src_dir'],'.git')):
         cmd = get_git_cmd(env) + ' describe --tags'
@@ -2574,9 +2358,9 @@ def get_git_version(env):
             line = stdout[0].strip()
             return line
         else:
+            mbuild.vmsg(2, f"git description stdout: {stdout}")
+            mbuild.vmsg(2, f"git description stderr: {stderr}")
             xbc.dump_lines("git version description", ["FAILED"])
-            xbc.dump_lines("git description stdout", stdout)
-            xbc.dump_lines("git description stderr", stderr)
 
     # not a git repo or git failed.
     # search for VERSION file (Available with the public XED repository)
@@ -2724,12 +2508,13 @@ def _run_canned_tests(env,osenv):
         codes.append('AMX_GNR')
     if env['knl']:
         codes.append('AVX512PF')
-    if env['amd_enabled']:
+    if env['amd']:
         codes.append('XOP')
-    if env['via_enabled']:
-        codes.append('VIA')
-    if env['amd_enabled']:
         codes.append('AMD')
+    if env['via']:
+        codes.append('VIA')
+    if env['mpx']:
+        codes.append('MPX')
     if env['future']:
         codes.append('APX')
         codes.append('AVX10_2')

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ UDELETE: NOP0F1E
 
 {
 ICLASS    : NOP
-#UNAME     : NOP0F1E
+#UNAME    : NOP0F1E
 CPL       : 3
 CATEGORY  : WIDENOP
 EXTENSION : BASE
@@ -37,25 +37,40 @@ PATTERN   : 0x0F 0x1E MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM()
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1E
 
-
 # reg forms
 
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[rrr] RM[nnn] no_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
 
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[rrr] RM[nnn] f2_refining_prefix
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
-
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[rrr] RM[nnn] osz_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
+}
 
+# NOPS WITH F2 REFINING PREFIX
+{
+ICLASS    : NOP
+UNAME     : NOP0F1E_F2
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[rrr] RM[nnn] f2_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1E
+}
 
-
-
-
+# NOPS WITH F3 REFINING PREFIX
+{
+ICLASS    : NOP
+UNAME     : NOP0F1E_F3
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
 
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b000] RM[nnn] f3_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
@@ -77,9 +92,6 @@ IFORM     : NOP_GPRv_GPRv_0F1E
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b101] RM[nnn] f3_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b110] RM[nnn] f3_refining_prefix
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
 
 
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b000] f3_refining_prefix
@@ -93,9 +105,6 @@ IFORM     : NOP_GPRv_GPRv_0F1E
 # F3 with MODRM.REG=0b111  with RM=2 or RM=3 is for CET
 # ...
 
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b100] f3_refining_prefix
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b101] f3_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
@@ -105,10 +114,34 @@ IFORM     : NOP_GPRv_GPRv_0F1E
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b111] f3_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
-
-
 }
 
+# SPECIAL NOPS
+{
+ICLASS    : NOP
+UNAME     : NOP0F1E_F3_6
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b110] RM[nnn] f3_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1E
+}
+
+{
+ICLASS    : NOP
+UNAME     : NOP0F1E_F3_74
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b100] f3_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1E
+}
 
 # REPLACE CERTAIN NOPS WITH MODAL OPTIONS  basd on CET=0/1
 {

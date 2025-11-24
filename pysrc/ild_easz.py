@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD Effective Address Size (EASZ) computation generator.
 
+This module generates lookup tables and functions for computing the effective
+address size during instruction length decoding. EASZ affects addressing modes
+and displacement sizes, and is influenced by prefixes and machine mode.
+"""
 import re
 
 import ild_nt

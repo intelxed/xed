@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Instruction classifier code generation.
 
+This module generates C code for classifying instructions into extension groups
+(e.g., APX, AVX, SSE). Classifiers are used to determine if an instruction
+belongs to a specific architectural extension based on its ISA-set.
+"""
 
 from __future__ import print_function
 import re
@@ -36,28 +42,29 @@ def _emit_isa_switch_cases(fo, isa_sets):
     switch.add_default(['return 0;'], do_break=False)
     switch.finish()
 
-def _emit_apx_classifier(fe, isa_sets):
-    # adds special checks for APX instructions, as well as the default switch check
+def _emit_apx_classifier(fe):
+    # Catches APX encoding legacy instructions, as well as new APX instructions
+    # using the apx_foundation XED classifier.
+    SPACE = ' ' * 4
     fo = codegen.function_object_t('xed_classify_apx') 
     fo.add_arg('const xed_decoded_inst_t* d')
     fo.add_code('#if defined(XED_SUPPORTS_AVX512)')
-    fo.add_code_eol('    const xed_isa_set_enum_t isa_set = xed_decoded_inst_get_isa_set(d)')
     
-    fo.add_comment('REX2 Prefix is detected')
-    fo.add_code_eol('    if (xed3_operand_get_rex2(d)) return 1')
+    fo.add_code(f'{SPACE}// REX2 Prefix is detected')
+    fo.add_code_eol(f'{SPACE}if (xed3_operand_get_rex2(d)) return 1')
 
-    fo.add_comment('The instruction has EGPR reg or mem operand (Detects non-APX EVEX instructions)')
-    fo.add_code_eol('    if (xed3_operand_get_has_egpr(d)) return 1')
+    fo.add_code(f'{SPACE}// The instruction has EGPR reg or mem operand (Detects non-APX EVEX instructions)')
+    fo.add_code_eol(f'{SPACE}if (xed3_operand_get_has_egpr(d)) return 1')
 
-    fo.add_comment('APX EVEX bits are set but ignored (e.g. instructions with no MEM/GPR operand)')
-    fo.add_comment('EVEX.B4 is set')
-    fo.add_code_eol('    if (xed3_operand_get_rexb4(d)) return 1')
+    fo.add_code(f'{SPACE}// APX EVEX bits are set but ignored (e.g. instructions with no MEM/GPR operand)')
+    fo.add_code(f'{SPACE}// EVEX.B4 is set')
+    fo.add_code_eol(f'{SPACE}if (xed3_operand_get_rexb4(d)) return 1')
 
-    fo.add_comment('EVEX.X4 is zero (reverted -> logically set)')
-    fo.add_comment('REXX4 = ~EVEX.X4')
+    fo.add_code(f'{SPACE}// EVEX.X4 is zero (reverted -> logically set)')
+    fo.add_code(f'{SPACE}// REXX4 = ~EVEX.X4')
     # check XED-ILD for more info
-    fo.add_code_eol('    if (xed3_operand_get_rexx4(d) && xed3_operand_get_ubit(d)) return 1')
-    _emit_isa_switch_cases(fo, isa_sets)
+    fo.add_code_eol(f'{SPACE}if (xed3_operand_get_rexx4(d) && xed3_operand_get_ubit(d)) return 1')
+    fo.add_code_eol(f'{SPACE}return xed_classify_apx_foundation(d);')
     fo.add_code('#endif')
     fo.add_code_eol('(void)d')  # pacify compiler
     fo.add_code_eol('return 0') # fallback safety
@@ -137,6 +144,7 @@ def work(agi):
     _emit_function(fe, avx512_kmask_op, 'avx512_maskop')
     _emit_function(fe, avx_isa_sets,    'avx')
     _emit_function(fe, sse_isa_sets,    'sse')
-    _emit_apx_classifier(fe, apx_isa_sets)
+    _emit_function(fe, apx_isa_sets,    'apx_foundation')
+    _emit_apx_classifier(fe)
     fe.close()
     return

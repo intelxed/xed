@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Common utilities for the enc2 encoder generator.
+
+This module provides shared utility functions and configuration for the enc2
+encoder generator including debug output, Python version checking, and common
+helper functions used across enc2 modules.
+"""
 from __future__ import print_function
 import sys
 import genutil

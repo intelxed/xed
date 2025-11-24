@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Code generation utilities for ILD.
+
+This module provides code generation functions specific to ILD, including
+generating lookup tables, lookup functions, and layer-2/layer-3 accessor
+functions for determining instruction component sizes.
+"""
 import collections
 from pathlib import Path
 

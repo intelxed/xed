@@ -1,11 +1,11 @@
 Attempting to decode: 62 d4 bc 18 83 d0 01 
-iclass ADC	category BINARY	ISA-extension APXEVEX	ISA-set APX_F
+iclass ADC	category BINARY	ISA-extension APXEVEX	ISA-set APX_F_N3
 instruction-length 7
 operand-width 64
 effective-operand-width 64
 effective-address-width 64
 stack-address-width 64
-iform-enum-name ADC_GPRv_GPRv_IMM8_APX
+iform-enum-name ADC_GPRv_GPRv_IMM8_APX_N3
 iform-enum-name-dispatch (zero based) 18
 iclass-max-iform-dispatch 42
 Nominal opcode position 4
@@ -26,11 +26,13 @@ FLAGS:
   undefined:                                mask=0x0
 ATTRIBUTES: APX_NDD SCALABLE 
 EXCEPTION TYPE: APX_EVEX_INT
-[APX] New-Data-Destination Zero-Upper 
-ISA SET: [APX_F]
-0	CPUID GROUP NAME: [APX_F]
+[APX Encoding] APX-Foundation Instruction New-Data-Destination Zero-Upper 
+ISA SET: [APX_F_N3]
+0	CPUID GROUP NAME: [APX_F_N3]
 	0	CPUID RECORD NAME: [APX_F]
 		{Leaf 0x00000007, subleaf 0x00000001, EDX[21:21]} = 1
+	1	CPUID RECORD NAME: [APX_F_NCI_NDD_NF]
+		{Leaf 0x00000029, subleaf 0x00000000, EBX[0:0]} = 1
 [Encoding Bits]
 ====================== EVEX payload #0 ======================
 P0                             = 0x62

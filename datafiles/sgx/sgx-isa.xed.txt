@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ CPL: 0
 CATEGORY:  SGX
 EXTENSION: SGX
 ISA_SET:   SGX
+ATTRIBUTES: RING0
 COMMENT:   May set flags
 PATTERN: 0x0F 0x01 MOD[0b11] MOD=3 REG[0b001] RM[0b111] no_refining_prefix
 OPERANDS: REG0=XED_REG_EAX:r:SUPP    \

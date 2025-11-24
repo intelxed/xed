@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,10 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Python module import dependency finder.
 
-# Returns a list of imported modules but it is unacceptably slow.  For
-# the execution of "pysrc/importfinder.py generator pysrc" it takes 23
-# seconds.
+This utility discovers imported modules for a given Python script. Uses
+modulefinder to analyze dependencies. Note: this is slow and primarily used
+for development/analysis purposes.
+"""
 from __future__ import print_function
 import os
 import sys

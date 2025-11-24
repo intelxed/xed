@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Argument checking functions for the enc2 encoder.
+
+This module generates C functions that validate encoder function arguments
+before encoding. Checks for valid operand values, register constraints, and
+other encoding preconditions to provide better error messages.
+"""
 from __future__ import print_function
 import codegen
 from enc2common import *

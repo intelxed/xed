@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,16 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Flag usage histogram generator.
+
+This utility script analyzes the XED database and generates a histogram of
+CPU flag usage patterns across instructions. Shows which flags are read,
+written, or affected by instructions.
+
+Usage: python gen_flags.py <path_to_obj/dgen>
+Example: python gen_flags.py ../obj/dgen
+"""
 from __future__ import print_function
 import sys
 import read_xed_db
@@ -47,9 +57,7 @@ def work(args):  # main function
                 
             s= "{:<20} {:<20} {}".format(r.iclass, isa_set, r.flags)
             d[s]=True
-    k = d.keys()
-    k.sort()
-    for a in k:
+    for a in sorted(d):
         msg(a)
     
     return 0

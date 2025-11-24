@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+List content hashing and comparison utility.
+
+This module provides a hash-based comparison utility for finding lists with
+identical content. Assigns unique tokens to distinct lists while recognizing
+duplicates. Used for optimizing lookup table generation.
+"""
 from __future__ import print_function
 class hnode_t(object):
     def __init__(self, lst=None, id=None):

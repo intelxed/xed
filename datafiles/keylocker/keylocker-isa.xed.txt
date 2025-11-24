@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -182,6 +182,7 @@ CPL:         0
 CATEGORY:    KEYLOCKER
 EXTENSION:   KEYLOCKER
 ISA_SET:     KEYLOCKER
+ATTRIBUTES:  RING0
 REAL_OPCODE: Y
 FLAGS:       MUST [  zf-mod of-0 sf-0 af-0 pf-0 cf-0  ]
 PATTERN:    0x0F 0x38 0xDC f3_refining_prefix      MOD[0b11] MOD=3  REG[rrr] RM[nnn]  

@@ -89,7 +89,10 @@ void print_misc(xed_decoded_inst_t* xedd) {
 #if defined(XED_APX)
     if (xed_classify_apx(xedd))
     {
-        printf("[APX] ");
+        printf("[APX Encoding] ");
+        if (xed_classify_apx_foundation(xedd)) {
+            printf("APX-Foundation Instruction ");
+        }
         if (xed_decoded_inst_get_attribute(xedd, XED_ATTRIBUTE_APX_NDD)) {
             printf("New-Data-Destination ");
         }

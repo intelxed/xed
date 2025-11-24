@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Tuple to integer conversion for hash key generation.
 
+This module converts tuples of field values into integer hash keys by shifting
+and combining the values. Accounts for the bit width of each field to create
+unique keys for hash table lookups.
+"""
 
 def tuple2int(t, cnames, op_widths_dict):
     """Convert list of values in the input parameter t to a hash key by

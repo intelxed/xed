@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ EXTENSION:   MSR_IMM
 ISA_SET:     MSR_IMM
 EXCEPTIONS:  MSR-IMM-VEX
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     VV1 0xF6 VF2 MAP7 MOD[0b11] MOD=3 REG[0b000] RM[nnn] VL128 mode64 NOVSR UIMM32()
 OPERANDS:    REG0=VGPR64_B():w:q:u64 IMM0:r:d REG1=XED_REG_MSRS:r:SUPP
 IFORM:       RDMSR_GPR64u64_IMM32
@@ -50,7 +50,7 @@ EXTENSION:   MSR_IMM
 ISA_SET:     MSR_IMM
 EXCEPTIONS:  MSR-IMM-VEX
 REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX 
+ATTRIBUTES:  NOTSX RING0 
 PATTERN:     VV1 0xF6 VF3 MAP7 MOD[0b11] MOD=3 REG[0b000] RM[nnn] VL128 mode64 NOVSR UIMM32()
 OPERANDS:    IMM0:r:d REG0=VGPR64_B():r:q:u64 REG1=XED_REG_MSRS:w:SUPP
 IFORM:       WRMSRNS_IMM32_GPR64u64

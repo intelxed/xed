@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2021 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD immediate width computation generator.
 
+This module generates lookup tables and functions for determining the width of
+immediate operands during instruction length decoding. Immediate widths vary
+based on instruction encoding, operand size, and addressing mode.
+"""
 import ild_nt
 import mbuild
 import ildutil

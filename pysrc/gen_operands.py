@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,16 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Operand usage histogram generator.
+
+This utility script analyzes operand patterns in the XED database and generates
+histograms showing operand usage across instructions. Useful for understanding
+operand frequency and patterns.
+
+Usage: python gen_operands.py <path_to_obj/dgen>
+Example: python gen_operands.py ../obj/dgen
+"""
 from __future__ import print_function
 import sys
 import re

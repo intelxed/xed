@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Hash function interface and base class.
 
+This module defines the abstract interface for hash functions used throughout
+XED. Different hash algorithms (FKS, multiplicative, linear) implement this
+interface to provide pluggable hashing strategies for lookup table generation.
+"""
 import collections
 
 #The idea is to have different algorithms for finding hash

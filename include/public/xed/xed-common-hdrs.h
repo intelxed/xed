@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -54,17 +54,9 @@ END_LEGAL */
 #     define XED_DLL_IMPORT
 #  endif
     
-#  if defined(XED_BUILD)
-    /* when building XED, we export symbols */
-#    define XED_DLL_GLOBAL XED_DLL_EXPORT
-#  else
-    /* when building XED clients, we import symbols */
-#    define XED_DLL_GLOBAL XED_DLL_IMPORT
-#  endif
 #else
 # define XED_DLL_EXPORT 
 # define XED_DLL_IMPORT
-# define XED_DLL_GLOBAL
 #endif
     
 #endif

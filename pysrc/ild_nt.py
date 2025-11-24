@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,6 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD nonterminal processing and lookup function generation.
+
+This module handles nonterminal operands in ILD generation, creating lookup
+functions for operand types and values that require runtime computation during
+instruction length decoding.
+"""
 import re
 
 import genutil

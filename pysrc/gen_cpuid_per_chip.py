@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,16 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Per-chip CPUID feature database generator (JSON output).
+
+This utility script generates a JSON database mapping chip models to their
+instructions and required CPUID features. Organizes data by chip, ISA-set,
+instruction class, and associated CPUID requirements.
+
+Usage: python gen_cpuid_per_chip.py <path_to_obj/dgen>
+Example: python gen_cpuid_per_chip.py ../obj/dgen > cpuid_db.json
+"""
 from __future__ import print_function
 import json
 import sys

@@ -18,14 +18,11 @@
 #  
 #END_LEGAL
 
-import sys
 import os
 import re
-import shutil
 import copy
 import time
-import types
-import optparse
+from pathlib import Path
 # sys.path is set up by calling script (mfile.py ususally)
 import mbuild 
 import xed_build_common as xbc    
@@ -89,6 +86,7 @@ def mkenv():
                                  xed_enc2_libs=[],
                                  xed_dir='',
                                  build_cpp_examples=False,
+                                 security_level=2,
                                  set_copyright=False)
 
     env['xed_defaults'] = standard_defaults
@@ -236,7 +234,7 @@ def nchk(env,s):
 def init(env):
     xbc.init(env)
     if nchk(env,'xed_lib_dir'):
-        env['xed_lib_dir'] = '../lib'
+        env['xed_lib_dir'] = str(Path(__file__).parents[1] / 'lib')
 
 
     if nchk(env,'xed_enc2_libs'):
@@ -245,11 +243,11 @@ def init(env):
     if nchk(env,'xed_enc2_libs'):
         # do not build enc2 examples if libraries are missing
         env['enc2'] = False
-        
+    
     if nchk(env,'xed_inc_dir'):
-        env['xed_inc_dir'] = ['../include']
+        env['xed_inc_dir'].append(str(Path(__file__).parents[1] / 'include'))
     if nchk(env,'xed_dir'):
-        env['xed_dir'] = '..'
+        env['xed_dir'] = str(Path(__file__).parents[1])
     env.add_include_dir( env['src_dir'] )  # examples dir
     for inc in  env['xed_inc_dir']: 
         env.add_include_dir( inc )
@@ -261,10 +259,37 @@ def _wk_show_errors_only():
     return True # show errors only.
 
 
-def _add_libxed_rpath(env):
-   """Make example tools refer to the libxed.so from the lib directory"""
-   if env['shared'] and env.on_linux() and not env['android']:
-       env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../lib'"
+def is_direct_example_build(env: dict) -> bool:
+    """
+    Returns True if this script is being executed directly (not by the XED C library builder).
+
+    The 'examples' target is set by the XED C library builder. If it is not present in env['targets'],
+    this indicates a manual or post-library build phase execution.
+    """
+    try:
+        return 'examples' not in env['targets']
+    except KeyError:
+        return True  # If 'targets' is not defined, assume direct execution
+
+
+def _handle_shared_libxed(env: dict) -> None:
+    """ Support shared libxed build. """   
+    if env['shared'] and env.on_linux() and not env['android']:
+        # Make example tools refer to the libxed.so from the lib directory
+        env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../lib'"
+        env['LINKFLAGS'] += " -Wl,-rpath,'$ORIGIN/../../lib'" # if executed from "kit/examples/mfile.py"
+    
+    if env.on_windows() and is_direct_example_build(env):
+        # When building the examples manually (i.e., not as part of the XED C library build process),
+        # ensure that xed.dll is available in the build directory so the example executables can locate it.
+        # Since we cannot determine at this stage whether the referenced XED C library is shared or static,
+        # we conservatively copy xed.dll only if it exists at the expected source location and is not 
+        # already present in the build directory.
+        dll_dst_path = Path(env['build_dir'], 'xed.dll')
+        xed_dll = Path(env['xed_lib_dir'], '..', 'bin', 'xed.dll').resolve()
+        if not os.path.exists(dll_dst_path) and os.path.exists(xed_dll):
+            mbuild.msgb("COPY", f"Copying {xed_dll} to {dll_dst_path}")
+            mbuild.copy_file(xed_dll, dll_dst_path)
 
 
 def build_asmparse(env, dag, otherobj):
@@ -296,8 +321,7 @@ def build_examples(env, work_queue):
 
     link_libxed = env['link_libxed']
     
-    if env['shared']:
-       _add_libxed_rpath(env)
+    _handle_shared_libxed(env)
 
     # C vs C++: env is for C++ and env_c is for C programs.
     if env['compiler'] in  ['gnu','clang']:
@@ -469,7 +493,7 @@ def examples_work(env):
         if len(env['targets'])<=1:
             xbc.cexit(0)
 
-    mbuild.cmkdir(env['build_dir'])
+        mbuild.cmkdir(env['build_dir'])
     
     work_queue = mbuild.work_queue_t(env['jobs']) 
 
@@ -482,8 +506,6 @@ def examples_work(env):
 
 def execute():
     """Main external entry point for command line invocations"""
-    
-    import mbuild
     env = mkenv()
     # xed_args() is skip-able for remote (import) invocation. The env
     # from mkenv can be updated programmatically. One must call

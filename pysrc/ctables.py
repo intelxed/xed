@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Operand conversion table generator.
+
+This module generates conversion tables and enumerations for mapping between
+different operand representations. Creates the XED_OPERAND_CONVERT_* enum
+and associated lookup tables for operand type conversions.
+"""
 from __future__ import print_function
 import re
 import sys

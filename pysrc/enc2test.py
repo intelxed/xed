@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Test function generation for the enc2 encoder.
+
+This module generates test functions that validate the enc2 encoder by encoding
+instructions with known operand values and checking the results. Creates C test
+code for verifying encoder correctness.
+"""
 from __future__ import print_function
 import sys
 import collections
@@ -212,7 +219,7 @@ def supports_extended_gpr(env, ii):
         if ii.space == 'evex':
             return True
         elif ii.space == 'legacy':
-            if ii.map in [0, 1] and ii.rex2_restriction != Restriction.PROHIBITED:
+            if ii.rex2_restriction != Restriction.PROHIBITED:
                 return True
     return False
 
@@ -466,6 +473,18 @@ def get_mask0_index(ii, testfn):
         return []
     return mask_indices
 
+def get_skipped_idx_lst(ii, testfn) -> list:
+    """
+    Returns a list of indices to be skipped from the operand compare step,
+    including SUPP/IMPL operands and mask0 operand indices for instructions with k0 masks
+    """
+    skip_indices = get_mask0_index(ii, testfn)  # init with mask0 indices
+
+    for i, op in enumerate(ii.parsed_operands):
+        if op.visibility in ['SUPPRESSED', 'IMPLICIT']:
+            skip_indices.append(i)
+    
+    return skip_indices
 
 def _create_enc_test_functions(env, ii, encfn):
     
@@ -545,8 +564,8 @@ def _create_enc_test_functions(env, ii, encfn):
     if env.operand_check:
         
         j = 0   # index used for generic ith operand getters
-        mask0_indices = get_mask0_index(ii, testfn)
         imm2value = {'imm32': 2864434397, 'imm16': 32493, 'imm8': 126}
+        skip_indices = get_skipped_idx_lst(ii, testfn)  # indices to skip
         expression = []
 
         # validate decoded operands' values
@@ -557,7 +576,7 @@ def _create_enc_test_functions(env, ii, encfn):
             elif argname in ['cr', 'dr', 'gpr8', 'gpr16', 'gpr32', 'gpr64','seg', 'reg3','reg2','reg1','reg0',
                                      'kreg0', 'kreg1', 'kreg2', 'kmask']:
                 # arguments with generic xed3_operand_get_reg[i] getter
-                if j in mask0_indices or '_st0_sti' in testfn.get_function_name():
+                if j in skip_indices:
                     # special cases where we need to skip to next operand (suppressed ST0, mask0)
                     # as get ith reg returns the values of these operands instead of the current ones
                     j = j + 1

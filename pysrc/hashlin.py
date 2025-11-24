@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Linear hash function for sequential keys.
 
+This module implements a simple linear hash function for cases where keys are
+sequential integers. Provides efficient identity-like mapping with minimal
+overhead for contiguous key ranges.
+"""
 import xedhash
    
 class linear_func_t(xedhash.hash_fun_interface_t):

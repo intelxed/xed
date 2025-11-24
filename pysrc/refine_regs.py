@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Register refinement and enumeration generator.
+
+This module defines register information and generates register enumerations
+and related lookup tables. Handles register properties like width, type,
+enclosing registers, and generates the XED_REG_* enumeration.
+"""
 from __future__ import print_function
 import re
 from patterns import *

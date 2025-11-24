@@ -17,9 +17,14 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Fast encoder generator (enc2) for XED.
 
-# This is the "fast" encoder generator known as "enc2".
-
+This is the main encoder generator that produces fast encoding functions for
+x86 instructions. It reads instruction definitions and generates optimized C
+code for encoding instructions to bytes. The encoder handles operand validation,
+bit pattern encoding, and produces both regular and test encoding functions.
+"""
 from __future__ import print_function
 import json
 import os
@@ -1992,10 +1997,9 @@ def emit_rex_or_rex2(env, fo, ii, rex_forced=False):
             else:
                 # Otherwise, determine if REX is needed depending on instruction operands during runtime
                 fo.add_code_eol(f'emit_rex_if_needed(r)')
-        else:
-            if ii.map in [0,1]:
-                # MAP{0,1} are emitted within the REX2 prefix so set the map bit correctly
-                fo.add_code_eol(f'set_map(r, {ii.map})')
+        else: # rex2_restriction == Restriction.OPTIONAL
+            # MAP{0,1} are emitted within the REX2 prefix so set the map bit correctly
+            fo.add_code_eol(f'set_map(r, {ii.map})')
             if rex_forced:
                 # If any REX is a must, check if REX2 should be emitted, otherwise, emit REX
                 fo.add_code_eol(f'emit_rex_rex2(r)')
@@ -4371,11 +4375,6 @@ def vex_amx_reg(ii):
     return False
 
 def create_vex_amx_reg(env,ii): # FIXME: XXX
-    global enc_fn_prefix, arg_request
-    global arg_reg0,  var_reg0
-    global arg_reg1,  var_reg1
-    global arg_reg2,  var_reg2
-    global arg_reg3,  var_reg3
 
     nopnds = count_operands(ii) # not imm8
     opnd_sig = make_opnd_signature(env,ii)
@@ -4388,7 +4387,8 @@ def create_vex_amx_reg(env,ii): # FIXME: XXX
     fo.add_arg(arg_request,'req')
     opnd_types = get_opnd_types(env,ii)
     if nopnds >= 1:
-        fo.add_arg(arg_reg0,opnd_types[0])
+        if opnd_types:  # in case of a sole implicit operand
+            fo.add_arg(arg_reg0,opnd_types[0])
     if nopnds >= 2:
         fo.add_arg(arg_reg1, opnd_types[1])
         if nopnds >= 3:

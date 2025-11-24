@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Verbosity control for XED generator debugging output.
 
+This module provides functions to check verbosity flags for different subsystems
+of the XED generator. Used to enable/disable debug output for specific parts of
+the generation process such as flags, nonterminals, hashing, graphs, etc.
+"""
 _verbosity_options = []
 def set_verbosity_options(options):
     global _verbosity_options

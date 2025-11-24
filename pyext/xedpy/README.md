@@ -26,8 +26,8 @@ These Python-specific function names allow seamless integration with the dynamic
 
 ## Usage Examples
 
-Once you’ve built Intel&reg; XED with Python support, you can refer to the `pyext/examples` scripts for details on how to load and use the Intel&reg; XED library.
-Currently, the examples include minimal Python bindings for the XED C APIs.
+Once you’ve built Intel&reg; XED with Python support, you can refer to the Python examples scripts for details on how to load and use the Intel&reg; XED library.
+Currently, the examples include limited Python bindings for the XED C APIs.
 
 ### Specifying the Intel&reg; XED Shared Library Path
 
@@ -36,7 +36,7 @@ The Python examples provided allow you to specify the location of the XED shared
 For the `cffi` script, you have to specify any of the --decode or --encode knobs (or both) to run their respective examples.
 
 ```bash
-python pyext/examples/xedpy_ex_cffi.py --xed-lib /path/to/libxed.so --decode --encode
+python examples/xedpy_ex_cffi.py --xed-lib /path/to/libxed.so --decode --encode
 ```
 
 ### Example Python Scripts:

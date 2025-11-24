@@ -379,8 +379,6 @@ Options:
                         Tests directories extension
   --default-isa-extf=DEFAULT_ISA
                         Override the default ISA files.cfg file
-  --no-avx              Do not include AVX (nor down-stream unrelated
-                        technologies).
   --no-avx512           Do not include AVX512 (nor down-stream unrelated
                         technologies).
   --no-ivb              Do not include IVB.

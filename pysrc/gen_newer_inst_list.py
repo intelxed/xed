@@ -18,8 +18,15 @@
 #  
 #END_LEGAL
 """
+Instruction set comparison utility between two chip models.
+
 This script generates a list of instruction differences between two chips, specifically
 focusing on instructions that are present in one chip but not the other.
+
+Usage: python gen_newer_inst_list.py --basechip <chip1> --newchip <chip2> <path_to_obj/dgen>
+
+Example:
+    python gen_newer_inst_list.py --basechip ALDER_LAKE --newchip FUTURE ../obj/dgen
 
 Functionality:
 - Reads the XED database and chip database.

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD map information and encoding space utilities.
 
+This module provides functions to query opcode map information used by the
+Instruction Length Decoder. It handles map name lookups, encoding space
+conversions, and irregular map identification.
+"""
 ## The ild.py needs the mapping from decode search patterns to
 ##   symbolic map names.  It includes V0F, V0F38, V0F3A and it has order
 ##   requirements V0F and 0x0F must be after the longer patterns.

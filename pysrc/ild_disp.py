@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+ILD displacement width computation generator.
 
+This module generates lookup tables and functions for determining the width of
+displacement (memory offset) operands during instruction length decoding.
+Displacement widths vary based on addressing mode, ModRM encoding, and EASZ.
+"""
 import collections
 
 import ild_nt
@@ -385,11 +391,11 @@ def work(agi, instr_by_map_opcode,  disp_nts, brdisp_nts, ild_gendir,
     headers = [ _l1_header_fn,
                 ildutil.ild_private_header,
                 operand_storage.get_operand_accessors_fn() ]
-    ild_codegen.dump_lookup(agi,
-                            l1_lookup,
-                            _ild_t_disp_member, 
-                            _disp_lu_header_fn,
-                            headers, 
-                            ildutil.l1_ptr_typename)
-
+    
+    ild_codegen.dump_lookup_new(agi,
+                                l1_lookup,
+                                _ild_t_disp_member, 
+                                _disp_lu_header_fn,
+                                headers, 
+                                ildutil.l1_ptr_typename)
 

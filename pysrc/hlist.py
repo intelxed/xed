@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,12 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Hashable integer list class.
+
+This module provides a hashable list class for use as dictionary keys. Needed
+when lists of integers must be used as hash table keys in the generator.
+"""
 from __future__ import print_function
 class hlist_t(object):
     """A hashable integer list"""

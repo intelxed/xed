@@ -84,7 +84,7 @@ typedef int (WINAPI *fptr_t)(void*);
 static fptr_t find_fn_ptr(const char* function_name)  {
    fptr_t p;
 
-   p = (fptr_t) GetProcAddress(
+   p = (fptr_t)(void *) GetProcAddress(
                    GetModuleHandle(TEXT("kernel32.dll")), 
                    function_name);
    return p;

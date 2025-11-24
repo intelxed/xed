@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,6 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Constraint vector generator for encoder.
+
+This module generates constraint vectors (tuples) representing encoding rules
+and their conditions. Converts constraint rules into integer keys for hash
+table lookups in the encoder generator.
+"""
 from __future__ import print_function
 import copy
 import genutil 

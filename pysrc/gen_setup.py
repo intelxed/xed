@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,12 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Common setup utilities for gen_* scripts.
 
+This module provides shared setup functions for user-facing generator scripts
+including argument parsing, database reading, and chip database loading.
+"""
 import argparse
 import os
 import sys

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #BEGIN_LEGAL
 #
-#Copyright (c) 2020 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,6 +16,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Hash key pattern classifier.
+
+This utility analyzes sequences of hash keys to determine their distribution
+properties (sequential, sparse, etc.). Used to select appropriate hash
+functions for lookup table generation.
+"""
 from __future__ import print_function
 import sys
 import optparse

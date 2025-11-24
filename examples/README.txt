@@ -1,32 +1,41 @@
+=====================================================================
+                    Building XED Examples (mfile.py)
+=====================================================================
+
+To build the XED examples, Python 3.9 or later is required.
 
 
-To build the examples, a relatively recent version of python 3.9 is required.
+=====================================================================
+Static Library XED Build
+=====================================================================
 
-================================
-STATIC LIBRARY XED BUILD:
-================================
+If your XED library is built as a static archive, use the following command:
 
-  Linux or Mac:
+  On Linux:
+    $ ./mfile.py
 
-    % ./mfile.py
+  On Windows:
+    $ C:\python3\python.exe mfile.py
 
-  Windows:
 
-   % C:/python3/python mfile.py
+=====================================================================
+Shared Library XED Build
+=====================================================================
 
-================================
-DYNAMIC  LIBRARY XED BUILD:
-================================
+If you are using a shared XED library (`.so` on Linux/macOS or `.dll` on Windows),
+you must specify the `--shared` flag:
 
-If you have a a shared-object (or DLL build on windows) you must also include
-"--shared" on the command line:
+  On Linux:
+    $ ./mfile.py --shared
 
-  Linux or Mac:
-
-    % ./mfile.py --shared
-
-  Windows:
-
-   % C:/python3/python mfile.py --shared
+  On Windows:
+    $ C:\python3\python.exe mfile.py --shared
  
-Add "--help" (no quotes) for more build options.
+
+=====================================================================
+Additional Options
+=====================================================================
+
+To view all available build options, use the `--help` flag:
+
+    $ ./mfile.py --help

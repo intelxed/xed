@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -32,39 +32,41 @@ def _find_dir(d):
         (dir,tail) = os.path.split(dir)
     return None
 
+try:
+    import mbuild 
+except:
+    # mbuild is not in the path, so try to add it
+    mbuild_path = _find_dir('mbuild')
+    if mbuild_path:
+        sys.path.append(str(mbuild_path))
+        import mbuild
+    else:
+        # mbuild is not in the path and we could not find it
+        sys.stderr.write("\n\nXED build error: Could not find mbuild directory\n\n")
+        sys.exit(1)
+
 def _fatal(m):
     sys.stderr.write("\n\nXED build error: %s\n\n" % (m) )
     sys.exit(1)
-
-def _try_mbuild_import():
-    try:
-        import mbuild
-        return True
-    except:
-        return False
-    
-def _find_add_import(d):
-    p = _find_dir(d)
-    if p and os.path.exists(p):
-        sys.path = [p] + sys.path
-        return
-    _fatal("Could not find {} directory".format(d))
-    
-def _find_mbuild_import():
-    if _try_mbuild_import():
-        return
-    _find_add_import('mbuild')
-    
     
 def _find_common():
-    p = os.path.dirname(_find_dir('xed_build_common.py'))
-    if p and os.path.exists(p):
-        sys.path = [p] + sys.path
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    common_path = os.path.join(script_dir, 'xed_build_common.py')
+    if os.path.exists(common_path):
+        sys.path = [script_dir] + sys.path
         return
+    
+    common_dir = _find_dir('xed_build_common.py')
+    if common_dir:
+        p = os.path.dirname(common_dir)
+        if p and os.path.exists(p):
+            sys.path = [p] + sys.path
+            return
+        
     _fatal("Could not find xed_build_common.py")
 
+
 def setup():
-    _find_mbuild_import()
     mbuild.check_python_version(3,9)
     # when building in the source tree the xed_build_common.py file is
     # in the parent directory of the examples. When building in the

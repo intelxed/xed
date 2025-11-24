@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -15,7 +15,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Encoder utility constants and naming conventions.
 
+This module provides string constants and naming conventions used throughout
+the encoder generator. Defines type names, function prefixes, and other
+encoder-specific configuration strings.
+"""
 import ildutil
 
 

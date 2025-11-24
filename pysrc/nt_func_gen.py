@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2023 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 #  limitations under the License.
 #  
 #END_LEGAL
+"""
+Nonterminal function generator for encoder.
 
+This module generates encoding functions for nonterminals (NTs) and nonterminal
+lookup functions (NTLUFs). These functions compute register encodings, immediate
+values, and other operand properties during instruction encoding.
+"""
 # encoder generator support
 
 import os

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2025 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -123,19 +123,17 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_
     xed_chip_enum_t init_chip = XED_CHIP_ALL;
     xed_chip_features_t chip_features;
 
-    xed_decoded_inst_zero_set_mode(&xedd, &dstate);
     xed_get_chip_features(&chip_features, init_chip);
     // disable PPRO_UD0_SHORT, prefer PPRO_UD0_LONG
     xed_modify_chip_features(&chip_features, XED_ISA_SET_PPRO_UD0_SHORT, 0);
-    // sets the desired XED operands based on the chip's features
-    xed_set_decoder_modes(&xedd, init_chip, &chip_features);
 
     if (enable_emit_test_name)
         printf("//\ttest id %d  iform: %s (%s)\n",
                test_id, xed_iform_enum_t2str(ref_iform), fn_name);
     for(i=0;i<reps;i++)    {
         t1 = xed_get_time();
-        //printf("Calling test function %d\n",test_id);
+        xed_decoded_inst_zero_set_mode(&xedd, &dstate);
+        xed_set_decoder_modes(&xedd, init_chip, &chip_features); // sets the desired XED operands based on the chip's features
         enclen = (*base[test_id])(output_buffer, &xedd);
         t2 = xed_get_time();
         if (t2>t1) {
