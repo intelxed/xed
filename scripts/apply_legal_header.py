@@ -26,7 +26,8 @@ import datetime
 from stat import *
 import argparse
 from collections import defaultdict, Counter
-import subprocess
+import subprocess, shlex
+import platform
 
 XED_ROOT = Path(__file__).parents[1]
 
@@ -61,26 +62,46 @@ def ensure_string(x):
     return x
 
 def run_subprocess(cmd, **kwargs):
-	"""front end to running subprocess"""
-	sub = subprocess.Popen(cmd,
-	                           shell=True,
-	                           stdout=subprocess.PIPE,
-	                           stderr=subprocess.STDOUT,
-	                           **kwargs)
-	lines = sub.stdout.readlines()
-	lines = [ensure_string(x) for x in lines]
-	sub.wait()
-	return sub.returncode, lines
+    """front end to running subprocess safely"""
+
+    sub = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=False,              # importantly FALSE
+        **kwargs
+    )
+    
+    lines = sub.stdout.readlines()
+    lines = [ensure_string(x) for x in lines]
+    sub.wait()
+    return sub.returncode, lines
+
 
 def run_shell_command(cmd, **kwargs):
-   """INPUT: string with all args. OUTPUT: return the exit status, or die trying..."""
-   try:
-        (returncode, lines) = run_subprocess(cmd, **kwargs)
-        cond_die(returncode, cmd,
-               "Child was terminated by signal {0:d}".format(-returncode), lines)
-        return (returncode, lines)
-   except OSError as e:
-     die("Execution failed: {0}".format(str(e)))
+    """INPUT: string with all args. OUTPUT: return the exit status, or die trying..."""
+    try:
+        if platform.system() == "Windows":
+            # On Windows, pass the raw string to CreateProcess.
+            # No shell is used when shell=False, so no cmd.exe parsing.
+            popen_cmd = cmd
+        else:
+            # On POSIX, convert the string to an argv list.
+            popen_cmd = shlex.split(cmd)
+    
+        returncode, lines = run_subprocess(popen_cmd, **kwargs)
+
+        cond_die(
+            returncode,
+            cmd,
+            f"Child was terminated by signal {-returncode:d}",
+            lines,
+        )
+
+        return returncode, lines
+
+    except OSError as e:
+        die(f"Execution failed: {e}")
 
 def get_mode(fn):
     "get the mode of the file named fn, suitable for os.chmod() or open() calls"

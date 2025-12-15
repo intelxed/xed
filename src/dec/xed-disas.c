@@ -826,8 +826,13 @@ static void xed_print_operand( xed_print_info_t* pi )
                     xed_decoded_inst_print_ptr_size(bytes),
                     pi->blen);
           }
+          
+          // AMX instructions' memory width is configured by LDTILECFG 
+          // It would be redundant to specify just "ptr" without a width prefix 
+          // FIXME: Consider applying for all instructions with memory width of 0
+          if (!xed_classify_amx(pi->p))
+            xed_pi_strcat(pi,"ptr ");
 
-          xed_pi_strcat(pi,"ptr ");
           if (seg != XED_REG_INVALID &&
               !xed_operand_values_using_default_segment(ov, 0))
           {
@@ -937,7 +942,11 @@ static void xed_print_operand( xed_print_info_t* pi )
                                        xed_decoded_inst_print_ptr_size(bytes),
                                        pi->blen);
           
-          xed_pi_strcat(pi,"ptr ");
+          // AMX instructions' memory width is configured by LDTILECFG 
+          // It would be redundant to specify just "ptr" without a width prefix 
+          // FIXME: Consider applying for all instructions with memory width of 0
+          if (!xed_classify_amx(pi->p))
+            xed_pi_strcat(pi,"ptr ");
 
           if (seg != XED_REG_INVALID &&
               !xed_operand_values_using_default_segment(ov, 1))

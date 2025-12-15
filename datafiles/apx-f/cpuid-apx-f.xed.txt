@@ -18,7 +18,6 @@
 
 XED_ISA_SET_APX_F               : apx_f.7.1.edx.21
 XED_ISA_SET_APX_F_ADX           : apx_f.7.1.edx.21 adoxadcx.7.0.ebx.19
-XED_ISA_SET_APX_F_AMX           : apx_f.7.1.edx.21 amx_tiles.7.0.edx.24
 XED_ISA_SET_APX_F_BMI1          : apx_f.7.1.edx.21 bmi1.7.0.ebx.3
 XED_ISA_SET_APX_F_BMI2          : apx_f.7.1.edx.21 bmi2.7.0.ebx.8
 XED_ISA_SET_APX_F_CET           : apx_f.7.1.edx.21 cet.7.0.ecx.7
@@ -33,8 +32,6 @@ XED_ISA_SET_APX_F_POPCNT        : apx_f.7.1.edx.21 popcnt.1.0.ecx.23
 XED_ISA_SET_APX_F_VMX           : apx_f.7.1.edx.21 vmx.1.0.ecx.5
 XED_ISA_SET_APX_F_USER_MSR      : apx_f.7.1.edx.21 user_msr.7.1.edx.15
 XED_ISA_SET_APX_F_MOVRS         : apx_f.7.1.edx.21 movrs.7.1.eax.31
-
-XED_ISA_SET_APX_F_AMX_MOVRS     : apx_f.7.1.edx.21 amx_movrs.1e.1.eax.8
 
 ### KOP AVX512 Feature bits
 XED_ISA_SET_APX_F_KOPB        : apx_f.7.1.edx.21 avx512dq.7.0.ebx.17

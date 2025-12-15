@@ -248,6 +248,10 @@ class group_record_t:
             return False
         return len(set(self.get_records()).symmetric_difference(other.get_records())) == 0
     
+    def to_serializable(self) -> dict:
+        ''' Returns a serializable dict representation '''
+        return { self.name : [str(rec) for rec in self.records] }
+
     def __str__(self) -> str:
         """ Overrides the default implementation """
         s = f'Name={self.get_name}, Kind={self.get_kind_name}, ISA-SET={self.isa_set}\n'

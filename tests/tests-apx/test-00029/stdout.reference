@@ -4109,20 +4109,20 @@ XDIS 7400: LOGICAL   APXEVEX    APX_F_N3   62FC7C1483F102           {nf} xor r16
 XDIS 7407: LOGICAL   APXEVEX    APX_F_N3   62FCFC1483F102           {nf} xor r16, r17, 0x2
 XDIS 740e: LOGICAL   APXEVEX    APX_F_N3   62BC781483343102         {nf} xor r16d, dword ptr [r17+r30*1], 0x2
 XDIS 7416: LOGICAL   APXEVEX    APX_F_N3   62BCF81483343102         {nf} xor r16, qword ptr [r17+r30*1], 0x2
-XDIS 741e: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7808490438           ldtilecfg zmmword ptr [r16+r31*1]
-XDIS 7425: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7908490438           sttilecfg zmmword ptr [r16+r31*1]
-XDIS 742c: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7B084B3C31           tileloadd tmm7, ptr [r17+r30*1]
-XDIS 7433: AMX_TILE  AMX_TILE   APX_F_AMX  62BA79084B3C31           tileloaddt1 tmm7, ptr [r17+r30*1]
-XDIS 743a: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7A084B3C38           tilestored ptr [r16+r31*1], tmm7
+XDIS 741e: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7808490438           ldtilecfg zmmword [r16+r31*1]
+XDIS 7425: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7908490438           sttilecfg zmmword [r16+r31*1]
+XDIS 742c: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7B084B3C31           tileloadd tmm7, [r17+r30*1]
+XDIS 7433: AMX_TILE  AMX_TILE   APX_F_AMX  62BA79084B3C31           tileloaddt1 tmm7, [r17+r30*1]
+XDIS 743a: AMX_TILE  AMX_TILE   APX_F_AMX  62BA7A084B3C38           tilestored [r16+r31*1], tmm7
 XDIS 7441: POP       APXLEGACY  APX_F      D50858                   popp rax
 XDIS 7444: PUSH      APXLEGACY  APX_F      D50850                   pushp rax
 XDIS 7447: UNCOND_BR APXLEGACY  APX_F      D500A10123456789012345   jmpabs 0x4523018967452301
 # end of text section.
 # Errors: 0
 #XED3 DECODE STATS
-#Total DECODE cycles:        13901661
+#Total DECODE cycles:        20451248
 #Total instructions DECODE: 4069
-#Total tail DECODE cycles:        14304426
+#Total tail DECODE cycles:        21665296
 #Total tail instructions DECODE: 4119
-#Total cycles/instruction DECODE: 3416.48
-#Total tail cycles/instruction DECODE: 3472.79
+#Total cycles/instruction DECODE: 5026.11
+#Total tail cycles/instruction DECODE: 5259.84

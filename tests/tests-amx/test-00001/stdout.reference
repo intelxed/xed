@@ -5,6 +5,6 @@ EXTENSION:  AMX_TILE
 IFORM:      LDTILECFG_MEM
 ISA_SET:    AMX_TILE
 ATTRIBUTES: NOTSX 
-SHORT:      ldtilecfg zmmword ptr [rax]
+SHORT:      ldtilecfg zmmword [rax]
 Encodable! C4E2784900
 Identical re-encoding

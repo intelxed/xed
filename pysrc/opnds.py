@@ -75,7 +75,7 @@ class operand_info_t(object):
             genutil.die("Unexpected type when building operand: %s" %
                         (str(self.type)))
 
-        # constant or varible bits, Register names. could be empty for
+        # constant or variable bits, Register names. could be empty for
         # lookup functions that do not take arguments.
         self.bits: str = bits
 
@@ -192,6 +192,16 @@ class operand_info_t(object):
 
     def set_suppressed(self):
         self.visibility = 'SUPPRESSED'
+        
+    def to_serializable(self) -> dict:
+        ''' Returns a serializable dict representation '''
+        result = dict()
+        keys_filter: set = {'width_info_dict', 'internal', 'invert', 'inline',
+                            'rightmost_bitpos', 'bit_positions'}
+        keys = set(self.__dict__.keys()) - keys_filter
+        for key in sorted(keys):
+            result[key] = getattr(self, key)
+        return result
 
     def dump_str(self, pad: str = '') -> str:
         s = []

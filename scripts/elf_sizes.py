@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2019 Intel Corporation
+#Copyright (c) 2025 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ except:
     sys.path.append(find_dir.find_dir('mbuild'))
     import mbuild
 
+from mbuild import util
+
 def _warn(s):
     sys.stderr.write("ERROR:" + s + "\n")
 def _die(s):
@@ -36,20 +38,26 @@ def _die(s):
 
 def _run_cmd(cmd, die_on_errors=True):
     try:
-        sub = subprocess.Popen(cmd, 
-                               shell=True, 
-                               stdout=subprocess.PIPE, 
-                               stderr=subprocess.STDOUT,
-                               universal_newlines=True)
+        # Turn the string into either string or list based on os
+        cmd = util._prepare_cmd(cmd)
+
+        sub = subprocess.Popen(
+            cmd,
+            shell=False,            # default is False - force it nonetheless
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            universal_newlines=True,
+        )
         lines = sub.stdout.readlines()
         sub.wait()
         return (sub.returncode, lines)
+
     except OSError as e:
-        msg = "Execution failed for:" + str( cmd) + ".\nResult is " + str(e)
+        msg = "Execution failed for:" + str(cmd) + ".\nResult is " + str(e)
         if die_on_errors:
             _die(msg)
         else:
-            return (1,[msg])
+            return (1, [msg])
 
 
 def _run_readelf_sections(fn,die_on_errors):

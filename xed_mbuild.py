@@ -2251,17 +2251,20 @@ def create_working_kit_structure(env, work_queue):
                 mbuild.copy_file(pdb,wkit.lib)
 
     # copy examples source
-    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', '*.txt']:
+    for ext in ['*.[Hh]', '*.c', '*.cpp', '*.py', '*.txt', '*.md']:
         esrc = mbuild.glob(env['src_dir'],'examples',ext)
         if len(esrc) == 0:
             xbc.cdie( "No examples files to install with extension {}".format(ext))
-        for  s in esrc:
+        for s in esrc:
             mbuild.copy_file(s,wkit.examples)
 
             # legal header stuff
             base = os.path.basename(s)
+            ext = os.path.splitext(s)[1] # file extension
             tgt = mbuild.join(wkit.examples,base)
-            if 'LICENSE' not in tgt and not 'rc-template' in tgt:
+            if 'LICENSE' not in tgt and \
+                'rc-template' not in tgt and \
+                ext != '.md':
                 apply_legal_header2(tgt, legal_header)
     
     # Copy XedPy examples (Python high-level wrapper)
@@ -2565,8 +2568,8 @@ def verify_args(env):
     if not env['avx512']:
         env['skx'] = False
         env['knl'] = False
-        env['adl'] = False
         env['srf'] = False
+        env['nvl'] = False
 
     # turn off downstream (later) stuff logically
     if not env['knl']:
@@ -2601,7 +2604,9 @@ def verify_args(env):
         env['cwf'] = False
     if not env['lnl']:
         env['ptl'] = False
-    if not env['dmr'] or not env['cwf'] or not env['ptl']: 
+    if not env['ptl']:
+        env['nvl'] = False
+    if not env['dmr'] or not env['cwf'] or not env['nvl']: 
         env['future'] = False
         
     if env['use_elf_dwarf_precompiled']:
