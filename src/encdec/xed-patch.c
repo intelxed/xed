@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ xed_patch_disp(xed_decoded_inst_t* xedd,
                xed_uint8_t* itext,
                xed_enc_displacement_t disp)
 {
+    xed_assert(xedd != NULL);
+    api_check(itext != NULL);
     xed_uint_t disp_width = xed3_operand_get_disp_width(xedd);
     xed_uint_t disp_pos   = xed3_operand_get_pos_disp(xedd);
     xed_uint_t i;
@@ -44,6 +46,8 @@ xed_patch_brdisp(xed_decoded_inst_t* xedd,
                 xed_uint8_t* itext,
                 xed_encoder_operand_t disp)
 {
+    xed_assert(xedd != NULL);
+    api_check(itext != NULL);
     xed_uint_t disp_width = xed3_operand_get_disp_width(xedd);
     xed_uint_t disp_pos   = xed3_operand_get_pos_disp(xedd);
     xed_uint_t i;
@@ -62,6 +66,8 @@ xed_patch_imm0(xed_decoded_inst_t* xedd,
                xed_uint8_t* itext,
                xed_encoder_operand_t imm0)
 {
+    xed_assert(xedd != NULL);
+    api_check(itext != NULL);
     xed_uint_t imm_width = xed3_operand_get_imm_width(xedd);
     xed_uint_t imm_pos   = xed3_operand_get_pos_imm(xedd);
     xed_uint_t i;

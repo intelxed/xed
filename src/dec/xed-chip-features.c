@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -23,20 +23,18 @@ END_LEGAL */
 void
 xed_get_chip_features(xed_chip_features_t* p, xed_chip_enum_t chip)
 {
-    if (p)
+    xed_assert(p != NULL);
+    if (chip > XED_CHIP_INVALID && chip < XED_CHIP_LAST)
     {
-        if (chip < XED_CHIP_LAST && chip != XED_CHIP_INVALID)
-        {
-            xed_uint_t i;
-            for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
-                p->f[i] = xed_chip_features[chip][i];
-        }
-        else
-        {
-            xed_uint_t i;
-            for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
-                p->f[i] = 0;
-        }
+        xed_uint_t i;
+        for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
+            p->f[i] = xed_chip_features[chip][i];
+    }
+    else
+    {
+        xed_uint_t i;
+        for(i=0;i<XED_FEATURE_VECTOR_MAX;i++)
+            p->f[i] = 0;
     }
 }
 
@@ -58,23 +56,22 @@ xed_modify_chip_features(xed_chip_features_t* p,
                          xed_isa_set_enum_t isa_set,
                          xed_bool_t present)
 {
-    if (p)
-    {
-        const unsigned int f = XED_CAST(unsigned int,isa_set);
-        const unsigned int n = f / 64;
-        xed_assert(n < XED_FEATURE_VECTOR_MAX);
-        set_bit(p->f+n, f-(64*n), present);
-   }
+    xed_assert(p != NULL);
+    const unsigned int f = XED_CAST(unsigned int,isa_set);
+    const unsigned int n = f / 64;
+    const unsigned int r = f - (64 * n);
+    xed_assert(n < XED_FEATURE_VECTOR_MAX);
+    set_bit(p->f+n, r, present);
 }
 
 xed_bool_t
 xed_test_features(xed_features_elem_t const*const p,
                   xed_isa_set_enum_t isa_set)
 {
+    xed_assert(p != NULL);
     const xed_uint64_t one = 1;
     const unsigned int n = XED_CAST(unsigned int, isa_set) / 64;
     const unsigned int r = XED_CAST(unsigned int, isa_set) - (64 * n);
-    xed_assert(p);
     xed_assert(n < XED_FEATURE_VECTOR_MAX);
     if (p[n] & (one<<r))
         return 1;
@@ -85,6 +82,7 @@ xed_bool_t
 xed_test_chip_features(xed_chip_features_t const*const p,
                        xed_isa_set_enum_t isa_set)
 {
-    xed_assert(p);
+    xed_assert(p != NULL);
     return xed_test_features(p->f,isa_set);
 }
+

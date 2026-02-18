@@ -1,2 +1,10 @@
-Attempting to decode: ff00ff
-length = 2
+F3480F1EF8
+ICLASS:     IBHF
+CATEGORY:   LEGACY
+EXTENSION:  IBHF
+IFORM:      IBHF
+ISA_SET:    IBHF
+ATTRIBUTES: 
+SHORT:      ibhf
+Encodable! F3480F1EF8
+Identical re-encoding

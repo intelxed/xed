@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -201,12 +201,10 @@ static void decode_with_chip(xed_decoded_inst_t *xedd,
                              xed_uint_t bytes,
                              xed_bool_t repeat)
 {
-#if defined(XED_CHIP_LUNAR_LAKE_DEFINED)
-    xed_chip_enum_t chip = XED_CHIP_LUNAR_LAKE; // Example chip
-#else
-    xed_chip_enum_t chip = XED_CHIP_ALL; // Example chip
-#endif
-    printf("Using decode_with_chip(), Repeat=%s\n", repeat ? "True" : "False");
+    xed_chip_enum_t chip = XED_CHIP_ALL; // == All supported latest ISA
+
+    printf("Using decode_with_chip(), Repeat=%s, Chip=%s\n", 
+        repeat ? "True" : "False", xed_chip_enum_t2str(chip));
 
     if (repeat)
     {
@@ -294,9 +292,11 @@ static void decode_with_features(xed_decoded_inst_t *xedd,
     // XED_ISA_SET_MPX : mpx.7.0.ebx.14
     xed_modify_chip_features(&chip_features, XED_ISA_SET_MPX, get_bit32(ebx, 14));
 #endif
+
     /***************************/
     /* Leaf = 0x7, subleaf = 0x1 */
     get_cpuid(0x7, 0x1, &eax, &ebx, &ecx, &edx);
+
 #if defined(XED_ISA_SET_ICACHE_PREFETCH_DEFINED)
     // XED_ISA_SET_ICACHE_PREFETCH : icache_prefetch.7.1.edx.14
     xed_modify_chip_features(&chip_features, XED_ISA_SET_ICACHE_PREFETCH,
@@ -306,6 +306,16 @@ static void decode_with_features(xed_decoded_inst_t *xedd,
     // XED_ISA_SET_MOVRS : movrs.7.1.eax.31
     xed_modify_chip_features(&chip_features, XED_ISA_SET_MOVRS, get_bit32(eax, 31));
 #endif
+
+    /***************************/
+    /* Leaf = 0x7, subleaf = 2 */
+    get_cpuid(0x7, 0x2, &eax, &ebx, &ecx, &edx);
+
+#if defined(XED_ISA_SET_IBHF)
+    // XED_ISA_SET_IBHF : bhi_ctrl.7.2.edx.4
+    xed_modify_chip_features(&chip_features, XED_ISA_SET_IBHF, get_bit32(edx, 4));
+#endif
+
     /***************************/
 
     if (repeat)
@@ -354,6 +364,10 @@ int main(int argc, char **argv)
             long_mode = 1;
         else if (strcmp(argv[i], "-de-method") == 0) 
         {
+            if (i + 1 >= argcu) {
+                printf("Error: -de-method requires a value (0, 1, or 2)\n");
+                exit(1);
+            }
             de_method = xed_atoi_general(argv[i + 1], 1000);
             i++;
         }
@@ -380,10 +394,14 @@ int main(int argc, char **argv)
     xed_decoded_inst_set_mode(&xedd, mmode, stack_addr_width);
 
     // convert ascii hex to hex bytes
+    if (i >= argcu) {
+        printf("Error: No hex bytes provided to decode\n");
+        exit(1);
+    }
     for (; i < argcu; i++) {
         decode_text = xedex_append_string(decode_text, argv[i]);
         if (!decode_text) {
-            printf("Failed to allocate memory for decode_text\n");
+            printf("Error: Failed to allocate memory for decode_text\n");
             exit(1);
         }
     }

@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ CHIPS_TO_LAYER = {
                        'amd/amdxop/files.cfg',
                        'wbnoinvd'],
         'mpx'       : ['mpx'],
-        'cet'       : ['cet'],
         'skl'       : ['skl', 
                        'sgx', 
                        'xsaves', 
@@ -81,7 +80,8 @@ CHIPS_TO_LAYER = {
                        'hreset', 
                        'avx-vnni', 
                        'keylocker', 
-                       'wbnoinvd'],
+                       'wbnoinvd',
+                       'cet'],
         'spr'       : ['spr', 
                        'hreset', 
                        'cldemote', 
@@ -120,6 +120,7 @@ CHIPS_TO_LAYER = {
                        'sm4', 
                        'uintr'],
         'srf'       : ['srf', 
+                       'cet',
                        'avx-ifma', 
                        'avx-ne-convert', 
                        'avx-vnni-int8', 
@@ -149,8 +150,8 @@ CHIPS_TO_LAYER = {
                        'avx-vnni-int16', 
                        'sha512', 
                        'sm3', 
-                       'sm4'],
-        'lnl'       : ['lunar-lake'],
+                       'sm4',
+                       'ibhf'],
         'ptl'       : ['ptl', 
                        'msrlist', 
                        'wrmsrns', 
@@ -181,7 +182,7 @@ CHIPS_TO_LAYER = {
     }
 
 # Chip is a group of layers. Technology is a group of chips.
-TECHNOLOGIES : set[str] = {'avx512'}
+TECHNOLOGIES : set[str] = {'avx512', 'cet'}
 
 def get_chip_to_layer_dict() -> dict[str, list[str]]:
     return CHIPS_TO_LAYER

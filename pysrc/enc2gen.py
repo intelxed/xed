@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -1598,7 +1598,6 @@ def create_legacy_zero_operands_scalable(env,ii):
         
 
 def create_legacy_zero_operands(env,ii): # allows all implicit too
-    global enc_fn_prefix, arg_request
     
     if env.mode == 64 and ii.easz == 'a16':
         # cannot do 16b addressing in 64b mode...so skip these!
@@ -1642,6 +1641,9 @@ def create_legacy_zero_operands(env,ii): # allows all implicit too
         elif env.mode == 64 and ii.eosz == 'o32' and ii.default_64b == True:
             return # skip this one. cannot do 32b osz in 64b mode if default to 64b
         elif env.mode == 64 and ii.eosz == 'o64' and ii.default_64b == False:
+            rexw_forced = True
+            fo.add_code_eol('set_rexw(r)')
+        elif env.mode == 64 and ii.rexw_prefix == '1': # Opcode refining REX.W
             rexw_forced = True
             fo.add_code_eol('set_rexw(r)')
         elif env.mode == 32 and ii.eosz == 'o16':

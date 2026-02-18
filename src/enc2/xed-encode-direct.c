@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -1538,6 +1538,10 @@ xed_int32_t xed_chose_evex_scaled_disp(xed_enc2_req_t* r,
                                        xed_int32_t requested_displacement,
                                        xed_uint32_t reference_width_bytes)
 {
+    if (r == NULL)
+        xed_enc2_error("NULL pointer in xed_chose_evex_scaled_disp");
+    if (reference_width_bytes == 0)
+        xed_enc2_error("Division by zero: reference_width_bytes is 0 in xed_chose_evex_scaled_disp");
     xed_int32_t scaled_displacement = requested_displacement / reference_width_bytes;
     if (scaled_displacement >= -128 && scaled_displacement <= 127) {
         set_mod(r,1);
@@ -1553,6 +1557,10 @@ xed_int32_t xed_chose_evex_scaled_disp16(xed_enc2_req_t* r,
                                          xed_int32_t requested_displacement,
                                          xed_uint32_t reference_width_bytes)
 {
+    if (r == NULL)
+        xed_enc2_error("NULL pointer in xed_chose_evex_scaled_disp16");
+    if (reference_width_bytes == 0)
+        xed_enc2_error("Division by zero: reference_width_bytes is 0 in xed_chose_evex_scaled_disp16");
     xed_int32_t scaled_displacement = requested_displacement / reference_width_bytes;
     if (scaled_displacement >= -128 && scaled_displacement <= 127) {
         set_mod(r,1);

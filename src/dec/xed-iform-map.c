@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ END_LEGAL */
 
 const xed_iform_info_t* xed_iform_map(xed_iform_enum_t iform) {
 
-   if (iform < XED_IFORM_LAST) {
+   if (iform > XED_IFORM_INVALID && iform < XED_IFORM_LAST) {
        const xed_iform_info_t* p = xed_iform_db + iform;
        return p;
    }
@@ -33,14 +33,14 @@ const xed_iform_info_t* xed_iform_map(xed_iform_enum_t iform) {
 
 xed_uint32_t xed_iform_max_per_iclass(xed_iclass_enum_t iclass) {
 
-    xed_assert(iclass < XED_ICLASS_LAST);
+    api_check(iclass > XED_ICLASS_INVALID && iclass < XED_ICLASS_LAST);
     return xed_iform_max_per_iclass_table[iclass];
 }
 
 
 xed_uint32_t xed_iform_first_per_iclass(xed_iclass_enum_t iclass) {
 
-    xed_assert(iclass < XED_ICLASS_LAST);
+    api_check(iclass > XED_ICLASS_INVALID && iclass < XED_ICLASS_LAST);
     return xed_iform_first_per_iclass_table[iclass];
 }
 

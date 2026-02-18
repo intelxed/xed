@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ END_LEGAL */
 
 xed_reg_enum_t xed_decoded_inst_get_reg(const xed_decoded_inst_t* p, 
                                         xed_operand_enum_t reg_operand) {
+    xed_assert(p != NULL);
     
     switch(reg_operand) {
       case XED_OPERAND_REG0:  return xed3_operand_get_reg0(p);
@@ -57,14 +58,14 @@ xed_uint32_t
 xed_decoded_inst_get_attribute(const xed_decoded_inst_t* p,
                                xed_attribute_enum_t attr)
 {
-    xed_assert(p->_inst != 0);
+    xed_assert(p != NULL && p->_inst != NULL);
     return xed_inst_get_attribute(p->_inst, attr);
 }
 
 xed_attributes_t
 xed_decoded_inst_get_attributes(const xed_decoded_inst_t* p)
 {
-    xed_assert(p->_inst != 0);
+    xed_assert(p != NULL && p->_inst != NULL);
     return xed_inst_get_attributes(p->_inst);
 }
 
@@ -78,6 +79,7 @@ xed_decoded_inst_get_attributes(const xed_decoded_inst_t* p)
 */
 xed_uint32_t
 xed_decoded_inst_is_xrelease(const xed_decoded_inst_t* p){
+    xed_assert(p != NULL);
     xed_iclass_enum_t iclass;
     const xed_operand_values_t* ov;
     xed_uint32_t rel_able =
@@ -103,6 +105,7 @@ xed_decoded_inst_is_xrelease(const xed_decoded_inst_t* p){
 */
 xed_uint32_t
 xed_decoded_inst_is_xacquire(const xed_decoded_inst_t* p){
+    xed_assert(p != NULL);
     const xed_operand_values_t* ov;
     xed_uint32_t acq_able =
         xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_HLE_ACQ_ABLE);
@@ -118,6 +121,7 @@ xed_decoded_inst_is_xacquire(const xed_decoded_inst_t* p){
 
 xed_uint32_t
 xed_decoded_inst_has_mpx_prefix(const xed_decoded_inst_t* p){
+    xed_assert(p != NULL);
     const xed_operand_values_t* ov;
     xed_uint32_t mpx_able = xed_decoded_inst_get_attribute(p,
                                               XED_ATTRIBUTE_MPX_PREFIX_ABLE);
@@ -133,6 +137,7 @@ xed_decoded_inst_has_mpx_prefix(const xed_decoded_inst_t* p){
 xed_uint8_t
 xed_decoded_inst_get_modrm(const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
     return XED_STATIC_CAST(xed_uint8_t,xed3_operand_get_modrm_byte(p));
 }
 
@@ -172,6 +177,7 @@ xed_decoded_inst_get_immediate_width_bits(const xed_decoded_inst_t* p) {
 
 xed_uint_t
 xed_decoded_inst_get_immediate_is_signed(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
     //return xed_operand_values_get_immediate_is_signed(p);
     return xed3_operand_get_imm0signed(p);
 }
@@ -228,6 +234,7 @@ xed_decoded_inst_get_memory_displacement_width_bits(
 
 xed_reg_enum_t xed_decoded_inst_get_seg_reg(const xed_decoded_inst_t* p,
                                             unsigned int mem_idx) {
+    xed_assert(p != NULL);
     switch(mem_idx) {
       case 0: return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_seg0(p)); 
       case 1: return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_seg1(p)); 
@@ -237,6 +244,7 @@ xed_reg_enum_t xed_decoded_inst_get_seg_reg(const xed_decoded_inst_t* p,
 }
 xed_reg_enum_t xed_decoded_inst_get_base_reg(const xed_decoded_inst_t* p,
                                              unsigned int mem_idx) {
+    xed_assert(p != NULL);
     switch(mem_idx) {
       case 0: return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_base0(p));
       case 1: return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_base1(p));
@@ -246,6 +254,7 @@ xed_reg_enum_t xed_decoded_inst_get_base_reg(const xed_decoded_inst_t* p,
 }
 xed_reg_enum_t xed_decoded_inst_get_index_reg(const xed_decoded_inst_t* p,
                                               unsigned int mem_idx) {
+    xed_assert(p != NULL);
     switch(mem_idx) {
       case 0: return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_index(p));
       case 1: return XED_REG_INVALID;
@@ -255,6 +264,7 @@ xed_reg_enum_t xed_decoded_inst_get_index_reg(const xed_decoded_inst_t* p,
 }
 xed_uint_t xed_decoded_inst_get_scale(const xed_decoded_inst_t* p,
                                       unsigned int mem_idx) {
+    xed_assert(p != NULL);
     switch(mem_idx) {
       case 0: return xed3_operand_get_scale(p);
       case 1: return 1;
@@ -265,6 +275,7 @@ xed_uint_t xed_decoded_inst_get_scale(const xed_decoded_inst_t* p,
 
 xed_bool_t xed_decoded_inst_mem_read(const xed_decoded_inst_t* p,
                                      unsigned int mem_idx) {
+    xed_assert(p != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -292,6 +303,7 @@ xed_bool_t
 xed_decoded_inst_mem_written(const xed_decoded_inst_t* p,
                              unsigned int mem_idx) 
 {
+    xed_assert(p != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -319,6 +331,7 @@ xed_decoded_inst_mem_written(const xed_decoded_inst_t* p,
 xed_bool_t
 xed_decoded_inst_conditionally_writes_registers(const xed_decoded_inst_t* p )
 {
+    xed_assert(p != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -338,6 +351,7 @@ xed_bool_t
 xed_decoded_inst_mem_written_only(const xed_decoded_inst_t* p,
                                   unsigned int mem_idx) 
 {
+    xed_assert(p != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -363,6 +377,7 @@ xed_decoded_inst_mem_written_only(const xed_decoded_inst_t* p,
 static XED_INLINE unsigned int 
 xed_decoded_inst_get_find_memop(const xed_decoded_inst_t* p,
                                 xed_uint_t memop_idx) {
+    xed_assert(p != NULL && p->_inst != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -382,6 +397,7 @@ xed_decoded_inst_get_find_memop(const xed_decoded_inst_t* p,
 unsigned int 
 xed_decoded_inst_get_memop_address_width(const xed_decoded_inst_t* p,
                                          xed_uint_t memop_idx) {
+    xed_assert(p != NULL && p->_inst != NULL);
     /* Return the addressing width for memop_idx (0 or 1).
      *
      * In 16/32b modes, if the memop is an implicit stack reference, then
@@ -419,6 +435,7 @@ xed_decoded_inst_get_memop_address_width(const xed_decoded_inst_t* p,
 static XED_INLINE unsigned int 
 xed_decoded_inst_get_operand_width_bits(const xed_decoded_inst_t* p,
                                         const xed_operand_t* o ) {
+    xed_assert(p != NULL && o != NULL);
     const xed_operand_width_enum_t width = xed_operand_width(o);
     unsigned int  bits=0;
     if (width == XED_OPERAND_WIDTH_SSZ) {
@@ -442,6 +459,7 @@ xed_decoded_inst_get_operand_width_bits(const xed_decoded_inst_t* p,
 static xed_uint32_t
 xed_decoded_inst_compute_variable_width(const xed_decoded_inst_t* p, 
                                         const xed_operand_t* o) {
+    xed_assert(p != NULL && o != NULL);
     const xed_uint32_t        nelem = xed3_operand_get_nelem(p);
     const xed_uint32_t element_size = xed3_operand_get_element_size(p);
     (void)o; // pacify compiler
@@ -452,6 +470,7 @@ xed_decoded_inst_compute_variable_width(const xed_decoded_inst_t* p,
 unsigned int  
 xed_decoded_inst_compute_memory_operand_length(const xed_decoded_inst_t* p, 
                                                unsigned int memop_idx)  {
+    xed_assert(p != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int i = xed_decoded_inst_get_find_memop(p, memop_idx);
     const xed_operand_t* o = xed_inst_operand(inst,i);
@@ -477,6 +496,7 @@ xed_decoded_inst_operand_length_bits_register(
     const xed_decoded_inst_t* p, 
     unsigned int operand_index)
 {
+    xed_assert(p != NULL && p->_inst != NULL);
     xed_uint32_t mode = 0;
     xed_uint_t idx = 0; // default for 16b and 32b
     const xed_inst_t* inst = p->_inst;
@@ -506,14 +526,14 @@ xed_decoded_inst_operand_length_bits(
     const xed_decoded_inst_t* p, 
     unsigned int operand_index)
 {
+    xed_assert(p != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
-    const xed_operand_t* o = xed_inst_operand(inst,operand_index);
     xed_operand_enum_t op_name;
     xed_uint32_t len;
     if (noperands <= operand_index)
         return 0;
-
+    const xed_operand_t* o = xed_inst_operand(inst,operand_index);
 
     op_name = xed_operand_name(o);
     if (xed_operand_template_is_register(o)) {
@@ -552,6 +572,7 @@ unsigned int xed_decoded_inst_operand_length(const xed_decoded_inst_t* p,
 unsigned int  xed_decoded_inst_operand_elements(const xed_decoded_inst_t* p, 
                                                 unsigned int operand_index) 
 {
+    xed_assert(p != NULL && p->_inst != NULL);
     unsigned int nelem = 1;
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
@@ -596,7 +617,7 @@ xed_decoded_inst_operand_element_size_bits(
     const xed_decoded_inst_t* p, 
     unsigned int operand_index) 
 {
-
+    xed_assert(p != NULL && p->_inst != NULL);
     unsigned int element_size = 0;
     const xed_inst_t* inst = p->_inst;
     const xed_operand_t* o = xed_inst_operand(inst,operand_index);
@@ -627,6 +648,7 @@ xed_operand_element_type_enum_t
 xed_decoded_inst_operand_element_type(const xed_decoded_inst_t* p, 
                                       unsigned int operand_index)
 {
+    xed_assert(p != NULL && p->_inst != NULL);
     xed_operand_element_type_enum_t dtype = XED_OPERAND_ELEMENT_TYPE_INVALID;    
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
@@ -669,6 +691,7 @@ xed_decoded_inst_uses_rflags(const xed_decoded_inst_t* q)
 static xed_uint8_t 
 xed_decoded_inst__compute_masked_immediate( const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
     xed_uint8_t imm_byte;
     xed_uint8_t masked_imm_byte;
     xed_uint8_t mask = 0x1F;
@@ -690,6 +713,7 @@ xed_bool_t xed_decoded_inst_has_default_flags_values(const xed_decoded_inst_t* x
 }
 
 xed_bool_t xed_decoded_inst_get_default_flags_values(const xed_decoded_inst_t* xedd, xed_flag_dfv_t* p){
+    xed_assert(p != NULL);
 #if defined(XED_APX)
     if(xed_decoded_inst_has_default_flags_values(xedd))
     {
@@ -710,6 +734,7 @@ xed_bool_t xed_decoded_inst_get_default_flags_values(const xed_decoded_inst_t* x
 const xed_simple_flag_t*
 xed_decoded_inst_get_rflags_info(const xed_decoded_inst_t* q) 
 {
+    xed_assert(q != NULL && q->_inst != NULL);
     xed_uint32_t complex_simple_index;
     const xed_complex_flag_t*  p;
 
@@ -763,6 +788,7 @@ xed_decoded_inst_is_prefetch(const xed_decoded_inst_t* p)
 
 xed_uint_t
 xed_decoded_inst_number_of_memory_operands(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
     return (xed3_operand_get_mem0(p) +
             xed3_operand_get_mem1(p) + xed3_operand_get_agen(p));
 }
@@ -775,6 +801,7 @@ xed_decoded_inst_number_of_memory_operands(const xed_decoded_inst_t* p) {
 
 
 void xed_decoded_inst_set_scale(xed_decoded_inst_t* p, xed_uint_t scale) {
+    xed_assert(p != NULL);
     xed3_operand_set_scale(p,scale);
 }
 void xed_decoded_inst_set_memory_displacement(xed_decoded_inst_t* p,
@@ -854,6 +881,7 @@ xed_decoded_inst_valid_for_features(xed_decoded_inst_t const *const p,
 xed_uint_t
 xed_decoded_inst_vector_length_bits(xed_decoded_inst_t const* const p)
 {
+    xed_assert(p != NULL);
     xed_uint_t vl_bits=0;
 #if defined(XED_AVX)
     xed_uint_t vl_encoded;
@@ -874,6 +902,7 @@ xed_decoded_inst_vector_length_bits(xed_decoded_inst_t const* const p)
 xed_bool_t
 xed_decoded_inst_masked_vector_operation(xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     // pre-evex masked operations
     xed_uint32_t maskop =
@@ -907,10 +936,12 @@ xed_decoded_inst_masked_vector_operation(xed_decoded_inst_t* p)
 
 xed_uint_t
 xed_decoded_inst_get_nprefixes(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_nprefixes(p);
 }
 
 xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     if (xed3_operand_get_mask(p) != 0)
         return 1;
@@ -920,6 +951,7 @@ xed_bool_t xed_decoded_inst_masking(const xed_decoded_inst_t* p) {
 }
 
 xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     if (xed3_operand_get_mask(p) != 0)
     {
@@ -937,6 +969,7 @@ xed_bool_t xed_decoded_inst_merging(const xed_decoded_inst_t* p) {
     return 0;
 }
 xed_bool_t xed_decoded_inst_zeroing(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     if (xed3_operand_get_mask(p) != 0)
         if (xed3_operand_get_zeroing(p) == 1)
@@ -947,6 +980,7 @@ xed_bool_t xed_decoded_inst_zeroing(const xed_decoded_inst_t* p) {
 }
 
 xed_uint_t xed_decoded_inst_avx512_dest_elements(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     if (xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_SIMD_SCALAR))
         return 1;
@@ -976,6 +1010,7 @@ xed_operand_action_enum_t
 xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
                                 unsigned int operand_index)
 {
+    xed_assert(p != NULL && p->_inst != NULL);
     /* For the 0th operand, except for stores and except if attribute MASK_AS_CONTROL
                              RW             W   <<< SDM/XED notion
       ===========================================
@@ -1020,6 +1055,7 @@ xed_decoded_inst_operand_action(const xed_decoded_inst_t* p,
 xed_bool_t
 xed_decoded_inst_uses_embedded_broadcast(const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     if (xed_decoded_inst_get_attribute(p, XED_ATTRIBUTE_BROADCAST_ENABLED))
         if (xed3_operand_get_bcast(p))  
@@ -1031,6 +1067,7 @@ xed_decoded_inst_uses_embedded_broadcast(const xed_decoded_inst_t* p)
 xed_bool_t
 xed_decoded_inst_is_broadcast_instruction(const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
 #if defined(XED_AVX)  // also reports AVX512 broadcast instr
     if (xed_decoded_inst_get_category(p) == XED_CATEGORY_BROADCAST)
         return 1;
@@ -1052,6 +1089,7 @@ xed_decoded_inst_is_broadcast(const xed_decoded_inst_t* p)
 xed_bool_t 
 xed_decoded_inst_is_apx_zu(const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
     /* APX-Promoted instructions with ZU(zero-upper) behavior are:
     - NDD instructions
     - Subgroup of promoted IMUL instructions with 0x69 and 0x6B opcodes
@@ -1065,3 +1103,5 @@ xed_decoded_inst_is_apx_zu(const xed_decoded_inst_t* p)
     (void) p;
     return 0;
 }
+
+

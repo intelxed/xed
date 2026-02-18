@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ END_LEGAL */
 # define XED_STATE_H
 #include "xed-types.h"
 #include "xed-portability.h"
+#include "xed-util.h"
 #include "xed-address-width-enum.h" // generated
 #include "xed-machine-mode-enum.h" // generated
 
@@ -61,6 +62,7 @@ static XED_INLINE void xed_state_init(xed_state_t* p,
                                       xed_machine_mode_enum_t arg_mmode,
                                       xed_address_width_enum_t arg_ignored,
                                       xed_address_width_enum_t arg_stack_addr_width) {
+    xed_assert(p != NULL);
     p->mmode=arg_mmode;
     p->stack_addr_width=arg_stack_addr_width;
     (void) arg_ignored; //pacify compiler unused arg warning
@@ -79,6 +81,7 @@ static XED_INLINE void xed_state_init(xed_state_t* p,
 static XED_INLINE void xed_state_init2(xed_state_t* p,
                                       xed_machine_mode_enum_t arg_mmode,
                                       xed_address_width_enum_t arg_stack_addr_width) {
+    xed_assert(p != NULL);
     p->mmode=arg_mmode;
     p->stack_addr_width=arg_stack_addr_width;
 }
@@ -86,6 +89,7 @@ static XED_INLINE void xed_state_init2(xed_state_t* p,
 /// clear the xed_state_t
 /// @ingroup INIT
 static XED_INLINE void xed_state_zero(xed_state_t* p) {
+    xed_assert(p != NULL);
     p->mmode= XED_MACHINE_MODE_INVALID;
     p->stack_addr_width=XED_ADDRESS_WIDTH_INVALID;
 }
@@ -97,6 +101,7 @@ static XED_INLINE void xed_state_zero(xed_state_t* p) {
 /// return the machine mode
 /// @ingroup INIT
 static XED_INLINE xed_machine_mode_enum_t   xed_state_get_machine_mode(const xed_state_t* p) {
+    xed_assert(p != NULL);
     return p->mmode; 
 }
 
@@ -131,6 +136,7 @@ static XED_INLINE xed_bool_t xed_state_mode_width_32(const xed_state_t* p) {
 /// @ingroup INIT
 static XED_INLINE void  xed_state_set_machine_mode( xed_state_t* p,
                         xed_machine_mode_enum_t arg_mode)  {
+    xed_assert(p != NULL);
     p->mmode = arg_mode;
 }
 //@}
@@ -175,6 +181,7 @@ static XED_INLINE void
 xed_state_set_stack_address_width(xed_state_t* p,
                                   xed_address_width_enum_t arg_addr_width)
 {
+    xed_assert(p != NULL);
     p->stack_addr_width = arg_addr_width;
 }
 
@@ -182,6 +189,7 @@ xed_state_set_stack_address_width(xed_state_t* p,
 /// Return the STACK address width
 /// @ingroup INIT
 static XED_INLINE xed_address_width_enum_t  xed_state_get_stack_address_width(const xed_state_t* p) {
+    xed_assert(p != NULL);
     return p->stack_addr_width;
 }
 //@}
@@ -190,4 +198,5 @@ static XED_INLINE xed_address_width_enum_t  xed_state_get_stack_address_width(co
 XED_DLL_EXPORT int xed_state_print(const xed_state_t* p, char* buf, int buflen);
 
 #endif
+
 

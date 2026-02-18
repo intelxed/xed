@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -21,10 +21,12 @@ END_LEGAL */
 #include "xed-reg-class-enum.h"
 #include "xed-reg-class.h"
 #include "xed-operand-accessors.h"
+#include "xed-util.h"
 
 /// convert a #xed_encoder_instruction_t to a #xed_encoder_request_t for encoding
 xed_bool_t xed_convert_to_encoder_request(xed_encoder_request_t* out,
                                           xed_encoder_instruction_t* in) {
+    xed_assert(out != NULL && in != NULL);
 
     /* this is basically what the encoder language example code does but in
      * a more uniform way. */

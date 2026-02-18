@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -29,10 +29,12 @@ END_LEGAL */
 
 XED_DLL_EXPORT xed_error_enum_t 
 xed3_dynamic_decode_part2(xed_decoded_inst_t* d) {
-    xed_uint32_t inum = 
-            (xed_uint32_t)(d->_inst - xed_inst_table);
-    
+    xed_uint32_t inum;
     xed3_chain_function_t capture_fptr;
+    
+    xed_assert(d != NULL && d->_inst != NULL);
+    
+    inum = (xed_uint32_t)(d->_inst - xed_inst_table);
         
         
     capture_fptr = xed3_chain_fptr_lu[inum];
@@ -44,10 +46,12 @@ xed3_dynamic_decode_part2(xed_decoded_inst_t* d) {
 XED_DLL_EXPORT
 xed_error_enum_t xed3_decode_operands(xed_decoded_inst_t* d)
 {
-    xed_uint32_t inum = 
-            (xed_uint32_t)(d->_inst - xed_inst_table);
-    
+    xed_uint32_t inum;
     xed3_chain_function_t capture_fptr;
+    
+    xed_assert(d != NULL && d->_inst != NULL);
+    
+    inum = (xed_uint32_t)(d->_inst - xed_inst_table);
         
         
     capture_fptr = xed3_op_chain_fptr_lu[inum];

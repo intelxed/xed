@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -58,12 +58,13 @@ xed_uint32_t xed_operand_width_bits(const xed_operand_t* p,
                                     const xed_uint32_t eosz) {
     const xed_operand_width_enum_t width = xed_operand_width(p);
 
-    xed_assert(width < XED_OPERAND_WIDTH_LAST);
-    xed_assert(eosz <= 3);
+    api_check(width < XED_OPERAND_WIDTH_LAST);
+    api_check(eosz <= 3);
     return xed_width_bits[width][eosz];
 }
 
 xed_nonterminal_enum_t xed_operand_nt_lookup_fn_enum(const xed_operand_t* p) {
+    xed_assert(p != NULL);
     return p->_u._nt;
 }
 
@@ -71,6 +72,7 @@ xed_nonterminal_enum_t xed_operand_nt_lookup_fn_enum(const xed_operand_t* p) {
         
 
 void xed_inst_init(xed_inst_t* p) {
+    xed_assert(p != NULL);
     //p->_confirmer = 0;
     p->_noperands = 0;
     p->_operand_base = 0;
@@ -80,6 +82,7 @@ void xed_inst_init(xed_inst_t* p) {
 }
 
 unsigned int xed_inst_cpl(const xed_inst_t* p) {
+    xed_assert(p != NULL);
     return p->_cpl;
 }
 
@@ -90,11 +93,16 @@ unsigned int xed_inst_cpl(const xed_inst_t* p) {
 
     
 xed_uint32_t xed_inst_flag_info_index(const xed_inst_t* p) {
+    xed_assert(p != NULL);
     return p->_flag_info_index;
 }
 
 
 void xed_operand_print(const xed_decoded_inst_t* xedd, unsigned int i, char* buf, int buflen) {
+    if (buflen <= 0)
+        return;
+    xed_assert(xedd != NULL);
+    api_check(buf != NULL);
     int blen = buflen;
     const xed_inst_t* xi = xed_decoded_inst_inst(xedd);
     const xed_operand_t* p = xed_inst_operand(xi,i);
@@ -140,7 +148,7 @@ extern const xed_attributes_t xed_attributes[XED_MAX_REQUIRED_ATTRIBUTES];
 xed_uint32_t
 xed_inst_get_attribute(const xed_inst_t* p, 
                        xed_attribute_enum_t attr) {
-
+    xed_assert(p != NULL);
     const xed_attributes_t* a = xed_attributes + p->_attributes;
     const xed_uint64_t one = 1;
     if (XED_CAST(xed_uint_t,attr) < 64)  
@@ -151,13 +159,16 @@ xed_inst_get_attribute(const xed_inst_t* p,
 
 xed_attributes_t
 xed_inst_get_attributes(const xed_inst_t* p) {
+    xed_assert(p != NULL);
     return xed_attributes[p->_attributes];
 }
 
 
 const xed_operand_t*
 xed_inst_operand(const xed_inst_t* p, unsigned int i)    {
-    xed_assert(i <  p->_noperands);
+    xed_assert(p != NULL);
+    api_check(i < p->_noperands);
     return &(xed_operand[xed_operand_sequences[p->_operand_base + i]]);
 }
+
 

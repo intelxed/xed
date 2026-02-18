@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ static int xed_immdis__print_ptr(const xed_immdis_t* p, char* buf, int buflen) {
     char* x = tbuf;
     int blen = buflen;
     const xed_bool_t lowercase=1;
+    xed_assert(p != 0);
+    xed_assert(buf != 0);
     blen =  xed_strncpy(buf,"PTR:",blen);
     // Note: no 0x needed because this is private and called in the context
     // where a leading 0x is provided.
@@ -43,6 +45,7 @@ static int xed_immdis__print_ptr(const xed_immdis_t* p, char* buf, int buflen) {
 }
 
 static void xed_immdis__check(xed_immdis_t* q, xed_uint_t p)    {
+    xed_assert(q != NULL);
     xed_assert(q->currently_used_space == 0);
     q->present = 1;
     q->currently_used_space  = p;
@@ -51,6 +54,7 @@ static void xed_immdis__check(xed_immdis_t* q, xed_uint_t p)    {
 
 
 void xed_immdis_init(xed_immdis_t* p, xed_uint_t max_bytes) {
+    xed_assert(p != NULL);
     xed_assert(max_bytes == 4 || max_bytes == 8);
     p->currently_used_space=0;
     p->max_allocated_space=max_bytes;
@@ -61,6 +65,7 @@ void xed_immdis_init(xed_immdis_t* p, xed_uint_t max_bytes) {
 
 /// return the number of bytes added
 unsigned int xed_immdis_get_bytes(const xed_immdis_t* p) {
+    xed_assert(p != NULL);
     return p->currently_used_space;
 }
 
@@ -69,6 +74,7 @@ unsigned int xed_immdis_get_bytes(const xed_immdis_t* p) {
 xed_bool_t
 xed_immdis_is_zero(const xed_immdis_t* p) 
 {
+    xed_assert(p != NULL);
     //FIXME: could just check value.q if willing to rely on initialization
     xed_uint_t i;
     for(i=0; i < p->currently_used_space; i++)
@@ -84,6 +90,7 @@ xed_immdis_is_zero(const xed_immdis_t* p)
 xed_bool_t
 xed_immdis_is_one(const xed_immdis_t* p) 
 {
+    xed_assert(p != NULL);
     if (p->value.x[0] == 1)
     {
         xed_uint_t i;
@@ -101,6 +108,7 @@ xed_immdis_is_one(const xed_immdis_t* p)
 
 /// Access the i'th byte of the immediate
 xed_uint8_t  xed_immdis_get_byte(const xed_immdis_t* p, unsigned int i)  {
+    xed_assert(p != NULL);
     xed_assert(i < p->currently_used_space);
     return p->value.x[i];
 }
@@ -109,10 +117,12 @@ xed_uint8_t  xed_immdis_get_byte(const xed_immdis_t* p, unsigned int i)  {
 
 void    xed_immdis_set_present(xed_immdis_t* p) 
 {
+    xed_assert(p != NULL);
     p->present = 1;
 }
 /// 1 if the object has had a value or individual bytes added to it.
 xed_bool_t    xed_immdis_is_present(const xed_immdis_t* p)  {
+    xed_assert(p != NULL);
     return p->present;
 }
 
@@ -121,12 +131,14 @@ xed_bool_t    xed_immdis_is_present(const xed_immdis_t* p)  {
 
 void     xed_immdis_set_max_len(xed_immdis_t* p, unsigned int mx) 
 {
+    xed_assert(p != NULL);
     xed_assert(mx <= XED_MAX_IMMDIS_BYTES);
     p->max_allocated_space = mx;
 }
 void
 xed_immdis_zero(xed_immdis_t* p)
 {
+    xed_assert(p != NULL);
     p->present = 0;
     p->immediate_is_unsigned = 0;
     p->currently_used_space = 0;
@@ -136,6 +148,7 @@ xed_immdis_zero(xed_immdis_t* p)
 }
 
 unsigned int    xed_immdis_get_max_length(const xed_immdis_t* p)  {
+    xed_assert(p != NULL);
     return p->max_allocated_space;
 }
 
@@ -143,22 +156,26 @@ unsigned int    xed_immdis_get_max_length(const xed_immdis_t* p)  {
 /// Return 1 if  signed.
 xed_bool_t
 xed_immdis_is_unsigned(const xed_immdis_t* p)  {
+    xed_assert(p != NULL);
     return p->immediate_is_unsigned;
 }
 /// Return 1 if signed.
 xed_bool_t
 xed_immdis_is_signed(const xed_immdis_t* p)  {
+    xed_assert(p != NULL);
     return !p->immediate_is_unsigned;
 }
     
 /// Set the immediate to be signed; For decoder use only.
 void 
 xed_immdis_set_signed(xed_immdis_t* p) {
+    xed_assert(p != NULL);
     p->immediate_is_unsigned = 0;
 }
 /// Set the immediate to be unsigned; For decoder use only.
 void 
 xed_immdis_set_unsigned( xed_immdis_t* p) {
+    xed_assert(p != NULL);
     p->immediate_is_unsigned = 1;
 }
 
@@ -167,6 +184,7 @@ xed_immdis_set_unsigned( xed_immdis_t* p) {
 void
 xed_immdis_add8(xed_immdis_t* p, xed_int8_t d)
 {
+    xed_assert(p != NULL);
     xed_immdis__check(p,1);
     p->value.x[0] = XED_BYTE_CAST(d);
 }
@@ -175,6 +193,7 @@ xed_immdis_add8(xed_immdis_t* p, xed_int8_t d)
 void
 xed_immdis_add16(xed_immdis_t* p, xed_int16_t d)
 {
+    xed_assert(p != NULL);
     xed_immdis__check(p,2);
     p->value.x[0] = XED_BYTE_CAST(d);
     p->value.x[1] = XED_BYTE_CAST(d>>8);
@@ -184,6 +203,7 @@ xed_immdis_add16(xed_immdis_t* p, xed_int16_t d)
 void
 xed_immdis_add32(xed_immdis_t* p, xed_int32_t d)
 {
+    xed_assert(p != NULL);
     xed_immdis__check(p,4);
     p->value.x[0] = XED_BYTE_CAST(d);
     p->value.x[1] = XED_BYTE_CAST(d>>8);
@@ -196,6 +216,7 @@ void
 xed_immdis_add64(xed_immdis_t* p, xed_int64_t d)
 {
     int i;
+    xed_assert(p != NULL);
     xed_immdis__check(p,8);
     for(i = 0; i < 8 ;i++) {
         p->value.x[i] = XED_BYTE_CAST( d>>(8*i) );
@@ -207,6 +228,7 @@ xed_immdis_add64(xed_immdis_t* p, xed_int64_t d)
 xed_uint64_t 
 xed_immdis_get_unsigned64(const xed_immdis_t* p) 
 {
+    xed_assert(p != NULL);
     // Variable-width little endian storage.
     // If it were fixed width, I could just cast.
     xed_uint64_t v = 0;
@@ -223,6 +245,7 @@ xed_immdis_get_unsigned64(const xed_immdis_t* p)
 xed_int64_t 
 xed_immdis_get_signed64(const xed_immdis_t* p) 
 {
+    xed_assert(p != NULL);
     // Variable-width little endian storage.
     // If it were fixed width, I could just cast.
     xed_uint64_t v = 0;
@@ -252,6 +275,7 @@ xed_immdis_get_signed64(const xed_immdis_t* p)
 void
 xed_immdis_add_shortest_width_unsigned(xed_immdis_t* q, xed_uint64_t x, xed_uint8_t legal_widths)
 {
+    xed_assert(q != NULL);
     xed_uint64_t p = x;
     int i;
     XED2VMSG((xed_log_file, 
@@ -274,6 +298,7 @@ xed_immdis_add_shortest_width_unsigned(xed_immdis_t* q, xed_uint64_t x, xed_uint
 void
 xed_immdis_add_shortest_width_signed(xed_immdis_t* q, xed_int64_t x, xed_uint8_t legal_widths)
 {
+    xed_assert(q != NULL);
     xed_int64_t p = x;
     int i;
     int last_bit_high  = 0;
@@ -314,6 +339,8 @@ int xed_immdis_print(const xed_immdis_t* p, char* buf, int buflen) {
     char tbuf[100];
     char* x=tbuf;
     xed_bool_t uppercase=0;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     blen = xed_strncpy(buf,"0x",blen);
     for( i=0; i< p->currently_used_space; i++ ) {
         *x++ = xed_to_ascii_hex_nibble(p->value.x[i]>>4, uppercase);
@@ -325,6 +352,7 @@ int xed_immdis_print(const xed_immdis_t* p, char* buf, int buflen) {
 }
 
 int xed_immdis_print_signed_or_unsigned(const xed_immdis_t* p, char* buf, int buflen) {
+    xed_assert(p != NULL);
     if (p->immediate_is_unsigned)
         return xed_immdis_print_value_unsigned(p,buf,buflen);
     else
@@ -339,6 +367,7 @@ static int xed_immdis_print_helper(xed_uint64_t d64, xed_uint_t len, char* buf, 
     int i,plen;
     xed_bool_t leading_zeros = 1;
     int blen = buflen;
+    xed_assert(buf != NULL);
     blen = xed_strncpy(buf,"0x",blen);
     (void)xed_itoa_hex_zeros(tbuf, d64, len*8 , leading_zeros,100);
     tlen = xed_strlen(tbuf);
@@ -355,6 +384,8 @@ static int xed_immdis_print_helper(xed_uint64_t d64, xed_uint_t len, char* buf, 
 int xed_immdis_print_value_signed(const xed_immdis_t* p, char* buf, int buflen) {
     xed_int64_t d64;
     xed_uint64_t u64;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     int blen = buflen;
     xed_uint_t len = xed_immdis_get_bytes(p);
     if (len != 1 && len != 2 && len != 4 && len != 8) {
@@ -376,6 +407,8 @@ int xed_immdis_print_value_signed(const xed_immdis_t* p, char* buf, int buflen) 
 
 
 int xed_immdis_print_value_unsigned(const xed_immdis_t* p, char* buf, int buflen) {
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     xed_uint64_t d64 = xed_immdis_get_unsigned64(p);
     xed_uint_t len = xed_immdis_get_bytes(p);
     if (len != 1 && len != 2 && len != 4 && len != 8) {
@@ -387,6 +420,7 @@ int xed_immdis_print_value_unsigned(const xed_immdis_t* p, char* buf, int buflen
 
 
 void xed_immdis_add_byte(xed_immdis_t* p, xed_uint8_t b) {
+    xed_assert(p != NULL);
     // add them byte by byte
     p->present  = 1;
     if (p->currently_used_space >= p->max_allocated_space)     {
@@ -398,6 +432,8 @@ void xed_immdis_add_byte(xed_immdis_t* p, xed_uint8_t b) {
 
 void xed_immdis_add_byte_array(xed_immdis_t* p, int nb, xed_uint8_t* ba) {
     int i;
+    xed_assert(p != NULL);
+    api_check(ba != NULL);
     XED2VMSG((xed_log_file,"nb= %d\n", nb));
     for(i=0; i < nb; i++ ) {
         xed_immdis_add_byte(p,ba[i]);

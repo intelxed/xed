@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -150,8 +150,7 @@ def gnu_secured_build(env: dict) -> str:
             env.add_to_var('LINKFLAGS','-Wl,--dynamicbase')
             # Warnings as errors (Linker specific)
             env.add_to_var('LINKFLAGS','-Werror')
-            # Enables Link-Time Code Generation
-            env.add_to_var('LINKFLAGS', '-flto')
+
 
     return flags
 
@@ -387,6 +386,8 @@ def init(env):
         env.add_define('XED_MESSAGES')
     if env['xed_asserts']:
         env.add_define("XED_ASSERTS")
+    if env['api_check']:
+        env.add_define("XED_API_CHECK_ENABLED")
 
 def strip_file(env,fn,options=''):
     if env.on_windows():

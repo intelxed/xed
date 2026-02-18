@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -28,11 +28,31 @@ from collections import OrderedDict
 
 sys.path.append(str(Path(__file__).resolve().parent))
 import gen_setup
+import genutil
 # XED specific type imports (for type hints)
 from read_xed_db import inst_t, xed_reader_t, Restriction
 from opnds import operand_info_t
 from cpuid_rdr import group_record_t
 
+FIELD_NAME_MAPPING: dict[str, str] = {
+        # new name       : old name
+        'encoding_space' : 'space',
+        'osz_66_required': 'osz_required'
+        }
+
+EXPECTED_ONLY_IN_XED_INST_REC: set[str] = set(FIELD_NAME_MAPPING.keys()).union({
+    'easz_list', 'eosz_list', 'evex_pp', 'opcode_base16', 'opcode_base02'
+    })
+
+EXPECTED_ONLY_IN_INST_T: set[str] = set(FIELD_NAME_MAPPING.values()).union({
+    'amd_3dnow_opcode', 'avx512_tuple', 'avx512_vsib', 'avx_vsib', 
+    'comment', 'disasm', 'disasm_attsv', 'easz', 'eosz', 
+    'lower_nibble', 'memop_rw', 'memop_width', 'memop_width_code', 
+    'ntname', 'opcode', 'operands', 'real_opcode', 
+    'scalar', 'scc_val', 'uname', 'upper_nibble', 'version',
+    'has_imm16', 'has_imm32', 'has_imm8', 'has_imm8_2', 'has_immz', 'imm_sz',
+    'opcode_base10',
+    })
 
 @dataclass
 class xed_instruction_record_t:
@@ -94,7 +114,7 @@ class xed_instruction_record_t:
     # System Restrictions
     mode_restriction: list[int] = None
     ### EVEX specific attributes
-    evex_sub_space: str = None # TBD convert to Enum
+    # evex_sub_space: str = None # TBD convert to Enum
     evex_pp: int = None
     u_bit: int = None
     vl: int = None
@@ -181,15 +201,19 @@ class xed_instruction_record_t:
             opc_02_cvt = lambda src_inst: bin(int(src_inst.opcode, 16))
             opc_16_cvt = lambda src_inst: src_inst.opcode
 
+        # Set renamed fields
+        for new_name, old_name in FIELD_NAME_MAPPING.items():
+            setattr(xedi, new_name, getattr(src_inst, old_name))
+            set_fields.add(new_name)
+
+        # Set new calculated fields
         calculated_fields = {
             'opcode_base02':      opc_02_cvt,
             'opcode_base16':      opc_16_cvt,
             'evex_pp':            get_evex_pp,
             'eosz_list':          lambda src_inst: src_inst.get_eosz_list(),
             'easz_list':          lambda src_inst: src_inst.get_easz_list(),
-            'osz_66_required':    src_inst.osz_required,
-            'encoding_space':     src_inst.space,
-            'evex_sub_space':     None,  # TBD
+            # 'evex_sub_space':     None,  # TBD
         }
         set_fields.update(calculated_fields.keys())
         for key, func in calculated_fields.items():
@@ -201,72 +225,12 @@ class xed_instruction_record_t:
         set_fields.update(['flags', 'disasm_intel', 'exceptions'])
 
         ### Check that all fields are set
-        all_flds_names: set[str] = {f.name for f in fields(xedi)}
+        all_flds_names: set[str] = {f.name for f in fields(xed_instruction_record_t)}
         missing: set[str] = all_flds_names - set_fields
         assert len(missing) == 0, f'xed_instruction_record_t.from_inst() missing fields initialization: {", ".join(missing)}'
         
         return xedi
 
-
-def gen_xed_inst_db(args, xed_db: xed_reader_t = None) -> list[xed_instruction_record_t]:
-    """Generate a list of xed_instruction_record_t from the input XED database."""
-    if not xed_db:
-        xed_db: xed_reader_t = input_xed_db(args)
-    xed_inst_db: list[xed_instruction_record_t] = []
-    for rec in xed_db.recs:
-        inst_rec = xed_instruction_record_t.from_inst_t(rec, xed_db)
-        xed_inst_db.append(inst_rec)
-    return xed_inst_db
-
-def convert_to_serializable(obj) -> dict:
-    """Convert the object into a serializable dict for json.dump()."""                      
-    def is_serializable(o) -> bool:
-        try:
-            json.dumps(o)
-            return True
-        except (TypeError, OverflowError):
-            return False
-
-    result = {}
-    for key, value in obj.__dict__.items():
-        if callable(value):
-            result[key] = value()
-        elif isinstance(value, Enum):
-            result[key] = str(value)
-        elif isinstance(value, list):
-            result[key] = []
-            for v in value:
-                if isinstance(v, str) and v.isdigit():
-                    elem = int(v)
-                elif hasattr(v, 'to_serializable'):
-                    elem = v.to_serializable()
-                elif is_serializable(v):
-                    elem = v
-                else:
-                    elem = str(v)
-                result[key].append(elem)
-        elif isinstance(value, dict):
-            result[key] = { str(k): str(v) for k, v in value.items() }
-        elif isinstance(value, str) and value.isdigit():
-            result[key] = int(value) # str -> int
-        elif is_serializable(value):
-            result[key] = value
-        else:
-            result[key] = str(value)
-        
-        # empty string -> None
-        if result[key] == '':
-            result[key] = None
-
-    return result
-
-### Main functions ###
-
-def input_xed_db(args) -> xed_reader_t:
-    args.prefix = args.xed_dgen
-    gen_setup.make_paths(args)
-    xed_db: xed_reader_t = gen_setup.read_db(args)
-    return xed_db
 
 def get_evex_pp(rec) -> str:
     if rec.space != 'legacy':    
@@ -279,6 +243,68 @@ def get_evex_pp(rec) -> str:
         elif rec.f3_required:
             return 3 # 'F3'
     return None
+
+def gen_xed_inst_db(args, xed_db: xed_reader_t = None) -> list[xed_instruction_record_t]:
+    """Generate a list of xed_instruction_record_t from the input XED database."""
+    if not xed_db:
+        xed_db: xed_reader_t = input_xed_db(args)
+    xed_inst_db: list[xed_instruction_record_t] = []
+    for rec in xed_db.recs:
+        inst_rec = xed_instruction_record_t.from_inst_t(rec, xed_db)
+        xed_inst_db.append(inst_rec)
+    return xed_inst_db
+
+def convert_to_serializable(obj) -> dict:
+    """Convert the object into a serializable dict for json.dump()."""
+    def is_serializable(o) -> bool:
+        try:
+            json.dumps(o)
+            return True
+        except (TypeError, OverflowError):
+            return False
+    
+    def serialize_value(value):
+        """Recursively serialize a single value."""
+        # Recursive cases - handle nested structures first
+        if isinstance(value, list):
+            return [serialize_value(v) for v in value]
+        elif isinstance(value, dict):
+            # JSON requires string keys, so convert keys to strings after serialization
+            return {str(serialize_value(k)): serialize_value(v) for k, v in value.items()}
+        
+        # Special type conversions
+        elif callable(value):
+            return value()  # Execute callable and return result
+        elif isinstance(value, Enum):
+            return str(value)  # Enum -> string representation
+        elif isinstance(value, str) and value.isdigit():
+            return int(value)  # Numeric string -> int
+        
+        # Custom serialization support
+        elif hasattr(value, 'to_serializable'):
+            return value.to_serializable()  # Delegate to object's own method
+        
+        # Already JSON-serializable primitives (str, int, float, bool, None)
+        elif is_serializable(value):
+            return value
+        
+        # Fallback: convert everything else to string
+        else:
+            return str(value)
+    
+    result = {}
+    for key, value in obj.__dict__.items():
+        result[key] = serialize_value(value)
+    
+    return result
+
+### Main functions ###
+
+def input_xed_db(args) -> xed_reader_t:
+    args.prefix = args.xed_dgen
+    gen_setup.make_paths(args)
+    xed_db: xed_reader_t = gen_setup.read_db(args)
+    return xed_db
 
 def single_space(s: str) -> str:
     if s is None:
@@ -321,57 +347,116 @@ def output_json(args, xed_json_db: list) -> None:
         
         sorted_instructions.append(ordered_inst)
     #################################
-    out_data: dict = {'Instructions': sorted_instructions}
+    out_data: dict = OrderedDict()
+    out_data['Version'] = genutil.get_git_version(verbose=2)  # Always show git errors
+    out_data['Instructions'] = sorted_instructions
     with open(args.out, 'w') as json_fp:
         json.dump(out_data, json_fp, sort_keys=False, indent=indent, separators=separators)
 
-def verify_instruction_record_fields(xed_input_db: xed_reader_t, xed_gen_inst_rec_db: list[xed_instruction_record_t]):
+def validate_inst_members_set(xed_input_db: xed_reader_t, xed_gen_inst_rec_db: list[xed_instruction_record_t]):
     """Validate that the xed_instruction_record_t members and the inst_t members match expectations."""
     # Get dataclass fields from xed_instruction_record_t - an actual object, not just the class definition
     xed_inst_rec_fields: set[str] = set(vars(xed_gen_inst_rec_db[0]).keys())
     
-    # Get actual instance attributes from inst_t object (not class attributes)
-    # inst_t is not homogeneous, so we can not use only the first record
-    # Get attributes from all records:
+    # Collect all inst_t attributes from actual instances
+    # Note: inst_t objects are heterogeneous - not all instances have the same attributes.
+    # We must scan all records to discover the complete set of possible fields.
     inst_t_fields: set[str] = set()
     for rec in xed_input_db.recs:
         inst_t_fields.update(vars(rec).keys())
     
     only_in_xed_inst_rec = xed_inst_rec_fields - inst_t_fields
     only_in_inst_t = inst_t_fields - xed_inst_rec_fields
-    
-    print("Fields only in xed_instruction_record_t:")
-    for f in sorted(only_in_xed_inst_rec):
-        print(f"  {f}")
-    print("\nFields only in inst_t:")
-    for f in sorted(only_in_inst_t):
-        print(f"  {f}")
 
-    expected_only_in_xed_inst_rec: set[str] = {'easz_list', 'encoding_space', 'eosz_list', 'evex_pp', 'evex_sub_space', 
-                                               'opcode_base16', 'opcode_base02', 'osz_66_required'}
-    assert only_in_xed_inst_rec == expected_only_in_xed_inst_rec, "Unexpected fields in xed_instruction_record_t: " + \
-        f"{only_in_xed_inst_rec.symmetric_difference(expected_only_in_xed_inst_rec)}"
+    assert only_in_xed_inst_rec == EXPECTED_ONLY_IN_XED_INST_REC, "Unexpected fields in xed_instruction_record_t: " + \
+        f"{only_in_xed_inst_rec.symmetric_difference(EXPECTED_ONLY_IN_XED_INST_REC)}"
     
-    expected_only_in_inst_t: set[str] = {
-    'amd_3dnow_opcode', 'avx512_tuple', 'avx512_vsib', 'avx_vsib', 
-    'comment', 'disasm', 'disasm_attsv', 'easz', 'eosz', 
-    'lower_nibble', 'memop_rw', 'memop_width', 'memop_width_code', 
-    'ntname', 'opcode', 'operands', 'osz_required', 'real_opcode', 
-    'scalar', 'scc_val', 'space', 'uname', 'upper_nibble', 'version',
-    'has_imm16', 'has_imm32', 'has_imm8', 'has_imm8_2', 'has_immz', 'imm_sz',
-    'opcode_base10',
-    }
-    assert only_in_inst_t == expected_only_in_inst_t, "Unexpected fields in inst_t: " + \
-        f"{only_in_inst_t.symmetric_difference(expected_only_in_inst_t)}"
+    assert only_in_inst_t == EXPECTED_ONLY_IN_INST_T, "Unexpected fields in inst_t: " + \
+        f"{only_in_inst_t.symmetric_difference(EXPECTED_ONLY_IN_INST_T)}"
     
     print("[PASSED] object members validation")
+
+
+def validate_data_integrity(src_insts: list[inst_t], converted_insts: list[xed_instruction_record_t]) -> tuple[list[str], dict]:
+    """
+    Validate data conversion from inst_t to xed_instruction_record_t.
+    Compares source inst_t records against their xed_instruction_record_t conversions
+    using their serializable representations. This simplifies validation by comparing
+    normalized data structures, while other validation functions verify additional aspects
+    like type correctness and member consistency.
     
+    Returns:
+        tuple: (errors, diff_dict) with validation errors and categorized differences.
+    """
+    assert len(src_insts) == len(converted_insts), f"List length mismatch: {len(src_insts)} vs {len(converted_insts)}"
+    
+    errors = []
+    diff = {'missing_in_converted': {}, 'different_values': {}, 'extra_in_converted': []}
+        
+    for idx, (src_inst, converted) in enumerate(zip(src_insts, converted_insts)):
+        src_dict = convert_to_serializable(src_inst)
+        conv_dict = convert_to_serializable(converted)
+        
+        # Compare
+        for conv_key, conv_value in conv_dict.items():
+            src_key = FIELD_NAME_MAPPING.get(conv_key, conv_key)
+            
+            if src_key not in src_dict:
+                if conv_key not in diff['extra_in_converted']:
+                    diff['extra_in_converted'].append(conv_key)
+            else:
+                src_value = src_dict[src_key]
+                # cleanup spaces for string comparison
+                if isinstance(src_value, str):
+                    src_value = ' '.join(src_value.split())
+                if isinstance(conv_value, str):
+                    conv_value = ' '.join(conv_value.split())
+
+                if src_value != conv_value:
+                    if src_value in ['', 'unspecified', 'none', 'n/a', None, 'LLIG', 'LIG'] and conv_value in ['None', 'False', '', None, []]:
+                        continue  # Considered equal
+                    elif src_value == '1' and conv_value == 'True':
+                        continue  # Considered equal
+                    elif src_value == '0' and conv_value == 'False':
+                        continue  # Considered equal
+                    elif src_key == "mod_required":
+                        mod_map = {
+                            '00/01/10': [0, 1, 2],
+                            3: [3],
+                        }
+                        if src_value in mod_map and conv_value == mod_map[src_value]:
+                            continue
+                    elif src_key == "mode_restriction":
+                        mode_map = {
+                            'unspecified': [16, 32, 64],
+                            'not64': [16, 32],
+                            2: [64],
+                            1: [32],
+                            0: [16],
+                        }
+                        if src_value in mode_map and conv_value == mode_map[src_value]:
+                            continue
+                    elif src_key == "attributes":
+                        if sorted(src_value.split()) == sorted(conv_value):
+                            continue
+                    
+                    # fallthrough - record difference
+                    diff['different_values'][conv_key] = {'source': src_value, 'converted': conv_value}
+                    errors.append(f"[{idx}] {conv_key}: {src_value} -> {conv_value}")
+        
+        # Sanity checks
+        if 'none' in str(conv_dict.get('explicit_operands', [])).lower():
+            errors.append(f"[{idx}] explicit_operands should not contain 'none'")
+        if 'none' in str(conv_dict.get('implicit_operands', [])).lower():
+            errors.append(f"[{idx}] implicit_operands should not contain 'none'")
+    
+    return errors, diff
 
 def validate_xed_inst_db(xed_input_db: xed_reader_t, xed_gen_inst_rec_db: list[xed_instruction_record_t]) -> None:
     
-    verify_instruction_record_fields(xed_input_db, xed_gen_inst_rec_db)
+    validate_inst_members_set(xed_input_db, xed_gen_inst_rec_db)
     
-    # Ensure xed_instruction_record_t instance members match the dataclass definition
+    # Ensure xed_instruction_record_t instance members match the initial dataclass definition
     xed_inst_rec_fields: set[str] = set(vars(xed_gen_inst_rec_db[0]).keys())
     for rec in xed_gen_inst_rec_db:
         rec_fields: set[str] = set(vars(rec).keys())
@@ -381,7 +466,7 @@ def validate_xed_inst_db(xed_input_db: xed_reader_t, xed_gen_inst_rec_db: list[x
         assert len(missing) == 0, f'xed_instruction_record_t instance missing fields: {", ".join(missing)}'
     print("[PASSED] xed_instruction_record_t instance members validation")
 
-    # Ensure all xed_instruction_record_t members matches dataclass type definition
+    # Ensure all xed_instruction_record_t members matches original dataclass type definition
     for rec in xed_gen_inst_rec_db:
         for f in fields(rec):
             value = getattr(rec, f.name)
@@ -396,6 +481,20 @@ def validate_xed_inst_db(xed_input_db: xed_reader_t, xed_gen_inst_rec_db: list[x
                         assert isinstance(elem, elem_type), \
                             f'xed_instruction_record_t.{f.name} list element has incorrect type: expected {elem_type}, got {type(elem)}'
     print("[PASSED] xed_instruction_record_t member types validation")
+
+    # Validate data conversion and integrity
+    errors, diff = validate_data_integrity(xed_input_db.recs, xed_gen_inst_rec_db)
+    if errors:
+        print("[FAILED] Member data conversion validation with following errors:")
+        for err in errors:
+            print("  " + err)
+        assert False, f"Member data conversion validation failed with {len(errors)} errors."
+    else:
+        print("[PASSED] Member data conversion validation")
+    
+    print("\n=== Data Comparison Report ===")
+    print(json.dumps(diff, indent=2))
+    print("==============================\n")
 
 
 def main():

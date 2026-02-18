@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ END_LEGAL */
 static xed_bool_t 
 xed_encode_nonterminal_INSTRUCTIONS(xed_encoder_request_t* r)
 {
+    xed_assert(r != NULL);
     xed_iclass_enum_t iclass;  
 
     // bind function sets the encoding iform index
@@ -54,11 +55,13 @@ xed_encode_nonterminal_INSTRUCTIONS(xed_encoder_request_t* r)
 xed_bool_t 
 xed_encode_nonterminal_INSTRUCTIONS_BIND(xed_encoder_request_t* xes)
 {
+    xed_assert(xes != NULL);
     return xed_encode_nonterminal_INSTRUCTIONS(xes);
 }
 xed_bool_t 
 xed_encode_nonterminal_INSTRUCTIONS_EMIT(xed_encoder_request_t* xes)
 {   
+    xed_assert(xes != NULL);
     xed_ptrn_func_ptr_t emit_ptrn_function;
     
     emit_ptrn_function = xed_encoder_get_emit_ptrn(xes);

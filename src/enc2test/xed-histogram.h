@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ xed_histogram_update(xed_histogram_t* p,
                      xed_uint64_t t1,
                      xed_uint64_t t2)
 {
+    xed_assert(p != NULL);
     xed_uint64_t delta;
     xed_uint32_t bin;
     
@@ -60,6 +61,7 @@ xed_histogram_update(xed_histogram_t* p,
 
 static void
 xed_histogram_initialize(xed_histogram_t* p) {
+    xed_assert(p != NULL);
     p->bad_times =0;
     memset(p->histo, 0, sizeof(xed_uint64_t)*XED_HISTO_BINS);
 }
@@ -67,6 +69,7 @@ xed_histogram_initialize(xed_histogram_t* p) {
 static void
 xed_histogram_dump(xed_histogram_t* p, int include_zero_bins)
 {
+    xed_assert(p != NULL);
     xed_uint32_t i=0;
     xed_uint64_t total=0;
     double cdf = 0;

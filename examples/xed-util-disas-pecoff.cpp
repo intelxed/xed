@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -97,6 +97,8 @@ static int find_wow64_redir(fptr_t* disable, fptr_t* revert) {
        return 1; // success
    return 0;
 }
+
+#define MAX_SECTIONS 500
 
 class pecoff_reader_t
 {
@@ -354,7 +356,7 @@ public:
     
     // upper bound on possibly tainted variable - modern versions of the Windows os have relaxed the limitation of max 96 sections, 
     // and can handle PE files with more than 96 sections. But a good practice is to avoid excessive numbers of sections
-    assert(nsections <= 200);  
+    assert(nsections <= MAX_SECTIONS);  
 
     for ( ii = section_index; ii < nsections; ii++, hdr++)   
     {
@@ -511,7 +513,7 @@ private:
     *phdr = static_cast<const IMAGE_SECTION_HEADER*>(ptr_add(opthdr32,
                                                   ifh->SizeOfOptionalHeader));
     *pnsections = ifh->NumberOfSections;
-    assert(*pnsections <= 200);
+    assert(*pnsections <= MAX_SECTIONS);
     return true;
   }
 

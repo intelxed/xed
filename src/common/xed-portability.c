@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ END_LEGAL */
 
 
 int xed_strncat(char* dst, const char* src, int len) {
+    api_check(dst != NULL && src != NULL);
     int dst_len  = XED_STATIC_CAST(int,xed_strlen(dst));
     int orig_max = dst_len + len;
     int new_length =  dst_len + XED_STATIC_CAST(int,xed_strlen(src)) + 1; /* with null */
@@ -68,10 +69,12 @@ int xed_strncat(char* dst, const char* src, int len) {
 }
 
 xed_uint_t xed_strlen(const char* s) {
+    api_check(s != NULL);
     return XED_STATIC_CAST(xed_uint_t,strlen(s));
 }
 
 void xed_strcpy(char* dst, const char* src) {
+    api_check(dst != NULL && src != NULL);
     const char* psrc = src;
     char* pdst = dst;
     while(*psrc)  
@@ -79,6 +82,7 @@ void xed_strcpy(char* dst, const char* src) {
     *pdst = 0;
 }
 int xed_strncpy(char* dst, const char* src,  int len) {
+    api_check(dst != NULL && src != NULL);
     int orig_max = len;
     const char* psrc = src;
     char* pdst = dst;

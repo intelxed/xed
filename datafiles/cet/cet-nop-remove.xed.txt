@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -94,9 +94,6 @@ OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
 
 
-PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b000] f3_refining_prefix
-OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
-IFORM     : NOP_GPRv_GPRv_0F1E
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b001] f3_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
@@ -126,6 +123,19 @@ EXTENSION : BASE
 ATTRIBUTES: NOP
 ISA_SET   : PPRO
 PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b110] RM[nnn] f3_refining_prefix
+OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
+IFORM     : NOP_GPRv_GPRv_0F1E
+}
+
+{
+ICLASS    : NOP
+UNAME     : NOP0F1E_F3_70
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1E MOD[0b11] MOD=3 REG[0b111] RM[0b000] f3_refining_prefix
 OPERANDS  : REG0=GPRv_B():r REG1=GPRv_R():r
 IFORM     : NOP_GPRv_GPRv_0F1E
 }

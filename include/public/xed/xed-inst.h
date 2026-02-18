@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -78,6 +78,7 @@ typedef struct xed_operand_s
 /// @ingroup DEC
 static XED_INLINE xed_operand_enum_t
 xed_operand_name(const xed_operand_t* p)  { 
+    xed_assert(p != NULL);
     return (xed_operand_enum_t)p->_name; 
 }
 
@@ -85,6 +86,7 @@ xed_operand_name(const xed_operand_t* p)  {
 /// @ingroup DEC
 static XED_INLINE xed_operand_visibility_enum_t 
 xed_operand_operand_visibility( const xed_operand_t* p) { 
+    xed_assert(p != NULL);
     return (xed_operand_visibility_enum_t)(p->_operand_visibility); 
 }
 
@@ -94,6 +96,7 @@ xed_operand_operand_visibility( const xed_operand_t* p) {
 /// This is probably not what you want.
 static XED_INLINE xed_operand_type_enum_t
 xed_operand_type(const xed_operand_t* p)  {
+    xed_assert(p != NULL);
     return (xed_operand_type_enum_t)p->_type; 
 }
 
@@ -102,6 +105,7 @@ xed_operand_type(const xed_operand_t* p)  {
 /// This is probably not what you want.
 static XED_INLINE xed_operand_element_xtype_enum_t
 xed_operand_xtype(const xed_operand_t* p)  {
+    xed_assert(p != NULL);
     return (xed_operand_element_xtype_enum_t)p->_xtype; 
 }
 
@@ -109,6 +113,7 @@ xed_operand_xtype(const xed_operand_t* p)  {
 /// @ingroup DEC
 static XED_INLINE xed_operand_width_enum_t
 xed_operand_width(const xed_operand_t* p)  { 
+    xed_assert(p != NULL);
     return (xed_operand_width_enum_t)p->_oc2; 
 }
 
@@ -125,6 +130,7 @@ xed_operand_width_bits(const xed_operand_t* p,
 /// @ingroup DEC
 static XED_INLINE xed_nonterminal_enum_t
 xed_operand_nonterminal_name(const xed_operand_t* p)  {
+    xed_assert(p != NULL);
     if (p->_nt) 
         return p->_u._nt;
     return XED_NONTERMINAL_INVALID;
@@ -140,6 +146,7 @@ xed_operand_nonterminal_name(const xed_operand_t* p)  {
 /// @param p  an operand template,  #xed_operand_t.
 /// @return  the implicit or suppressed registers, type #xed_reg_enum_t
 static XED_INLINE xed_reg_enum_t xed_operand_reg(const xed_operand_t* p) {
+    xed_assert(p != NULL);
     if (xed_operand_type(p) == XED_OPERAND_TYPE_REG)
         return p->_u._reg;
     return XED_REG_INVALID;
@@ -159,6 +166,7 @@ static XED_INLINE xed_reg_enum_t xed_operand_reg(const xed_operand_t* p) {
 ///   #xed_operand_enum_t names.
 static XED_INLINE xed_uint_t
 xed_operand_template_is_register(const xed_operand_t* p) {
+    xed_assert(p != NULL);
     return p->_nt || p->_type == XED_OPERAND_TYPE_REG;
 }
 
@@ -167,6 +175,7 @@ xed_operand_template_is_register(const xed_operand_t* p) {
 /// These operands represent branch displacements, memory displacements and
 /// various immediates
 static XED_INLINE xed_uint32_t xed_operand_imm(const xed_operand_t* p) {
+    xed_assert(p != NULL);
     if (xed_operand_type(p) == XED_OPERAND_TYPE_IMM_CONST)
         return p->_u._imm;
     return 0; 
@@ -217,6 +226,7 @@ xed_operand_is_memory_addressing_register(xed_operand_enum_t name) {
 /// and writes. See #xed_decoded_inst_operand_action().
 static XED_INLINE xed_operand_action_enum_t
 xed_operand_rw(const xed_operand_t* p)  { 
+    xed_assert(p != NULL);
     return (xed_operand_action_enum_t)p->_rw; 
 }
 
@@ -288,6 +298,7 @@ XED_DLL_EXPORT unsigned int xed_inst_cpl(const xed_inst_t* p) ;
 //These next few are not doxygen commented because I want people to use the
 //higher level interface in xed-decoded-inst.h.
 static XED_INLINE xed_iform_enum_t xed_inst_iform_enum(const xed_inst_t* p) {
+    xed_assert(p != NULL);
     return (xed_iform_enum_t)p->_iform_enum;
 }
 
@@ -311,6 +322,7 @@ static XED_INLINE xed_isa_set_enum_t xed_inst_isa_set(const xed_inst_t* p) {
 ///@ingroup DEC
 /// Number of instruction operands
 static XED_INLINE unsigned int xed_inst_noperands(const xed_inst_t* p) {
+    xed_assert(p != NULL);
     return p->_noperands;
 }
 
@@ -357,6 +369,7 @@ XED_DLL_EXPORT xed_attribute_enum_t xed_attribute(unsigned int i);
 /// Return #xed_exception_enum_t if present for the specified instruction.
 static XED_INLINE
 xed_exception_enum_t xed_inst_exception(const xed_inst_t* p) {
+    xed_assert(p != NULL);
     return (xed_exception_enum_t)p->_exceptions;
 }
 
@@ -366,3 +379,4 @@ xed_exception_enum_t xed_inst_exception(const xed_inst_t* p) {
 XED_DLL_EXPORT const xed_inst_t* xed_inst_table_base(void);
 
 #endif
+

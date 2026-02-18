@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ void xed_set_decoder_modes(xed_decoded_inst_t *xedd,
                            xed_chip_enum_t chip,
                            xed_chip_features_t const*const chip_features)
 {
+    xed_assert(xedd != NULL);
     xed_features_elem_t const* features = 0;
     if (chip_features) {
         features = chip_features->f;
@@ -34,3 +35,4 @@ void xed_set_decoder_modes(xed_decoded_inst_t *xedd,
 
     set_chip_modes(xedd, chip, features);
 }
+

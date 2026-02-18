@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -75,6 +75,7 @@ void xed_internal_assert( const char* msg, const char* file, int line) {
 
 void xed_operand_values_set_mode(xed_operand_values_t* p,
                                  const xed_state_t* dstate)  {
+    xed_assert(p != NULL);
 
     /* set MODE, SMODE and REALMODE */
     xed3_operand_set_realmode(p,0);
@@ -122,6 +123,7 @@ void xed_operand_values_set_mode(xed_operand_values_t* p,
 }
 static XED_INLINE void zero_inst(xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
     unsigned int i;
     xed_uint32_t* xp = (xed_uint32_t*)p;
     for(i=0;i<sizeof(xed_decoded_inst_t)/4;i++)
@@ -132,6 +134,7 @@ XED_DLL_EXPORT void
 xed_decoded_inst_zero_set_mode(xed_decoded_inst_t* p,
                                const xed_state_t* dstate)
 {
+    xed_assert(p != NULL);
     zero_inst(p);
     xed_operand_values_set_mode(p,dstate);
 }
@@ -148,4 +151,5 @@ void  xed_set_log_file(void* o) {
 #endif
 
 }
+
 

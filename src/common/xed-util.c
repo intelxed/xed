@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -102,6 +102,9 @@ static XED_INLINE  xed_uint64_t xed_divide_by_10_64by32(xed_uint64_t numerator) 
 #endif
 
 int xed_itoa(char* buf, xed_uint64_t f, int buflen) {
+    if (buflen <= 0)
+        return 0;
+    api_check(buf != NULL);
     char tbuf[100];
     char* p = tbuf;
     char* fp;
@@ -163,6 +166,9 @@ int xed_itoa_bin(char *buf,
                  xed_uint_t bits_to_print,
                  xed_uint_t buflen)
 {
+    if (buflen == 0)
+        return 0;
+    api_check(buf != NULL);
     char tbuf[65];
     xed_int_t i;
     char *p = tbuf;
@@ -189,6 +195,9 @@ int xed_itoa_hex_ul(char* buf,
                     int buflen,
                     xed_bool_t lowercase)
 {
+    if (buflen <= 0)
+        return 0;
+    api_check(buf != NULL);
     const xed_uint64_t one = 1;
     xed_uint_t nibbles_to_print = (bits_to_print+3)/4;
     xed_uint64_t mul,rdiv;
@@ -269,6 +278,9 @@ int xed_itoa_hex(char* buf,
 }
 
 int xed_itoa_signed(char* buf, xed_int64_t f, int buflen) {
+    if (buflen <= 0)
+        return 0;
+    api_check(buf != NULL);
     xed_uint64_t x;
     int blen = buflen;
     if (f<0) {
@@ -336,6 +348,7 @@ static char xed_tolower(char c) {
 
 
 int xed_strncat_lower(char* dst, const char* src, int len) {
+    api_check(dst != NULL && src != NULL);
     xed_uint_t dst_len = xed_strlen(dst) ;
     xed_uint_t orig_max = dst_len + XED_STATIC_CAST(xed_uint_t,len);
     xed_uint_t i;
@@ -373,8 +386,10 @@ xed_int64_t xed_sign_extend_arbitrary_to_64(xed_uint64_t x, unsigned int bits) {
     }
     else if (bits == 64) 
         o=x;
-    else 
-        xed_assert(0);
+    else {
+        // Invalid bit width
+        xed_assert(bits <= 64);
+    }
     return o;
 }
 
@@ -388,8 +403,10 @@ xed_int32_t xed_sign_extend_arbitrary_to_32(xed_uint32_t x, unsigned int bits) {
     }
     else if (bits == 32) 
         o=x;
-    else 
-        xed_assert(0);
+    else {
+        // Invalid bit width
+        xed_assert(bits <= 32);
+    }
     return o;
 }
 
@@ -465,7 +482,7 @@ xed_int64_t xed_little_endian_hilo_to_int64(xed_uint32_t hi_le, xed_uint32_t lo_
         return XED_STATIC_CAST(xed_int64_t,z);
       }
       default:
-        xed_assert(0);
+        xed_assert(0); // Invalid length parameter
         return 0;
     }
 }
@@ -482,7 +499,7 @@ xed_uint64_t xed_little_endian_hilo_to_uint64(xed_uint32_t hi_le, xed_uint32_t l
       case 64:
         return xed_make_uint64(xed_bswap32(hi_le),xed_bswap32(lo_le));
       default:
-        xed_assert(0);
+        xed_assert(0); // Invalid length parameter
         return 0;
     }
 }
@@ -500,7 +517,7 @@ xed_uint64_t  xed_little_endian_to_uint64(xed_uint64_t x, unsigned int len) {
       case 64:
         return xed_bswap64(x);
       default:
-        xed_assert(0);
+        xed_assert(0); // Invalid length parameter
         return 0;
     }
 }
@@ -524,7 +541,7 @@ xed_int64_t xed_little_endian_to_int64(xed_uint64_t x, unsigned int len){
       case 64:
         return XED_STATIC_CAST(xed_int64_t,xed_bswap64(x));
       default:
-        xed_assert(0);
+        xed_assert(0); // Invalid length parameter
         return 0;
     }
 }
@@ -543,7 +560,7 @@ xed_int32_t xed_little_endian_to_int32(xed_uint64_t x, unsigned int len){
           return y;
       }
       default:
-        xed_assert(0);
+        xed_assert(0); // Invalid length parameter
         return 0;
     }
 }
@@ -556,8 +573,7 @@ xed_uint8_t xed_get_byte(xed_uint64_t x, unsigned int i, unsigned int len) {
     // 4B      .. .. .. .. 33 22 11 00
     // 8B      77 66 55 44 33 22 11 00
     // (The least significant byte is  00)
-
-    xed_assert (i < len);
+    xed_assert(i < len);
     (void)len; //pacify compiler
     return XED_BYTE_CAST(x >> (i*8));
 }

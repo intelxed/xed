@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,12 +26,18 @@ END_LEGAL */
 xed_bool_t 
 xed_flag_set_is_subset_of(const xed_flag_set_t* p, const xed_flag_set_t* other)
 {
+    xed_assert(p != NULL);
+    xed_assert(other != NULL);
     xed_uint32_t conj = p->flat & other->flat;
     return (conj == p->flat);
 }
 
 
 int  xed_flag_set_print(const xed_flag_set_t* p, char* buf, int buflen) {
+    if (buflen <= 0)
+        return 0;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     int blen = buflen;
     *buf = 0; // start w/null terminated
     if (p->s.of) { blen = xed_strncat(buf, "of ",blen);}
@@ -66,12 +72,14 @@ int  xed_flag_set_print(const xed_flag_set_t* p, char* buf, int buflen) {
 /// get the name of the flag
 xed_flag_enum_t
 xed_flag_action_get_flag_name(const xed_flag_action_t* p)  {
+    xed_assert(p != NULL);
     return p->flag;
 }
     
 /// return the action
 xed_flag_action_enum_t
 xed_flag_action_get_action(const xed_flag_action_t* p, unsigned int i)   {
+    xed_assert(p != NULL);
     (void)i; // pacify compiler warnings
     return p->action;
 }
@@ -85,6 +93,10 @@ xed_flag_action_action_invalid(const xed_flag_action_enum_t a) {
 
 /// print the flag & actions
 int xed_flag_action_print(const xed_flag_action_t* p, char* buf, int buflen)  {
+    if (buflen <= 0)
+        return 0;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     int blen = buflen;
     blen  = xed_strncpy(buf, xed_flag_enum_t2str(p->flag),blen);
     if (p->action != XED_FLAG_ACTION_INVALID) {
@@ -97,12 +109,14 @@ int xed_flag_action_print(const xed_flag_action_t* p, char* buf, int buflen)  {
 /// returns 1 if either action is a read
 xed_bool_t 
 xed_flag_action_read_flag(const xed_flag_action_t* p ) {
+    xed_assert(p != NULL);
     return xed_flag_action_read_action(p->action);
 }
 
 /// returns 1 if either action is a write
 xed_bool_t 
 xed_flag_action_writes_flag(const xed_flag_action_t* p)  {
+    xed_assert(p != NULL);
     return xed_flag_action_write_action(p->action);
 }
   
@@ -138,32 +152,38 @@ xed_flag_action_write_action( xed_flag_action_enum_t a)  {
 /// returns the number of flag-actions
 unsigned int 
 xed_simple_flag_get_nflags(const xed_simple_flag_t* p)  {
+    xed_assert(p != NULL);
     return p->nflags;
 }
 
 /// return union of bits for read flags
 const xed_flag_set_t* 
 xed_simple_flag_get_read_flag_set(const xed_simple_flag_t* p) {
+    xed_assert(p != NULL);
     return &(p->read);
 }
   
 /// return union of bits for written flags
 const xed_flag_set_t*
 xed_simple_flag_get_written_flag_set(const xed_simple_flag_t* p) {
+    xed_assert(p != NULL);
     return &(p->written);
 }
 
 /// return union of bits for undefined flags
 const xed_flag_set_t*
 xed_simple_flag_get_undefined_flag_set(const xed_simple_flag_t* p) {
+    xed_assert(p != NULL);
     return &(p->undefined);
 }
 
 xed_bool_t     xed_simple_flag_get_may_write(const xed_simple_flag_t* p)     {
+    xed_assert(p != NULL);
     return p->may_write;
 }
 
 xed_bool_t     xed_simple_flag_get_must_write(const xed_simple_flag_t* p)     {
+    xed_assert(p != NULL);
     return p->must_write;
 }
 
@@ -171,6 +191,7 @@ xed_bool_t     xed_simple_flag_get_must_write(const xed_simple_flag_t* p)     {
 /// return the specific flag-action
 const xed_flag_action_t*
 xed_simple_flag_get_flag_action(const xed_simple_flag_t* p, unsigned int i)  {
+    xed_assert(p != NULL);
     xed_assert(i < p->nflags);
     return xed_flag_action_table + p->fa_index+i;
 }
@@ -179,6 +200,7 @@ xed_simple_flag_get_flag_action(const xed_simple_flag_t* p, unsigned int i)  {
 xed_bool_t
 xed_simple_flag_reads_flags(const xed_simple_flag_t* p)     {
     int i;
+    xed_assert(p != NULL);
     for( i=0;i<p->nflags ;i++) 
         if ( xed_flag_action_read_flag(xed_flag_action_table + p->fa_index+i) )
             return 1;
@@ -188,6 +210,7 @@ xed_simple_flag_reads_flags(const xed_simple_flag_t* p)     {
 /// boolean test to see if flags are written, scans the flags
 xed_bool_t    xed_simple_flag_writes_flags(const xed_simple_flag_t* p)     {
     int i;
+    xed_assert(p != NULL);
     for( i=0;i<p->nflags ;i++) 
         if ( xed_flag_action_writes_flag(xed_flag_action_table +p->fa_index+i))
             return 1;
@@ -199,6 +222,10 @@ int   xed_simple_flag_print(const xed_simple_flag_t* p, char* buf,
 {
     unsigned int i,n;
     char tbuf[100];
+    if (buflen <= 0)
+        return 0;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     int blen = buflen;
     if (xed_simple_flag_get_may_write(p))
         blen = xed_strncat(buf, "MAY-WRITE ",blen);
@@ -222,5 +249,6 @@ int   xed_simple_flag_print(const xed_simple_flag_t* p, char* buf,
     return blen;
 }
 //@}
+
 
 

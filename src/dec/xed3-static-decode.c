@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2020 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -28,10 +28,15 @@ END_LEGAL */
 XED_DLL_EXPORT
 void xed3_static_decode(xed_decoded_inst_t* d)
 {
-    xed_uint_t vv = xed3_operand_get_vexvalid(d);
-    xed_ild_map_enum_t map = xed3_operand_get_map(d);
+    xed_uint_t vv;
+    xed_ild_map_enum_t map;
     xed_uint32_t xed3_idx=0;
     const xed_inst_t* inst;
+    
+    xed_assert(d != NULL);
+    
+    vv = xed3_operand_get_vexvalid(d);
+    map = xed3_operand_get_map(d);
 
     if (map < XED_PHASH_MAP_LIMIT)
     {
@@ -52,4 +57,5 @@ void xed3_static_decode(xed_decoded_inst_t* d)
     inst = xed_inst_table + xed3_idx;
     xed_decoded_inst_set_inst(d, inst);
 }
+
 

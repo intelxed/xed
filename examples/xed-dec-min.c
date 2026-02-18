@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ END_LEGAL */
 
 #include "xed/xed-interface.h"
 #include <stdio.h>
+#include <string.h>
 
 int main(int argc, char** argv);
 
@@ -34,6 +35,16 @@ int main(int argc, char** argv) {
 
     // initialize the XED tables -- one time.
     xed_tables_init();
+
+    // Test api_check by passing an invalid iclass.
+    // With api_check enabled (default): aborts with a diagnostic message.
+    // With api_check disabled (--no-api-check build): survives and continues.
+    // Usage: xed-dec-min --test-api-check
+    if (argc >= 2 && strcmp(argv[1], "--test-api-check") == 0) {
+        xed_iform_max_per_iclass(XED_ICLASS_INVALID);
+        printf("api_check did NOT abort (checks disabled)\n");
+        return 0;
+    }
 
     // The state of the machine -- required for decoding
     if (long_mode) {
@@ -63,6 +74,7 @@ int main(int argc, char** argv) {
                                bytes);
         printf("%d %s\n",(int)bytes, xed_error_enum_t2str(xed_error));
     }
+
     (void) argc; (void) argv; //pacify compiler
     return 0;
 }

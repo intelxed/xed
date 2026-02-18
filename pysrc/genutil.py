@@ -2,7 +2,7 @@
 # Generic utilities
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import re
 import stat
 import platform
 from typing import Any, Optional
+import subprocess
+from pathlib import Path
 
 psystem = platform.system()
 if (psystem == 'Microsoft' or
@@ -48,6 +50,15 @@ if not on_windows:
 def msgerr(msg: str):
     """Write to stderr"""
     sys.stderr.write("%s\n" % msg)
+
+def dump_lines(s, lines):
+    """Print title and lines with decorative separators"""
+    if lines:
+        print("========")
+        print(s + ":")
+        for line in lines:
+            print(line.strip())
+        print("========")
 
 msgout = sys.stdout
 def set_msgs(fp):
@@ -104,18 +115,17 @@ def find_dir(d: str) -> Optional[str]:
         directory = os.path.split(directory)[0]
     return None
 
-
 def add_mbuild_to_path():
     """
     Add the mbuild directory to the python path.
 
-    This will do nothing if `mbuild` already exists in the python path.
+    This will do nothing if `mbuild` module is already importable.
     """
     try:
-        if any('mbuild' in x for x in sys.path):
-            return
-    except:
-        pass
+        import mbuild
+        return  # mbuild is already accessible
+    except ImportError:
+        pass  # mbuild not found, continue to add it to path
     mbuild_dir = find_dir('mbuild')
     if not mbuild_dir:
         die('Could not find mbuild directory.')
@@ -498,3 +508,55 @@ def make_list_of_str(lst: list[Any]) -> list[str]:
 
 def open_readlines(file_name: str) -> list[str]:
     return open(file_name, 'r').readlines()
+
+
+def get_git_version(src_dir: str = None, verbose: int = 0) -> str:
+    """Get XED version from environment, git, or VERSION file.
+    
+    Args:
+        src_dir: Source directory path. If None, uses parent of this file's directory.
+        verbose: Verbosity level (0=quiet, 2+=show git errors)
+    
+    Returns:
+        Version string, or '000' if not found.
+    """
+    NO_VERSION = '000'
+    
+    if "XED_VERSION" in os.environ:
+        # Usual user should NOT use it
+        return os.environ['XED_VERSION'].strip()
+    
+    # Determine source directory
+    if src_dir is None:
+        src_dir = Path(__file__).resolve().parent.parent
+    else:
+        src_dir = Path(src_dir)
+    
+    # Are we in a GIT repo?
+    git_dir = src_dir / '.git'
+    if git_dir.exists():
+        try:
+            result = subprocess.run(['git', 'describe', '--tags'],
+                                    cwd=src_dir, capture_output=True, text=True,
+                                    shell=False)
+            if result.returncode == 0:
+                return result.stdout.strip()
+            else:
+                if verbose >= 2:
+                    msgerr(f"git describe stdout: {result.stdout}")
+                    msgerr(f"git describe stderr: {result.stderr}")
+                dump_lines("git version description", ["FAILED"])
+        except Exception as e:
+            if verbose >= 2:
+                msgerr(f"git describe exception: {e}")
+    
+    # Not a git repo or git failed.
+    # Search for VERSION file (Available with the public XED repository)
+    version_file = src_dir / 'VERSION'
+    if version_file.exists():
+        try:
+            return version_file.read_text().strip()
+        except:
+            dump_lines("Could not find VERSION file or git repo for versioning")
+    
+    return NO_VERSION

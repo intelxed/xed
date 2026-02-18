@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -55,6 +55,7 @@ static int ignore_errors=0;
 static int non_empty_json_list=0;
 
 static void dump_comment(xed_uint8_t* buf, xed_uint32_t len) {
+    assert(len == 0 || buf != NULL);
     xed_uint_t i;
     printf("// ");
     for(i=0;i<len;i++) {
@@ -90,6 +91,7 @@ static void dump_emit(xed_uint8_t* buf, xed_uint32_t len) {
 }
 
 static void dump_json_object(xed_uint8_t* buf, xed_uint32_t len, char const* fn_name, xed_decoded_inst_t * xedd) {
+    assert((len == 0 || buf != NULL) && fn_name != NULL && xedd != NULL);
     xed_uint_t i;
     if (non_empty_json_list == 1){
         printf(",\n");
@@ -114,6 +116,7 @@ int is_allowed_iform_mismatch(xed_iform_enum_t observed_iform, xed_iform_enum_t 
 xed_uint64_t total = 0;
 xed_uint_t reps = 100;
 int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_enum_t ref_iform) {
+    assert(base != NULL && fn_name != NULL);
     xed_decoded_inst_t xedd;
     xed_uint32_t enclen=0;
     xed_uint8_t output_buffer[2*XED_MAX_INSTRUCTION_BYTES];
@@ -199,6 +202,7 @@ int execute_test(int test_id, test_func_t* base, char const* fn_name, xed_iform_
 
 
 int test_all(test_func_t* base, const char** str_table, const xed_iform_enum_t* iform_table) {
+    assert(base != NULL && str_table != NULL && iform_table != NULL);
     xed_uint32_t test_id=0;
     xed_uint32_t errors = 0;
     xed_uint64_t t1, t2, delta;

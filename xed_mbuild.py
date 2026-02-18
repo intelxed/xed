@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -625,6 +625,7 @@ def mkenv():
                                  die_on_errors=True,
                                  xed_messages=False,
                                  xed_asserts=False,
+                                 api_check=True,
                                  pedantic=True,
                                  clr=False,
                                  use_werror=True,
@@ -743,6 +744,10 @@ def xed_args(env):
                           action="store_true",
                           dest="xed_asserts",
                           help="Enable use xed's asserts")
+    env.parser.add_option("--no-api-check", 
+                          action="store_false",
+                          dest="api_check",
+                          help="Disable API input validation checks")
     env.parser.add_option("--clr", 
                           action="store_true", 
                           dest="clr",
@@ -2346,39 +2351,6 @@ def get_git_cmd(env):
          git = gite
    return git
 
-
-def get_git_version(env):
-    NO_VERSION = '000'
-    if "XED_VERSION" in os.environ:
-        # Usual user should NOT use it
-        return f"{os.environ['XED_VERSION'].strip()}"
-    # are we in a GIT repo?
-    if os.path.exists(mbuild.join(env['src_dir'],'.git')):
-        cmd = get_git_cmd(env) + ' describe --tags'
-        (retcode, stdout, stderr) = mbuild.run_command(cmd,
-                                                     directory=env['src_dir'])
-        if retcode == 0:
-            line = stdout[0].strip()
-            return line
-        else:
-            mbuild.vmsg(2, f"git description stdout: {stdout}")
-            mbuild.vmsg(2, f"git description stderr: {stderr}")
-            xbc.dump_lines("git version description", ["FAILED"])
-
-    # not a git repo or git failed.
-    # search for VERSION file (Available with the public XED repository)
-    version_file = mbuild.join(env['src_dir'], 'VERSION')
-    if os.path.exists(version_file):
-        try:
-            with open(version_file, 'r') as f:
-                line = f.readline()
-            return line.strip()
-        except:
-            xbc.dump_lines("Could not find VERSION file or git repo for versioning")
-
-    return NO_VERSION
-
-
 def emit_defines_header(env):
     """Grab all the XED_* defines and the model name and emit a header file"""
 
@@ -2426,7 +2398,9 @@ def emit_defines_header(env):
         mbuild.vmsgb(1, "REUSING BUILD DEFINES HEADER FILE")
 
 def update_version(env):
-   new_rev = get_git_version(env)
+   # pass env['verbose'] if set, otherwise 0
+   verbose = env['verbose'] if 'verbose' in env else 0
+   new_rev = genutil.get_git_version(env['src_dir'], verbose)
    mbuild.vmsgb(1, "XED VERSION", new_rev)
    env['xed_version'] =  new_rev
        
@@ -2502,6 +2476,8 @@ def _run_canned_tests(env,osenv):
         codes.append('CNL')
     if env['icl']:
         codes.append('ICL')
+    if env['arl']:
+        codes.append('IBHF')
     if env['spr']:
         codes.append('AMX')
         codes.append('SPR')
@@ -2570,6 +2546,11 @@ def verify_args(env):
         env['knl'] = False
         env['srf'] = False
         env['nvl'] = False
+    
+    if not env['cet']:
+        env['tgl'] = False
+        env['srf'] = False
+        env['adl'] = False
 
     # turn off downstream (later) stuff logically
     if not env['knl']:
@@ -2587,7 +2568,6 @@ def verify_args(env):
         env['tgl'] = False
         env['lakefield'] = False
     if not env['tgl']:
-        env['cet'] = False
         env['spr'] = False
     if not env['adl']:
         env['arl'] = False
@@ -2599,11 +2579,9 @@ def verify_args(env):
     if not env['gnr']:
         env['dmr'] = False
     if not env['arl']:
-        env['lnl'] = False
+        env['ptl'] = False
     if not env['srf']:
         env['cwf'] = False
-    if not env['lnl']:
-        env['ptl'] = False
     if not env['ptl']:
         env['nvl'] = False
     if not env['dmr'] or not env['cwf'] or not env['nvl']: 

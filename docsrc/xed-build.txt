@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
 @mainpage *INTERNAL* Intel&reg; XED Build Guide
 @endif
 
-May 2025
+January 2026
 
 @section INTRO Introduction
 
@@ -406,7 +406,6 @@ Options:
   --no-ptl              Disable Panther Lake public instructions
   --no-emr              Disable Emerald Rapids public instructions
   --no-arl              Disable Arrow Lake public instructions
-  --no-lnl              Disable Lunar Lake public instructions
   --dbghelp             Use dbghelp.dll on windows.
   --prefix=PREFIX_DIR   XED System install directory.
   --prefix-lib-dir=PREFIX_LIB_DIR

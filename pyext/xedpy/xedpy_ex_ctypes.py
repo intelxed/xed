@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@
 import argparse
 import ctypes
 from pathlib import Path
+import sys
+
 
 # Define the root directory for the XED library
 xed_root: Path = Path(__file__).parents[2].resolve()
@@ -28,11 +30,15 @@ XED_MACHINE_MODE_LONG_64 = 1
 XED_ADDRESS_WIDTH_64b = 8
 
 class xed_decoded_inst_t(ctypes.Structure):
+    if sys.version_info >= (3, 14):
+        _layout_ = "ms"
     _fields_ = [
         ("_data", ctypes.c_ubyte * 512)  # Oversized buffer to prevent potential buffer overflows
     ]
 
 class xed_state_t(ctypes.Structure):
+    if sys.version_info >= (3, 14):
+        _layout_ = "ms"
     _fields_ = [
         ("_data", ctypes.c_ubyte * 512)  # Oversized buffer to prevent potential buffer overflows
     ]

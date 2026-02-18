@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ END_LEGAL */
 void xed_encoder_request_emit_bytes(xed_encoder_request_t* q,
                                    const xed_uint8_t bits,
                                    const xed_uint64_t value){
-    
+    xed_assert(q != NULL);
     xed_uint32_t byte_offset;
     xed_uint8_t* p;
     xed_uint32_t bit_offset = xed_encoder_request_bit_offset(q);
@@ -78,6 +78,7 @@ void xed_encoder_request_emit_bytes(xed_encoder_request_t* q,
 void xed_encoder_request_encode_emit(xed_encoder_request_t* q,
                                      const unsigned int bits,
                                      const xed_uint64_t value) {
+    xed_assert(q != NULL);
     xed_uint32_t nbits;
     xed_uint32_t byte_offset;
     xed_uint32_t bit_in_byte;
@@ -175,6 +176,7 @@ void xed_encoder_request_encode_emit(xed_encoder_request_t* q,
 xed_bool_t
 xed_encoder_request__memop_compatible(const xed_encoder_request_t* p,
                                       xed_operand_width_enum_t operand_width) {
+    xed_assert(p != NULL);
     // return 1 if the memop specified in the operand storage is
     // compatible with the argument operand_width.
     xed_uint16_t operand_width_bytes;
@@ -193,6 +195,7 @@ xed_encoder_request__memop_compatible(const xed_encoder_request_t* p,
 
 static XED_INLINE void zero_inst_enc(xed_encoder_request_t* p)
 {
+    xed_assert(p != NULL);
     memset(p,0,sizeof(xed_encoder_request_t));
 }
 
@@ -209,10 +212,12 @@ void xed_encoder_request_zero(xed_encoder_request_t* p)    {
 xed_iclass_enum_t
 xed_encoder_request_get_iclass( const xed_encoder_request_t* p)
 {
+    xed_assert(p != NULL);
     return XED_STATIC_CAST(xed_iclass_enum_t,xed3_operand_get_iclass(p));
 }
 void   xed_encoder_request_set_iclass( xed_encoder_request_t* p, 
                                        xed_iclass_enum_t iclass) {
+    xed_assert(p != NULL);
     xed3_operand_set_iclass(p,iclass);
 }
 
@@ -220,6 +225,7 @@ void   xed_encoder_request_set_iclass( xed_encoder_request_t* p,
 void
 xed_encoder_request_set_effective_operand_width( xed_encoder_request_t* p, 
                                                  xed_uint_t width_bits) {
+    xed_assert(p != NULL);
     switch(width_bits) {
       // x87 memops use the width.
       case 8:      xed3_operand_set_eosz(p,0); break;
@@ -238,6 +244,7 @@ xed_encoder_request_set_effective_operand_width( xed_encoder_request_t* p,
 void
 xed_encoder_request_set_effective_address_size( xed_encoder_request_t* p, 
                                                 xed_uint_t width_bits) {
+    xed_assert(p != NULL);
     switch(width_bits) {
       case 16:     xed3_operand_set_easz(p,1); break;
       case 32:     xed3_operand_set_easz(p,2); break;
@@ -257,12 +264,15 @@ void xed_encoder_request_set_branch_displacement(xed_encoder_request_t* p,
 }
 
 void xed_encoder_request_set_relbr(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_relbr(p,1);
 }
 void xed_encoder_request_set_absbr(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_absbr(p,1);
 }
 void xed_encoder_request_set_ptr(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_ptr(p,1);
 }
 
@@ -287,6 +297,7 @@ void xed_encoder_request_set_uimm0_bits(xed_encoder_request_t* p,
 }
 void xed_encoder_request_set_uimm1(xed_encoder_request_t* p,
                                    xed_uint8_t uimm) {
+    xed_assert(p != NULL);
     xed3_operand_set_imm1(p,1);
     xed3_operand_set_uimm1(p,uimm);
 }
@@ -294,53 +305,62 @@ void xed_encoder_request_set_uimm1(xed_encoder_request_t* p,
 void xed_encoder_request_set_simm(xed_encoder_request_t* p,
                                   xed_int32_t simm,
                                   xed_uint_t nbytes) {
-
     xed_operand_values_set_immediate_signed(p, simm, nbytes);
     xed3_operand_set_imm0(p,1);
 }
 
 void xed_encoder_request_set_agen(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_agen(p,1);
 }
 void xed_encoder_request_set_mem0(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_mem0(p,1);
 }
 void xed_encoder_request_set_mem1(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_mem1(p,1);
 }
 void xed_encoder_request_set_memory_operand_length(xed_encoder_request_t* p,
                                                    xed_uint_t nbytes) {
+    xed_assert(p != NULL);
     xed3_operand_set_mem_width(p,XED_STATIC_CAST(xed_uint16_t,nbytes));
 }
 void xed_encoder_request_set_seg0(xed_encoder_request_t* p,
                                   xed_reg_enum_t seg_reg) {
+    xed_assert(p != NULL);
     xed3_operand_set_seg0(p,seg_reg);
 }
 void xed_encoder_request_set_seg1(xed_encoder_request_t* p,
                                   xed_reg_enum_t seg_reg) {
+    xed_assert(p != NULL);
     xed3_operand_set_seg1(p,seg_reg);
 }
 void xed_encoder_request_set_base0(xed_encoder_request_t* p,
                                   xed_reg_enum_t base_reg) {
+    xed_assert(p != NULL);
     xed3_operand_set_base0(p,base_reg);
 }
 void xed_encoder_request_set_base1(xed_encoder_request_t* p,
                                   xed_reg_enum_t base_reg) {
+    xed_assert(p != NULL);
     xed3_operand_set_base1(p,base_reg);
 }
 void xed_encoder_request_set_index(xed_encoder_request_t* p,
                                   xed_reg_enum_t index_reg) {
+    xed_assert(p != NULL);
     xed3_operand_set_index(p,index_reg);
 }
 void xed_encoder_request_set_scale(xed_encoder_request_t* p,
                                    xed_uint_t scale) {
+    xed_assert(p != NULL);
     xed3_operand_set_scale(p,scale);
 }
 
 void xed_encoder_request_set_operand_order(xed_encoder_request_t* p,
                                            xed_uint_t operand_index, 
                                            xed_operand_enum_t name) {
-    xed_assert(operand_index < XED_ENCODE_ORDER_MAX_OPERANDS);
+    xed_assert(p != NULL && operand_index < XED_ENCODE_ORDER_MAX_OPERANDS);
     p->_operand_order[operand_index] = name;
 
     /* track the maximum number of operands */
@@ -352,13 +372,14 @@ void xed_encoder_request_set_operand_order(xed_encoder_request_t* p,
 xed_operand_enum_t
 xed_encoder_request_get_operand_order(xed_encoder_request_t* p,
                                       xed_uint_t operand_index) {
-    xed_assert(operand_index < XED_ENCODE_ORDER_MAX_OPERANDS &&
+    xed_assert(p != NULL && operand_index < XED_ENCODE_ORDER_MAX_OPERANDS &&
                operand_index < p->_n_operand_order);
     return XED_STATIC_CAST(xed_operand_enum_t,p->_operand_order[operand_index]);
 }
 
 
 void xed_encoder_request_zero_operand_order(xed_encoder_request_t* p) {
+    xed_assert(p != NULL);
     p->_n_operand_order = 0;
 }
 
@@ -373,6 +394,8 @@ void
 xed_encode_request_print(const xed_encoder_request_t* p,
                          char* buf,
                          xed_uint_t buflen)  {
+    xed_assert(p != NULL);
+    api_check(buflen == 0 || buf != NULL);
     char* t;
     xed_uint_t i;
     xed_int_t blen = XED_STATIC_CAST(xed_int_t,buflen);
@@ -424,6 +447,7 @@ XED_DLL_EXPORT xed_error_enum_t
 xed_encode_nop(xed_uint8_t* array,
                const unsigned int ilen)
 {
+    api_check(array != NULL);
     if (ilen >= 1 && ilen <= XED_MAX_FIXED_NOPS)  {
         // subtract one from the requested length to get the array index.
         memcpy(array, xed_nop_array[ilen-1], ilen);
@@ -547,9 +571,20 @@ static void xed_encode_precondition_egpr(xed_encoder_request_t* req)
         }
     }
 }
+
+static void xed_encode_precondition_apx(xed_encoder_request_t* req)
+{
+    xed_encode_precondition_egpr(req);
+    if (xed3_operand_get_nf(req)) {
+        // NF (no-flags) instructions only exist within the EVEX encoding space.
+        // Enforce EVEX encoding for NF requested instructions.
+        xed3_operand_set_must_use_evex(req, 1);
+    }
+}
 #endif
 
 static void xed_encode_precondition(xed_encoder_request_t* r) {
+    xed_assert(r != NULL);
     /* If the base is RIP, then we help the encoder users by adjusting or
      * supplying a memory displacement. It must be 4B, even if it is zero.
      *
@@ -575,7 +610,7 @@ static void xed_encode_precondition(xed_encoder_request_t* r) {
     xed_encode_precondition_vl(r);
 #endif
 #if defined(XED_APX)
-    xed_encode_precondition_egpr(r);
+    xed_encode_precondition_apx(r);
 #endif
 }
 
@@ -583,7 +618,10 @@ XED_DLL_EXPORT xed_error_enum_t xed_encode(xed_encoder_request_t* r,
                                            xed_uint8_t* array, 
                                            const unsigned int ilen,
                                            unsigned int* olen) {
-    xed_iclass_enum_t iclass = xed_encoder_request_get_iclass(r);
+    xed_iclass_enum_t iclass;
+    xed_assert(olen != NULL);
+    
+    iclass = xed_encoder_request_get_iclass(r);
     if (iclass != XED_ICLASS_INVALID && 
         iclass < XED_ICLASS_LAST && 
         ilen > 0 &&

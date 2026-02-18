@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -201,6 +201,8 @@ xed_decode_with_features(xed_decoded_inst_t* xedd,
                          const unsigned int bytes,
                          xed_chip_features_t* chip_features)
 {
+    xed_assert(xedd != NULL);
+    xed_assert(itext != NULL);
     xed_error_enum_t error;
     unsigned int tbytes = bytes;
     xed_chip_enum_t chip = xed_decoded_inst_get_input_chip(xedd);

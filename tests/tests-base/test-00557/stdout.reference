@@ -1,2 +1,8 @@
-Attempting to decode: 62f1fd48fb4c247a
-length = 8
+F3410F1EFC
+ICLASS:     NOP
+CATEGORY:   WIDENOP
+EXTENSION:  BASE
+IFORM:      NOP_GPRv_GPRv_0F1E
+ISA_SET:    PPRO
+ATTRIBUTES: NOP SCALABLE 
+SHORT:      nop r12d, edi

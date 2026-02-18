@@ -2,7 +2,7 @@
 #-*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -274,7 +274,7 @@ def work():
                           action="append",
                           default=[], 
                           help="Codes for test subsetting (DEC, ENC, AVX, ICL, CNL" 
-                          + "AVX512X, AVX512PF, AMX, MPX, APX, IPREFETCH, HSW, AMD, XOP, VIA, SPR, AVX10, AVX10_2)."
+                          + "AVX512X, AVX512PF, AMX, MPX, APX, IPREFETCH, HSW, AMD, XOP, VIA, SPR, AVX10, AVX10_2, etc)."
                              + " Only used for running tests, not creating them.")
     env.parse_args()
 

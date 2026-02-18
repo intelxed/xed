@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -103,6 +103,10 @@ set_chip_modes(xed_decoded_inst_t* xedd,
 #if defined(XED_CET)
             // `CET`: Enables the `CET` ISA-SET instructions (replacing a previous `NOP`)
             {XED_ISA_SET_CET, XED_OPERAND_CET},
+#endif
+#if defined(XED_ISA_SET_IBHF_DEFINED)
+            // `IBHF`: Enables the `IBHF` ISA-SET instructions (replacing a previous `NOP`)
+            {XED_ISA_SET_IBHF, XED_OPERAND_IBHF},
 #endif
             // EO isa2op
             {XED_ISA_SET_INVALID, XED_OPERAND_INVALID}

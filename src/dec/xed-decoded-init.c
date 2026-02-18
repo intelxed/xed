@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2021 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -29,12 +29,14 @@ XED_DLL_EXPORT void
 xed_decoded_inst_zero_set_mode(xed_decoded_inst_t* p,
                                const xed_state_t* dstate)
 {
+    xed_assert(p != NULL);
     zero_inst(p);
     xed_operand_values_set_mode(p,dstate);
 }
 
 XED_DLL_EXPORT void
 xed_decoded_inst_zero(xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
     zero_inst(p);
 }
 
@@ -43,6 +45,7 @@ xed_decoded_inst_zero_keep_mode_from_operands(
     xed_decoded_inst_t* p,
     const xed_operand_values_t* operands)
 {
+    xed_assert(p != NULL);
     xed_operand_values_init_keep_mode(p, operands);
     p->_decoded_length = 0;
     p->_inst = 0;
@@ -53,5 +56,6 @@ XED_DLL_EXPORT void
 xed_decoded_inst_zero_keep_mode(xed_decoded_inst_t* p) {
     xed_decoded_inst_zero_keep_mode_from_operands(p, p);
 }
+
 
 

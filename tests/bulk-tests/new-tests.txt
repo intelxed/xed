@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -104,3 +104,13 @@ DEC ENC           ; BUILDDIR/xed -de 660F1F840000000000
 DEC               ; BUILDDIR/xed -64 -emit-ignored-branch-hint -d 2E48FFC1
 # Test PROTECTED_MODE instruction in REAL_MODE
 DEC               ; BUILDDIR/xed -r -d 0f004540
+
+# Testing IBHF instruction (promoted via F3 refining prefix, REXW, REG & RM condition)
+# We should manually force it via set IBHF knob
+DEC  ENC  IBHF    ; BUILDDIR/xed -64 -set IBHF 1 -de F3480F1EF8
+# Should yield NOP since IBHF is disabled
+DEC  ENC  IBHF    ; BUILDDIR/xed -64 -set IBHF 0 -de F3480F1EF8
+# Testing NOP instruction; REXW not set
+DEC       IBHF    ; BUILDDIR/xed -64 -set IBHF 1 -d F3410F1EFC
+# Testing encoder without IBHF specification
+ENC       IBHF    ; BUILDDIR/xed -64 -e IBHF

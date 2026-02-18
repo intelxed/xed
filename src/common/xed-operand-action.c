@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ END_LEGAL */
 
 
 #include "xed-operand-action.h"
+#include "xed-util.h"
 
 static const xed_uint8_t xed_read_action[] = {
   /* XED_OPERAND_ACTION_INVALID */ 0,
@@ -101,24 +102,31 @@ static const xed_uint8_t xed_conditional_write_action[] = {
 
 
 xed_uint_t xed_operand_action_read(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_read_action[rw];
 }
 xed_uint_t xed_operand_action_read_only(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_read_only_action[rw];
 }
 xed_uint_t xed_operand_action_written(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_written_action[rw];
 }
 xed_uint_t xed_operand_action_written_only(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_written_only_action[rw];
 }
 xed_uint_t xed_operand_action_read_and_written(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_read_and_written_action[rw];
 }
 xed_uint_t xed_operand_action_conditional_read(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_conditional_read_action[rw];
 }
 xed_uint_t xed_operand_action_conditional_write(const xed_operand_action_enum_t rw) {
+    api_check(rw > XED_OPERAND_ACTION_INVALID && rw < XED_OPERAND_ACTION_LAST);
     return xed_conditional_write_action[rw];
 }
 

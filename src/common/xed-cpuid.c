@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ xed_bool_t xed_get_cpuid_rec(xed_cpuid_rec_enum_t rec_enum, xed_cpuid_rec_t* cpu
     if (rec_enum > XED_CPUID_REC_INVALID &&
         rec_enum < XED_CPUID_REC_LAST)
     {
-        xed_assert(cpuid_rec!=0);
+        api_check(cpuid_rec != NULL);
         *cpuid_rec = xed_cpuid_info[rec_enum];
         return 1;
     }

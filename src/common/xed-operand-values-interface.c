@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -32,12 +32,14 @@ END_LEGAL */
 void xed_operand_values_init(xed_operand_values_t* p) {
     unsigned int i;
     xed_uint32_t* xp = (xed_uint32_t*)p;
+    xed_assert(p != NULL);
     for(i=0;i<sizeof(xed_operand_storage_t)/4;i++)
         xp[i]=0;
 }
 
 void xed_operand_values_init_keep_mode( xed_operand_values_t* dst,
                                         const xed_operand_values_t* src) {
+    xed_assert(src != NULL);
     const xed_bits_t real_mode  = xed3_operand_get_realmode(src);
     const xed_bits_t mode  = xed3_operand_get_mode(src);
     const xed_bits_t smode = xed3_operand_get_smode(src);
@@ -56,6 +58,7 @@ void xed_operand_values_init_set_mode(xed_operand_values_t* p,
 
 void xed_operand_values_set_mode(xed_operand_values_t* p,
                                  const xed_state_t* dstate)  {
+    xed_assert(p != NULL);
 
     /* set MODE, SMODE and REALMODE */
     xed3_operand_set_realmode(p,0);
@@ -103,15 +106,18 @@ void xed_operand_values_set_mode(xed_operand_values_t* p,
 }
 
 xed_bool_t xed_operand_values_get_long_mode(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return (xed3_operand_get_mode(p)==2);
 }
 xed_bool_t xed_operand_values_get_real_mode(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return (xed3_operand_get_realmode(p)!=0);
 }
 
 
 xed_uint32_t
 xed_operand_values_get_stack_address_width(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed_uint32_t smode = xed3_operand_get_smode(p);
     switch(smode)    {
       case 0:        return 16;
@@ -122,6 +128,7 @@ xed_operand_values_get_stack_address_width(const xed_operand_values_t* p) {
 }
 xed_uint32_t
 xed_operand_values_get_effective_address_width(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed_uint32_t easz = xed3_operand_get_easz(p);
     switch(easz)    {
       case 0:        xed_assert(0);        return 0;
@@ -135,6 +142,7 @@ xed_operand_values_get_effective_address_width(const xed_operand_values_t* p) {
 xed_uint32_t
 xed_operand_values_get_effective_operand_width(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     xed_uint32_t eosz = xed3_operand_get_eosz(p);
     switch(eosz)    {
       case 0:        return 8;
@@ -148,6 +156,7 @@ xed_operand_values_get_effective_operand_width(const xed_operand_values_t* p)
 #if defined(XED_DECODER)
 xed_bool_t
 xed_operand_values_has_real_rep(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed_uint32_t rep = xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_REP);    
     if ( rep ) {
         xed_bits_t r = xed3_operand_get_rep(p);
@@ -159,17 +168,20 @@ xed_operand_values_has_real_rep(const xed_operand_values_t* p) {
 
 xed_bool_t
 xed_operand_values_has_rep_prefix(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_rep(p) == 3;
 }
 
 xed_bool_t
 xed_operand_values_has_repne_prefix(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_rep(p) == 2;
 }
 
 //FIXME: 2015-05-27: DEPRECATED -- remove when pin is fixed to not call
 //this function.
 void xed_operand_values_clear_rep(xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_rep(p,0);
 }
 
@@ -177,12 +189,14 @@ void xed_operand_values_clear_rep(xed_operand_values_t* p) {
 xed_bool_t
 xed_operand_values_has_segment_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     return xed3_operand_get_seg_ovd(p) != 0;
 }
 
 xed_reg_enum_t
 xed_operand_values_segment_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     switch(xed3_operand_get_seg_ovd(p)) {
       case 0: return XED_REG_INVALID;
       case 1: return XED_REG_CS;
@@ -197,12 +211,14 @@ xed_operand_values_segment_prefix(const xed_operand_values_t* p)
 
 xed_bool_t
 xed_operand_values_has_lock_prefix(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_lock(p) != 0;
 }
 
 #if defined(XED_DECODER)
 xed_bool_t
 xed_operand_values_get_atomic(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_LOCKED)
 #if defined(XED_ATTRIBUTE_ATOMIC_DEFINED)
         || xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_ATOMIC)
@@ -213,6 +229,7 @@ xed_operand_values_get_atomic(const xed_operand_values_t* p) {
 
 xed_bool_t
 xed_operand_values_lockable(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     if (xed_decoded_inst_get_attribute(p,XED_ATTRIBUTE_LOCKABLE))
         return 1;
     //XCHG accessing memory is always atomic, lockable
@@ -226,6 +243,7 @@ xed_operand_values_lockable(const xed_operand_values_t* p) {
 xed_bool_t
 xed_operand_values_using_default_segment(const xed_operand_values_t* p,
                                          unsigned int i) {
+    xed_assert(p != NULL);
 
     switch(i){
     case(0): return xed3_operand_get_using_default_segment0(p);
@@ -238,6 +256,7 @@ xed_operand_values_using_default_segment(const xed_operand_values_t* p,
 
 xed_bool_t 
 xed_operand_values_memop_without_modrm(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return (xed3_operand_get_mem0(p) &&
             xed3_operand_get_disp_width(p) &&
             xed3_operand_get_has_modrm(p)==0);
@@ -245,15 +264,18 @@ xed_operand_values_memop_without_modrm(const xed_operand_values_t* p) {
 
 xed_bool_t 
 xed_operand_values_has_modrm_byte(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_has_modrm(p);
 }
 xed_bool_t 
 xed_operand_values_has_sib_byte(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_has_sib(p);
 }
 
 xed_bool_t
 xed_operand_values_has_immediate(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     if (xed3_operand_get_imm_width(p))
         return 1;
     return 0;
@@ -263,6 +285,7 @@ xed_operand_values_has_immediate(const xed_operand_values_t* p) {
 xed_bool_t
 xed_operand_values_has_displacement(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_disp_width(p))
         return 1;
     if (xed3_operand_get_brdisp_width(p))
@@ -273,6 +296,7 @@ xed_operand_values_has_displacement(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_has_memory_displacement(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_brdisp_width(p))
         return 0;
     if (xed3_operand_get_disp_width(p))
@@ -282,6 +306,7 @@ xed_operand_values_has_memory_displacement(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_has_branch_displacement(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_brdisp_width(p))
         return 1;
     return 0;
@@ -298,12 +323,14 @@ xed_uint32_t
 xed_operand_values_get_branch_displacement_length(
     const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     return xed3_operand_get_brdisp_width(p)/8;
 }
 xed_uint32_t
 xed_operand_values_get_branch_displacement_length_bits(
     const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     return xed3_operand_get_brdisp_width(p);
 }
 
@@ -317,6 +344,7 @@ xed_operand_values_get_memory_displacement_length(
 xed_bool_t 
 xed_operand_values_has_address_size_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_asz(p))
         return 1;
     return 0;
@@ -325,6 +353,7 @@ xed_operand_values_has_address_size_prefix(const xed_operand_values_t* p)
 xed_bool_t 
 xed_operand_values_has_operand_size_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     // If REFINING66() executed, then we zero the OSZ variable. The other
     // osz's live on to be returned as 1 here.  The REFINING indicator is
     // not removed for OSZ-nonrefining operations.
@@ -335,6 +364,7 @@ xed_operand_values_has_operand_size_prefix(const xed_operand_values_t* p)
 xed_bool_t 
 xed_operand_values_has_66_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if ( xed3_operand_get_prefix66(p))
         return 1;
     return 0;
@@ -343,6 +373,7 @@ xed_operand_values_has_66_prefix(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_mandatory_66_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     /*
      * For legacy instructions, the x66 prefix is mandatory if the REFINING66()/IGNORE66() prefix is used.
      * When this prefix is used, the OSZ variable is zeroed; therefore we check both conditions.
@@ -382,6 +413,7 @@ xed_operand_values_mandatory_66_prefix(const xed_operand_values_t* p)
 xed_bool_t 
 xed_operand_values_has_rexw_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if ( xed3_operand_get_rexw(p))
         return 1;
     return 0;
@@ -391,6 +423,7 @@ xed_operand_values_has_rexw_prefix(const xed_operand_values_t* p)
 xed_bits_t
 xed_operand_values_get_pp_vex_prefix(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     return vex_prefix_recoding[xed3_operand_get_vex_prefix(p)];
 }
 #endif
@@ -398,6 +431,7 @@ xed_operand_values_get_pp_vex_prefix(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_accesses_memory(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_mem0(p) ||
         xed3_operand_get_mem1(p) )
         return 1;
@@ -406,6 +440,7 @@ xed_operand_values_accesses_memory(const xed_operand_values_t* p)
 
 unsigned int
 xed_operand_values_number_of_memory_operands(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     unsigned int memops = xed3_operand_get_mem0(p) + 
                           xed3_operand_get_mem1(p);
     return memops;
@@ -415,6 +450,7 @@ xed_operand_values_number_of_memory_operands(const xed_operand_values_t* p) {
 xed_reg_enum_t
 xed_operand_values_get_base_reg(const xed_operand_values_t* p,
                                 unsigned int memop_idx)  {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_base0(p));
     if (memop_idx == 1)
@@ -427,6 +463,7 @@ xed_reg_enum_t
 xed_operand_values_get_seg_reg(const xed_operand_values_t* p,
                                          unsigned int memop_idx) 
 {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_seg0(p));
     if (memop_idx == 1)
@@ -439,6 +476,7 @@ xed_reg_enum_t
 xed_operand_values_get_index_reg(const xed_operand_values_t* p,
                                            unsigned int memop_idx) 
 {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         return XED_STATIC_CAST(xed_reg_enum_t,xed3_operand_get_index(p));
     xed_assert(0);
@@ -448,6 +486,7 @@ xed_operand_values_get_index_reg(const xed_operand_values_t* p,
 unsigned int
 xed_operand_values_get_scale(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_mem0(p) || xed3_operand_get_agen(p)) 
         return (xed3_operand_get_scale(p))?xed3_operand_get_scale(p):1;
     return 0;
@@ -456,6 +495,7 @@ xed_operand_values_get_scale(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_branch_not_taken_hint(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_hint(p)==3)
         return 1;
     return 0;
@@ -463,6 +503,7 @@ xed_operand_values_branch_not_taken_hint(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_branch_taken_hint(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_hint(p)==4)
         return 1;
     return 0;
@@ -471,6 +512,7 @@ xed_operand_values_branch_taken_hint(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_ignored_branch_not_taken_hint(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_hint(p)==1)
         return 1;
     return 0;
@@ -478,6 +520,7 @@ xed_operand_values_ignored_branch_not_taken_hint(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_ignored_branch_taken_hint(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_hint(p)==2)
         return 1;
     return 0;
@@ -486,6 +529,7 @@ xed_operand_values_ignored_branch_taken_hint(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_cet_no_track(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     if (xed3_operand_get_hint(p)==5)
         return 1;
     return 0;
@@ -496,6 +540,7 @@ xed_operand_values_cet_no_track(const xed_operand_values_t* p)
 xed_bool_t
 xed_operand_values_is_nop(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     const xed_iclass_enum_t iclass = xed_operand_values_get_iclass(p);
 
     if (iclass == XED_ICLASS_NOP)
@@ -538,6 +583,7 @@ xed_int64_t
 xed_operand_values_get_branch_displacement_int64(
     const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     const xed_decoded_inst_t* xedd = (const xed_decoded_inst_t*)p; // same type
     unsigned int len = xed3_operand_get_brdisp_width(xedd);
     switch(len) {
@@ -554,6 +600,7 @@ xed_operand_values_get_branch_displacement_int64(
 xed_int64_t
 xed_operand_values_get_immediate_int64(const xed_operand_values_t* p)
 {
+    xed_assert(p != NULL);
     xed_uint8_t len = xed3_operand_get_imm_width(p);
     xed_uint64_t raw_imm = xed3_operand_get_uimm0(p);
     switch(len){
@@ -570,17 +617,20 @@ xed_operand_values_get_immediate_int64(const xed_operand_values_t* p)
 
 xed_uint64_t
 xed_operand_values_get_immediate_uint64(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_uimm0(p);
 }
 
 xed_uint_t
 xed_operand_values_get_immediate_is_signed(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return xed3_operand_get_imm0signed(p);
 }
 
 xed_uint8_t
 xed_operand_values_get_immediate_byte(const xed_operand_values_t* p,
                                       unsigned int i) {
+    xed_assert(p != NULL);
     unsigned int len = xed3_operand_get_imm_width(p);
     if (xed3_operand_get_imm0(p)) {
         xed_uint64_t y = xed_operand_values_get_immediate_uint64(p); //FIXME: BENDIAN
@@ -591,6 +641,7 @@ xed_operand_values_get_immediate_byte(const xed_operand_values_t* p,
 
 xed_uint8_t
 xed_operand_values_get_second_immediate(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     if (xed3_operand_get_imm1(p))
         return xed3_operand_get_uimm1(p);
     return 0;
@@ -599,6 +650,7 @@ xed_operand_values_get_second_immediate(const xed_operand_values_t* p) {
 xed_uint8_t
 xed_operand_values_get_memory_displacement_byte(const xed_operand_values_t* p,
                                                 unsigned int i) {
+    xed_assert(p != NULL);
     unsigned int len = xed3_operand_get_disp_width(p);
     xed_uint64_t y = xed_operand_values_get_memory_displacement_int64(p); //FIXME: BENDIAN
     return xed_get_byte(y, i, len);
@@ -607,6 +659,7 @@ xed_operand_values_get_memory_displacement_byte(const xed_operand_values_t* p,
 xed_uint8_t
 xed_operand_values_get_branch_displacement_byte(const xed_operand_values_t* p,
                                                 unsigned int i) {
+    xed_assert(p != NULL);
     unsigned int len = xed3_operand_get_brdisp_width(p);
     xed_int64_t v = xed_operand_values_get_branch_displacement_int64(p); //FIXME: BENDIAN
     return xed_get_byte(v, i, len);
@@ -614,6 +667,7 @@ xed_operand_values_get_branch_displacement_byte(const xed_operand_values_t* p,
 
 xed_iclass_enum_t
 xed_operand_values_get_iclass(const xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     return XED_STATIC_CAST(xed_iclass_enum_t,xed3_operand_get_iclass(p));
 }
 
@@ -621,24 +675,29 @@ xed_operand_values_get_iclass(const xed_operand_values_t* p) {
 // ENCODE
 ////////////////////////////////////////////////////////////////////
 void xed_operand_values_zero_immediate(xed_operand_values_t* p) {
+   xed_assert(p != NULL);
    xed3_operand_set_imm_width(p,0);
    xed3_operand_set_uimm0(p,0);
 }
 
 void xed_operand_values_zero_branch_displacement(xed_operand_values_t* p) {
+   xed_assert(p != NULL);
    xed3_operand_set_brdisp_width(p,0);
    xed3_operand_set_disp(p,0);
 }
 
 void xed_operand_values_zero_memory_displacement(xed_operand_values_t* p) {
+   xed_assert(p != NULL);
    xed3_operand_set_disp_width(p,0);
    xed3_operand_set_disp(p,0);
 }
 
 void xed_operand_values_set_lock(xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_lock(p,1);
 }
 void xed_operand_values_zero_segment_override(xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_seg_ovd(p,0);
     /* Also remove the segment specifiers in SEG0/SEG1. If they are
      * default, they don't matter for encoding. This is assumed to be part
@@ -650,21 +709,25 @@ void xed_operand_values_zero_segment_override(xed_operand_values_t* p) {
 void
 xed_operand_values_set_iclass(xed_operand_values_t* p,
                               xed_iclass_enum_t iclass) {
+    xed_assert(p != NULL);
     xed3_operand_set_iclass(p,iclass);
 }
 
 void
 xed_operand_values_set_relbr(xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_relbr(p,1);
 }
 void
 xed_operand_values_set_absbr(xed_operand_values_t* p) {
+    xed_assert(p != NULL);
     xed3_operand_set_absbr(p,1);
 }
 
 void
 xed_operand_values_set_effective_operand_width(xed_operand_values_t* p,
                                                unsigned int width) {
+    xed_assert(p != NULL);
     unsigned int eosz=0;
     switch(width)  {
       case 8:         eosz=0;        break;
@@ -679,6 +742,7 @@ xed_operand_values_set_effective_operand_width(xed_operand_values_t* p,
 void
 xed_operand_values_set_effective_address_width(xed_operand_values_t* p,
                                                unsigned int width) {
+    xed_assert(p != NULL);
     unsigned int easz=0;
     switch(width)  {
       case 16:        easz=1;        break;
@@ -692,12 +756,14 @@ xed_operand_values_set_effective_address_width(xed_operand_values_t* p,
 void
 xed_operand_values_set_memory_operand_length(xed_operand_values_t* p,
                                              unsigned int memop_length) {
+    xed_assert(p != NULL);
     xed3_operand_set_mem_width(p,XED_STATIC_CAST(xed_uint16_t,memop_length));
 }
 
 unsigned int
 xed_operand_values_get_memory_operand_length(const xed_operand_values_t* p,
                                              unsigned int memop_idx)  {
+    xed_assert(p != NULL);
     (void)memop_idx;    
     return xed3_operand_get_mem_width(p);
 }
@@ -713,6 +779,7 @@ void
 xed_operand_values_set_memory_displacement_bits(xed_operand_values_t* p,
                                                 xed_int64_t x,
                                                 unsigned int len) {
+    xed_assert(p != NULL);
     /* Set the real displacement value x in big-endian form for emitting.
      * Make sure that the LSB of x is the MSB of the xed3_operand_get_(p)* field
      * because we emit them starting from the MSB based on the width */
@@ -737,6 +804,7 @@ void
 xed_operand_values_set_branch_displacement_bits(xed_operand_values_t* p,
                                                 xed_int64_t x,
                                                 unsigned int len) {
+    xed_assert(p != NULL);
     /* Set the real displacement value x in big-endian form for emitting.
      * Make sure that the LSB of x is the MSB of the xed3_operand_get_(p)* field
      * because we emit them starting from the MSB based on the width */
@@ -774,6 +842,7 @@ void xed_operand_values_set_immediate_unsigned(xed_operand_values_t* p,
 void xed_operand_values_set_immediate_unsigned_bits(xed_operand_values_t* p,
                                                     xed_uint64_t x,
                                                     unsigned int bits)  {
+    xed_assert(p != NULL);
 
     /* Set the real displacement value x in big-endian form for emitting.
      * Make sure that the LSB of x is the MSB of the xed3_operand_get_(p)* field
@@ -797,6 +866,7 @@ void xed_operand_values_set_immediate_unsigned_bits(xed_operand_values_t* p,
 void xed_operand_values_set_base_reg(xed_operand_values_t* p,
                                      unsigned int memop_idx,
                                      xed_reg_enum_t new_base)  {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         xed3_operand_set_base0(p,new_base);
     else if (memop_idx == 1)
@@ -808,6 +878,7 @@ void xed_operand_values_set_base_reg(xed_operand_values_t* p,
 void xed_operand_values_set_seg_reg(xed_operand_values_t* p,
                                     unsigned int memop_idx,
                                     xed_reg_enum_t new_seg) {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         xed3_operand_set_seg0(p,new_seg);
     else if (memop_idx == 1)
@@ -820,6 +891,7 @@ void xed_operand_values_set_seg_reg(xed_operand_values_t* p,
 void xed_operand_values_set_index_reg(xed_operand_values_t* p,
                                       unsigned int memop_idx,
                                       xed_reg_enum_t new_index) {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         xed3_operand_set_index(p,new_index);
     else
@@ -829,6 +901,7 @@ void xed_operand_values_set_index_reg(xed_operand_values_t* p,
 void xed_operand_values_set_scale(xed_operand_values_t* p,
                                   xed_uint_t memop_idx,
                                   xed_uint_t new_scale) {
+    xed_assert(p != NULL);
     if (memop_idx == 0)
         xed3_operand_set_scale(p,new_scale);
     else
@@ -839,6 +912,7 @@ void
 xed_operand_values_set_operand_reg(xed_operand_values_t* p,
                                    xed_operand_enum_t operand_name,
                                    xed_reg_enum_t reg_name) {
+    xed_assert(p != NULL);
     switch(operand_name){
     case XED_OPERAND_REG0: xed3_operand_set_reg0(p,reg_name); break;
     case XED_OPERAND_REG1: xed3_operand_set_reg1(p,reg_name); break;
@@ -885,6 +959,7 @@ static int emit_agen_and_mem(const xed_operand_values_t* ov,
                             int i,
                             int buflen)
 {
+    xed_assert(ov != NULL && buf != NULL);
     xed_reg_enum_t base = xed3_operand_get_base0(ov);
     xed_reg_enum_t seg =  xed3_operand_get_seg0(ov);
     xed_reg_enum_t index = xed3_operand_get_index(ov);
@@ -938,6 +1013,10 @@ xed_operand_values_dump(    const xed_operand_values_t* ov,
                             char* buf,
                             int buflen)
 {
+    if (buflen <= 0)
+        return;
+    xed_assert(ov != NULL);
+    api_check(buf != NULL);
     xed_uint_t i = XED_OPERAND_INVALID+1;
     xed_bool_t leading_zeros = 0;
     xed_bool_t emitted = 0;
@@ -1143,6 +1222,8 @@ xed_operand_values_dump(    const xed_operand_values_t* ov,
             } /* switch */
         } /* for */
     }
+
+
 
 
 

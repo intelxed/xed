@@ -1,6 +1,6 @@
-/*BEGIN_LEGAL 
+/* BEGIN_LEGAL 
 
-Copyright (c) 2019 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ END_LEGAL */
 
 xed_iclass_enum_t xed_rep_remove(xed_iclass_enum_t x)
 {
+    api_check(x > XED_ICLASS_INVALID && x < XED_ICLASS_LAST);
     xed_iclass_enum_t norep = xed_norep_map(x);
     if (norep == XED_ICLASS_INVALID)
         return x;

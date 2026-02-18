@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2024 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -26,12 +26,13 @@ END_LEGAL */
 #include "xed-common-hdrs.h"
 #include "xed-types.h"
 #include "xed-portability.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 
 
 extern int xed_verbose;
-#if defined(XED_MESSAGES)
-# include <stdio.h> 
+#if defined(XED_MESSAGES) 
 extern  FILE* xed_log_file;
 # define XED_EMIT_MESSAGES  (xed_verbose >= 1)
 # define XED_INFO_VERBOSE   (xed_verbose >= 2)
@@ -118,6 +119,48 @@ extern  FILE* xed_log_file;
 #  define xed_assert(x)  do {  } while(0) 
 #endif
 XED_NORETURN XED_NOINLINE XED_DLL_EXPORT void xed_internal_assert(const char* s, const char* file, int line);
+
+////////////////////////////////////////////////////////////////////////////
+// API Input Validation Macros (controlled by --no-api-check build knob)
+////////////////////////////////////////////////////////////////////////////
+
+/// @name API Input Validation
+/// @brief Macros for validating API inputs at function boundaries
+/// 
+/// These macros provide runtime validation of API inputs with minimal overhead.
+/// They are enabled by default and can be disabled with the --no-api-check build flag.
+/// When disabled, they compile to no-ops that suppress unused variable warnings.
+///
+/// @{
+
+#if defined(XED_API_CHECK_ENABLED)
+  /// Validate condition in public API functions.
+  /// If condition is false, terminates the program with exit(1).
+  /// @param cond The condition to check (should be true for valid input)
+  /// 
+  /// Example:
+  /// @code
+  /// xed_error_enum_t my_func(void* ptr, int val) {
+  ///     api_check(buff != NULL);
+  ///     // ... function body ...
+  /// }
+  /// @endcode
+  #define api_check(cond) do {                                    \
+    if(!(cond)) {                                                   \
+        fprintf(stderr, "api_check FAIL: %s (%s:%d): %s\n",     \
+                __func__, __FILE__, __LINE__, #cond);               \
+        fflush(stderr);                                             \
+        abort();                                                    \
+    }                                                               \
+} while(0)
+#else
+  /// When API checks are disabled, cast to void to suppress warnings
+  #define api_check(cond) do { (void)(cond); } while(0)
+#endif
+
+/// @}
+
+////////////////////////////////////////////////////////////////////////////
 
 typedef void (*xed_user_abort_function_t)(const char* msg,
                                           const char* file,

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -437,6 +437,7 @@ typedef struct {
 /// @param width_bits The intended effective address size in bits.  Values: 16, 32 or 64.
 static XED_INLINE void xed_addr(xed_encoder_instruction_t* x, 
                                 xed_uint_t width_bits) {
+    xed_assert(x != NULL);
     x->effective_address_width = width_bits;
 }
 
@@ -445,6 +446,7 @@ static XED_INLINE void xed_addr(xed_encoder_instruction_t* x,
 /// To add a REP (0xF3) prefix.
 /// @param x The #xed_encoder_instruction_t being filled in.
 static XED_INLINE  void xed_rep(xed_encoder_instruction_t* x) { 
+    xed_assert(x != NULL);
     x->prefixes.s.rep=1;
 }
 
@@ -452,6 +454,7 @@ static XED_INLINE  void xed_rep(xed_encoder_instruction_t* x) {
 /// To add a REPNE (0xF2) prefix.
 /// @param x The #xed_encoder_instruction_t being filled in.
 static XED_INLINE  void xed_repne(xed_encoder_instruction_t* x) { 
+    xed_assert(x != NULL);
     x->prefixes.s.repne=1;
 }
 
@@ -482,6 +485,7 @@ static XED_INLINE  void xed_inst0(
     xed_iclass_enum_t iclass,
     xed_uint_t effective_operand_width) {
 
+    xed_assert(inst != NULL);
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
@@ -504,6 +508,7 @@ static XED_INLINE  void xed_inst1(
     xed_uint_t effective_operand_width,
     xed_encoder_operand_t op0) {
     
+    xed_assert(inst != NULL);
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
@@ -529,6 +534,7 @@ static XED_INLINE  void xed_inst2(
     xed_encoder_operand_t op0,
     xed_encoder_operand_t op1) {
 
+    xed_assert(inst != NULL);
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
@@ -557,6 +563,7 @@ static XED_INLINE  void xed_inst3(
     xed_encoder_operand_t op1,
     xed_encoder_operand_t op2) {
 
+    xed_assert(inst != NULL);
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
@@ -589,6 +596,7 @@ static XED_INLINE  void xed_inst4(
     xed_encoder_operand_t op2,
     xed_encoder_operand_t op3) {
 
+    xed_assert(inst != NULL);
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
@@ -623,6 +631,7 @@ static XED_INLINE  void xed_inst5(
     xed_encoder_operand_t op3,
     xed_encoder_operand_t op4) {
 
+    xed_assert(inst != NULL);
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
@@ -655,12 +664,14 @@ static XED_INLINE  void xed_inst(
     const xed_encoder_operand_t* operand_array) {
 
     xed_uint_t i;
+    xed_assert(inst != NULL);
+    api_check(number_of_operands <= XED_ENCODER_OPERANDS_MAX);  // prevent array overflow
+    api_check(operand_array != NULL || number_of_operands == 0);  // array required if operands specified
     inst->mode=mode;
     inst->iclass = iclass;
     inst->effective_operand_width = effective_operand_width;
     inst->effective_address_width = 0;
     inst->prefixes.i = 0;
-    xed_assert(number_of_operands < XED_ENCODER_OPERANDS_MAX);
     for(i=0;i<number_of_operands;i++) {
         inst->operands[i] = operand_array[i];
     }
@@ -684,3 +695,4 @@ static XED_INLINE  void xed_inst(
  */
 
 #endif
+

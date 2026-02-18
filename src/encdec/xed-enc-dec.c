@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ END_LEGAL */
 #include "xed-operand-accessors.h"
 
 void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
+    xed_assert(d != NULL);
     // copy the non-suppressed operands to the encode order array
     const xed_inst_t* inst = d->_inst;
+    xed_assert(inst != NULL);
     const xed_uint_t noperands = xed_inst_noperands(inst);
     xed_uint_t i, eops=0;
     for( i=0;i<noperands;i++) {
@@ -80,3 +82,4 @@ void  xed_encoder_request_init_from_decode(xed_decoded_inst_t* d) {
     xed3_operand_set_norex2(d,0);
     xed3_operand_set_osz(d,0);
 }
+

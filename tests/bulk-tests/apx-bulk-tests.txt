@@ -113,7 +113,7 @@ APX ENC     ; BUILDDIR/xed -64 -e cmovb r16 rax r30
 APX ENC     ; BUILDDIR/xed -64 -e cfcmovb r16 rax r30
 # APX non zero-upper instructions (ZU encoder support is TBD):
 APX ENC     ; BUILDDIR/xed -64 -set MUST_USE_EVEX 1 -e setb r27b
-APX ENC     ; BUILDDIR/xed -64 -set MUST_USE_EVEX 1 -e imul rax rbx imm:00
+APX ENC     ; BUILDDIR/xed -64 -set NF 1 -e imul rax rbx imm:00
 
 # memory EGPRs w/ SIB byte
 APX ENC     ; BUILDDIR/xed -64 -e vaddpd ymm20 k4 ymm21 mem64:r20

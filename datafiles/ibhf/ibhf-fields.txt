@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,5 +16,6 @@
 #  
 #END_LEGAL
 
-LUNAR_LAKE:             \
-    ALL_OF(ARROW_LAKE)  
+IBHF           SCALAR     xed_bits_t 1              SUPPRESSED  NOPRINT PUBLIC   DI EO
+
+

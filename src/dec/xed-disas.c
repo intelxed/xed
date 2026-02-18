@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -74,6 +74,7 @@ xed_get_symbolic_disassembly(xed_print_info_t* pi,
 
 static xed_bool_t  stringop_memop(const xed_decoded_inst_t* p,
                                   const xed_operand_t* o) {
+    xed_assert(p != NULL && o != NULL);
     xed_bool_t stringop = (xed_decoded_inst_get_category(p) ==
                            XED_CATEGORY_STRINGOP);
     if (stringop)  {
@@ -85,6 +86,7 @@ static xed_bool_t  stringop_memop(const xed_decoded_inst_t* p,
 }
 
 static xed_bool_t xed_decoded_inst_explicit_memop(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL && p->_inst != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -108,6 +110,7 @@ static xed_bool_t xed_decoded_inst_explicit_memop(const xed_decoded_inst_t* p) {
 static xed_bool_t
 xed_decoded_inst_explicit_operand(const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL && p->_inst != NULL);
     const xed_inst_t* inst = p->_inst;
     const unsigned int noperands = xed_inst_noperands(inst);
     unsigned int i;
@@ -127,6 +130,7 @@ xed_decoded_inst_explicit_operand(const xed_decoded_inst_t* p)
 
 
 static int buffer_remains(int buflen, char* ptr) {
+    xed_assert(ptr != NULL);
     int blen = buflen - XED_STATIC_CAST(int,xed_strlen(ptr));
     return blen;
 }
@@ -134,6 +138,10 @@ static int buffer_remains(int buflen, char* ptr) {
 void
 xed_decoded_inst_dump(const xed_decoded_inst_t* p, char* buf, int buflen)
 {
+    if (buflen <= 0)
+        return;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     char ibuf[XED_HEX_BUFLEN];
     unsigned int i;
     const xed_inst_t* xi = xed_decoded_inst_inst(p);
@@ -185,6 +193,10 @@ xed_decoded_inst_dump_xed_format(const xed_decoded_inst_t* p,
                                  int buflen,
                                  xed_uint64_t runtime_address)
 {
+    if (buflen <= 0)
+        return 0;
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
     const xed_inst_t* xi = xed_decoded_inst_inst(p);
     char* s;
     const xed_operand_values_t* co = xed_decoded_inst_operands_const(p);  
@@ -212,6 +224,7 @@ static const char* xed_decoded_inst_print_ptr_size(xed_uint_t bytes) {
 }
 
 static const char* instruction_suffix_att(const xed_decoded_inst_t* p) {
+    xed_assert(p != NULL);
     extern const char* xed_pointer_name_suffix[XED_MAX_POINTER_NAMES];
     if (xed_decoded_inst_number_of_memory_operands(p)) {
         xed_uint_t bytes = xed_decoded_inst_get_memory_operand_length(p,0);
@@ -239,6 +252,7 @@ void xed_format_set_options(xed_format_options_t format_options) {
 }
 
 static int xml_tag(char* buf, int blen, char const* tag, xed_uint_t value) {
+    xed_assert(buf != NULL && tag != NULL);
     char tbuf[XED_HEX_BUFLEN];
 
     blen = xed_strncat(buf,"<",blen);
@@ -256,12 +270,15 @@ static void xml_tag_pi(xed_print_info_t* pi,
                       char const* tag,
                       xed_uint_t value)
 {
+    xed_assert(pi != NULL && pi->buf != NULL);
+    xed_assert(tag != NULL);
     pi->blen = xml_tag(pi->buf, pi->blen, tag, value);
 }
 
 static int
 xml_print_flags(const xed_decoded_inst_t* xedd, char* buf, int blen)
 {
+    xed_assert(xedd != NULL && buf != NULL);
     if (xed_decoded_inst_uses_rflags(xedd)) {
         // KW complains because it thinks rfi could be null.
         //    Cannot happen by design.
@@ -301,6 +318,8 @@ xml_print_flags(const xed_decoded_inst_t* xedd, char* buf, int blen)
 static void xed_pi_strcat(xed_print_info_t* pi,
                           char const* str)
 {
+    xed_assert(pi != NULL && pi->buf != NULL);
+    xed_assert(str != NULL);
     pi->blen = xed_strncat(pi->buf, str, pi->blen);
 }
 
@@ -309,6 +328,7 @@ static void xed_pi_strcat(xed_print_info_t* pi,
 static void xed_prefixes(xed_print_info_t* pi,
                          char const* prefix)
 {
+    xed_assert(pi != NULL && prefix != NULL);
     if (pi->emitted == 0 && pi->format_options.xml_a)
         xed_pi_strcat(pi,"<PREFIXES>");
     if (pi->emitted)
@@ -321,6 +341,7 @@ static void
 xml_print_end(xed_print_info_t* pi,
               char const* s)
 {
+    xed_assert(pi != NULL && s != NULL);
     if (pi->format_options.xml_a) {
         xed_pi_strcat(pi,"</");
         xed_pi_strcat(pi,s);
@@ -333,6 +354,9 @@ static int xed_print_cvt(const xed_decoded_inst_t* p,
                          char* buf,
                          int blen,
                          xed_operand_convert_enum_t    cvt) {
+    xed_assert(p != NULL);
+    api_check(buf != NULL);
+    api_check(cvt < XED_OPERAND_CONVERT_LAST);
     // 32bit var is enough since the only operand wider than 32b disp/imm 
     // and we are not decorating those
     xed_uint_t opvalue;
@@ -350,6 +374,7 @@ static int xed_print_cvt(const xed_decoded_inst_t* p,
 static void
 xed_decoded_inst_dump_common_pre_mne(xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL && pi->p != NULL);
     const xed_operand_values_t* ov = xed_decoded_inst_operands_const(pi->p);  
 
     xed_bool_t long_mode = xed_operand_values_get_long_mode(ov);
@@ -418,6 +443,7 @@ xed_decoded_inst_dump_common_pre_mne(xed_print_info_t* pi)
 static void
 xed_decoded_inst_dump_common_post_mne(xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL && pi->p != NULL);
 #if defined(XED_APX)
     if (xed_decoded_inst_uses_rflags(pi->p) && xed_decoded_inst_has_default_flags_values(pi->p)) {
         /* print Default Flags Values */
@@ -432,12 +458,14 @@ xed_decoded_inst_dump_common_post_mne(xed_print_info_t* pi)
 static const char* instruction_name_att(const xed_decoded_inst_t* p)
 
 {
+    xed_assert(p != NULL);
     xed_iform_enum_t iform = xed_decoded_inst_get_iform_enum(p);
     return xed_iform_to_iclass_string_att(iform);
 }
 
 static const char* instruction_name_intel(const xed_decoded_inst_t* p)
 {
+    xed_assert(p != NULL);
     xed_iform_enum_t iform = xed_decoded_inst_get_iform_enum(p);
     return xed_iform_to_iclass_string_intel(iform);
 }
@@ -445,6 +473,7 @@ static const char* instruction_name_intel(const xed_decoded_inst_t* p)
 
 ///////////////////////////////////////////////////////////////////////////////
 static void xed_operand_spacer(xed_print_info_t* pi) {
+    xed_assert(pi != NULL && pi->buf != NULL);
     if (pi->emitted) {
         pi->blen = xed_strncat(pi->buf,", ",pi->blen);
     }
@@ -456,6 +485,9 @@ static void print_seg_prefix_for_suppressed_operands(
     const xed_operand_values_t* ov,
     const xed_operand_t*        op)
 {
+    xed_assert(pi != NULL);
+    xed_assert(ov != NULL);
+    xed_assert(op != NULL);
     xed_uint_t i;
     xed_operand_enum_t op_name = xed_operand_name(op);
     /* suppressed memops with nondefault segments get their segment printed */
@@ -488,6 +520,7 @@ xed_print_operand_decorations(
     xed_print_info_t* pi,
     xed_operand_t const* const op)
 {
+    xed_assert(pi != NULL && op != NULL);
     xed_uint32_t cvt_idx = op->_cvt_idx;
 
     if (cvt_idx && cvt_idx < XED_MAX_CONVERT_PATTERNS)  {
@@ -514,6 +547,7 @@ xed_print_operand_decorations(
 static void
 xml_reg_prefix(xed_print_info_t* pi, xed_reg_enum_t reg)
 {
+    xed_assert(pi != NULL);
     if (pi->format_options.xml_a) 
         xml_tag_pi(pi,
                    "REG",
@@ -524,6 +558,7 @@ static void
 print_reg(xed_print_info_t* pi,
           xed_reg_enum_t reg)
 {
+    xed_assert(pi != NULL && pi->buf != NULL);
     char const* s;
     
     if (pi->syntax == XED_SYNTAX_ATT)
@@ -541,6 +576,7 @@ static void
 print_reg_xml(xed_print_info_t* pi,
           xed_reg_enum_t reg)
 {
+    xed_assert(pi != NULL);
     xml_reg_prefix(pi,reg);
     print_reg(pi,reg);
     xml_print_end(pi,"REG");
@@ -552,6 +588,7 @@ static xed_uint_t
 operand_is_writemask(
     xed_operand_t const* const op)
 {
+    xed_assert(op != NULL);
 
     xed_operand_enum_t op_name = xed_operand_name(op);
     // for memops dests, writemask is REG0.
@@ -567,6 +604,7 @@ static void
 print_decoration(xed_print_info_t* pi,
                  xed_uint_t indx)
 {
+    xed_assert(pi != NULL && pi->p != NULL);
     xed_inst_t const* xi = xed_decoded_inst_inst(pi->p);
     xed_operand_t const* const kop = xed_inst_operand(xi,indx);
     xed_print_operand_decorations(pi, kop);
@@ -578,6 +616,7 @@ static xed_reg_enum_t
 printing_writemasked_operand(
     xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL && pi->p != NULL);
     // return XED_REG_INVALID if next operand is not a writemask
     // else return the XED_REG_K0...K7 if it is a writemask.
     // (We treat k0 as a write mask, but it won't get printed)
@@ -613,6 +652,7 @@ print_write_mask_reg(
     xed_print_info_t* pi,
     xed_reg_enum_t writemask)
 {
+    xed_assert(pi != NULL && pi->buf != NULL);
     // print the write mask if not k0
     if (writemask != XED_REG_K0)
     {
@@ -631,6 +671,7 @@ static void
 print_write_mask_generic(
     xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL);
 #if defined(XED_SUPPORTS_AVX512)
     if (pi->format_options.write_mask_curly_k0)
     {
@@ -654,6 +695,7 @@ print_reg_writemask(
     xed_print_info_t* pi,
     xed_reg_enum_t reg)
 {
+    xed_assert(pi != NULL);
     xml_reg_prefix(pi,reg);
     print_reg(pi,reg);
 #if defined(XED_SUPPORTS_AVX512)
@@ -674,6 +716,8 @@ print_rel_sym(xed_print_info_t* pi,
               xed_bool_t arg_print_address,
               xed_bool_t arg_memory_displacement)
 {
+     xed_assert(pi != NULL && pi->p != NULL);
+     xed_assert(pi->buf != NULL);
      xed_int64_t disp;
      xed_uint64_t instruction_length = xed_decoded_inst_get_length(pi->p);
      xed_uint64_t pc = pi->runtime_address + instruction_length;
@@ -753,6 +797,7 @@ static void
 xml_print_imm(xed_print_info_t* pi,
               unsigned int bits)
 {
+    xed_assert(pi != NULL);
     if (pi->format_options.xml_a)
         xml_tag_pi(pi, "IMM", bits);
 }
@@ -760,6 +805,7 @@ xml_print_imm(xed_print_info_t* pi,
 static void
 print_relbr(xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL);
     if (pi->format_options.xml_a)
          xed_pi_strcat(pi,"<RELBR>");
 
@@ -770,6 +816,8 @@ print_relbr(xed_print_info_t* pi)
 
 static void xed_print_operand( xed_print_info_t* pi )
 {
+    xed_assert(pi != NULL && pi->p != NULL);
+    xed_assert(pi->buf != NULL);
     const xed_inst_t*           xi = xed_decoded_inst_inst(pi->p);
     const xed_operand_values_t* ov = xed_decoded_inst_operands_const(pi->p);  
     const xed_operand_t*        op = xed_inst_operand(xi,pi->operand_indx);
@@ -1119,6 +1167,7 @@ static void xed_print_operand( xed_print_info_t* pi )
 static void
 setup_print_info(xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL && pi->buf != NULL);
     // init the internal fields
     pi->emitted = 0;
     pi->operand_indx = 0;
@@ -1140,6 +1189,7 @@ setup_print_info(xed_print_info_t* pi)
 //exported
 void xed_init_print_info(xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL);
     memset(pi, 0, sizeof(xed_print_info_t));
     pi->syntax = XED_SYNTAX_INTEL;
 }
@@ -1148,6 +1198,7 @@ void xed_init_print_info(xed_print_info_t* pi)
 static xed_bool_t
 xed_decoded_inst_dump_intel_format_internal(xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL && pi->p != NULL);
     unsigned int i;
     unsigned int noperands;
     const char* instruction_name=0 ;
@@ -1215,6 +1266,7 @@ static xed_bool_t
 xed_decoded_inst_dump_att_format_internal(
     xed_print_info_t* pi)
 {
+    xed_assert(pi != NULL && pi->p != NULL);
     xed_uint_t i,j,intel_way, noperands;
     const int leading_zeros=0;
     const xed_inst_t* xi = xed_decoded_inst_inst(pi->p);
@@ -1603,6 +1655,10 @@ xed_format_context(xed_syntax_enum_t syntax,
                    void* context,
                    xed_disassembly_callback_fn_t symbolic_callback)
 {
+    if (buffer_len <= 0)
+        return 0;
+    xed_assert(xedd != NULL);
+    xed_assert(out_buffer != NULL);
     xed_print_info_t pi;
     xed_init_print_info(&pi);
     pi.p = xedd;
@@ -1625,6 +1681,7 @@ xed_format_context(xed_syntax_enum_t syntax,
 
 xed_bool_t xed_format_generic( xed_print_info_t* pi )
 {
+    xed_assert(pi != NULL);
     if (validate_print_info(pi))
         return 0;
 
@@ -1639,3 +1696,4 @@ xed_bool_t xed_format_generic( xed_print_info_t* pi )
                                                 pi->runtime_address);
     return 0;
 }
+
