@@ -15,20 +15,15 @@ Copyright (c) 2026 Intel Corporation
   limitations under the License.
   
 END_LEGAL */
-/// @file xed-util-disas-pecoff.h
 
+/// @file xed-disas-extension.c
+/// Default stub for disassembly extension (overrideable by xedext)
 
-#if !defined(XED_DISAS_PECOFF_H)
-# define XED_DISAS_PECOFF_H
+#include "xed-internal-header.h"
+#include "xed-disas-extension.h"
 
-# include "xed/xed-interface.h" 
-# include "xed-examples-util.h" 
-
-void xed_disas_pecoff(xed_disas_info_t* fi);
-
-#if defined(XED_DBGHELP)
-void xed_pecoff_set_skip_dbghelp(xed_bool_t skip);
-#endif
-
-#endif
-
+/* Default stub does nothing. xedext can override via replace-source. */
+void xed_disas_ext_pre_mnemonic(xed_print_info_t* pi)
+{
+    (void)pi;
+}

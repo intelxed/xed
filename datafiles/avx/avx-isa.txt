@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -845,10 +845,10 @@ CPL       : 3
 CATEGORY  : AVX
 EXTENSION : AVX
 PATTERN : VV1 0x19  norexw_prefix VL256 V66 V0F3A NOVSR MOD[mm] MOD!=3 REG[rrr] RM[nnn] MODRM() UIMM8()
-OPERANDS  : MEM0:w:dq:f64 REG0=YMM_R():r:dq:f64  IMM0:r:b
+OPERANDS  : MEM0:w:dq:f64 REG0=YMM_R():r:qq:f64  IMM0:r:b
 
 PATTERN : VV1 0x19  norexw_prefix VL256 V66 V0F3A NOVSR MOD[0b11] MOD=3 REG[rrr] RM[nnn] UIMM8()
-OPERANDS  : REG0=XMM_B():w:dq:f64 REG1=YMM_R():r:dq:f64 IMM0:r:b
+OPERANDS  : REG0=XMM_B():w:dq:f64 REG1=YMM_R():r:qq:f64 IMM0:r:b
 }
 
 

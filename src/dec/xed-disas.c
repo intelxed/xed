@@ -38,6 +38,7 @@ END_LEGAL */
 #include "xed-convert-table-init.h" //generated
 #include "xed-isa-set.h" 
 #include "xed-ild.h"
+#include "xed-disas-extension.h"
 
 #include <string.h> // memset
 #define XED_HEX_BUFLEN 200
@@ -51,7 +52,7 @@ xed_get_symbolic_disassembly(xed_print_info_t* pi,
                              xed_uint64_t* offset)
 
 {
-    // use the common registered version of the callback if non is supplied
+    // use the common registered version of the callback if none is supplied
     // by the user.
     xed_disassembly_callback_fn_t fn = 0;
     if (pi->disassembly_callback)
@@ -315,28 +316,6 @@ xml_print_flags(const xed_decoded_inst_t* xedd, char* buf, int blen)
 
 
 
-static void xed_pi_strcat(xed_print_info_t* pi,
-                          char const* str)
-{
-    xed_assert(pi != NULL && pi->buf != NULL);
-    xed_assert(str != NULL);
-    pi->blen = xed_strncat(pi->buf, str, pi->blen);
-}
-
-
-
-static void xed_prefixes(xed_print_info_t* pi,
-                         char const* prefix)
-{
-    xed_assert(pi != NULL && prefix != NULL);
-    if (pi->emitted == 0 && pi->format_options.xml_a)
-        xed_pi_strcat(pi,"<PREFIXES>");
-    if (pi->emitted)
-        xed_pi_strcat(pi," ");
-    xed_pi_strcat(pi,prefix);
-    pi->emitted=1;
-}
-
 static void
 xml_print_end(xed_print_info_t* pi,
               char const* s)
@@ -429,6 +408,10 @@ xed_decoded_inst_dump_common_pre_mne(xed_print_info_t* pi)
     if (xed_decoded_inst_get_attribute(pi->p, XED_ATTRIBUTE_APX_NF))
         xed_prefixes(pi,"{nf}");
 #endif   
+    
+    // extension hook for additional pre-mnemonic decorators
+    xed_disas_ext_pre_mnemonic(pi);
+    
     if (pi->emitted)
         xml_print_end(pi,"PREFIXES");
     if (pi->emitted)

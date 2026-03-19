@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -27,9 +27,43 @@ encoding and decoding instruction operands.
 """
 import re
 from typing import Optional
+from dataclasses import dataclass, field
 
 from verbosity import *
 import genutil
+
+
+@dataclass
+class xed_width_t:
+    """Represents a width (operand or element) that is either fixed or scalable by EOSZ.
+
+    Exactly one of `fixed` or `scalable` is set (the other is None).
+    - fixed: a single int width in bits (same for all EOSZ values).
+    - scalable: a dict with keys eosz16/eosz32/eosz64, each mapping to width in bits.
+    """
+    fixed: int = field(default=None)
+    scalable: dict[str, int] = field(default=None)
+
+    @staticmethod
+    def from_widths(widths: dict[int, int]) -> 'xed_width_t':
+        """Create from a {eosz: bits} dict (from width_info_t).
+        Expects keys 16, 32, 64 (as produced by _refine_widths_input).
+        EOSZ=8 (BYTEOP) is ignored — not a real effective operand size."""
+        assert {16, 32, 64}.issubset(widths.keys()), f"Expected EOSZ keys {{16,32,64}}, got {set(widths.keys())}"
+        eosz_widths = [widths[16], widths[32], widths[64]]
+        if len(set(eosz_widths)) == 1:
+            return xed_width_t.from_fixed(eosz_widths[0])
+        return xed_width_t(scalable={"eosz16": eosz_widths[0],
+                                     "eosz32": eosz_widths[1],
+                                     "eosz64": eosz_widths[2]})
+
+    @staticmethod
+    def from_fixed(value: int) -> 'xed_width_t':
+        """Create a fixed-width instance."""
+        return xed_width_t(fixed=value)
+
+    def to_serializable(self) -> dict:
+        return {"fixed": self.fixed, "scalable": self.scalable}
 
 
 class operand_info_t(object):
@@ -63,6 +97,11 @@ class operand_info_t(object):
         self.type: str = type  # See operand_info_t.operand_types
         # the user specified type for the operand
         self.xtype: Optional[str] = xtype
+        
+        # element type and width extracted from xtype (populated by resolve_widths)
+        self.op_widths: Optional[xed_width_t] = None
+        self.element_type: Optional[str] = None
+        self.element_width: Optional[xed_width_t] = None
 
         self.internal: bool = internal
         self.multireg: int = multireg
@@ -192,15 +231,64 @@ class operand_info_t(object):
 
     def set_suppressed(self):
         self.visibility = 'SUPPRESSED'
-        
+
+    def resolve_widths(self, xed_reader, element_size=None) -> bool:
+        """Populate op_widths, element_type, and element_width using xed_reader's tables.
+        Returns False if oc2 cannot be determined (width info unavailable for this operand)."""
+        oc2 = self.oc2
+        if oc2 is None:
+            # oc2 is not explicitly set in operand specification.
+            # extract it from "extra widths" which contains defaults
+            if self.type == 'reg':
+                reg = self.bits.replace('XED_REG_', '')
+                if reg not in xed_reader.extra_widths_reg:
+                    return False
+                oc2 = xed_reader.extra_widths_reg[reg]
+            elif self.type == 'nt_lookup_fn':
+                if self.lookupfn_name not in xed_reader.extra_widths_nt:
+                    return False
+                oc2 = xed_reader.extra_widths_nt[self.lookupfn_name]
+            elif self.type == 'imm_const':
+                if self.name not in xed_reader.extra_widths_imm_const:
+                    return False
+                oc2 = xed_reader.extra_widths_imm_const[self.name]
+            else:
+                return False
+
+        assert oc2 in xed_reader.width_info_dict, f"OC2 '{oc2}' not in width_info_dict"
+        widths_str = xed_reader.width_info_dict[oc2].widths
+        w = {int(k): int(v) for k, v in widths_str.items()}
+        self.op_widths = xed_width_t.from_widths(w)
+
+        # Extract element_type and element_width from xtype
+        if self.xtype and self.xtype in xed_reader.xtypes_dict:
+            xtype_info = xed_reader.xtypes_dict[self.xtype]
+            self.element_type = xtype_info.dtype
+            bpe = int(xtype_info.bits_per_element)
+            if bpe > 0:
+                self.element_width = xed_width_t.from_fixed(bpe)
+            else:
+                # Scalable (bpe==0): use element_size if available, else operand width
+                self.element_width = xed_width_t.from_fixed(element_size) if element_size else self.op_widths
+        else:
+            self.element_type = None
+            self.element_width = None
+        return True
+
     def to_serializable(self) -> dict:
-        ''' Returns a serializable dict representation '''
+        ''' Returns a serializable dict representation.
+        Recursively serializes nested objects (e.g. xed_width_t)'''
         result = dict()
         keys_filter: set = {'width_info_dict', 'internal', 'invert', 'inline',
                             'rightmost_bitpos', 'bit_positions'}
         keys = set(self.__dict__.keys()) - keys_filter
         for key in sorted(keys):
-            result[key] = getattr(self, key)
+            value = getattr(self, key)
+            # FIXME: consider using dataclasses.is_dataclass()/asdict() instead,
+            # but that won't work if nested types stop being dataclasses.
+            if hasattr(value, 'to_serializable'):
+                value = value.to_serializable()
+            result[key] = value
         return result
 
     def dump_str(self, pad: str = '') -> str:
@@ -319,6 +407,7 @@ def parse_one_operand(w,
                       default_vis: str = 'DEFAULT',
                       xtypes: Optional[set[str]] = None,
                       default_xtypes: Optional[dict[str, str]] = None,
+                      extra_widths_nt: Optional[dict[str, str]] = None,
                       internal: bool = False,
                       skip_encoder_conditions: bool = True) -> Optional[operand_info_t]:
     """
@@ -409,21 +498,6 @@ def parse_one_operand(w,
     if slash_pattern.search(a):
         genutil.die("Bad slash in operand")
 
-    if xtype is None:
-        # need to use the default xtype based on the oc2 width code
-        if oc2:
-            try:
-                xtype = default_xtypes[oc2.upper()]
-            except:
-                s = ''
-                for i, v in default_xtypes.items():
-                    s += "\t%10s -> %10s\n" % (i, v)
-                genutil.die("Parsing operand [%s]. Could not find default type for %s. xtypes=%s\nTypes=%s" % (
-                    w, oc2, str(xtypes), s))
-        else:
-            # there was no oc2 type and no xtype. probably a nonterminal
-            # lookup function
-            xtype = 'INVALID'
 
     # look for X=y and X!=y and bare operands like MEM0.
 
@@ -504,6 +578,33 @@ def parse_one_operand(w,
         name = a
         optype = 'flag'
         rhs = ''
+
+    if xtype is None:
+        # Try 1: Use default xtype from oc2 width code
+        if oc2 and default_xtypes:
+            try:
+                xtype = default_xtypes[oc2.upper()]
+            except:
+                s = ''
+                for i, v in default_xtypes.items():
+                    s += "\t%10s -> %10s\n" % (i, v)
+                genutil.die("Parsing operand [%s]. Could not find default type for %s. xtypes=%s\nTypes=%s" % (
+                    w, oc2, str(xtypes), s))
+        
+        # Try 2: Chain nt -> oc2 -> xtype for nonterminal lookups
+        # Note: don't set oc2 here — it would change iform generation
+        if xtype is None and lookupfn_name and extra_widths_nt and default_xtypes:
+            if lookupfn_name in extra_widths_nt:
+                oc2_from_nt = extra_widths_nt[lookupfn_name]
+                try:
+                    xtype = default_xtypes[oc2_from_nt.upper()]
+                except KeyError:
+                    genutil.die("Parsing operand [%s]. NT '%s' -> oc2 '%s' has no default xtype" % (
+                        w, lookupfn_name, oc2_from_nt))
+        
+        # Fallback
+        if xtype is None:
+            xtype = 'INVALID'
 
     xop = operand_info_t(name, optype, rhs, rw=rw, invert=invert,
                          vis=vis, oc2=oc2, cvt=cvt, xtype=xtype,

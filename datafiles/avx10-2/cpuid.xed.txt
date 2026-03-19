@@ -32,9 +32,9 @@ XED_ISA_SET_AVX512_VNNI_INT8_128, AVX10: avx10_enabled.7.1.edx[19] avx10_ver2.24
 XED_ISA_SET_AVX512_VNNI_INT8_256, AVX10: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 XED_ISA_SET_AVX512_VNNI_INT8_512, AVX10: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_VNNI_INT8_128, FBIT : avx10_vnni_int.24.1.ecx[2] 
-XED_ISA_SET_AVX512_VNNI_INT8_256, FBIT : avx10_vnni_int.24.1.ecx[2] 
-XED_ISA_SET_AVX512_VNNI_INT8_512, FBIT : avx10_vnni_int.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT8_128, FBIT : avx10_v1_aux.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT8_256, FBIT : avx10_v1_aux.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT8_512, FBIT : avx10_v1_aux.24.1.ecx[2] 
 
 XED_ISA_SET_AVX512_VNNI_FP16_128: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 XED_ISA_SET_AVX512_VNNI_FP16_256: avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
@@ -58,9 +58,9 @@ XED_ISA_SET_AVX512_VNNI_INT16_128, AVX10:       avx10_enabled.7.1.edx[19] avx10_
 XED_ISA_SET_AVX512_VNNI_INT16_256, AVX10:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 XED_ISA_SET_AVX512_VNNI_INT16_512, AVX10:       avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 
 
-XED_ISA_SET_AVX512_VNNI_INT16_128, FBIT : avx10_vnni_int.24.1.ecx[2] 
-XED_ISA_SET_AVX512_VNNI_INT16_256, FBIT : avx10_vnni_int.24.1.ecx[2] 
-XED_ISA_SET_AVX512_VNNI_INT16_512, FBIT : avx10_vnni_int.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT16_128, FBIT : avx10_v1_aux.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT16_256, FBIT : avx10_v1_aux.24.1.ecx[2] 
+XED_ISA_SET_AVX512_VNNI_INT16_512, FBIT : avx10_v1_aux.24.1.ecx[2] 
 
 XED_ISA_SET_AVX10_2_BF16_SCALAR:  avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2
 XED_ISA_SET_AVX10_2_BF16_128:     avx10_enabled.7.1.edx[19] avx10_ver2.24.0.ebx[0:7]=2 

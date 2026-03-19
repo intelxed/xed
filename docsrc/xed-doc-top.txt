@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@
 /*! 
 @mainpage Intel&reg; X86 Encoder Decoder User Guide
 
-May 2025
+February 2026
 
 @section INTRO Introduction
 
@@ -1502,6 +1502,7 @@ Other specific use-case examples:
       <li> xed-dec-ild.c: An example for using the instruction length decoder API. This example loads only the xed-ild library.
       <li> xed-tables.c: An example that shows how to access Intel&reg; XED's internal tables, which contain static data for all Intel&reg; XED-supported instructions.
       <li> xed-rep-string.c: Shows the use of the REP prefix APIs, which basically returns the non-REP variant of a REP ICLASS and vice versa.
+      <li> xed-test-api-check.c: A subprocess-based internal test that validates Intel&reg; XED's api_check() runtime validation mechanism. 
 
       </ul>
 

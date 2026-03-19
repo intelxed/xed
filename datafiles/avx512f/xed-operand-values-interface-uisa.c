@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2022 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -79,15 +79,15 @@ xed_int64_t  xed_operand_values_get_memory_displacement_int64(
           xed_int64_t disp = xed3_operand_get_disp(p);
           xed_int64_t nelem = xed3_operand_get_nelem(p);
           
-          // converted to bytes
-          xed_int64_t element_size = xed3_operand_get_element_size(p)>>3; 
-          
+          // N-factor = (NELEM * ELEMENT_SIZE_bits) / 8
+          xed_int64_t element_size_bits = xed3_operand_get_element_size(p); 
+          xed_int64_t n_factor = (nelem * element_size_bits) >> 3;
                     
-          odisp = disp * nelem * element_size;
+          odisp = disp * n_factor;
           /* printf("DISP: " XED_FMT_LX16 " NELEM
                     " XED_FMT_LD " SIZE " XED_FMT_LD
                     " ODISP: " XED_FMT_LX16 "\n",
-                         disp ,nelem, element_size , odisp); */
+                         disp ,nelem, element_size_bits , odisp); */
           if (nelem)
               return odisp;
           else

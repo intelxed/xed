@@ -15,12 +15,8 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-#
-#oc2-code    XTYPE     width16 width32 width64 (if only one width is shown, it is for all widths)
-z2i16        2i16     512bits
-z2u16        2u16     512bits
-zhf8         hf8      512bits
-zbf8         bf8      512bits
-z4u8         4u8      512bits
-z4i8         4i8      512bits
-z2i8         2i8      512bits
+
+# API check test - subprocess-based test validating api_check abort behavior
+
+API_CHECK    ; BUILDDIR/xed-test-api-check
+NO_API_CHECK ; BUILDDIR/xed-test-api-check

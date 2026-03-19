@@ -411,7 +411,7 @@ def build_examples(env, work_queue):
         
 
     ild_examples = []
-    other_c_examples = []
+    other_c_examples = ['xed-test-api-check.c']
     enc2_examples = []
     small_examples = []
     if env['enc2']:

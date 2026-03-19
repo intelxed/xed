@@ -34,6 +34,33 @@ from read_xed_db import inst_t, xed_reader_t, Restriction
 from opnds import operand_info_t
 from cpuid_rdr import group_record_t
 
+
+# Optional xedext extension module
+# Populated lazily by _discover_xedext_extension() when --validate is used
+xedext_ext = None
+
+# Validation warnings collected during instruction record generation
+_validation_warnings: list[str] = []
+
+def _discover_xedext_extension():
+    """
+    Auto-discover the xedext extension module at its conventional location
+    (../xedext relative to the XED root), matching xed_mbuild.py's default.
+    Inject it into sys.path only if the directory exists; import silently.
+    Sets the global xedext_ext if found, else leaves it as None.
+    """
+    global xedext_ext
+    xed_root = Path(__file__).resolve().parent.parent
+    xedext_default = xed_root.parent / 'xedext'
+    if xedext_default.is_dir():
+        sys.path.insert(0, str(xedext_default))
+    try:
+        import xed_to_db_ext
+    except Exception:
+        _validation_warnings.append("xedext extension import failed")
+        return
+    xedext_ext = xed_to_db_ext
+
 FIELD_NAME_MAPPING: dict[str, str] = {
         # new name       : old name
         'encoding_space' : 'space',
@@ -41,12 +68,12 @@ FIELD_NAME_MAPPING: dict[str, str] = {
         }
 
 EXPECTED_ONLY_IN_XED_INST_REC: set[str] = set(FIELD_NAME_MAPPING.keys()).union({
-    'easz_list', 'eosz_list', 'evex_pp', 'opcode_base16', 'opcode_base02'
+    'easz_list', 'eosz_list', 'evex_pp', 'opcode_base16', 'opcode_base02', 'vsib'
     })
 
 EXPECTED_ONLY_IN_INST_T: set[str] = set(FIELD_NAME_MAPPING.values()).union({
-    'amd_3dnow_opcode', 'avx512_tuple', 'avx512_vsib', 'avx_vsib', 
-    'comment', 'disasm', 'disasm_attsv', 'easz', 'eosz', 
+    'amd_3dnow_opcode', 'avx512_vsib', 'avx_vsib', 
+    'comment', 'disasm', 'disasm_attsv', 'easz', 'element_size', 'eosz', 
     'lower_nibble', 'memop_rw', 'memop_width', 'memop_width_code', 
     'ntname', 'opcode', 'operands', 'real_opcode', 
     'scalar', 'scc_val', 'uname', 'upper_nibble', 'version',
@@ -92,7 +119,8 @@ class xed_instruction_record_t:
     explicit_operands: list[str] = field(default_factory=list)
     implicit_operands: list[str] = field(default_factory=list)
     sibmem: bool = False
-    element_size: int = None
+    avx512_tuple: str = None
+    vsib: str = None        # memory index register (reps both avx512_vsib and avx_vsib)
     ## Prefix Restrictions
     f2_required: bool = False
     f3_required: bool = False
@@ -125,7 +153,7 @@ class xed_instruction_record_t:
     nf: int = None
 
     @classmethod
-    def from_inst_t(cls, src_inst: inst_t, xed_reader: xed_reader_t = None) -> "xed_instruction_record_t":
+    def from_inst_t(cls, src_inst: inst_t, xed_reader: xed_reader_t) -> "xed_instruction_record_t":
         """Create a xed_instruction_record_t from an inst_t object."""
         xedi = cls()
         set_fields: set[str] = set()  # fields names that were set to the xedi object
@@ -191,6 +219,28 @@ class xed_instruction_record_t:
         if not xedi.disasm_intel:
             xedi.disasm_intel = xedi.iclass
 
+        # Resolve operand widths and element type/width from the XED reader
+        op: operand_info_t
+        for op in xedi.parsed_operands:
+            if not op.resolve_widths(xed_reader, element_size=src_inst.element_size):
+                identifier = op.bits or op.lookupfn_name or op.name
+                if xedext_ext:
+                    no_oc2_allowed = xedext_ext.NO_OC2_ALLOWED
+                    if op.type not in no_oc2_allowed:
+                        _validation_warnings.append(
+                            f"Unexpected missing OC2 for type '{op.type}': '{identifier}'"
+                        )
+                    else:
+                        allowed = no_oc2_allowed[op.type]
+                        if allowed is not None and identifier not in allowed:
+                            _validation_warnings.append(
+                                f"Unexpected missing OC2: '{identifier}' / {op.type}"
+                            )
+                else:
+                    _validation_warnings.append(
+                        f"No Oc2: '{identifier}' / {op.type}"
+                    )
+
         ### Extend with new calculated fields ###
         if src_inst.partial_opcode: 
             # src_inst.opcode is binary
@@ -211,6 +261,7 @@ class xed_instruction_record_t:
             'opcode_base02':      opc_02_cvt,
             'opcode_base16':      opc_16_cvt,
             'evex_pp':            get_evex_pp,
+            'vsib':               get_vsib,
             'eosz_list':          lambda src_inst: src_inst.get_eosz_list(),
             'easz_list':          lambda src_inst: src_inst.get_easz_list(),
             # 'evex_sub_space':     None,  # TBD
@@ -243,6 +294,11 @@ def get_evex_pp(rec) -> str:
         elif rec.f3_required:
             return 3 # 'F3'
     return None
+
+def get_vsib(rec) -> str:
+    """Return VSIB index register width ('xmm'/'ymm'/'zmm') or None.
+    Merges avx_vsib (VEX) and avx512_vsib (EVEX) into a single field."""
+    return rec.avx512_vsib or rec.avx_vsib or None
 
 def gen_xed_inst_db(args, xed_db: xed_reader_t = None) -> list[xed_instruction_record_t]:
     """Generate a list of xed_instruction_record_t from the input XED database."""
@@ -449,6 +505,20 @@ def validate_data_integrity(src_insts: list[inst_t], converted_insts: list[xed_i
             errors.append(f"[{idx}] explicit_operands should not contain 'none'")
         if 'none' in str(conv_dict.get('implicit_operands', [])).lower():
             errors.append(f"[{idx}] implicit_operands should not contain 'none'")
+
+        # xed_width_t invariant: exactly one of fixed/scalable must be set
+        for op in converted.parsed_operands:
+            for field_name in ('op_widths', 'element_width'):
+                w = getattr(op, field_name)
+                if w is not None:
+                    both_set = w.fixed is not None and w.scalable is not None
+                    neither_set = w.fixed is None and w.scalable is None
+                    if both_set or neither_set:
+                        errors.append(
+                            f"[{idx}] operand {op.name}.{field_name}: "
+                            f"xed_width_t must have exactly one of fixed/scalable set "
+                            f"(fixed={w.fixed}, scalable={w.scalable})"
+                        )
     
     return errors, diff
 
@@ -506,25 +576,44 @@ def main():
     parser.add_argument('--validate', action='store_true', help='Dump development statistics and validate correctness')
     args = parser.parse_args()
 
+
     xed_input_db: xed_reader_t = input_xed_db(args)
     xed_gen_inst_rec_db: list[xed_instruction_record_t] = None
 
-    if args.validate:
-        xed_gen_inst_rec_db = gen_xed_inst_db(args, xed_input_db)
-        validate_xed_inst_db(xed_input_db, xed_gen_inst_rec_db)
+    if args.validate:   # look for xedext extension if validation is enabled, to enhance validation checks
+        _discover_xedext_extension()
 
-    xed_json_db = [] # serializable list of instructions objects
+    # Generate the JSON output first — this is the primary deliverable.
+    xed_json_db = []
     if args.raw:
         for rec in xed_input_db.recs:
-            fix_attr(rec) # basic cleanup
+            fix_attr(rec)
             xed_json_db.append(convert_to_serializable(rec))
     else:
-        if not xed_gen_inst_rec_db:
-            xed_gen_inst_rec_db = gen_xed_inst_db(args, xed_input_db)
-            
+        xed_gen_inst_rec_db = gen_xed_inst_db(args, xed_input_db)
         for rec in xed_gen_inst_rec_db:
             xed_json_db.append(convert_to_serializable(rec))
     output_json(args, xed_json_db)
+
+    # Validation is non-destructive: warnings or errors never prevent JSON generation.
+    if args.validate:
+        _validation_warnings.clear()  # discard warnings from non-validated generation
+        if not xed_gen_inst_rec_db:
+            xed_gen_inst_rec_db = gen_xed_inst_db(args, xed_input_db)
+        try:
+            validate_xed_inst_db(xed_input_db, xed_gen_inst_rec_db)
+        except (AssertionError, Exception) as e:
+            _validation_warnings.append(f"Validation error: {e}")
+            print(f"[FAILED] Validation error: {e}", file=sys.stderr)
+
+        # Report validation warnings
+        if _validation_warnings:
+            print(f"\n[VALIDATION] {len(_validation_warnings)} warning(s):", file=sys.stderr)
+            for w in _validation_warnings:
+                print(f"  WARNING: {w}", file=sys.stderr)
+            # Non-zero exit code if validation failed, after JSON is written
+            print("Data validation failed, but the JSON file was generated.")
+            sys.exit(1)
 
 if __name__ == '__main__':
     main()

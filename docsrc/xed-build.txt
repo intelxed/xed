@@ -29,7 +29,7 @@
 @mainpage *INTERNAL* Intel&reg; XED Build Guide
 @endif
 
-January 2026
+February 2026
 
 @section INTRO Introduction
 
@@ -264,9 +264,14 @@ threaded because of long standing bugs in cygwin.
 
 If you want to have symbols in the Intel&reg; XED command line example, you must
 build with MSVS 8 (2005) or later and supply the "--dbghelp" option to
-the build line. During execution, dbghelp.dll version 6.9.3.113 or
-later, is required.  Dbghelp.dll must be placed in the same directory
-as xed.exe. Dbghelp.dll is available from Microsoft. 
+the build line. During execution, dbghelp.dll version 6.0 or later is
+required. The DLL is resolved by the standard Windows loader search
+order: the application directory (where xed.exe resides),
+the system directory and the PATH. If a specific version
+of dbghelp.dll is needed (e.g. from the Debugging Tools for Windows),
+place it next to xed.exe. 
+To disable symbol resolution at runtime,
+pass the "-no-dbghelp" option to the xed command line tool.
 
 
 @section SHARED Shared libraries and DLLs
@@ -417,6 +422,7 @@ Options:
   --limit-strings       Remove some strings to save space.
   --no-encoder          Disable the encoder
   --no-decoder          Disable the decoder
+  --no-api-check        Disable API input validation checks
   --generator-options=GENERATOR_OPTIONS
                         Options to pass through for the decode generator
   --legal-header=LEGAL_HEADER

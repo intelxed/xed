@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -219,13 +219,14 @@ class xed_reader_t(object):
                  state_bits_filename,
                  instructions_filename,
                  widths_filename,
+                 extra_widths_filename,
                  element_types_filename,
                  cpuid_filename='',
                  map_descriptions_filename=''):
 
         self.xtypes = self._gen_xtypes(element_types_filename) 
-        self.width_type_dict, self.width_info_dict = self._gen_widths(widths_filename)
-        
+        self._gen_widths(widths_filename, extra_widths_filename)
+
         self.state_bits = self._parse_state_bits(state_bits_filename)
         
         self.map_info = []
@@ -281,6 +282,7 @@ class xed_reader_t(object):
              (name,  dtype, width16, width32, width64) = wrds
           else:
               genutil.die("Bad number of tokens on line: " + line)
+          dtype = dtype.lower()  # normalize xtype to lowercase for consistent lookups
 
           # convert from bytes to bits, unless in explicit bits form "b'[0-9]+"
           bit_widths = {}
@@ -293,20 +295,42 @@ class xed_reader_t(object):
           width_info_dict[name] = width_info_t(name, dtype, bit_widths)
        return width_info_dict
         
-    def _gen_widths(self, fn):
-        lines = open(fn,'r').readlines()
-        width_info_dict = self._refine_widths_input(lines)
+    def _gen_widths(self, widths_filename, extra_widths_filename):
+        with open(widths_filename,'r') as f:
+            lines = f.readlines()
+            self.width_info_dict = self._refine_widths_input(lines)
 
-        # sets the default data type for each width
-        width_type_dict = {}
-        for w in width_info_dict.values():
-            width_type_dict[w.name] = w.dtype
-        return width_type_dict, width_info_dict
+            # sets the default data type for each width
+            self.width_type_dict = {}
+            for w in self.width_info_dict.values():
+                self.width_type_dict[w.name] = w.dtype
+
+        with open(extra_widths_filename,'r') as f:
+            self.extra_widths_reg = {}
+            self.extra_widths_nt = {}
+            self.extra_widths_imm_const = {}
+            
+            lines = f.readlines()
+            for line in lines:
+                pline = patterns.comment_pattern.sub("",line).strip()
+                if pline == '':
+                    continue
+                wrds = pline.split()
+                ntokens = len(wrds)
+                if ntokens != 3:
+                    genutil.die("Bad number of tokens on line: " + line)
+                (nt_or_reg, name, oc2) = wrds
+                if nt_or_reg == 'nt':
+                    self.extra_widths_nt[name] = oc2
+                elif nt_or_reg == 'reg':
+                    self.extra_widths_reg[name] = oc2
+                elif nt_or_reg == 'imm_const':
+                    self.extra_widths_imm_const[name] = oc2
 
     def _gen_xtypes(self, fn):
         lines = open(fn,'r').readlines()
-        xtypes_dict = opnd_types.read_operand_types(lines)
-        return set(xtypes_dict.keys())
+        self.xtypes_dict = opnd_types.read_operand_types(lines)
+        return set(self.xtypes_dict.keys())
             
     def _compute_memop_rw(self,v):
         read=False
@@ -572,6 +596,7 @@ class xed_reader_t(object):
                                               'DEFAULT',
                                               self.xtypes,
                                               self.width_type_dict,
+                                              self.extra_widths_nt,
                                               skip_encoder_conditions=False)
                 v.parsed_operands.append(op)
             

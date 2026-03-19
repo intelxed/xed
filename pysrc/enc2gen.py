@@ -5783,6 +5783,7 @@ def work():
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
                                      args.instructions_filename,
                                      args.widths_filename,
+                                     args.extra_widths_filename,
                                      args.element_types_filename,
                                      args.cpuid_filename,
                                      args.map_descriptions)

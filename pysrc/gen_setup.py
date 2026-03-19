@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -59,13 +59,15 @@ def make_paths(args):
     args.instructions_filename  = _check_jn(args.prefix, 'all-dec-instructions.txt')
     args.chip_filename          = _check_jn(args.prefix, 'all-chip-models.txt')
     args.widths_filename        = _check_jn(args.prefix, 'all-widths.txt')
+    args.extra_widths_filename  = _check_jn(args.prefix, 'all-extra-widths.txt')
     args.element_types_filename = _check_jn(args.prefix, 'all-element-types.txt')
     args.map_descriptions       = _check_jn(args.prefix, 'all-map-descriptions.txt')
 
-def read_db(args):
+def read_db(args) -> read_xed_db.xed_reader_t:
     xeddb = read_xed_db.xed_reader_t(args.state_bits_filename,
                                      args.instructions_filename,
                                      args.widths_filename,
+                                     args.extra_widths_filename,
                                      args.element_types_filename,
                                      args.cpuid_filename,
                                      args.map_descriptions)

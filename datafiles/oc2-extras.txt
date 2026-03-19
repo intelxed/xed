@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2024 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -71,6 +71,8 @@ nt ArBX  asz
 nt ArCX  asz
 nt ArDI  asz
 nt ArSI  asz
+nt A_GPR_R  asz
+nt A_GPR_B  asz
 nt CR_R  y
 nt DR_R  y
 nt GPR16_B w
@@ -133,6 +135,8 @@ nt OrAX v
 nt OrBP v
 nt OrDX v
 nt OrSP v
+nt OrCX v
+nt OrBX v
 nt SEG  w
 nt SrSP ssz
 nt rIP y

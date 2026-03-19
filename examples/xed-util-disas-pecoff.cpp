@@ -48,6 +48,8 @@ extern "C" {
 
 #if defined(XED_DBGHELP)
 # include "udhelp.H" // dbghelp interface
+static xed_bool_t skip_dbghelp_init = 0;
+extern "C" void xed_pecoff_set_skip_dbghelp(xed_bool_t skip) { skip_dbghelp_init = skip; }
 #endif
 using namespace std;
 
@@ -603,21 +605,21 @@ process_pecoff(xed_uint8_t* start,
   xed_bool_t okay = true;
   xed_bool_t found = false;
 #if defined(XED_USING_DEBUG_HELP)
-  int init_ok = dbg_help.init( decode_info.input_file_name,
-                               decode_info.symbol_search_path);
-  if (init_ok == 0) {
-     if (CLIENT_VERBOSE0)   {
-         if (dot_obj(decode_info.input_file_name)) 
-             fprintf(stderr,
-                     "WARNING: No COFF symbol support yet for OBJ files.\n");
-         else
-             fprintf(stderr,
-                     "WARNING: DBGHELP initialization failed. "
-                     "Please copy the appropriate\n" 
-                     "  (ia32,intel64) dbghelp.dll to the directory "
-                     "where your xed.exe exists.\n"
-                     "   Version 6.9.3.113 or later is required.\n");
-         fflush(stderr);
+  if (!skip_dbghelp_init) {
+     xed_bool_t init_ok = dbg_help.init( decode_info.input_file_name,
+                                  decode_info.symbol_search_path);
+     if (init_ok == 0) {
+        if (CLIENT_VERBOSE0)   {
+            if (dot_obj(decode_info.input_file_name)) 
+                fprintf(stderr,
+                        "WARNING: No COFF symbol support yet for OBJ files.\n");
+            else
+                fprintf(stderr,
+                        "WARNING: DBGHELP initialization failed.\n"
+                        "  Symbol resolution will not be available.\n"
+                        "  dbghelp.dll version 6.0 or later is required.\n");
+            fflush(stderr);
+        }
      }
   }
 #endif

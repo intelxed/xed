@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -305,9 +305,10 @@ static void usage(char* prog) {
       "\t-s16          (16b stack addressing, not in LONG_64 mode)",
       "\t-set OP VAL   (Set a XED operands to some integer value, repeatable)",
 
-#if defined(XED_USING_DEBUG_HELP)
+#if defined(XED_DBGHELP)
       "",
       "\t-sp           (Search path for windows symbols)",
+      "\t-no-dbghelp   (Disable dbghelp symbol resolution at runtime)",
 #endif
       "\t-version      (The version message)",
       "\t-help         (This help message)",
@@ -496,11 +497,14 @@ main(int argc, char** argv)
             input_file_name = argv[i+1];
             i++;
         }
-#if defined(XED_USING_DEBUG_HELP)
+#if defined(XED_DBGHELP)
         else if (strcmp(argv[i],"-sp")==0)        {
             test_argc(i,argc);
             symbol_search_path = argv[i+1];
             i++;
+        }
+        else if (strcmp(argv[i],"-no-dbghelp")==0)        {
+            xed_pecoff_set_skip_dbghelp(1);
         }
 #endif
         else if (strcmp(argv[i],"-s")==0)        {

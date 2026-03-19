@@ -1,0 +1,4 @@
+Testing with XED_API_CHECK_ENABLED=0 (disabled)
+PASS: api_check(0) survived (no checking)
+PASS: api_check(1) survived
+2 passed, 0 failed

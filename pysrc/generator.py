@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -6000,6 +6000,7 @@ def refine_widths_input(lines):
          (name,  dtype, width16, width32, width64) = wrds
       else:
          die("Bad number of tokens on line: " + line)
+      dtype = dtype.lower()  # normalize xtype to lowercase for consistent lookups
 
       # convert from bytes to bits, unless in explicit bits form "b'[0-9]+"
       bit_widths = []

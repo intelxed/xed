@@ -83,6 +83,8 @@ def create_reference(env, test_dir, codes_and_cmd, make_new=True):
     if stderr:
         for line in stderr:
             print("[STDERR] %s" % (line))
+        # API check stderrors include local paths and line numbers, filter out to just the filename
+        stderr = _filter_api_check_stderr(stderr)
 
     write_file(os.path.join(test_dir,"retcode.reference"), [ str(retcode) + "\n" ])
     write_file(os.path.join(test_dir,"stdout.reference"), stdout)
@@ -123,6 +125,10 @@ def compare_file(reference, this_test):
                 continue
             if ref.startswith("iclass-max-iform-dispatch"): # skip
                 continue
+            if test.startswith("api_check"):  # normalize api_check messages
+                test_filtered = _filter_api_check_line(test)
+                if ref.strip() == test_filtered.strip():
+                    continue
             mbuild.msgb("DIFFERENT", "\n\tref  [%s]\n\ttest [%s]" % (ref, test))
             return False
     return True
@@ -151,6 +157,20 @@ def _prep_stream(strm,name):
     for line in strm:
         print("[{}] {} {}".format(name,len(line),line))
     return strm
+
+def _filter_api_check_line(line):
+    """Remove absolute path and line number from a single api_check message.
+    Converts: api_check FAIL: func (C:/full/path/file.c:123): condition
+    To: api_check FAIL: func (file.c): condition
+    """
+    match = re.match(r'^(api_check \w+: \w+) \((.+[/\\])([^/\\:)]+):\d+\): (.*)$', line)
+    if match:
+        return match.group(1) + ' (' + match.group(3) + '): ' + match.group(4)
+    return line
+
+def _filter_api_check_stderr(stderr):
+    """Remove absolute path and line number from api_check messages, keep just filename."""
+    return [_filter_api_check_line(line) for line in stderr]
 
 def one_test(env,test_dir):
 

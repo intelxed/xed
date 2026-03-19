@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2023 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -90,20 +90,7 @@ char* find_base_path(char* driver_name) {
     return path;
 }
 
-static char* append3(const char* s1, const char* s2, const char* s3) {
-    xed_uint_t  n = 1;
-    char* p = 0;
-    assert(s1 != 0);
-    n += xed_strlen(s1);
-    if (s2)    n += xed_strlen(s2);
-    if (s3)    n += xed_strlen(s3);
-    p = (char*) malloc(sizeof(char)*n);
-    assert(p != 0);
-    n=xed_strncpy(p,s1,n);
-    if (s2) n=xed_strncat(p,s2,n);
-    if (s3) n=xed_strncat(p,s3,n);
-    return p;
-}
+
 
 
 
@@ -158,37 +145,95 @@ void get_dll_version(char* file_name, short u[4]) {
     delete[] ver;
 }
 
- 
+// Minimum required major version of dbghelp.dll.
+// 6.0 is needed for SymLoadModuleEx / SymEnumSymbols.
+#define DBGHELP_MIN_MAJOR_VERSION 6
+
+// Verify that dbghelp.dll is loaded and meets the minimum required version
+// Returns 1 on success, 0 on failure.
+static xed_bool_t check_dbghelp_available(void) {
+    HMODULE hDbgHelp = GetModuleHandle("dbghelp.dll");
+    if (!hDbgHelp) {
+        fprintf(stderr,
+                "ERROR: dbghelp.dll is not loaded.\n"
+                "  Use -no-dbghelp to disable symbol extraction.\n");
+        return 0;
+    }
+
+    char dll_path[MAX_PATH];
+    DWORD len = GetModuleFileName(hDbgHelp, dll_path, MAX_PATH);
+    if (len == 0 || len >= MAX_PATH) {
+        if (CLIENT_VERBOSE)
+            fprintf(stderr,
+                    "NOTE: dbghelp.dll path could not be determined; "
+                    "will attempt symbol extraction anyway.\n"
+                    "  Use -no-dbghelp to disable symbol extraction.\n");
+        return 1;
+    }
+
+    DWORD ver_handle;
+    DWORD ver_size = GetFileVersionInfoSize(dll_path, &ver_handle);
+    if (ver_size == 0) {
+        if (CLIENT_VERBOSE)
+            fprintf(stderr,
+                    "NOTE: could not read version info for %s; "
+                    "will attempt symbol extraction anyway.\n"
+                    "  Use -no-dbghelp to disable symbol extraction.\n",
+                    dll_path);
+        return 1;
+    }
+
+    char* ver_data = new char[ver_size];
+    if (!GetFileVersionInfo(dll_path, ver_handle, ver_size, ver_data)) {
+        delete[] ver_data;
+        if (CLIENT_VERBOSE)
+            fprintf(stderr,
+                    "NOTE: GetFileVersionInfo failed for %s; "
+                    "will attempt symbol extraction anyway.\n"
+                    "  Use -no-dbghelp to disable symbol extraction.\n",
+                    dll_path);
+        return 1;
+    }
+
+    VS_FIXEDFILEINFO* vsf = NULL;
+    UINT vsf_len = 0;
+    if (!VerQueryValue(ver_data, "\\", (LPVOID*)&vsf, &vsf_len) ||
+        vsf_len < sizeof(VS_FIXEDFILEINFO))
+    {
+        delete[] ver_data;
+        if (CLIENT_VERBOSE)
+            fprintf(stderr,
+                    "NOTE: version query failed for %s; "
+                    "will attempt symbol extraction anyway.\n"
+                    "  Use -no-dbghelp to disable symbol extraction.\n",
+                    dll_path);
+        return 1;
+    }
+
+    DWORD major = HIWORD(vsf->dwFileVersionMS);
+    DWORD minor = LOWORD(vsf->dwFileVersionMS);
+    delete[] ver_data;
+
+    if (major < DBGHELP_MIN_MAJOR_VERSION) {
+        fprintf(stderr,
+                "ERROR: dbghelp.dll version %u.%u is too old "
+                "(loaded from %s).\n"
+                "  Minimum required major version is %u.\n"
+                "  Use -no-dbghelp to disable symbol extraction.\n",
+                (unsigned)major, (unsigned)minor, dll_path,
+                (unsigned)DBGHELP_MIN_MAJOR_VERSION);
+        return 0;
+    }
+    return 1;
+}
 
 int dbg_help_client_t::init(char const* const path,
                             char const* const search_path)
 {
     DWORD64 dwBaseAddr=0;
 
-    int chars;
-    char exe_path[MAX_PATH];
-    chars = GetModuleFileName(NULL, exe_path, MAX_PATH);
-    if (chars == 0) { 
-        fprintf(stderr,"Could not find base path for XED executable\n");
-        fflush(stderr);
-        exit(1);
-    }
-
-    char* dir = find_base_path(exe_path);
-
-    char* dbghelp = append3(dir,"\\","dbghelp.dll");
-#if defined(PIN_CRT)
-    if (access(dbghelp,4) != 0)
-#else
-    if (_access_s(dbghelp,4) != 0)
-#endif
-    {
-        free(dir);
-        free(dbghelp);
+    if (!check_dbghelp_available())
         return 0;
-    }
-    free(dir);
-    free(dbghelp);
 
     SymSetOptions(SYMOPT_UNDNAME | SYMOPT_LOAD_LINES );
     hProcess = GetCurrentProcess();

@@ -2497,6 +2497,12 @@ def _run_canned_tests(env,osenv):
     if env['future']:
         codes.append('APX')
         codes.append('AVX10_2')
+
+    if env['api_check']:
+        codes.append('API_CHECK')
+    else:
+        codes.append('NO_API_CHECK')
+
     for c in codes:
         cmd += ' -c ' + c
 
