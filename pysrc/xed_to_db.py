@@ -133,7 +133,7 @@ class xed_instruction_record_t:
     opcode_base02: str = None
     opcode_base16: str = None
     partial_opcode: bool = False
-    reg_required: int = None
+    reg_required: list[int] = field(default_factory=list)
     rm_required: int = None
     undocumented: bool = False
     # ModRM Restrictions
@@ -189,6 +189,7 @@ class xed_instruction_record_t:
             xedi.explicit_operands.remove(empty)
         if empty in xedi.implicit_operands:
             xedi.implicit_operands.remove(empty)
+        xedi.reg_required = genutil.parse_reg_values(src_inst.pattern)
         # Fixup mod_required
         if src_inst.mod_required in ('unspecified', 'none', None):
             xedi.mod_required = []
@@ -475,6 +476,8 @@ def validate_data_integrity(src_insts: list[inst_t], converted_insts: list[xed_i
                         continue  # Considered equal
                     elif src_value == '0' and conv_value == 'False':
                         continue  # Considered equal
+                    elif src_key == "reg_required" and isinstance(src_value, int) and conv_value == [src_value]:
+                        continue  # Scalar wrapped to list during conversion
                     elif src_key == "mod_required":
                         mod_map = {
                             '00/01/10': [0, 1, 2],

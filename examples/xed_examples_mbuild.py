@@ -372,7 +372,7 @@ def build_examples(env, work_queue):
                  env['msvs_version'] not in ['6','7'] ):
                 env.add_define("XED_DBGHELP")
                 xed_cmdline_files.append('udhelp.cpp')
-                extra_libs = ['dbghelp.lib', 'version.lib' ]
+                extra_libs = ['version.lib' ]
 
     xed_cmdline_files = env.src_dir_join(xed_cmdline_files)
     xed_cmdline_obj = copy.deepcopy(cc_shared_objs)

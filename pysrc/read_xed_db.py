@@ -639,7 +639,6 @@ class xed_reader_t(object):
         osz_prefix  = re.compile(r' OSZ=(?P<prefix>[01])')
         no_prefix   = re.compile(r'REP=0 OSZ=0')
         rexw_prefix = re.compile(r'REXW=(?P<rexw>[01])')
-        reg_required = re.compile(r'REG[\[](?P<reg>[b01]+)]')
         mod_required = re.compile(r'MOD[\[](?P<mod>[b01]+)]')
         mod_mem_required = re.compile(r'MOD!=3')
         mod_reg_required = re.compile(r'MOD=3')
@@ -726,10 +725,9 @@ class xed_reader_t(object):
             if rexw:
                 v.rexw_prefix = rexw.group('rexw') # 0 or 1
 
-            v.reg_required = 'unspecified'
-            reg = reg_required.search(v.pattern)
-            if reg:
-                v.reg_required = genutil.make_numeric(reg.group('reg'))
+            # reg_required: 'unspecified', int (single), or list[int] (range)
+            reg_vals = genutil.parse_reg_values(v.pattern)
+            v.reg_required = reg_vals[0] if len(reg_vals) == 1 else (reg_vals or 'unspecified')
 
             v.rm_required = 'unspecified'
             rm = rm_required.search(v.pattern) # bit capture

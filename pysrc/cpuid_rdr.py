@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -157,6 +157,18 @@ class cpuid_record_t:
         s += f'={self.value}'
         return '"'+s+'"'
 
+    def to_serializable(self) -> dict:
+        """Returns a serializable dict representation of this CPUID record."""
+        return {
+            "fname": self.fname,
+            "leaf": int(self.leaf, 16),
+            "subleaf": int(self.s_leaf, 16),
+            "reg": self.reg,
+            "bit_start": int(self.bit_start),
+            "bit_end": int(self.bit_end),
+            "value": int(self.value)
+        }
+
     def __eq__(self, other):
         """Overrides the default implementation"""
         if not isinstance(other, cpuid_record_t):
@@ -250,7 +262,10 @@ class group_record_t:
     
     def to_serializable(self) -> dict:
         ''' Returns a serializable dict representation '''
-        return { self.name : [str(rec) for rec in self.records] }
+        return {
+            "group_name": self.name,
+            "records": [rec.to_serializable() for rec in self.records]
+        }
 
     def __str__(self) -> str:
         """ Overrides the default implementation """

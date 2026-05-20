@@ -224,6 +224,20 @@ static const char* xed_decoded_inst_print_ptr_size(xed_uint_t bytes) {
     return "";
 }
 
+// Return the display width (in bits) for sign-extended immediates.
+// For non-EVEX: use effective operand size (EOSZ).
+// For EVEX: use dest element width because EOSZ is loosely defined.
+static unsigned int
+xed_get_imm_sign_extend_display_bits(const xed_decoded_inst_t* p) {
+    if ( xed3_operand_get_vexvalid(p) == 2 )
+    {
+        unsigned int eff_bits = xed_decoded_inst_operand_element_size_bits(p, 0);
+        if (eff_bits)
+            return eff_bits;
+    }
+    return xed_decoded_inst_get_operand_width(p);
+}
+
 static const char* instruction_suffix_att(const xed_decoded_inst_t* p) {
     xed_assert(p != NULL);
     extern const char* xed_pointer_name_suffix[XED_MAX_POINTER_NAMES];
@@ -1000,11 +1014,9 @@ static void xed_print_operand( xed_print_info_t* pi )
           if ( xed3_operand_get_imm0signed(pi->p) &&
                pi->format_options.no_sign_extend_signed_immediates == 0 )
           {
-              // sign-extend imm to effective operand width
-              xed_int32_t imm;
-              unsigned int eff_bits = xed_decoded_inst_get_operand_width(pi->p);
-              imm = XED_STATIC_CAST(xed_int32_t,
+              xed_int32_t imm = XED_STATIC_CAST(xed_int32_t,
                                   xed_operand_values_get_immediate_int64(ov));
+              unsigned int eff_bits = xed_get_imm_sign_extend_display_bits(pi->p);
               xml_print_imm(pi,eff_bits);
               xed_pi_strcat(pi,"0x");
               pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf), 
@@ -1496,8 +1508,7 @@ xed_decoded_inst_dump_att_format_internal(
               if ( xed3_operand_get_imm0signed(pi->p) &&
                    pi->format_options.no_sign_extend_signed_immediates == 0 )
               {
-                  // sign-extend imm to effective operand width
-                  unsigned int eff_bits = xed_decoded_inst_get_operand_width(pi->p);
+                  unsigned int eff_bits = xed_get_imm_sign_extend_display_bits(pi->p);
                   xed_int32_t imm = XED_STATIC_CAST(xed_int32_t,
                                    xed_operand_values_get_immediate_int64(ov));
                   pi->blen = xed_itoa_hex_ul(pi->buf+xed_strlen(pi->buf),

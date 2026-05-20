@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ not_equals_pattern = re.compile(r'(?P<lhs>[^!]+)!=(?P<rhs>.+)')
 bit_expand_pattern = re.compile(r'(?P<bitname>[a-z])/(?P<count>\d{1,2})')
 rhs_pattern = re.compile(r'[!]?=.*$')
 lhs_capture_pattern = re.compile(r'(?P<name>[A-Za-z_0-9]+)[\[](?P<bits>[a-z]+)]')
-lhs_capture_pattern_end = re.compile(r'(?P<name>[A-Za-z_0-9]+)[\[](?P<bits>[a-z01_]+)]$')
+lhs_capture_pattern_end = re.compile(r'(?P<name>[A-Za-z_0-9]+)[\[](?P<bits>[a-zA-Z0-9_\-]+)]$')
 lhs_pattern = re.compile(r'(?P<name>[A-Za-z_0-9]+)[!=]')
 hex_pattern = re.compile(r'0[xX][0-9a-fA-F]+')
 decimal_pattern = re.compile(r'^[0-9]+$')

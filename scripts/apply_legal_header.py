@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -147,14 +147,14 @@ def replace_curr_year(file, year=''):
 
 def apply_header_to_source_file(header, file, year=''):
     "apply header to file using C++ comment style"
-    f = open(file,"r")
+    f = open(file, "r", encoding='utf-8')
     mode = get_mode(file)
     contents = f.readlines()
     f.close()
     trimmed_contents = remove_existing_header(contents)
     newfile = file + ".new"
     curr_header = replace_curr_year(header, year)
-    o = open(newfile,"w")
+    o = open(newfile, "w", encoding='utf-8')
     o.write("/* BEGIN_LEGAL \n")
     o.writelines(curr_header)
     o.write("END_LEGAL */\n")
@@ -209,7 +209,7 @@ def write_script_header(o,lines):
     
 def apply_header_to_data_file(header, file, year=''):
     "apply header to file using script comment style"
-    f = open(file,"r")
+    f = open(file, "r", encoding='utf-8')
     mode = get_mode(file)
     #print "file: " + file + " mode: " + "%o"  % mode
     contents = f.readlines()
@@ -217,7 +217,7 @@ def apply_header_to_data_file(header, file, year=''):
     trimmed_contents = remove_existing_header(contents)
     newfile = file + ".new"
     curr_header = replace_curr_year(header, year)
-    o = open(newfile,"w")
+    o = open(newfile, "w", encoding='utf-8')
     augmented_header = prepend_script_comment(curr_header)
     if shell_script(trimmed_contents):
         (script_header, script_body) = split_script(trimmed_contents)
@@ -249,7 +249,8 @@ def skip_file(file):
     skip_suffix = ['.pdf', '.msi', '.sln', '.vcproj', '.vcxproj', '.filters',
                    '.xsl', '.rtf', '.reference', '.rc', '.doc', '.html',
                    '.docx', '.msm', '.ico', '.bmp', '.exe', '.a', '.lib', '.csv', '.bz2',
-                   '.zip', '.csproj', '.json', '.js', '.xz', '.TESTS', '.pyc', '.md', '.in']
+                   '.zip', '.csproj', '.json', '.js', '.xz', '.TESTS', '.pyc', '.md', '.in',
+                   '.jsonc']
     # Path().suffixes return a list of the final component's suffixes, if any.
     # check if the intersection with skip_suffix is empty or not
     if set(f.suffixes).intersection(skip_suffix):
@@ -285,7 +286,7 @@ def replace_headers(files, year=''):
             data_files.append(file_name)   # includes python scripts
     
     # opens legal header template
-    with TEMPLATE_PATH.open('r') as header_template:
+    with TEMPLATE_PATH.open('r', encoding='utf-8') as header_template:
         legal_header = header_template.readlines()
 
     for f in source_files:
@@ -364,7 +365,7 @@ def get_copyright_from_file(file_content):
 def check_copyright_text(file_content, file, issues):
     """Checks whether the legal header of the specified file matches the legal header template."""
 
-    with open(TEMPLATE_PATH) as f:
+    with open(TEMPLATE_PATH, encoding='utf-8') as f:
         expected_header = f.read().strip()
     expected_header = remove_year_from_header(expected_header)
 
@@ -411,7 +412,7 @@ def check_copyrights(files, suppress_print=False):
             continue
 
         try:
-            with open(file) as file_obj:
+            with open(file, encoding='utf-8') as file_obj:
                 file_content = ''.join(file_obj.readlines()[:100])
         except Exception as e:
             issues[file] = f'Can not read from file: {e}'

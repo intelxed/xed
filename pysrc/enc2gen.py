@@ -5375,6 +5375,15 @@ def prep_instruction(ii):
     setattr(ii,'encoder_functions',[])
     setattr(ii,'encoder_skipped',False)
 
+    # reg_required may be a list (from REG[lo-hi] ranges parsed by read_xed_db).
+    # enc2gen only supports scalar reg_required values.
+    if isinstance(ii.reg_required, list):
+        if len(ii.reg_required) == 1:
+            ii.reg_required = ii.reg_required[0]
+        else:
+            # FIXME: support encoding with multiple reg_required values
+            ii.reg_required = 'unspecified'
+
     ii.write_masking = False
     ii.write_masking_notk0 = False
     ii.write_masking_merging_only = False # if true, no zeroing allowed

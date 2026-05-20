@@ -3,7 +3,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -2483,9 +2483,10 @@ class encoder_configuration_t(object):
             if no_operand_pattern.match(line):
                 if not isa_set:
                     isa_set = extension
-                self.finalize_decode_conversion(iclass,'', 
-                                                ipattern, uname,
-                                                real_opcode, isa_set, iattribute)
+                for expanded_pat in expand_reg_range(ipattern):
+                    self.finalize_decode_conversion(iclass,'', 
+                                                    expanded_pat, uname,
+                                                    real_opcode, isa_set, iattribute)
                 continue
 
             op = operand_pattern.match(line)
@@ -2493,9 +2494,10 @@ class encoder_configuration_t(object):
                 operands = op.group('operands')
                 if not isa_set:
                     isa_set = extension
-                self.finalize_decode_conversion(iclass, operands, 
-                                                ipattern, uname,
-                                                real_opcode, isa_set, iattribute)
+                for expanded_pat in expand_reg_range(ipattern):
+                    self.finalize_decode_conversion(iclass, operands, 
+                                                    expanded_pat, uname,
+                                                    real_opcode, isa_set, iattribute)
                 continue
 
         return

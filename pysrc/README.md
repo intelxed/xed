@@ -94,8 +94,25 @@ The `obj/dgen` directory is automatically generated during a standard XED build.
 ```bash
 python mfile.py just-prep
 ```
-This command reads XED datafiles, processes instruction definitions, and generates all `all-*.txt` files in `obj/dgen`.
+The `just-prep` target is XED's lightweight preparation mode. It gathers the active XED datafiles, expands the configured input layers, and generates the prepared `all-*.txt` files in `obj/dgen`.
+It then stops before decoder or encoder generation, C or C++ compilation, library builds, examples, or tests. In practice, this is the right target when you only need generated metadata for Python utilities and do not need a compiled XED library or compiler-driven build.
 After running this command, the `obj/dgen` directory will be ready for use with the utility scripts described above.
+
+### Generating the Instruction JSON Database
+
+The `xed_to_db.py` utility converts a prepared XED `obj/dgen` directory into a JSON instruction database.
+
+From the main XED directory:
+
+```bash
+python mfile.py just-prep
+python pysrc/xed_to_db.py --xed-dgen=obj/dgen --out=xed_db.json
+```
+
+This produces `xed_db.json` in the current directory.
+
+Useful options:
+- Add `--validate` to run additional consistency checks while still generating the JSON output.
 
 ### Common Options
 

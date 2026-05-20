@@ -1752,6 +1752,7 @@ def read_structured_input(agi, options, parser, lines, state_dict):
             # multiple complete records, one per
             # pattern/set-of-operands.
             flat_ii_recs = expand_hierarchical_records(ii)
+            flat_ii_recs = expand_range_capture_records(flat_ii_recs)
 
             # finalize initialization of instruction records
             for flat_ii in flat_ii_recs:
@@ -4830,6 +4831,23 @@ def expand_operands(agi, pi, state_bits):
          new_list.append(x)
    pi.operands = new_list
 
+
+
+def expand_range_capture_records(flat_ii_recs: list) -> list:
+    """Expand any flat record whose ipattern_input contains REG[lo-hi]
+    range notation into one record per value in [lo..hi]."""
+    result: list = []
+    for ii in flat_ii_recs:
+        expanded: list = expand_reg_range(ii.ipattern_input)
+        if len(expanded) == 1:
+            result.append(ii)
+        else:
+            for pat in expanded:
+                new_ii = copy.deepcopy(ii)
+                new_ii.new_inum()
+                new_ii.ipattern_input = pat
+                result.append(new_ii)
+    return result
 
 
 def expand_hierarchical_records(ii):

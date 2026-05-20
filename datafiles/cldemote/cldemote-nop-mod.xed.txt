@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -29,57 +29,42 @@ EXTENSION : BASE
 ATTRIBUTES: NOP
 ISA_SET   : PPRO
 COMMENT   : memory form with MODRM.REG=0b000 and no refining prefix is CLDEMOTE
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() f2_refining_prefix
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() f2_refining_prefix ENCDELETE
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() f3_refining_prefix
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() osz_refining_prefix ENCDELETE
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() osz_refining_prefix
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[1-7] RM[nnn] MODRM() osz_refining_prefix ENCDELETE
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
+}
 
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() rep
+{
+ICLASS    : NOP
+UNAME     : NOP0F1C_REG0_F3
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b000] RM[nnn] MODRM() f3_refining_prefix ENCDELETE
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() rep
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() rep
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() rep
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() rep
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() rep
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() rep
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
+}
 
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() osz_refining_prefix
+{
+ICLASS    : NOP
+UNAME     : NOP0F1C_REP
+CPL       : 3
+CATEGORY  : WIDENOP
+EXTENSION : BASE
+ATTRIBUTES: NOP
+ISA_SET   : PPRO
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[1-7] RM[nnn] MODRM() f2_refining_prefix ENCDELETE
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() osz_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() osz_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() osz_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() osz_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() osz_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() osz_refining_prefix
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[1-7] RM[nnn] MODRM() f3_refining_prefix ENCDELETE
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
 }
@@ -92,25 +77,7 @@ CATEGORY  : WIDENOP
 EXTENSION : BASE
 ATTRIBUTES: NOP
 ISA_SET   : PPRO
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b001] RM[nnn] MODRM() no_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b010] RM[nnn] MODRM() no_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b011] RM[nnn] MODRM() no_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b100] RM[nnn] MODRM() no_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b101] RM[nnn] MODRM() no_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b110] RM[nnn] MODRM() no_refining_prefix
-OPERANDS  : MEM0:r:v REG0=GPRv_R():r
-IFORM     : NOP_MEMv_GPRv_0F1C
-PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[0b111] RM[nnn] MODRM() no_refining_prefix
+PATTERN   : 0x0F 0x1C MOD[mm] MOD!=3 REG[1-7] RM[nnn] MODRM() no_refining_prefix
 OPERANDS  : MEM0:r:v REG0=GPRv_R():r
 IFORM     : NOP_MEMv_GPRv_0F1C
 }

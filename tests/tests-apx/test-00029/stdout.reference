@@ -3949,10 +3949,10 @@ XDIS 6f54: BMI1      BMI1       APX_F_BMI1_N3 62EC7D0CF4C1             {nf} tzcn
 XDIS 6f5a: BMI1      BMI1       APX_F_BMI1_N3 62ECFD0CF4C1             {nf} tzcnt r16, r17
 XDIS 6f60: BMI1      BMI1       APX_F_BMI1_N3 62AC790CF40431           {nf} tzcnt r16w, word ptr [r17+r30*1]
 XDIS 6f67: BMI1      BMI1       APX_F_BMI1_N3 62ACF90CF40431           {nf} tzcnt r16, qword ptr [r17+r30*1]
-XDIS 6f6e: APX       APXEVEX    APX_F_USER_MSR 62EC7F08F8C8             urdmsr r16, r17
-XDIS 6f74: APX       APXEVEX    APX_F_USER_MSR 62FF7F08F8C002000000     urdmsr r16, 0x2
-XDIS 6f7e: APX       APXEVEX    APX_F_USER_MSR 62EC7E08F8C1             uwrmsr r16, r17
-XDIS 6f84: APX       APXEVEX    APX_F_USER_MSR 62FF7E08F8C102000000     uwrmsr 0x2, r17
+XDIS 6f6e: APX       USER_MSR   APX_F_USER_MSR 62EC7F08F8C8             urdmsr r16, r17
+XDIS 6f74: APX       USER_MSR   APX_F_USER_MSR 62FF7F08F8C002000000     urdmsr r16, 0x2
+XDIS 6f7e: APX       USER_MSR   APX_F_USER_MSR 62EC7E08F8C1             uwrmsr r16, r17
+XDIS 6f84: APX       USER_MSR   APX_F_USER_MSR 62FF7E08F8C102000000     uwrmsr 0x2, r17
 XDIS 6f8e: CET       CET        APX_F_CET  62AC7808660C38           wrssd dword ptr [r16+r31*1], r17d
 XDIS 6f95: CET       CET        APX_F_CET  62ACF808660C38           wrssq qword ptr [r16+r31*1], r17
 XDIS 6f9c: CET       CET        APX_F_CET  62AC7908650C38           wrussd dword ptr [r16+r31*1], r17d
@@ -4120,9 +4120,9 @@ XDIS 7447: UNCOND_BR APXLEGACY  APX_F      D500A10123456789012345   jmpabs 0x452
 # end of text section.
 # Errors: 0
 #XED3 DECODE STATS
-#Total DECODE cycles:        20451248
+#Total DECODE cycles:        9261912
 #Total instructions DECODE: 4069
-#Total tail DECODE cycles:        21665296
+#Total tail DECODE cycles:        9575955
 #Total tail instructions DECODE: 4119
-#Total cycles/instruction DECODE: 5026.11
-#Total tail cycles/instruction DECODE: 5259.84
+#Total cycles/instruction DECODE: 2276.21
+#Total tail cycles/instruction DECODE: 2324.83

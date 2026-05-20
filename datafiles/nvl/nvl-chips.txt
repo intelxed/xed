@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -143,7 +143,6 @@ NOVA_LAKE:               \
   APX_F_MOVDIR64B           \
   APX_F_POPCNT              \
   APX_F_POPCNT_N3           \
-  APX_F_USER_MSR            \
   APX_F_VMX                 \
   APX_F_MOVRS               
   ##############################

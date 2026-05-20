@@ -560,3 +560,50 @@ def get_git_version(src_dir: str = None, verbose: int = 0) -> str:
             dump_lines("Could not find VERSION file or git repo for versioning")
     
     return NO_VERSION
+
+
+# Matches REG[lo-hi] range notation in instruction patterns (e.g. REG[1-7])
+_reg_range_pattern = re.compile(r'REG\[(?P<lo>\d+)-(?P<hi>\d+)\]')
+# Matches REG[bits] single value notation (e.g. REG[0b100])
+_reg_single_pattern = re.compile(r'REG\[(?P<reg>[b01]+)\]')
+# Catches malformed REG[...] tokens containing '-' that aren't valid ranges (e.g. REG[-5])
+_reg_invalid_pattern = re.compile(r'REG\[(?P<bits>[^\]]*-[^\]]*)\]')
+
+def parse_reg_values(pat: str) -> list:
+    """Parse REG[...] token from a pattern string and return a list of integer values.
+    Handles both range notation REG[lo-hi] and single value REG[0bXXX].
+    Returns empty list if no REG[...] token is present."""
+    m = _reg_range_pattern.search(pat)
+    if m:
+        lo = int(m.group('lo'))
+        hi = int(m.group('hi'))
+        if lo > hi:
+            die("Bad REG range: lo=%d > hi=%d in '%s'" % (lo, hi, pat))
+        if hi > 7:
+            die("REG range value %d exceeds 3-bit max (7) in '%s'" % (hi, pat))
+        return list(range(lo, hi + 1))
+    bad = _reg_invalid_pattern.search(pat)
+    if bad:
+        die("Bad REG range token '%s' in '%s'" % (bad.group(0), pat))
+    m = _reg_single_pattern.search(pat)
+    if m:
+        return [make_numeric(m.group('reg'))]
+    return []
+
+def expand_reg_range(pat: str) -> list:
+    """Expand a single REG[lo-hi] range token in a pattern string.
+    Returns a list of pattern strings, one per value in [lo..hi],
+    with REG[lo-hi] replaced by REG[0bXXX].
+    Returns [pat] unchanged if no range token is present."""
+    vals = parse_reg_values(pat)
+    m = _reg_range_pattern.search(pat)
+    if not m:
+        return [pat]
+    results: list = []
+    # Replace the range token with one explicit 3-bit binary pattern per value,
+    # e.g. REG[1-3] -> REG[0b001], REG[0b010], REG[0b011]
+    for val in vals:
+        binary_str: str = '0b' + format(val, '03b')
+        new_pat: str = pat[:m.start()] + 'REG[{}]'.format(binary_str) + pat[m.end():]
+        results.append(new_pat)
+    return results

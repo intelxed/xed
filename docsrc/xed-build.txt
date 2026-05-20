@@ -29,7 +29,7 @@
 @mainpage *INTERNAL* Intel&reg; XED Build Guide
 @endif
 
-February 2026
+April 2026
 
 @section INTRO Introduction
 
@@ -325,12 +325,15 @@ Options:
                         Extra values for LIBS
   --toolchain=TOOLCHAIN
                         Compiler toolchain
-  --vc-dir=VC_DIR       MSVS Compiler VC directory. For finding libraries  and
-                        setting the toolchain
+  --toolchain-vs=TOOLCHAIN_VS
+                        Visual Studio root directory for MSVS setup override.
+                        For MSVS 2017 and newer, include the edition
+                        (e.g. .../Microsoft Visual Studio/2022/Professional).
+                        Requires --compiler=ms and --msvs-version.
   --msvs-version=MSVS_VERSION, --msvc-version=MSVS_VERSION, --msvsversion=MSVS_VERSION, --msvcversion=MSVS_VERSION
                         MSVS version 6=VC98, 7=VS .Net 2003, 8=VS 2005,
                         9=VS2008, 10=VS 2010/DEV10, 11=VS2012/DEV11,
-                        12=VS2013, 14=VS2015, 15=VS2017, 16=VS2019, 17=VS2022.
+                        12=VS2013, 14=VS2015, 15=VS2017, 16=VS2019, 17=VS2022, 18=VS2026
                         This sets certain flags and idioms for quirks in some
                         compilers.
   --setup-msvc, --setup-msvs, --msvs-setup, --msvc-setup

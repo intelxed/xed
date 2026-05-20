@@ -1,0 +1,91 @@
+#BEGIN_LEGAL
+#
+#Copyright (c) 2026 Intel Corporation
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#  
+#END_LEGAL
+#
+#
+#
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#    ***** GENERATED FILE -- DO NOT EDIT! *****
+#
+#
+#
+EVEX_INSTRUCTIONS()::
+# EMITTING URDMSR (URDMSR-128-2)
+{
+ICLASS:      URDMSR
+CPL:         3
+CATEGORY:    APX
+EXTENSION:   USER_MSR
+ISA_SET:     APX_F_USER_MSR
+EXCEPTIONS:  USER-MSR-EVEX
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     EVV 0xF8 VF2 MAP4 MOD[0b11] MOD=3 UBIT=1 REG[rrr] RM[nnn] ND=0 NF=0 W0 VL128 mode64 NOEVSR ZEROING=0 EVAPX()
+OPERANDS:    REG0=GPR64_B():w:q:u64 REG1=GPR64_R():r:q:u64 REG2=XED_REG_MSRS:r:SUPP
+IFORM:       URDMSR_GPR64u64_GPR64u64_APX
+}
+
+
+# EMITTING URDMSR (URDMSR-128-3)
+{
+ICLASS:      URDMSR
+CPL:         3
+CATEGORY:    APX
+EXTENSION:   USER_MSR
+ISA_SET:     APX_F_USER_MSR
+EXCEPTIONS:  USER-MSR-EVEX
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     EVV 0xF8 VF2 MAP7 MOD[0b11] MOD=3 UBIT=1 REG[0b000] RM[nnn] ND=0 NF=0 W0 VL128 mode64 NOEVSR ZEROING=0 EVAPX() UIMM32()
+OPERANDS:    REG0=GPR64_B():w:q:u64 IMM0:r:d REG1=XED_REG_MSRS:r:SUPP
+IFORM:       URDMSR_GPR64u64_IMM32_APX
+}
+
+
+# EMITTING UWRMSR (UWRMSR-128-2)
+{
+ICLASS:      UWRMSR
+CPL:         3
+CATEGORY:    APX
+EXTENSION:   USER_MSR
+ISA_SET:     APX_F_USER_MSR
+EXCEPTIONS:  USER-MSR-EVEX
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     EVV 0xF8 VF3 MAP4 MOD[0b11] MOD=3 UBIT=1 REG[rrr] RM[nnn] ND=0 NF=0 W0 VL128 mode64 NOEVSR ZEROING=0 EVAPX()
+OPERANDS:    REG0=GPR64_R():r:q:u64 REG1=GPR64_B():r:q:u64 REG2=XED_REG_MSRS:w:SUPP
+IFORM:       UWRMSR_GPR64u64_GPR64u64_APX
+}
+
+
+# EMITTING UWRMSR (UWRMSR-128-3)
+{
+ICLASS:      UWRMSR
+CPL:         3
+CATEGORY:    APX
+EXTENSION:   USER_MSR
+ISA_SET:     APX_F_USER_MSR
+EXCEPTIONS:  USER-MSR-EVEX
+REAL_OPCODE: Y
+ATTRIBUTES:  NOTSX 
+PATTERN:     EVV 0xF8 VF3 MAP7 MOD[0b11] MOD=3 UBIT=1 REG[0b000] RM[nnn] ND=0 NF=0 W0 VL128 mode64 NOEVSR ZEROING=0 EVAPX() UIMM32()
+OPERANDS:    IMM0:r:d REG0=GPR64_B():r:q:u64 REG1=XED_REG_MSRS:w:SUPP
+IFORM:       UWRMSR_IMM32_GPR64u64_APX
+}
+
+
