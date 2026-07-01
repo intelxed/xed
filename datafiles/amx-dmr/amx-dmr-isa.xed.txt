@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -311,22 +311,6 @@ ATTRIBUTES:  NOTSX SPECIAL_AGEN_REQUIRED
 PATTERN:     VV1 0x4A V66 V0F38 MOD[mm] MOD!=3 REG[rrr] RM[0b100] MODRM() SIB W0 VL128 mode64 NOVSR
 OPERANDS:    REG0=TMM_R():w:tv:u32 MEM0:r:ptr:u32
 IFORM:       TILELOADDRST1_TMMu32_MEMu32
-}
-
-
-# EMITTING TMMULTF32PS (TMMULTF32PS-128-1)
-{
-ICLASS:      TMMULTF32PS
-CPL:         3
-CATEGORY:    AMX_TILE
-EXTENSION:   AMX_TILE
-ISA_SET:     AMX_TF32
-EXCEPTIONS:  AMX-E4
-REAL_OPCODE: Y
-ATTRIBUTES:  NOTSX NO_REG_MATCH 
-PATTERN:     VV1 0x48 V66 V0F38 MOD[0b11] MOD=3 REG[rrr] RM[nnn] W0 VL128 mode64
-OPERANDS:    REG0=TMM_R():rw:tv:f32 REG1=TMM_B():r:tv:f32 REG2=TMM_N():r:tv:f32
-IFORM:       TMMULTF32PS_TMMf32_TMMf32_TMMf32
 }
 
 

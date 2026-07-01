@@ -37,7 +37,6 @@ DIAMOND_RAPIDS:              \
    AVX_VNNI_INT16            \
    AMX_FP8                   \
    AMX_MOVRS                 \
-   AMX_TF32                  \
    AMX_AVX512                \
    ########### AVX10.2 ###########
    AVX512_FP8_CONVERT_128    \

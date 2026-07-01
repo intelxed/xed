@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -127,6 +127,7 @@ typedef unsigned int xed_operand_enum_t;
 typedef unsigned int xed_operand_visibility_enum_t;
 typedef unsigned int xed_operand_action_enum_t;
 typedef unsigned int xed_nonterminal_enum_t;
+typedef unsigned int xed_attribute_enum_t;
 '''
 
 cdef_string = BASE_TYPES + EMPTY_ENUMS + '''

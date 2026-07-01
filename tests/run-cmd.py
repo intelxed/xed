@@ -49,6 +49,15 @@ sys.path = [find_dir('mbuild')] + sys.path
 
 import mbuild
 
+# Ghost attributes end with a trailing underscore.
+# Strip them from test output so they don't affect reference comparisons.
+# relies on the leading space in `ATTRIBUTES: <tok>`
+_GHOST_ATTR_RE = re.compile(r'\s[A-Z][A-Z0-9_]*_(?=\s|$)')
+
+def _filter_test_stdout(lines):
+    """Remove ghost attribute tokens (trailing underscore) from output lines."""
+    return [_GHOST_ATTR_RE.sub('', line) for line in lines]
+
 def write_file(fn,lines):
     print("[EMIT] %s" % (fn))
     f = open(fn, 'w')
@@ -87,7 +96,7 @@ def create_reference(env, test_dir, codes_and_cmd, make_new=True):
         stderr = _filter_api_check_stderr(stderr)
 
     write_file(os.path.join(test_dir,"retcode.reference"), [ str(retcode) + "\n" ])
-    write_file(os.path.join(test_dir,"stdout.reference"), stdout)
+    write_file(os.path.join(test_dir,"stdout.reference"), _filter_test_stdout(stdout))
     write_file(os.path.join(test_dir,"stderr.reference"), stderr)
 
 def make_bulk_tests(env):
@@ -105,8 +114,8 @@ def make_bulk_tests(env):
 
 def compare_file(reference, this_test):
     ref_lines = open(reference,'r').readlines()
-    ref_lines = [ x.rstrip() for x in ref_lines]
-    this_test = [ x.rstrip() for x in  this_test]
+    ref_lines = [ x.rstrip() for x in _filter_test_stdout(ref_lines)]
+    this_test = [ x.rstrip() for x in _filter_test_stdout(this_test)]
     for line in difflib.unified_diff(ref_lines, this_test,
                                      fromfile=reference, tofile="current"):
         sys.stdout.write(line.rstrip()+'\n')

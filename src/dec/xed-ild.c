@@ -163,6 +163,8 @@ static void prefix_scanner(xed_decoded_inst_t* d)
     xed_uint8_t nseg_prefixes = 0;
     xed_uint8_t nrexes = 0;
     unsigned char rex = 0;
+    xed_uint8_t last_seg = 0;
+    xed_uint8_t last_seg64 = 0;
 
     while(length < max_bytes)
     {
@@ -196,6 +198,7 @@ static void prefix_scanner(xed_decoded_inst_t* d)
                 // only set 2e hint in 64b mode  if no prior 3e hint (CET's new rule)
                 set_hint_2e(d);
             }
+            last_seg = b;
             nseg_prefixes++;
             /*ignore possible REX prefix encountered earlier */
             rex = 0;
@@ -216,6 +219,7 @@ static void prefix_scanner(xed_decoded_inst_t* d)
                     set_hint_3e(d);
                 }
             }
+            last_seg = b;
             nseg_prefixes++;
             /*ignore possible REX prefix encountered earlier */
             rex = 0;
@@ -227,7 +231,7 @@ static void prefix_scanner(xed_decoded_inst_t* d)
                 xed3_operand_set_ild_seg(d, b);
                 clear_hint(d);
             }
-
+            last_seg = b;
             nseg_prefixes++;
             /*ignore possible REX prefix encountered earlier */
             rex = 0;
@@ -236,10 +240,11 @@ static void prefix_scanner(xed_decoded_inst_t* d)
           case 0x64: //FS
           case 0x65: //GS
             //for 64b mode we are ignoring non valid segment prefixes
-            //only FS=0x64 and GS=0x64 are valid for 64b mode
+            //only FS=0x64 and GS=0x65 are valid for 64b mode
             xed3_operand_set_ild_seg(d, b);
             clear_hint(d);
-            
+            last_seg = b;
+            last_seg64 = b;
             nseg_prefixes++;
             /*ignore possible REX prefix encountered earlier */
             rex = 0;
@@ -282,6 +287,8 @@ static void prefix_scanner(xed_decoded_inst_t* d)
         nprefixes++;
     }
 out:
+    if (nseg_prefixes)
+        xed_ild_ext_seg_fixup(d, last_seg, last_seg64);
     //set counts
     xed_decoded_inst_set_length(d, length);
     xed3_operand_set_nprefixes(d, nprefixes);

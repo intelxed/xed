@@ -16,17 +16,16 @@ Copyright (c) 2026 Intel Corporation
   
 END_LEGAL */
 
-/// @file xed-ild-extension.h
-/// instruction length decoder extension header
+/// @file xed-ild-extension.c
+/// Default stub for ILD segment extension (overrideable by xedext)
 
-#if !defined(XED_ILD_EXTENSION_H)
-# define XED_ILD_EXTENSION_H
+#include "xed-internal-header.h"
+#include "xed-ild-extension.h"
 
-#include "xed-decoded-inst.h"
-
+/* Default stub does nothing. xedext can override via replace-source. */
 void xed_ild_ext_seg_fixup(xed_decoded_inst_t* d,
                            xed_uint8_t last_seg,
-                           xed_uint8_t last_seg64);
-
-#endif
-
+                           xed_uint8_t last_seg64)
+{
+    (void)d; (void)last_seg; (void)last_seg64;
+}

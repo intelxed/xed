@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -328,6 +328,29 @@ class XedPy:
         isa_set: xedEnum = self.lib.xed_decoded_inst_get_isa_set_py(self.xedd)
         return self.cstr_to_str(self.lib.xed_isa_set_enum_t2str_py(isa_set))
 
+    def get_attributes(self) -> List[str]:
+        """
+        Get the list of XED attributes set for the currently decoded instruction.
+
+        Iterates over all XED attributes and collects the names of those that are
+        set for the decoded instruction (e.g., 'SCALABLE', 'BYTEOP', 'NOP').
+
+        Returns:
+            List[str]: The attribute names that apply to the decoded instruction.
+        """
+        attributes: List[str] = []
+
+        xi = self.lib.xed_decoded_inst_inst_py(self.xedd)
+        nattributes = self.lib.xed_attribute_max_py()
+
+        for i in range(nattributes):
+            attr = self.lib.xed_attribute_py(i)
+            if self.lib.xed_inst_get_attribute_py(xi, attr):
+                attr_str = self.cstr_to_str(self.lib.xed_attribute_enum_t2str_py(attr))
+                attributes.append(attr_str)
+
+        return attributes
+
     def get_decoded_inst_length(self) -> int:
         return self.lib.xed_decoded_inst_get_length_py(self.xedd)
 
@@ -341,6 +364,7 @@ class XedPy:
         print(f'{"EXTENSION":<{PAD}}: {self.get_extension()}')
         print(f'{"IFORM":<{PAD}}: {self.get_iform()}')
         print(f'{"ISA_SET":<{PAD}}: {self.get_isa_set()}')
+        print(f'{"ATTRIBUTES":<{PAD}}: {", ".join(self.get_attributes())}')
 
         # Allocate a buffer for the instruction format dump
         buffer = self.ffi.new(f'char[{self.BUFFER_SIZE}]')

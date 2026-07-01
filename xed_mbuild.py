@@ -34,6 +34,7 @@ import copy
 import time
 import collections
 import stat
+import importlib.util
 
 def _fatal(m):
     sys.stderr.write("\n\nXED ERROR: %s\n\n" % (m) )
@@ -319,8 +320,24 @@ def run_generator_preparation(gc, env):
     build_dir = env['build_dir']
     gc.concatenate_input_files(env)
 
+    # Run prep extension hooks from xedext if available
+    _run_prep_ext_hooks(gc, env)
+
     mbuild.touch(env.build_dir_join('dummy-prep'))
     return (0, [] )
+
+def _run_prep_ext_hooks(gc, env):
+    """Run prep extension from xedext directory"""
+    ext = Path(env['xedext_dir']).resolve()
+    mod_path = ext / 'scripts' / 'gen_prep_ext.py'
+    if not mod_path.is_file():
+        return
+    spec = importlib.util.spec_from_file_location('gen_prep_ext', str(mod_path))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    if hasattr(mod, 'work'):
+        mbuild.vmsgb(1, "PREP-EXT", str(mod_path))
+        mod.work(env, gc)
 
 def read_file_list(fn):
     a  = []
@@ -1030,6 +1047,7 @@ def build_xed_ild_library(env, lib_env, lib_dag, sources_to_replace):
     
     # grab common sources compiled earlier
     common_sources = ['xed-ild.c',                 # dec
+                      'xed-ild-extension.c',       # dec  (overrideable)
                       'xed-chip-features.c',       # dec
                       'xed-isa-set.c',             # common
                       'xed-chip-modes.c',          # common

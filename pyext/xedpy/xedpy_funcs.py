@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -88,6 +88,10 @@ xed_uint64_t xed_decoded_inst_get_unsigned_immediate_py(const xed_decoded_inst_t
 xed_uint8_t xed_decoded_inst_get_second_immediate_py(const xed_decoded_inst_t* p);
 char const* xed_iform_to_iclass_string_intel_py(xed_iform_enum_t iform);
 char const* xed_iform_to_iclass_string_att_py(xed_iform_enum_t iform);
+xed_uint_t xed_attribute_max_py(void);
+xed_attribute_enum_t xed_attribute_py(xed_uint_t i);
+xed_uint32_t xed_inst_get_attribute_py(const xed_inst_t* p, xed_attribute_enum_t attr);
+const char* xed_attribute_enum_t2str_py(const xed_attribute_enum_t p);
 '''
 
 ################################# ENCODER APIs ##################################
