@@ -23,22 +23,51 @@ END_LEGAL */
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+#  include <process.h>
+#else
+#  include <sys/types.h>
+#  include <sys/wait.h>
+#  include <unistd.h>
+#endif
+
 int main(int argc, char** argv);
 
-// Runs test in subprocess and checks if it aborted.
-// Returns 1 if child died (abort), 0 if survived.
-static xed_int_t aborted(const char* exe, const char* test) {
-    xed_int_t n;
-    char cmd[4096];
-    n = (xed_int_t)snprintf(cmd, sizeof(cmd), "\"%s\" %s", exe, test);
-    if (n < 0 || (size_t)n >= sizeof(cmd)) {
-        fprintf(stderr, "FATAL: xed-test-api-check: command too long or snprintf failed\n");
-        exit(1);
+// Runs test in subprocess. Returns 1 for any nonzero exit (abort, or
+// exec/spawn failure); 0 only if the child ran and exited with status 0.
+static xed_int_t aborted(const char* executable, const char* option) {
+#if defined(_WIN32)
+    const char* arguments[3];
+    intptr_t status;
+
+    arguments[0] = executable;
+    arguments[1] = option;
+    arguments[2] = 0;
+    status = _spawnv(_P_WAIT, executable, arguments);
+    return status != 0;
+#else
+    char* arguments[3];
+    pid_t child;
+    xed_int_t status;
+
+    arguments[0] = (char*) executable;
+    arguments[1] = (char*) option;
+    arguments[2] = 0;
+    child = fork();
+    if (child == 0) {
+        execv(executable, arguments);
+        _exit(127);
     }
-    return system(cmd) != 0;
+    if (child < 0 || waitpid(child, &status, 0) < 0) {
+        return 1;
+    }
+    return !WIFEXITED(status) || WEXITSTATUS(status) != 0;
+#endif
 }
 
 int main(int argc, char** argv) {
+    xed_int_t passed = 0, failed = 0;
+    xed_int_t invalid_aborted;
 
     if (argc >= 2 && strcmp(argv[1], "--invalid") == 0) {   
         api_check(0);
@@ -50,8 +79,7 @@ int main(int argc, char** argv) {
         return 0;
     }
 
-    xed_int_t passed = 0, failed = 0;
-    xed_int_t invalid_aborted = aborted(argv[0], "--invalid");
+    invalid_aborted = aborted(argv[0], "--invalid");
     
 #if defined(XED_API_CHECK_ENABLED)
     printf("Testing with XED_API_CHECK_ENABLED=1\n");

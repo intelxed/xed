@@ -15,6 +15,7 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+#
+#oc2-code    XTYPE     width16 width32 width64 (if only one width is shown, it is for all widths)
+zbf6         bf6      512bits
+zhf6         hf6      512bits

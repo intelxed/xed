@@ -28,7 +28,7 @@ END_LEGAL */
 /// @brief Extension hook called before mnemonic is printed
 /// @param pi Print info structure containing decoded instruction, buffer, and state
 ///
-/// Default implementation does nothing. Overriden by xedext.
+/// Default implementation does nothing. Overridden by xedext.
 void xed_disas_ext_pre_mnemonic(xed_print_info_t* pi);
 
 static XED_INLINE void xed_pi_strcat(xed_print_info_t* pi,

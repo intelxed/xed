@@ -176,7 +176,9 @@ CHIPS_TO_LAYER = {
                        'avx512-fp16',
                        'avx10-2',
                        'evex-map5-6'],
-        'future'    : ['future', 
+        'future'    : ['future',
+                       'ace-1',
+                       'avx10-2-aux',
                        'rao-int', 
                        'apx-f/files-apx-f-future-ext.cfg'],
     }

@@ -1,6 +1,6 @@
 /* BEGIN_LEGAL 
 
-Copyright (c) 2025 Intel Corporation
+Copyright (c) 2026 Intel Corporation
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ void xed_enc2_invalid_cr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname
             break;
         //fallthrough
       default:
-        xed_enc2_error("Bad cr %s arg_name %s in function %s", reg, argname, pfn);
+        xed_enc2_error("Bad cr %s arg_name %s in function %s", xed_reg_enum_t2str(reg), argname, pfn);
     }
 }
 void xed_enc2_invalid_dr(xed_uint_t mode, xed_reg_enum_t reg,const char* argname,const char* pfn) {

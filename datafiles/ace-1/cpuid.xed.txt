@@ -16,5 +16,6 @@
 #  
 #END_LEGAL
 
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+XED_ISA_SET_ACE_1               :    ace.7.1.ecx.11 ace_vsn1.1d.2.eax[0:7]=1
+XED_ISA_SET_AMX_AVX512, AVX10   :    ace.7.1.ecx.11 ace_vsn1.1d.2.eax[0:7]=1
+

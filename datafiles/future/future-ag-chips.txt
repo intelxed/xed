@@ -16,5 +16,13 @@
 #  
 #END_LEGAL
 
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+# FUTURE_AG groups externally published x86 Ecosystem Advisory Group
+# instructions that are available for software development, but
+# are not yet associated with a specific Intel chip.
+
+FUTURE_AG:                      \
+    ALL_OF(FUTURE)              \
+    ACE_1                       \
+    AVX10_V2_AUX_128            \
+    AVX10_V2_AUX_256            \
+    AVX10_V2_AUX_512

@@ -37,6 +37,7 @@ END_LEGAL */
 #include "xed-chip-features-table.h"
 #include "xed-chip-modes.h"
 #include "xed-reg-class.h"
+#include "xed-decode-extension.h"
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -190,6 +191,9 @@ xed_decode_finalize_operand_storage_fields(xed_decoded_inst_t* xds)
             }
         }
     }
+
+    // Post-decode extension hook (overrideable by xedext via replace-source)
+    xed_decode_finalize_ext(xds);
 }
 
 

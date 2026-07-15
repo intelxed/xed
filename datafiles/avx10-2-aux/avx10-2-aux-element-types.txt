@@ -15,6 +15,8 @@
 #  limitations under the License.
 #  
 #END_LEGAL
-
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+#
+#XTYPE      TYPE    BITS-PER-ELEM
+bf4          BFLOAT4      4
+bf6         BFLOAT6      6
+hf6         HFLOAT6      6

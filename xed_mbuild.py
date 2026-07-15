@@ -327,7 +327,12 @@ def run_generator_preparation(gc, env):
     return (0, [] )
 
 def _run_prep_ext_hooks(gc, env):
-    """Run prep extension from xedext directory"""
+    """Run prep extension from xedext directory.
+    After all input files have been concatenated but before the decode/encode
+    generators run, give xedext a chance to mutate the generator_inputs_t (gc).
+    This allows xedext to inject, rewrite, or remove
+    concatenated input content without modifying base XED files.
+    """
     ext = Path(env['xedext_dir']).resolve()
     mod_path = ext / 'scripts' / 'gen_prep_ext.py'
     if not mod_path.is_file():
@@ -2471,7 +2476,7 @@ def _run_canned_tests(env,osenv):
     cmd = "%(python)s %(test_dir)s/run-cmd.py --build-dir {} ".format(wkit.bin)
 
     dirs = ['tests-base', 'tests-avx512', 'tests-xop', 'tests-syntax', 'tests-amx', 'tests-prefetch',
-            'tests-apx']
+            'tests-apx', 'tests-api-check']
     if env['cet']:
         dirs.append('tests-cet')
     for d in dirs:
@@ -2515,6 +2520,8 @@ def _run_canned_tests(env,osenv):
     if env['future']:
         codes.append('APX')
         codes.append('AVX10_2')
+        codes.append('ACE')
+        codes.append('AVX10_V2_AUX')
 
     if env['api_check']:
         codes.append('API_CHECK')

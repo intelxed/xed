@@ -16,5 +16,6 @@
 #  
 #END_LEGAL
 
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+BFLOAT4 ///< bfloat4 floating point
+BFLOAT6 ///< bfloat6 floating point
+HFLOAT6 ///< hfloat6 floating point

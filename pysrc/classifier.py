@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@ def work(agi):
          if genutil.field_check(ii, 'iclass'):
              if re.search('APX',ii.isa_set):
                  apx_isa_sets.add(ii.isa_set)
-             if re.search('AMX',ii.isa_set):
+             if re.search('AMX|ACE',ii.isa_set):
                  amx_isa_sets.add(ii.isa_set)
              elif is_avx512_inst(ii.isa_set, avx512_main_isa):
                  avx512_isa_sets.add(ii.isa_set)

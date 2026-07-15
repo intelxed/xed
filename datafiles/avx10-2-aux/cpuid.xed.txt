@@ -16,5 +16,6 @@
 #  
 #END_LEGAL
 
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+XED_ISA_SET_AVX10_V2_AUX_128      : avx10_v2_aux.24.1.ecx.3 avx10_enabled.7.1.edx[19]
+XED_ISA_SET_AVX10_V2_AUX_256      : avx10_v2_aux.24.1.ecx.3 avx10_enabled.7.1.edx[19]
+XED_ISA_SET_AVX10_V2_AUX_512      : avx10_v2_aux.24.1.ecx.3 avx10_enabled.7.1.edx[19]

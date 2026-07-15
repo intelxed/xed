@@ -4362,14 +4362,14 @@ def create_vex_all_mask_reg(env,ii):
     add_enc_func(ii,fo)
 
 def vex_amx_mem(ii):
-    if 'AMX' in ii.isa_set:
+    if 'AMX' in ii.isa_set or 'ACE' in ii.isa_set:
         for op in _gen_opnds(ii):
             if op_mem(op):
                 return True
     return False
 
 def vex_amx_reg(ii):
-    if 'AMX' in ii.isa_set:
+    if 'AMX' in ii.isa_set or 'ACE' in ii.isa_set:
         for op in _gen_opnds(ii):
             if op_mem(op):
                 return False

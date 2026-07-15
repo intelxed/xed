@@ -16,5 +16,12 @@
 #  
 #END_LEGAL
 
-chip-models : future-chips.txt
-chip-models : future-ag-chips.txt
+# AVX10-2-AUX specific disp8 scaling for sub-byte element sizes
+# Extend NELEM_HALF for 4-bit elements
+
+NELEM_HALF()::
+BCRC=0b0  ELEMENT_SIZE=4 VL512 | NELEM=64
+
+BCRC=0b0  ELEMENT_SIZE=4 VL256 | NELEM=32
+
+BCRC=0b0  ELEMENT_SIZE=4 VL128 | NELEM=16

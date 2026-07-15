@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -30,4 +30,4 @@ DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2706cc0   # TCMMRLFP16PS dst=src1
 DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2786cc1   # TCMMRLFP16PS dst=src2  -> UD
 DEC ENC AMX_GNR      ; BUILDDIR/xed -64 -de c4e2706cc1   # TCMMRLFP16PS src1=src2 -> UD
 DEC ENC AMX          ; BUILDDIR/xed -64 -e tileloadd tmm0 mem0:rbp
-
+DEC ENC ACE          ; BUILDDIR/xed -64 -d 62b68c409584f500000010
