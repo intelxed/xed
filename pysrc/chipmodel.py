@@ -2,7 +2,7 @@
 # -*- python -*-
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -270,13 +270,14 @@ def work(arg):
     # hierarchy that usually needs to be part of some chip.
     missing2=_check_in_instructions_not_chip_hierarchy(isa_set, arg.isa_sets_from_instr)
     if missing2:
-        if arg.add_orphans_to_future:
-
-            #  add missing2 to "FUTURE" and  "ALL" chips.
-            chip_features_dict['ALL'].extend(missing2)
-            if 'FUTURE' in chip_features_dict:
-                genutil.warn("Adding {} to FUTURE chip".format(missing2))
-                chip_features_dict['FUTURE'].extend(missing2)
+        if arg.add_orphans_to_chip:
+            chip_name = arg.add_orphans_to_chip.upper()
+            if chip_name not in chip_features_dict:
+                _die("Chip '{}' not found in chip hierarchy".format(chip_name))
+            genutil.warn("Adding {} to {} chip".format(missing2, chip_name))
+            chip_features_dict[chip_name].extend(missing2)
+            if chip_name != 'ALL':
+                chip_features_dict['ALL'].extend(missing2)
             isa_set.extend(missing2)
         else:
             _die("These need to be part of some chip: {}".format(missing2))
@@ -389,7 +390,7 @@ class args_t(object):
         self.input_file_name = None
         self.xeddir = None
         self.gendir = None
-        self.add_orphans_to_future = False
+        self.add_orphans_to_chip = None
         self.isa_sets_from_instr = None
 
 if __name__ == '__main__':

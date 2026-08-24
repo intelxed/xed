@@ -83,6 +83,7 @@ DIAMOND_RAPIDS:              \
    APX_F_ADX                 \
    APX_F_ADX_N3              \
    APX_F_AMX                 \
+   APX_F_AMX_BASE            \
    APX_F_BMI1                \
    APX_F_BMI1_N3             \
    APX_F_BMI2                \

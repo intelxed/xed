@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ ICLASS:      LDTILECFG
 CPL:         3
 CATEGORY:    AMX_TILE
 EXTENSION:   AMX_TILE
-ISA_SET:     APX_F_AMX
+ISA_SET:     APX_F_AMX_BASE
 EXCEPTIONS:  AMX-E1-EVEX
 REAL_OPCODE: Y
 ATTRIBUTES:  NOTSX 
@@ -47,7 +47,7 @@ ICLASS:      STTILECFG
 CPL:         3
 CATEGORY:    AMX_TILE
 EXTENSION:   AMX_TILE
-ISA_SET:     APX_F_AMX
+ISA_SET:     APX_F_AMX_BASE
 EXCEPTIONS:  AMX-E2-EVEX
 REAL_OPCODE: Y
 ATTRIBUTES:  NOTSX 

@@ -226,14 +226,18 @@ static const char* xed_decoded_inst_print_ptr_size(xed_uint_t bytes) {
 
 // Return the display width (in bits) for sign-extended immediates.
 // For non-EVEX: use effective operand size (EOSZ).
-// For EVEX: use dest element width because EOSZ is loosely defined.
+// For EVEX: use dest element width because EOSZ is loosely defined,
+// but never narrower than the actual encoded immediate width.
 static unsigned int
 xed_get_imm_sign_extend_display_bits(const xed_decoded_inst_t* p) {
     if ( xed3_operand_get_vexvalid(p) == 2 )
     {
         unsigned int eff_bits = xed_decoded_inst_operand_element_size_bits(p, 0);
-        if (eff_bits)
+        unsigned int imm_bits = xed_decoded_inst_get_immediate_width_bits(p);
+        if (eff_bits > imm_bits)
             return eff_bits;
+        if (imm_bits)
+            return imm_bits;
     }
     return xed_decoded_inst_get_operand_width(p);
 }

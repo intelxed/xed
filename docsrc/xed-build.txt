@@ -447,8 +447,8 @@ Options:
   --strip=STRIP         Path to strip binary. (Linux only)
   --pti-test            INTERNAL TESTING OPTION.
   --compress-operands   use bit-fields to compress the operand storage.
-  --add-orphan-inst-to-future-chip
-                        Add orphan isa-sets to future chip definition.
+  --add-orphan-inst-to-chip=CHIP
+                        Add orphan isa-sets to the specified chip definition.
   --test-perf           Do performance test (on linux). Requires specific
                         external test binary.
   --static-stripped     Make a static libxed.a renaming internal symbols

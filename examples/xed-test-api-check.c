@@ -70,6 +70,10 @@ int main(int argc, char** argv) {
     xed_int_t invalid_aborted;
 
     if (argc >= 2 && strcmp(argv[1], "--invalid") == 0) {   
+#if defined(_MSC_VER)
+        // This child intentionally aborts; do not invoke unattended WER.
+        _set_abort_behavior(0, _CALL_REPORTFAULT);
+#endif
         api_check(0);
         return 0;
     }

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,4 +16,4 @@
 #  
 #END_LEGAL
 
-XED_ISA_SET_AMX_FP16:        amx_tiles.7.0.edx.24 amx_fp16.7.1.eax.21
+XED_ISA_SET_AMX_FP16:        amx_tile.7.0.edx.24 amx_fp16.7.1.eax.21

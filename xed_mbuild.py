@@ -366,8 +366,8 @@ def run_decode_generator(gc, env):
     
     if env['compress_operands']:
         gen_extra_args += " --compress-operands" 
-    if env['add_orphan_inst_to_future_chip']:
-        gen_extra_args += " --add-orphan-inst-to-future-chip"
+    if env['add_orphan_inst_to_chip']:
+        gen_extra_args += " --add-orphan-inst-to-chip={}".format(env['add_orphan_inst_to_chip'])
         
     cmd = env.expand(gc.decode_command(xedsrc, gen_extra_args))
 
@@ -397,6 +397,8 @@ def run_encode_generator(gc, env):
     build_dir = aq(env['build_dir'])
         
     gen_extra_args = "--gendir %s --xeddir %s" % (build_dir, xedsrc)
+    if env['add_orphan_inst_to_chip']:
+        gen_extra_args += " --add-orphan-inst-to-chip={}".format(env['add_orphan_inst_to_chip'])
     cmd = gc.encode_command(env, xedsrc, gen_extra_args)
     mbuild.vmsgb(3, "ENC-GEN", cmd)
     (retval, output, error_output) = mbuild.run_command(cmd,
@@ -680,7 +682,7 @@ def mkenv():
                                  pti_test=False,
                                  verbose = 1,
                                  compress_operands=False,
-                                 add_orphan_inst_to_future_chip=False,
+                                 add_orphan_inst_to_chip=None,
                                  test_perf=False,
                                  example_linkflags='',
                                  example_flags='',
@@ -912,10 +914,10 @@ def xed_args(env):
                           dest="compress_operands",
                           help="use bit-fields to compress the "+
                           "operand storage.")
-    env.parser.add_option("--add-orphan-inst-to-future-chip", 
-                          action="store_true",
-                          dest="add_orphan_inst_to_future_chip",
-                          help="Add orphan isa-sets to future chip definition.")
+    env.parser.add_option("--add-orphan-inst-to-chip", 
+                          action="store",
+                          dest="add_orphan_inst_to_chip",
+                          help="Add orphan isa-sets to the specified chip definition.")
     env.parser.add_option("--test-perf", 
                           action="store_true",
                           dest="test_perf",

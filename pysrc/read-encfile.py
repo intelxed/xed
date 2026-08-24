@@ -1610,7 +1610,7 @@ class encoder_configuration_t(object):
     #
     #    and finally, some operands get dropped entirely.
     
-    def __init__(self, encoder_input_files, chip='ALL', amd=True):
+    def __init__(self, encoder_input_files, chip='ALL', amd=True, add_orphans_to_chip=None):
         self.amd = amd
         self.files = encoder_input_files
         self.gendir = self.files.gendir
@@ -1622,6 +1622,8 @@ class encoder_configuration_t(object):
             return isa_set_db
         self.isa_set_db = _call_chip_model(encoder_input_files.chip_model_info_file)
         self.chip = chip
+        # chip name to receive orphan ISA sets (from --add-orphan-inst-to-chip)
+        self.add_orphans_to_chip = add_orphans_to_chip
         
         global storage_fields
         lines = open(self.files.storage_fields_file,'r')
@@ -1647,6 +1649,27 @@ class encoder_configuration_t(object):
         self.deleted_unames = {}       # by uname
 
         cmkdir(self.gendir)
+
+    def _apply_orphan_isa_sets(self):
+        """Augment the chip model so that ISA sets from --extf layers
+        that are not already attributed to a chip become part of the
+        chip specified by --add-orphan-inst-to-chip.
+        Must be called after all iforms are parsed (self.all_iforms exists)."""
+        if not self.add_orphans_to_chip:
+            return
+        chip = self.add_orphans_to_chip.upper()
+        if chip not in self.isa_set_db:
+            genutil.die("Encoder: chip '{}' not found in chip hierarchy".format(chip))
+
+        # Use ALL to find true orphans (ISA sets not in any chip)
+        known = set(self.isa_set_db['ALL'])
+        for iform in self.all_iforms:
+            isa = iform.isa_set.upper()
+            if isa and isa not in known:
+                self.isa_set_db['ALL'].append(isa)
+                if chip != 'ALL':
+                    self.isa_set_db[chip].append(isa)
+                known.add(isa)
 
     def dump_output_file_names(self):
         global output_file_emitters
@@ -2944,6 +2967,7 @@ class encoder_configuration_t(object):
         self.make_nonterminal_functions(self.decoder_ntlufs)
         self.make_nonterminal_functions(self.decoder_nonterminals)
 
+        self._apply_orphan_isa_sets()
         self.make_encode_order_tables()# FIXME  too early?
         # emit the per instruction bind & emit functions
         self.make_isa_encode_functions()
@@ -3297,6 +3321,11 @@ def setup_arg_parser():
                                 limits what encode will produce to
                                 only those instructions valid for that
                                 chip.''')
+    arg_parser.add_option('--add-orphan-inst-to-chip',
+                          action='store',
+                          dest='add_orphan_inst_to_chip',
+                          default=None,
+                          help='Add orphan isa-sets to the specified chip definition.')
     
     options, args = arg_parser.parse_args()
     return options, args
@@ -3306,7 +3335,8 @@ if __name__ == '__main__':
     (options, args) = setup_arg_parser()
     set_verbosity_options(options.verbosity)
     enc_inputs = encoder_input_files_t(options)
-    enc = encoder_configuration_t(enc_inputs, options.chip, options.amd)
+    enc = encoder_configuration_t(enc_inputs, options.chip, options.amd,
+                                   options.add_orphan_inst_to_chip)
     enc.run()
     enc.look_for_encoder_inputs()      # exploratory stuff
     enc.emit_encode_defines()  # final stuff after all tables are sized

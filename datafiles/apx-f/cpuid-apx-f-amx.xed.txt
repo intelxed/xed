@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -16,5 +16,6 @@
 #  
 #END_LEGAL
 
-XED_ISA_SET_APX_F_AMX           : apx_f.7.1.edx.21 amx_tiles.7.0.edx.24
+XED_ISA_SET_APX_F_AMX           : apx_f.7.1.edx.21 amx_tile.7.0.edx.24
+XED_ISA_SET_APX_F_AMX_BASE      : apx_f.7.1.edx.21 amx_tile.7.0.edx.24
 XED_ISA_SET_APX_F_AMX_MOVRS     : apx_f.7.1.edx.21 amx_movrs.1e.1.eax.8

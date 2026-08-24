@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2025 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -126,3 +126,8 @@ APX ENC     ; BUILDDIR/xed -64 -e vaddpd ymm20 k4 ymm21 mem64:r29,r14,8,-
 APX DEC     ; BUILDDIR/xed -64 -isa-set -ih TESTDIR/../dfv-disas-var.txt
 # DFV encode test
 APX ENC     ; BUILDDIR/xed -64 -set DFV 14 -e ccmpb r16b r17b
+
+# EGPRs PUSH/POP
+APX ENC     ; BUILDDIR/xed -64 -e PUSH r31
+APX ENC     ; BUILDDIR/xed -64 -e POP r20
+APX DEC ENC ; BUILDDIR/xed -64 -de D51050 

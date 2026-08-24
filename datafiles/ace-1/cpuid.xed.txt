@@ -16,6 +16,11 @@
 #  
 #END_LEGAL
 
-XED_ISA_SET_ACE_1               :    ace.7.1.ecx.11 ace_vsn1.1d.2.eax[0:7]=1
-XED_ISA_SET_AMX_AVX512, AVX10   :    ace.7.1.ecx.11 ace_vsn1.1d.2.eax[0:7]=1
+XED_ISA_SET_ACE_1                 :  ace.7.1.ecx[11] ace_vsn1.1d.2.eax[0:7]=1
+
+# Some legacy AMX ISA sets are also enabled under ACE.1.
+# Each is supported if either its legacy CPUID or the ACE.1 CPUID is present.
+XED_ISA_SET_AMX_AVX512,     AVX10 :  ace.7.1.ecx[11] ace_vsn1.1d.2.eax[0:7]=1
+XED_ISA_SET_AMX_TILE_BASE,  AVX10 :  ace.7.1.ecx[11] ace_vsn1.1d.2.eax[0:7]=1
+XED_ISA_SET_APX_F_AMX_BASE, AVX10 :  ace.7.1.ecx[11] ace_vsn1.1d.2.eax[0:7]=1
 

@@ -1,6 +1,6 @@
 #BEGIN_LEGAL
 #
-#Copyright (c) 2022 Intel Corporation
+#Copyright (c) 2026 Intel Corporation
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ SAPPHIRE_RAPIDS:         \
      AVX512_BF16_512     \
      AVX_VNNI            \
      AMX_TILE            \
+     AMX_TILE_BASE       \
      AMX_INT8            \
      AMX_BF16            \
      AVX512_BF16_128     \

@@ -217,6 +217,9 @@ def set_env_gnu(env):
 def set_env_clang(env):
     set_env_gnu(env)
     env['CXXFLAGS'] += ' -Wno-unused-function'
+    if env['debug'] and env['opt'] not in ['noopt', '0']:
+        # avoid data corruption when stripping debug from optimized clang builds
+        add_to_flags(env, '-fno-addrsig')
         
 def set_env_ms(env):
     """Set up the MSVS environment for compilation"""
@@ -282,6 +285,10 @@ def set_env_ms(env):
     # /Zm200 is required on VC98 for xed-decode.cpp to avoid
     # internal compiler error
     #flags += ' /Zm200'
+    if env['debug']:
+        # large generated files exceed COFF section limit with debug
+        if '/bigobj' not in flags and int(env['msvs_version']) >= 8:
+            flags += ' /bigobj'
     env['CCFLAGS'] += flags
     env['CXXFLAGS'] += cxxflags + " " + flags
 

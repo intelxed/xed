@@ -272,11 +272,11 @@ def setup_arg_parser():
                           default=False,
                           help="use bit-fields to compress the "+
                           "operand storage.")
-    arg_parser.add_option("--add-orphan-inst-to-future-chip", 
-                          action="store_true",
-                          dest="add_orphan_inst_to_future_chip",
-                          default=False,
-                          help="Add orphan isa-sets to future chip definition.")
+    arg_parser.add_option("--add-orphan-inst-to-chip", 
+                          action="store",
+                          dest="add_orphan_inst_to_chip",
+                          default=None,
+                          help="Add orphan isa-sets to the specified chip definition.")
     arg_parser.add_option("--py-export", 
                           action="store_true",
                           dest="py_export",
@@ -5711,7 +5711,7 @@ def call_chipmodel(agi):
     args.input_file_name = agi.common.options.chip_models_input_fn
     args.xeddir = agi.common.options.xeddir
     args.gendir = agi.common.options.gendir
-    args.add_orphans_to_future = agi.common.options.add_orphan_inst_to_future_chip
+    args.add_orphans_to_chip = agi.common.options.add_orphan_inst_to_chip
 
     args.isa_sets_from_instr = agi.isa_sets
 

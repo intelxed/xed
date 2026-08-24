@@ -1,0 +1,4 @@
+Request: PUSH EOSZ:3, MODE:2, REG0:R31, SMODE:2
+OPERAND ORDER: REG0 
+Encodable! D51157
+.byte 0xd5,0x11,0x57
